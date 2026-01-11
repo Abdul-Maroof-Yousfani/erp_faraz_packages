@@ -21,7 +21,7 @@ jobs:
           password: ${{ secrets.SFTP_PASS }}
           port: 22
           source: "."
-          target: "/var/www/farazpack.inplsoftwares.com/"
+          target: "/var/www/farazpack/"
           strip_components: 0
 
       
@@ -33,7 +33,7 @@ jobs:
           username: ${{ secrets.SFTP_USER }}
           password: ${{ secrets.SFTP_PASS }}
           script: |
-            cd /var/www/farazpack.inplsoftwares.com
+            cd /var/www/farazpack
             
             # Directory structure create karna (Sudo ki zaroorat nahi)
             mkdir -p storage/framework/{sessions,views,cache}
