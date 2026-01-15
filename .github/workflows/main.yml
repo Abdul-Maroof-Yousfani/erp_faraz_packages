@@ -1,4 +1,30 @@
-- name: Execute SSH commands
+name: Deploy Laravel Project
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 1. Files upload karna
+      - name: Copy files via SFTP
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          password: ${{ secrets.SFTP_PASS }}
+          port: 22
+          source: "."
+          target: "/var/www/farazpack/"
+          strip_components: 0
+
+      # 2. Permissions aur Laravel setup
+      - name: Execute SSH commands
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SFTP_HOST }}
@@ -7,23 +33,22 @@
           script: |
             cd /var/www/farazpack
             
-            # Directory structure setup
+            # Directory structure create karna
             mkdir -p storage/framework/{sessions,views,cache}
             mkdir -p bootstrap/cache
             
-            # Permissions fix
+            # Permissions set karna
             chmod -R 775 storage bootstrap/cache
             
-            # 1. Composer Install (Try 'composer' directly first, if it fails, use full path)
-            # Agar 'composer' command nahi milti toh 'which composer' se path check karein
-            composer install --no-dev --optimize-autoloader --no-interaction || php7.4 /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction
-
-            # 2. Laravel Optimization (Fixed syntax: removed extra 'php')
+            # Composer install (Path fix kiya hai)
+            # Agar composer ka error aaye to 'composer' ki jagah '/usr/bin/composer' try karein
+            composer install --no-dev --optimize-autoloader --no-interaction
+            
+            # Laravel Optimization
             if [ -f .env ]; then
                 php7.4 artisan config:cache
                 php7.4 artisan route:cache
                 php7.4 artisan view:cache
-                # php7.4 artisan migrate --force
             else
                 echo ".env file not found, skipping artisan commands"
             fi
