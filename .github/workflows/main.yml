@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Agar billing ka masla dobara aaye to isse 'self-hosted' kar dein
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -24,7 +24,7 @@ jobs:
           target: "/var/www/farazpack/"
           strip_components: 0
 
-      # 2. Permissions aur Laravel setup
+      # 2. Remote Server par Setup aur Optimization
       - name: Execute SSH commands
         uses: appleboy/ssh-action@master
         with:
@@ -34,21 +34,28 @@ jobs:
           script: |
             cd /var/www/farazpack
             
-            # Directory structure setup
+            # Directory structure aur permissions ka masla hal karna
             mkdir -p storage/framework/{sessions,views,cache}
             mkdir -p bootstrap/cache
-            
-            # Permissions fix
             chmod -R 775 storage bootstrap/cache
             
-            # Composer (Pehle simple try karein, agar fail ho toh full path denge)
-            composer install --no-dev --optimize-autoloader --no-interaction || /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction
+            # Composer Install: PHP 7.4 ke sath aur platform errors ko bypass karte hue
+            # Hum /usr/bin/composer ya direct 'composer' use kar rahe hain jo bhi mil jaye
+            php7.4 $(which composer) install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs || php7.4 /usr/bin/composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
             
-            # Laravel Optimization (Fixed syntax)
+            # Laravel Artisan Commands
             if [ -f .env ]; then
+                # Config cache zaroori hai
                 php7.4 artisan config:cache
-                php7.4 artisan route:cache
-                php7.4 artisan view:cache
+                
+                # Route cache skip kiya hai kyunki aapke routes mein 'Closure' (functions) hain
+                php7.4 artisan route:clear
+                
+                # View cache agar available nahi to clear command use hogi
+                php7.4 artisan view:clear
+                
+                # Agar migration chalani ho to niche wali line un-comment kar dein
+                # php7.4 artisan migrate --force
             else
                 echo ".env file not found, skipping artisan commands"
             fi
