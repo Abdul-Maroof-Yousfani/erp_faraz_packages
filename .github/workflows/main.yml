@@ -12,7 +12,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 1. Files upload karna (Optimization: Faltu folders nikal diye)
+      # 1. Files upload karna (Fastest Mode)
       - name: Copy files via SFTP
         uses: appleboy/scp-action@master
         with:
@@ -20,8 +20,7 @@ jobs:
           username: ${{ secrets.SFTP_USER }}
           password: ${{ secrets.SFTP_PASS }}
           port: 22
-          # 'source' mein humne vendor, node_modules aur git ko exclude kar diya hai
-          # Is se upload size 90% kam ho jayega aur speed 10 guna barh jayegi
+          # !vendor lagane se 15 minute wala kaam 1 minute mein ho jayega
           source: ".,!vendor,!node_modules,!.git,!.github,!storage/framework/*,!bootstrap/cache/*.php"
           target: "/var/www/farazpack/"
           strip_components: 0
@@ -36,25 +35,27 @@ jobs:
           script: |
             cd /var/www/farazpack
             
-            # Directory structure aur permissions ka masla hal karna
+            # Directory structure setup
             mkdir -p storage/framework/{sessions,views,cache}
             mkdir -p bootstrap/cache
             
-            # Ownership sahi karna taake Apache write kar sakay
-            sudo chown -R www-data:www-data storage bootstrap/cache
+            # Permissions sahi karna (Taki 500 error na aaye)
+            sudo chown -R www-data:www-data /var/www/farazpack
             sudo chmod -R 775 storage bootstrap/cache
             
-            # Composer Install: Sahi path (/usr/local/bin/composer) use karte hue
-            # --no-dev aur --optimize-autoloader se speed aur performance barhti hai
+            # Composer Install (Sahi path ke sath)
+            # Ye command server par hi vendor folder bana degi
             php7.4 /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
             
-            # Laravel Artisan Commands
+            # Laravel Artisan Commands for Speed
             if [ -f .env ]; then
                 php7.4 artisan config:cache
                 php7.4 artisan route:clear
                 php7.4 artisan view:clear
-                # Purana cache clear karna zaroori hai
                 php7.4 artisan cache:clear
             else
-                echo ".env file not found, skipping artisan commands"
+                echo ".env file missing!"
             fi
+            
+            # Faltu files ki safayi
+            rm -f index.php.backup .htaccess.backup vendor.zip
