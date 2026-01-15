@@ -2,7 +2,8 @@ name: Deploy Laravel Project
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   deploy:
@@ -33,18 +34,17 @@ jobs:
           script: |
             cd /var/www/farazpack
             
-            # Directory structure create karna
+            # Directory structure setup
             mkdir -p storage/framework/{sessions,views,cache}
             mkdir -p bootstrap/cache
             
-            # Permissions set karna
+            # Permissions fix
             chmod -R 775 storage bootstrap/cache
             
-            # Composer install (Path fix kiya hai)
-            # Agar composer ka error aaye to 'composer' ki jagah '/usr/bin/composer' try karein
-            composer install --no-dev --optimize-autoloader --no-interaction
+            # Composer (Pehle simple try karein, agar fail ho toh full path denge)
+            composer install --no-dev --optimize-autoloader --no-interaction || /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction
             
-            # Laravel Optimization
+            # Laravel Optimization (Fixed syntax)
             if [ -f .env ]; then
                 php7.4 artisan config:cache
                 php7.4 artisan route:cache
