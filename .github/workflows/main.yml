@@ -2,17 +2,17 @@ name: Deploy Laravel Project
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 1. Files upload karna (Fastest Mode)
+      # 1. Files upload karna (Khali folder me saari files chali jayengi)
       - name: Copy files via SFTP
         uses: appleboy/scp-action@master
         with:
@@ -20,12 +20,12 @@ jobs:
           username: ${{ secrets.SFTP_USER }}
           password: ${{ secrets.SFTP_PASS }}
           port: 22
-          # !vendor lagane se 15 minute wala kaam 1 minute mein ho jayega
-          source: ".,!vendor,!node_modules,!.git,!.github,!storage/framework/*,!bootstrap/cache/*.php"
+          source: "."
           target: "/var/www/farazpack/"
           strip_components: 0
 
-      # 2. Remote Server par Setup aur Optimization
+      
+      # 2. Permissions aur Laravel setup
       - name: Execute SSH commands
         uses: appleboy/ssh-action@master
         with:
@@ -35,27 +35,25 @@ jobs:
           script: |
             cd /var/www/farazpack
             
-            # Directory structure setup
+            # Directory structure create karna (Sudo ki zaroorat nahi)
             mkdir -p storage/framework/{sessions,views,cache}
             mkdir -p bootstrap/cache
-            
-            # Permissions sahi karna (Taki 500 error na aaye)
-            sudo chown -R www-data:www-data /var/www/farazpack
-            sudo chmod -R 775 storage bootstrap/cache
-            
-            # Composer Install (Sahi path ke sath)
-            # Ye command server par hi vendor folder bana degi
+
+            # Permissions set karna (Sirf un folders par jo user owned hain)
+            find . -type d -exec chmod 775 {} \;
+            find . -type f -exec chmod 664 {} \;
+            chmod -R 775 storage bootstrap/cache
+
+            # Laravel Optimization
+            # Agar composer path me nahi hai to full path use karein: /usr/local/bin/composer
             php7.4 /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
-            
-            # Laravel Artisan Commands for Speed
+
+            # Cache clear (ye tabhi chalega jab .env file server par maujood ho)
             if [ -f .env ]; then
                 php7.4 artisan config:cache
-                php7.4 artisan route:clear
-                php7.4 artisan view:clear
-                php7.4 artisan cache:clear
+                php7.4 artisan route:cache
+                php7.4 artisan view:cache
+                # php artisan migrate --force
             else
-                echo ".env file missing!"
+                echo ".env file not found, skipping artisan commands"
             fi
-            
-            # Faltu files ki safayi
-            rm -f index.php.backup .htaccess.backup vendor.zip
