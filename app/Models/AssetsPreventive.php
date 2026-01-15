@@ -10,5 +10,6 @@ class AssetsPreventive extends Model{
     protected $primaryKey = 'id';
     public $timestamps = false;
     protected $connection = 'mysql2';
+    
 }
 
