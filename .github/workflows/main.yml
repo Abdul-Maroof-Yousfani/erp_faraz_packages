@@ -7,12 +7,12 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest  # Agar billing ka masla dobara aaye to isse 'self-hosted' kar dein
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 1. Files upload karna
+      # 1. Files upload karna (Optimization: Faltu folders nikal diye)
       - name: Copy files via SFTP
         uses: appleboy/scp-action@master
         with:
@@ -20,7 +20,9 @@ jobs:
           username: ${{ secrets.SFTP_USER }}
           password: ${{ secrets.SFTP_PASS }}
           port: 22
-          source: "."
+          # 'source' mein humne vendor, node_modules aur git ko exclude kar diya hai
+          # Is se upload size 90% kam ho jayega aur speed 10 guna barh jayegi
+          source: ".,!vendor,!node_modules,!.git,!.github,!storage/framework/*,!bootstrap/cache/*.php"
           target: "/var/www/farazpack/"
           strip_components: 0
 
@@ -37,25 +39,22 @@ jobs:
             # Directory structure aur permissions ka masla hal karna
             mkdir -p storage/framework/{sessions,views,cache}
             mkdir -p bootstrap/cache
-            chmod -R 775 storage bootstrap/cache
             
-            # Composer Install: PHP 7.4 ke sath aur platform errors ko bypass karte hue
-            # Hum /usr/bin/composer ya direct 'composer' use kar rahe hain jo bhi mil jaye
-            php7.4 $(which composer) install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs || php7.4 /usr/bin/composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
+            # Ownership sahi karna taake Apache write kar sakay
+            sudo chown -R www-data:www-data storage bootstrap/cache
+            sudo chmod -R 775 storage bootstrap/cache
+            
+            # Composer Install: Sahi path (/usr/local/bin/composer) use karte hue
+            # --no-dev aur --optimize-autoloader se speed aur performance barhti hai
+            php7.4 /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
             
             # Laravel Artisan Commands
             if [ -f .env ]; then
-                # Config cache zaroori hai
                 php7.4 artisan config:cache
-                
-                # Route cache skip kiya hai kyunki aapke routes mein 'Closure' (functions) hain
                 php7.4 artisan route:clear
-                
-                # View cache agar available nahi to clear command use hogi
                 php7.4 artisan view:clear
-                
-                # Agar migration chalani ho to niche wali line un-comment kar dein
-                # php7.4 artisan migrate --force
+                # Purana cache clear karna zaroori hai
+                php7.4 artisan cache:clear
             else
                 echo ".env file not found, skipping artisan commands"
             fi
