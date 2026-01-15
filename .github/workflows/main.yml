@@ -46,7 +46,7 @@ jobs:
 
             # Laravel Optimization
             # Agar composer path me nahi hai to full path use karein: /usr/local/bin/composer
-            composer install --no-dev --optimize-autoloader --no-interaction
+            php7.4 /usr/bin/composer install --no-dev --optimize-autoloader --no-interaction
 
             # Cache clear (ye tabhi chalega jab .env file server par maujood ho)
             if [ -f .env ]; then
