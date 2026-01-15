@@ -1,0 +1,800 @@
+<?php
+use App\Helpers\PurchaseHelper;
+use App\Helpers\SalesHelper;
+use App\Helpers\FinanceHelper;
+use App\Helpers\CommonHelper;
+
+$type = $JobOrder->type;
+$m = $_GET['m'];
+?>
+
+@extends('layouts.default')
+
+@section('content')
+    @include('number_formate')
+    @include('select2')
+
+    <style>
+        .select2-container {
+            font-size: 11px;
+        }
+    </style>
+
+<?php $duplicate=  Request::segment(4); if($duplicate==1){ $duplicate=1; } else{ $duplicate=0; }  ?>
+    <div class="row" id="job_order_next_step"></div>
+    <div class="row" id="DirectJobOrderArea">
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div class="well">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <span class="subHeadingLabelClass">EDIT JOB ORDER</span>
+                    </div>
+                </div>
+                <div class="lineHeight">&nbsp;</div>
+
+                <div class="row" style="" id="DirectJobOrder">
+
+                    <?php
+                    if ($duplicate==1):
+                        echo Form::open(array('url' => 'pad/addJobOrder','id'=>'JobOrderForm', 'enctype' => 'multipart/form-data'));
+                        else:
+                    echo Form::open(array('url' => 'pad/updateJobOrderDetail','id'=>'JobOrderForm', 'enctype' => 'multipart/form-data'));
+                        endif;
+
+                    ?>
+                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="pageType" value="add">
+                    <input type="hidden" name="parentCode" value="000">
+                    <input type="hidden" name="m" value="<?php echo Input::get('m');?>">
+                    <input type="hidden" name="EditId" value="<?php echo $EditId;?>">
+
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div class="">
+                            <div class="">
+                                <div class="row">
+                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                        <input type="hidden" name="demandsSection[]" class="form-control requiredField" id="demandsSection" value="1" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                        <div class="row">
+                                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 well">
+                                                <div class="row">
+                                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+                                                            <label class="sf-label">Job Order No.</label>
+                                                            <span class="rflabelsteric"><strong>*</strong></span>
+                                                            <input type="text" class="form-control requiredField"  name="job_order_no" id="job_order_no" value="<?php echo $JobOrder->job_order_no;?>" readonly />
+                                                        </div>
+
+                                                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+                                                            <label class="sf-label">Job Order Date<span class="rflabelsteric"><strong>*</strong></span></label>
+                                                            <input type="date" class="form-control requiredField"  placeholder="" name="date_ordered" id="date_ordered" value="<?php echo $JobOrder->date_ordered ?>" />
+                                                        </div>
+
+                                                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+                                                            <label class="sf-label">Client Name: <span class="rflabelsteric"><strong>*</strong></span></label>
+
+                                                            @if($type==0)
+
+                                                                <select style="width: 100%" class="form-control requiredField select2" name="client_name" id="client_name" onchange="GetBranch()">
+                                                                    <option value="">---Select---</option>
+                                                                    @foreach(SalesHelper::get_all_client() as $row)
+                                                                        <option value="{{$row->id}}" <?php if($JobOrder->client_name == $row->id){echo "selected";}?>>{{ucwords($row->client_name)}}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                                <input type="hidden" id="type" name="type" value="{{$type}}"/>
+                                                            @else
+
+                                                                <?php
+
+
+                                                                $client_data=CommonHelper::get_client_data_by_id($JobOrder->client_name);
+
+                                                                ?>
+                                                                <input type="hidden" id="client_name" name="client_name" value="{{$JobOrder->client_name}}"/>
+                                                                <input type="hidden" id="type" name="type" value="{{$type}}"/>
+                                                                <input class="form-control" readonly type="text" name="" id="" value="{{$client_data->client_name}}"/>
+                                                            @endif
+                                                        </div>
+                                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                            <label class="sf-label"><a href="#" onclick="branchDetail('sales/addBranchAjax','<?= $m ?>')" class=""> Branch: </a>
+                                                                <span class="rflabelsteric"><strong>*</strong></span></label>
+                                                            <select name="BranchId" id="BranchId" class="form-control select2 requiredField"></select>
+                                                        </div>
+                                                        <input type="hidden" name="main_id" value="{{$JobOrder->quotation_id}}"/>
+                                                        <?php
+                                                        if ($type==1):
+                                                            $data=  CommonHelper::get_data_from_survey_tracking($JobOrder->quotation_id,$type);
+                                                            $data=explode(',',$data);
+                                                            $client_job=$data[0];
+                                                            $contact_person=$data[1];
+                                                            $branch_name=$data[2];
+                                                            $client_address=$client_data->address;
+                                                        else:
+                                                            $client_job='';
+                                                            $contact_person='';
+                                                            $branch_name='';
+                                                            $client_address='';
+                                                        endif;
+                                                        ?>
+
+                                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                            <label class="sf-label"><a href="#" onclick="ClientJobDetail('sales/addClientJobAjax','<?= $m ?>')" class=""> Client Job: </a>
+                                                                <span class="rflabelsteric"><strong>*</strong></span></label>
+                                                            <select style="width: 100%" class="form-control  select2" name="client_job" id="client_job" >
+                                                                <option value="">---Select---</option>
+                                                                @foreach(CommonHelper::get_all_client_job() as $row)
+                                                                    <option value="{{$row->id}}" <?php if($JobOrder->client_job == $row->id){echo "selected";}?>>{{ucwords($row->client_job)}}</option>
+                                                                @endforeach
+                                                            </select>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                                <input type="hidden" name="CompanyId" id="CompanyId" value="<?php  echo Input::get('m');?>">
+                                                <div class="row">
+                                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+
+
+                                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                            <label class="sf-label">Client Address: <span class="rflabelsteric"><strong>*</strong></span></label>
+                                                            <textarea class="form-control requiredField"   name="client_address" id="client_address" style="resize: none;">{{$JobOrder->client_address}}</textarea>
+                                                        </div>
+                                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                            <label class="sf-label">Job Location: <span class="rflabelsteric"><strong>*</strong></span></label>
+                                                            <textarea autofocus type="text" class="form-control requiredField" name="job_location" id="job_location"  style="resize: none;">{{$JobOrder->job_location}}</textarea>
+                                                        </div>
+
+
+                                                        {{--<div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">--}}
+                                                        {{--<label class="sf-label">Inovice No: <span class="rflabelsteric"><strong>*</strong></span></label>--}}
+                                                        {{--<input autofocus type="text" class="form-control requiredField" placeholder="Ref / Bill No" name="invoice_no" id="invoice_no" value="" />--}}
+                                                        {{--</div>--}}
+                                                        {{--<div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">--}}
+                                                        {{--<label class="sf-label">Completion Date.</label>--}}
+                                                        {{--<span class="rflabelsteric"><strong>*</strong></span>--}}
+                                                        {{--<input type="date" class="form-control requiredField"  name="completion_date" id="completion_date"  />--}}
+                                                        {{--</div>--}}
+                                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                            <label class="sf-label">Contact Number: <span class="rflabelsteric"><strong>*</strong></span></label>
+                                                            <input autofocus type="text" class="form-control requiredField" name="contact_no" id="contact_no" value="<?php echo $JobOrder->contact_no?>" />
+                                                        </div>
+
+                                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                            <label class="sf-label">Approval Date <span class="rflabelsteric"><strong>*</strong></span></label>
+                                                            <input type="date" class="form-control requiredField"  placeholder="" name="approval_date" id="approval_date" value="<?php echo $JobOrder->approval_date ?>" />
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+
+                                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                            <label class="sf-label">Contact Person: <span class="rflabelsteric"><strong>*</strong></span></label>
+                                                            <input autofocus type="text" class="form-control requiredField" name="contact_person" id="contact_person" value="{{$JobOrder->contact_person}}" />
+                                                        </div>
+
+                                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                            <label class="sf-label">Ordered By: <span class="rflabelsteric"><strong>*</strong></span></label>
+                                                            <input type="text" class="form-control requiredField" placeholder="Ref / Bill No" name="ordered_by" id="ordered_by" value="<?php echo $JobOrder->ordered_by?>" />
+                                                        </div>
+
+                                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                            <label class="sf-label">Address: <span class="rflabelsteric"><strong>*</strong></span></label>
+                                                            <textarea autofocus type="text" class="form-control requiredField" name="address" id="address" value="" style="resize: none"><?php echo $JobOrder->address?></textarea>
+                                                        </div>
+                                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                            <label class="sf-label">Job Description: <span class="rflabelsteric"><strong>*</strong></span></label>
+                                                            <textarea class="form-control requiredField"  name="job_description" id="job_description" style="resize: none"><?php echo $JobOrder->job_description?></textarea>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+
+
+
+                                                <div class="row">
+                                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+
+
+                                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                            <label class="sf-label">Date due.</label>
+                                                            <span class="rflabelsteric"><strong>*</strong></span>
+                                                            <input type="date" class="form-control requiredField" name="due_date" id="due_date" value="<?php echo $JobOrder->due_date ?>" />
+                                                        </div>
+                                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+
+                                                            <label class="sf-label">Region <span class="rflabelsteric"><strong>*</strong></span></label>
+
+                                                            @if ($type==0):
+                                                            <select class="form-control select2" id="region_id" name="region_id">
+                                                                <option>Select</option>
+                                                                @foreach(CommonHelper::get_all_regions() as $row)
+                                                                    <option value="{{$row->id}}" <?php if($JobOrder->region_id == $row->id){echo "selected";}?>>{{$row->region_name}}</option>
+                                                                @endforeach
+
+                                                            </select>
+                                                            @else
+                                                                <?php  $region_data=CommonHelper::get_rgion_name_by_id($JobOrder->region_id);
+                                                                $region_name=$region_data->region_name;
+                                                                ?>
+                                                                <input type="hidden" name="region_id" value="{{$JobOrder->region_id}}"/>
+                                                                <input readonly type="text" name="region" id="region" value="{{$region_name}}" class="form-control">
+                                                            @endif
+
+                                                        </div>
+                                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                            <label class="sf-label">Installed by</label>
+                                                            <span class="rflabelsteric"><strong>*</strong></span>
+                                                            <input type="text" class="form-control requiredField" name="installed" id="installed" value="<?php echo $JobOrder->installed;?>" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+
+                                                <input type="hidden" name="m" id="m" value="{{Input::get('m')}}">
+
+
+
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="lineHeight">&nbsp;</div>
+                    </div>
+                    <div class="lineHeight">&nbsp;</div>
+                    <h4 style="text-align: center">Job Detail</h4>
+
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <div  class="table-responsive">
+                                <div  class="addMoreDemandsDetailRows_1" id="addMoreDemandsDetailRows_1">
+                                    @if($type==0 || $type==1)
+                                        <table  id="" class="table table-bordered">
+                                            <thead>
+                                            <tr>
+                                                <th style="width: 50px" class="text-center">Sr No <span class="rflabelsteric"><strong>*</strong></span></th>
+                                                <th style="width: 100px" class="text-center">Product <span class="rflabelsteric"><strong>*</strong></span></th>
+                                                <th style="width: 100px" class="text-center">Type <span class="rflabelsteric"><strong>*</strong></span></th>
+                                                <th style="width: 100px" class="text-center">Uom <span class="rflabelsteric"><strong>*</strong></span></th>
+                                                <th style="width: 200px;" class="text-center">Width. <span class="rflabelsteric"><strong>*</strong></span></th>
+                                                <th style="width: 200px;" class="text-center">Height. <span class="rflabelsteric"><strong>*</strong></span></th>
+                                                <th style="width: 200px;" class="text-center">Depth. <span class="rflabelsteric"><strong>*</strong></span></th>
+                                                <th style="width: 150px;" class="text-center" style="">Quantity <span class="rflabelsteric"><strong>*</strong></span></th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <?php $counter=1; ?>
+
+                                            @foreach($JobOrderData as $Fil)
+
+                                                <tr id="removeDemandsRows{{ $counter }}">
+                                                <input type="hidden" name="demandDataSection_1[]" class="form-control requiredField" id="demandDataSection_1" value="{{$counter}}" />
+                                                <input type="hidden" name="job_order_data_id_{{$counter}}" value="{{$Fil->job_order_data_id}}"/>
+                                                <input type="hidden" name="q_data_id_1_{{$counter}}" value="{{$Fil->quotation_data_id}}"/>
+                                                <input type="hidden" name="survery_data_id{{$counter}}" value="{{$Fil->survery_data_id}}"/>
+
+                                                    <td>
+                                                        <?php echo  $counter;?>
+                                                    </td>
+                                                    <td>
+                                                        <select style="width: 100%;"  class="form-control requiredField select2"  id="product_1_<?php echo $counter?>" name="product_1_<?php echo $counter?>" onchange="">
+                                                            <option value="">---Select---</option>
+                                                            <?php foreach(CommonHelper::get_all_products() as $row): ?>
+                                                            <option value="<?= $row->product_id ?>" <?php if($Fil->product == $row->product_id){echo "selected";}?>> <?= ucwords($row->p_name) ?> </option>
+                                                            <?php endforeach; ?>
+                                                        </select>
+                                                    </td>
+
+                                                    <td>
+                                                        <select style="width: 100%;"  class="form-control requiredField select2"  id="type_1_<?php echo $counter?>" name="type_1_<?php echo $counter?>" onchange="">
+                                                            <option value="">---Select---</option>
+                                                            <?php foreach(CommonHelper::get_all_type() as $row): ?>
+                                                            <option value="<?= $row->type_id ?>" <?php if($Fil->type_id == $row->type_id){echo "selected";}?>> <?= ucwords($row->name) ?> </option>
+                                                            <?php endforeach; ?>
+                                                        </select>
+                                                    </td>
+
+                                                    <td>
+                                                        <select style="width: 100%;"  class="form-control requiredField select2"  id="uom_1_<?php echo $counter?>" name="uom_1_<?php echo $counter?>" onchange="">
+                                                            <option value="">---Select---</option>
+                                                            <?php foreach($uom as $fil): ?>
+                                                            <option value='<?= $fil->id ?>' <?php if($Fil->uom_id == $fil->id){echo "selected";}?>> <?= ucwords($fil->uom_name) ?> </option>
+                                                            <?php endforeach; ?>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" name="width_1_<?php echo $counter?>" id="width_1_<?php echo $counter?>" class="form-control requiredField" value="<?php echo $Fil->width?>"/>
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" name="height_1_<?php echo $counter?>" id="height_1_<?php echo $counter?>" class="form-control requiredField" value="<?php echo $Fil->height?>"/>
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" name="depth_1_<?php echo $counter?>" id="depth_1_<?php echo $counter?>" class="form-control requiredField" value="<?php echo $Fil->depth?>" />
+                                                    </td>
+                                                    <td>
+                                                        <input type="number" step="0.01" name="qty_1_<?php echo $counter?>" id="qty_1_<?php echo $counter?>" class="form-control qty requiredField" value="<?php echo $Fil->quantity?>" />
+                                                    </td>
+                                                </tr>
+
+                                                <tr id="removeDemandsRowsdes{{ $counter }}">
+                                                    <td colspan="7"><label class="sf-label">Description</label>
+                                                        <span class="rflabelsteric"><strong>*</strong></span>
+                                                        <textarea name="description_1_<?php echo $counter?>" id="description_1_<?php echo $counter?>" rows="3" cols="50" style="resize:none;" class="form-control requiredField"><?php echo $Fil->description?></textarea>
+                                                    </td>
+                                                    <td> <input type="button" onclick="removeDemandDelete('<?php echo $Fil->job_order_data_id ?>','<?php echo $counter ?>','<?php echo $duplicate ?>')" class="btn btn-sm btn-danger" name="Remove" value="Remove" class="text-center"> </td>
+                                                </tr>
+                                                <?php $counter++; ?>
+                                            @endforeach
+
+
+                                            </tbody>
+                                        </table>
+                                    @else
+                                        <?php $counter=1; ?>
+
+                                    @endif
+
+
+                                    <div class="lineHeight">&nbsp;</div>
+
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-right">
+                                        <input type="button" class="btn btn-sm btn-primary" onclick="addMoreDemandsDetailRows('1')" value="Add More Demand's Rows" />
+                                    </div>
+                                </div>
+                                <div class="lineHeight">&nbsp;</div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12"></div>
+                        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12"></div>
+                        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                            <div class="panel panel-default" style="border: solid 1px #ccc;">
+                                <div class="panel-heading">Attachment Art Work</div>
+                                   <?php $ImgCounter=0; ?>
+                                @if($duplicate==1)
+
+                                    <div class="panel-body">
+                                        <input type="hidden" name="ImageCounter[]" value="1" />
+                                        <div class="addMoreImagesRows_1" id="addMoreImagesRows_1">
+                                            <label for="imageInput">SELECT IMAGE</label>
+                                            <input data-preview="#preview" name="input_img_1" type="file" id="imageInput" class="form-control">
+                                        </div>
+                                    </div>
+
+                                @else
+                                <div class="panel-body">
+
+                                    <div class="addMoreImagesRows_1" id="addMoreImagesRows_1">
+                                        <?php
+                                        $ImgCounter = 0;
+                                        foreach($JobOrderDocument as $val):
+                                        $ImgCounter++;
+                                        ?>
+                                        <div id="removeimage<?php echo $ImgCounter?>">
+                                            <input type="hidden" name="ImageCounter[]" value="<?php echo $ImgCounter?>" />
+                                            <label for="imageInput">SELECT IMAGE</label>
+                                            <input data-preview="#preview" name="input_img_<?php echo $ImgCounter?>" type="file" id="imageInput" class="form-control">
+                                            <input type="hidden" name="exist_img_<?php echo $ImgCounter?>" value="<?php echo $val->image_file; ?>" >
+                                            <img src="<?php echo url('/').'/storage/app/'.$val->image_file; ?>" width="100px" height="100px" class="css-class" alt="alt text">
+                                            <br><br>
+                                        </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                                    @endif
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-right">
+                            <input type="button" class="btn btn-sm btn-primary" onclick="addMoreImagesRows('1')" value="Add More Image" />
+                            <input type="button" onclick="removeImageRows()" class="btn btn-sm btn-danger" name="Remove" value="Remove Image">
+
+                        </div>
+                    </div>
+
+                    <div class="demandsSection"></div>
+
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center">
+
+                            {{ Form::submit('Submit', ['class' => 'btn btn-success']) }}
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="checkbox" name="estimate" value="1">
+                            <label for="">Skip Estimate Edit</label>
+                        </div>
+                    </div>
+                    <?php echo Form::close();?>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+    <script type="text/javascript">
+        //  var type='{{$type}}';
+        $( document ).ready(function() {
+            GetBranch();
+
+//        if (type==0)
+            //  {
+            //       addMoreDemandsDetailRows(1);
+            //  }
+           // alert('{{$counter-1}}');
+          //  $('#demandDataSection_1').val('{ {$counter-1}}');
+            $(".btn-success").click(function(e){
+                jqueryValidationCustom();
+                if(validate == 0){
+                    $('#BtnSubmit').css('display','none');
+                    //return false;
+                }else{
+                    return false;
+                }
+            });
+        });
+
+        function removeDemandDelete(id,counter,duplicate)
+        {
+            //alert(counter);
+            if(confirm("DO YOU WANT TO DELETE THIS ROW")) {
+                if (duplicate == 0) {
+                    $.ajax({
+                        url: '<?php echo url('/')?>/pmfal/deleteJobOrderData',
+                        type: "GET",
+                        data: {id: id},
+                        success: function (data) {
+                            if (data == 2) {
+                                $("#removeDemandsRows" + counter).remove();
+                                $("#removeDemandsRowsdes" + counter).remove();
+                            }
+                            else {
+                                if (confirm("If You Delete This ESTIMATE also will be Delete")) {
+                                    $.ajax({
+                                        url: '<?php echo url('/')?>/pmfal/deleteJobOrderAndEstimate',
+                                        type: "GET",
+                                        data: {id: id},
+                                        success: function (data) {
+                                            $("#removeDemandsRows" + counter).remove();
+                                            $("#removeDemandsRowsdes" + counter).remove();
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    });
+                }
+                else {
+                    //alert(counter);
+                    $("#removeDemandsRows" + counter).remove();
+                    $("#removeDemandsRowsdes" + counter).remove();
+                }
+            }
+        }
+
+
+        y='<?php echo $ImgCounter?>';
+        function addMoreImagesRows(){
+            y++;
+            $('.addMoreImagesRows_1').append('<div id="removeimage'+y+'">'
+                    +'<input type="hidden" name="ImageCounter[]" value="'+y+'" />'
+                    +'<label for="imageInput">SELECT IMAGE</label>'
+                    +'<input data-preview="#preview" name="input_img_'+y+'" type="file" id="imageInput" class="form-control">'
+                    +'</div>');
+        }
+
+        function removeImageRows(){
+            if (y > 1)
+            {
+                $('#removeimage'+y).remove();
+            }
+            y--;
+        }
+
+        $("#JobOrderFormm").submit(function(event){
+            event.preventDefault(); //prevent default action
+            var post_url = $(this).attr("action"); //get form action url
+            var request_method = $(this).attr("method"); //get form GET/POST method
+            var form_data = $(this).serialize(); //Encode form elements for submission
+
+            $.ajax({
+                url : post_url,
+                type: request_method,
+                data : form_data,
+                beforeSend: function() {
+                    $('#DirectJobOrderArea').css('display','none');
+                    $('#job_order_next_step').html('<div class="row"><div class="col-lg-12 col-md-12 col-sm-12 col-xs-12"><div class="loader"></div></div></div>');
+
+
+                },
+            }).done(function(response){ //
+
+
+                $("#job_order_next_step").html(response);
+            });
+        });
+
+
+
+        function ChangeForm(Value)
+        {
+            if(Value == 1)
+            {
+                $('#DirectJobOrder').css('display','block');
+            }
+            else{
+                $('#DirectJobOrder').css('display','none');
+            }
+//                $('#element').click(function() {
+//                    if($('#radio_button').is(':checked')) { alert("it's checked"); }
+//                });
+        }
+
+        $('.select2').select2();
+
+        $('#client_name').on('change', function() {
+            id = this.value;
+            var m = $('#m').val();
+            if(id!=''){
+                $.ajax({
+                    url: '<?php echo url('/')?>/pmfal/ClientInfo',
+                    type: "GET",
+                    data: {id: id, m: m},
+                    success: function (data) {
+                        //alert("Successfully requested address");
+                        $("#client_address").val(data);
+
+                    }
+                });
+            }
+        });
+
+        var x = '{{$counter-1}}';
+
+        function addMoreDemandsDetailRows(id){
+
+            x++;
+
+            //alert(id+' ---- '+x);
+
+            $('.addMoreDemandsDetailRows_' + id + '').append('<table  id="removeDemandsRows_1_'+x+'" class="table table-bordered  removeDemandsRows_1_'+x+'">'+
+                    "<thead>"+
+                    '<tr>'+
+                    '<th style="width: 50px" class="text-center">Sr No <span class="rflabelsteric"><strong>*</strong></span></th>'+
+                    '<th style="width: 100px" class="text-center">Product <span class="rflabelsteric"><strong>*</strong></span></th>'+
+                    '<th style="width: 100px" class="text-center">Type <span class="rflabelsteric"><strong>*</strong></span></th>'+
+                    '<th style="width: 100px" class="text-center">Uom <span class="rflabelsteric"><strong>*</strong></span></th>'+
+                    '<th style="width: 200px;" class="text-center">Width. <span class="rflabelsteric"><strong>*</strong></span></th>'+
+                    '<th style="width: 200px;" class="text-center">Height. <span class="rflabelsteric"><strong>*</strong></span></th>'+
+                    '<th style="width: 200px;" class="text-center">Depth. <span class="rflabelsteric"><strong>*</strong></span></th>'+
+                    '<th style="width: 150px;" class="text-center" style="">Quantity <span class="rflabelsteric"><strong>*</strong></span></th>'+
+                    '</tr>'+
+                    '</thead>'+
+                    '<tbody class="" id="">'+
+                    '<tr id="removeDemandsRows'+x+'">'+
+                    '<input type="hidden" name="demandDataSection_1[]" class="form-control requiredField" id="demandDataSection_1" value="'+x+'" />'+
+                    '<input type="hidden" name="q_data_id_1_'+x+'" value=""/>'+
+                    '<input type="hidden" name="survery_data_id'+x+'" value="" />'+
+                    '<td>'+
+                    +x+
+                    '       </td>'+
+                    '<td>'+
+                    '<select style="width: 100%;"  class="form-control requiredField select2"  id="product_1_'+x+'" name="product_1_'+x+'" onchange="">'+
+                    '<option value="">---Select---</option>'+
+                    '<?php foreach(CommonHelper::get_all_products() as $row): ?>'+
+                    '<option value="<?= $row->product_id ?>"> <?= ucwords($row->p_name) ?> </option>'+
+                    '<?php endforeach; ?>'+
+                    '</select>'+
+                    '</td>'+
+
+                    '<td>'+
+                    '<select style="width: 100%;"  class="form-control requiredField select2"  id="type_1_'+x+'" name="type_1_'+x+'" onchange="">'+
+                    '<option value="">---Select---</option>'+
+                    '<?php foreach(CommonHelper::get_all_type() as $row): ?>'+
+                    '<option value="<?= $row->type_id ?>"> <?= ucwords($row->name) ?> </option>'+
+                    '<?php endforeach; ?>'+
+                    '</select>'+
+                    '</td>'+
+
+                    "<td>"+
+                    '<select style="width: 100%;"  class="form-control requiredField select2"  id="uom_1_'+x+'" name="uom_1_'+x+'" onchange="">'+
+                    '<option value="">---Select---</option>'+
+                    '<?php foreach($uom as $fil): ?>'+
+                    "<option value='<?= $fil->id ?>'> <?= ucwords($fil->uom_name) ?> </option>"+
+                    '<?php endforeach; ?>'+
+                    '</select>'+
+                    '</td>'+
+                    '<td>'+
+                    '<input type="text" name="width_1_'+x+'" id="width_1_'+x+'" class="form-control requiredField" />'+
+                    '</td>'+
+                    '<td>'+
+                    '<input type="text" name="height_1_'+x+'" id="height_1_'+x+'" class="form-control requiredField" />'+
+                    '</td>'+
+                    '<td>'+
+                    '<input type="text" name="depth_1_'+x+'" id="depth_1_'+x+'" class="form-control requiredField" />'+
+                    '</td>'+
+                    '<td>'+
+                    '<input type="number" step="0.01" name="qty_1_'+x+'" id="qty_1_'+x+'" class="form-control qty requiredField" />'+
+                    '</td>'+
+                    '</tr>'+
+
+                    '<tr id="removeDemandsRowsdes'+x+'">'+
+                    '<td colspan="7"><label class="sf-label">Description</label>'+
+                    '<span class="rflabelsteric"><strong>*</strong></span>'+
+                    '<textarea name="description_1_'+x+'" id="description_1_'+x+'" rows="3" cols="50" style="resize:none;" class="form-control requiredField"></textarea>'+
+                    '</td>'+
+                    '<td>'+
+                    '<input type="button" onclick="removeDemandDeleteRowsAjax('+x+')" class="btn btn-sm btn-danger" name="Remove" value="Remove" class="text-center">'+
+                    '</td>'+
+                    '</tr>'+
+                    '</tbody>'+
+                    '</table>'+
+                    '<div class="lineHeight">&nbsp;</div>');
+
+            $('#product_1_'+x).select2();
+            $('#type_1_'+x).select2();
+            $('#uom_1_'+x).select2();
+        }
+
+        function removeDemandDeleteRowsAjax(counter)
+        {
+            alert(counter);
+            $("#removeDemandsRows_1_" + counter).remove();
+        }
+
+        function removeDemandsRows(){
+
+            var id=1;
+
+            if (x > 1)
+            {
+                //  var elem = document.getElementById('removeDemandsRows_'+id+'_'+x+'');
+                //   elem.parentNode.removeChild(elem);
+
+                $('.removeDemandsRows_'+id+'_'+x+'').remove();
+
+               // $('.removeDemandsRows_dept_'+id+'_'+x+'').remove();
+
+                x--;
+                net_amount_func();
+            }
+        }
+
+        function ClientJobDetail(url,m){
+            $.ajax({
+                url: '<?php echo url('/')?>/'+url+'',
+                type: "GET",
+                data: {m:m},
+                success:function(data) {
+                    //alert(data);
+                    jQuery('#showDetailModelOneParamerter').modal('show', {backdrop: 'false'});
+                    //jQuery('#showMasterTableEditModel').modal('show', {backdrop: 'true'});
+                    //jQuery('#showDetailModelOneParamerter .modalTitle').html(modalName);
+                    jQuery('#showDetailModelOneParamerter .modal-body').html('<div class="row"><div class="col-lg-12 col-md-12 col-sm-12 col-xs-12"><div class="loader"></div></div></div>');
+                    jQuery('#showDetailModelOneParamerter .modal-body').html(data);
+                }
+            });
+        }
+
+    </script>
+
+    <script>
+        function AddClientRequest(){
+            ClientJob = $("#ClientJob").val();
+            m = <?= $_GET['m']; ?>;
+            url='sad/addClientJobGET';
+            $.ajax({
+                url: '<?php echo url('/')?>/'+url+'',
+                type: "GET",
+                data: {ClientJob:ClientJob, m: m},
+                success:function(data) {
+                    setTimeout(function(){
+                        $('#showDetailModelOneParamerter').modal("hide");
+                    }, 500);
+                    var res = data.split(",");
+                    // alert(res[0]+' '+res[1]);
+                    $('#client_job').append('<option value="'+res[0]+'" selected>'+res[1]+'</option>');
+                }
+            });
+        }
+
+        function GetBranch()
+        {
+            var ClientName = $('#client_name').val();
+
+            var Selected = '<?php echo $JobOrder->branch_id?>';
+        
+            if(ClientName !="")
+            {
+                $.ajax({
+                    url: '<?php echo url('/')?>/pmfal/GetBranch',
+                    type: "GET",
+                    data: {ClientName: ClientName,Selected:Selected},
+                    success: function (data) {
+                        //alert("Successfully requested address");
+                        $("#BranchId").html(data);
+
+                    }
+                });
+            }
+
+
+        }
+
+        function branchDetail(url,m){
+            $.ajax({
+                url: '<?php echo url('/')?>/'+url+'',
+                type: "GET",
+                data: {m:m},
+                success:function(data) {
+                    //alert(data);
+                    jQuery('#showDetailModelOneParamerter').modal('show', {backdrop: 'false'});
+                    //jQuery('#showMasterTableEditModel').modal('show', {backdrop: 'true'});
+                    //jQuery('#showDetailModelOneParamerter .modalTitle').html(modalName);
+                    jQuery('#showDetailModelOneParamerter .modal-body').html('<div class="row"><div class="col-lg-12 col-md-12 col-sm-12 col-xs-12"><div class="loader"></div></div></div>');
+                    jQuery('#showDetailModelOneParamerter .modal-body').html(data);
+                }
+            });
+        }
+
+        function AddBranchRequest()
+        {
+
+            var client_id = $("#client_id").val();
+            var branch_name = $("#branch_name").val();
+            var ntn = $("#ntn").val();
+            var strn = $("#strn").val();
+            //var address = $("textarea#address").html();
+            var branch_address = $("#branch_address").val();
+
+            var m = '<?= $_GET['m']?>';
+
+            url='sad/insertBranchAjax';
+            if(client_id == ""){$('#ErrorOne').html('<p class="text-danger">Field Required.</p>'); return false;}
+            else{$('#ErrorOne').html('');}
+            if(branch_name == ""){$('#ErrorTwo').html('<p class="text-danger">Field Required.</p>'); return false;}
+            else{$('#ErrorTwo').html('');}
+            if(ntn == ""){$('#ErrorThree').html('<p class="text-danger">Field Required.</p>'); return false;}
+            else{$('#ErrorThree').html('');}
+            if(strn == ""){$('#ErrorFour').html('<p class="text-danger">Field Required.</p>'); return false;}
+            else{$('#ErrorFour').html('');}
+            if(branch_address == ""){$('#ErrorFive').html('<p class="text-danger">Field Required.</p>'); return false;}
+            else{$('#ErrorFive').html(''); }
+
+            $.ajax({
+                url: '<?php echo url('/')?>/' + url + '',
+                type: "GET",
+                data: {client_id:client_id,branch_name:branch_name,ntn:ntn,strn:strn,address:branch_address},
+                success: function (data) {
+                    setTimeout(function () {
+                        $('#showDetailModelOneParamerter').modal("hide");
+                    }, 500);
+                }
+            });
+        }
+    </script>
+
+    <script src="{{ URL::asset('assets/js/select2/js_tabindex.js') }}"></script>
+@endsection

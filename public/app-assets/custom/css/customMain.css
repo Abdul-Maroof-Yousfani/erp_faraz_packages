@@ -1,0 +1,9 @@
+.clearable{
+    background:url(http://i.imgur.com/z7ZSYjt.png) no-repeat right -10px center;
+}
+.clearable.x{
+    background-position: right 5px center;
+}
+.clearable.onX{
+    cursor:pointer;
+}

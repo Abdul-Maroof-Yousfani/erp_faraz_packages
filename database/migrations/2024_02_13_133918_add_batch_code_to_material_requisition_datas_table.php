@@ -1,0 +1,33 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class AddBatchCodeToMaterialRequisitionDatasTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::connection('mysql2')->table('material_requisition_datas', function (Blueprint $table) {
+            $table->string('batch_code')->nullable()->default('')->after('warehouse_id');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::connection('mysql2')->table('material_requisition_datas', function (Blueprint $table) {
+            $table->dropColumn('batch_code');
+        });
+    }
+}
+

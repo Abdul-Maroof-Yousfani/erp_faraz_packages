@@ -1,0 +1,51 @@
+<?php
+$counter = 1;
+?>
+<div class="table-responsive wrapper">
+    <h5 style="text-align: center" id="h3"></h5>
+    <table class="userlittab table table-bordered table-hover tableFixHead" id="exportList">
+        <thead>
+        <th>S.No</th>
+        <th>Manufacturer Name</th>
+        <th>Action</th>
+        </thead>
+        <tbody>
+        @foreach ($data as $key => $value)
+            <tr>
+                <td>{{ $counter++ }}</td>
+                <td>{{ $value->manufacturer_name }}</td>
+                <td>
+                    <div class="dropdown">
+                        <button class="drop-bt dropdown-toggle"type="button" data-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a onclick="showMasterEditModal('editManufacturerForm','{{ $value->id }}','Edit Manufacturer Form','')" class="edit-modal"><i class="fa-solid fa-pencil"></i> Edit</a>
+                                <a onclick="deleteTableRecord('{{ $value->id }}','assets_manufacturer')" class="delete-modal"><i class="fa-solid fa-trash"></i> Delete</a>
+                            </li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+        @endforeach
+        </tbody>
+    </table>
+</div>
+<script>
+    $(document).ready(function() {
+        var table = $('#exportList').DataTable({
+            "paging": false,
+            "ordering": false,
+            "info": false,
+            "searching": true, // Enable search feature
+            // Add more configurations as needed
+        });
+
+        // Hide the search input
+        $('#exportList_filter').addClass('hidden');
+
+        // Add search functionality
+        $('#searchInput').on('keyup', function () {
+            table.search(this.value).draw();
+        });
+    });
+</script>

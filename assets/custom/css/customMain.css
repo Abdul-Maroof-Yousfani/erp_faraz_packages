@@ -1,0 +1,24 @@
+.clearable{
+    background:url(http://i.imgur.com/z7ZSYjt.png) no-repeat right -10px center;
+}
+.clearable.x{
+    background-position: right 5px center;
+}
+.clearable.onX{
+    cursor:pointer;
+}
+.btn-danger-2 {
+    background-color: #f14d4d; color: white; border-radius: 3px; font-size: 14px;font-style: normal;font-weight: 500;line-height: normal; padding: 8px 23px; border-color: #f14d4d;
+}
+
+.btn-danger-2:hover {
+    background-color: #f14d4d; color: white;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
