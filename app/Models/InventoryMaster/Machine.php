@@ -15,4 +15,5 @@ class Machine extends Model
         'status',
         'username'
     ];
+    
 }
