@@ -12,8 +12,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # STEP 1: SSH Action (Permissions sahi karne ke liye)
-      - name: Pre-deployment Permissions
+      - name: Test SSH Connection
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SFTP_HOST }}
@@ -21,12 +20,10 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            # Folder ensure karein aur purana "www-data" wala masla khatam karein
-            mkdir -p /var/www/farazpack
-            chown -R root:www-data /var/www/farazpack
-            chmod -R 775 /var/www/farazpack
+            echo "Bhai, Connection Chal Gya!"
+            whoami
+            ls -ld /var/www/farazpack
 
-      # STEP 2: SCP Action (Files upload karne ke liye)
       - name: Copy files via SFTP
         uses: appleboy/scp-action@master
         with:
@@ -38,16 +35,3 @@ jobs:
           target: "/var/www/farazpack/"
           strip_components: 0
           tar_tmp_path: "/tmp"
-
-      # STEP 3: Post-deployment (Laravel Fixes)
-      - name: Post-deployment Setup
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SFTP_HOST }}
-          username: ${{ secrets.SFTPR_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /var/www/farazpack
-            # Web server ko ijazat dein storage dharne ki
-            chown -R root:www-data .
-            chmod -R 775 storage bootstrap/cache
