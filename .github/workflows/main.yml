@@ -12,7 +12,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 1. Files upload karna (Khali folder me saari files chali jayengi)
+      # STEP 1: Pehle rasta saaf karein taake SCP ko "Permission Denied" na aye
+      - name: Pre-deployment Permissions
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          password: ${{ secrets.SFTP_PASS }}
+          script: |
+            # Taake naye upload hone wali files ko permission ka masla na ho
+            sudo chown -R ${{ secrets.SFTP_USER }}:www-data /var/www/farazpack
+            sudo chmod -R 775 /var/www/farazpack
+
+      # STEP 2: Files upload karna
       - name: Copy files via SFTP
         uses: appleboy/scp-action@master
         with:
@@ -23,38 +35,18 @@ jobs:
           source: "."
           target: "/var/www/farazpack/"
           strip_components: 0
+          # overwrite: true  # Is se purani files replace ho jayengi
 
-      
-      # 2. Permissions aur Laravel setup
-      - name: Execute SSH commands
+      # STEP 3: Final Ownership (Taake Laravel sahi chale)
+      - name: Post-deployment Setup
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SFTP_HOST }}
           username: ${{ secrets.SFTP_USER }}
           password: ${{ secrets.SFTP_PASS }}
           script: |
-            sudo chown -R ${{ secrets.SFTP_USER }}:www-data /var/www/farazpack
             cd /var/www/farazpack
-            
-            # Directory structure create karna (Sudo ki zaroorat nahi)
-            mkdir -p storage/framework/{sessions,views,cache}
-            mkdir -p bootstrap/cache
-
-            # Permissions set karna (Sirf un folders par jo user owned hain)
-            find . -type d -exec chmod 775 {} \;
-            find . -type f -exec chmod 664 {} \;
-            chmod -R 775 storage bootstrap/cache
-
-            # Laravel Optimization
-            # Agar composer path me nahi hai to full path use karein: /usr/local/bin/composer
-            php7.4 /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
-
-            # Cache clear (ye tabhi chalega jab .env file server par maujood ho)
-            if [ -f .env ]; then
-                php7.4 artisan config:cache
-                php7.4 artisan route:cache
-                php7.4 artisan view:cache
-                # php artisan migrate --force
-            else
-                echo ".env file not found, skipping artisan commands"
-            fi
+            # Ownership sahi karein
+            sudo chown -R ${{ secrets.SFTP_USER }}:www-data .
+            # Laravel folders ko write permission dein
+            sudo chmod -R 775 storage bootstrap/cache
