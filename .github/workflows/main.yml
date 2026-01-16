@@ -12,41 +12,48 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # STEP 1: Pehle rasta saaf karein taake SCP ko "Permission Denied" na aye
+      # STEP 1: Pre-deployment Permissions (SSH Key use ho rahi hai)
       - name: Pre-deployment Permissions
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SFTP_HOST }}
           username: ${{ secrets.SFTP_USER }}
-          password: ${{ secrets.SFTP_PASS }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          # Speed barhane ke liye DNS check bypass
+          options: "-o GSSAPIAuthentication=no -o UseDNS=no"
           script: |
-            # Taake naye upload hone wali files ko permission ka masla na ho
+            # Sudo error se bachne ke liye pehle folder ko accessible banayein
             sudo chown -R ${{ secrets.SFTP_USER }}:www-data /var/www/farazpack
             sudo chmod -R 775 /var/www/farazpack
 
-      # STEP 2: Files upload karna
+      # STEP 2: Files upload karna (SFTP with Key)
       - name: Copy files via SFTP
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SFTP_HOST }}
           username: ${{ secrets.SFTP_USER }}
-          password: ${{ secrets.SFTP_PASS }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           source: "."
           target: "/var/www/farazpack/"
           strip_components: 0
-          # overwrite: true  # Is se purani files replace ho jayengi
+          tar_tmp_path: "/tmp"
+          # Purani files ka chakkar khatam karne ke liye
+          rm: false 
 
-      # STEP 3: Final Ownership (Taake Laravel sahi chale)
+      # STEP 3: Final Setup & Cleanup
       - name: Post-deployment Setup
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SFTP_HOST }}
           username: ${{ secrets.SFTP_USER }}
-          password: ${{ secrets.SFTP_PASS }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          options: "-o GSSAPIAuthentication=no -o UseDNS=no"
           script: |
             cd /var/www/farazpack
-            # Ownership sahi karein
+            # Ownership aur Permissions Laravel ke mutabiq
             sudo chown -R ${{ secrets.SFTP_USER }}:www-data .
-            # Laravel folders ko write permission dein
             sudo chmod -R 775 storage bootstrap/cache
+            # Laravel Cache Refresh (Optional: Agar aapke pas Artisan commands hain)
+            # php artisan optimize:clear
