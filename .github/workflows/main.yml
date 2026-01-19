@@ -7,23 +7,11 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Test SSH Connection
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SFTP_HOST }}
-          username: ${{ secrets.SFTPR_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          script: |
-            echo "Bhai, Connection Chal Gya!"
-            whoami
-            ls -ld /var/www/farazpack
-
+      # 1. Files upload karna
       - name: Copy files via SFTP
         uses: appleboy/scp-action@master
         with:
@@ -35,3 +23,40 @@ jobs:
           target: "/var/www/farazpack/"
           strip_components: 0
           tar_tmp_path: "/tmp"
+
+      # 2. Permissions Fix aur Laravel Setup
+      - name: Post-Deployment Execution
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTPR_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /var/www/farazpack
+            
+            # Basic Folder/File permissions
+            find . -type d -exec chmod 775 {} \;
+            find . -type f -exec chmod 664 {} \;
+            
+            # Ownership ensure karna (Sudo use karein agar deployer owner nahi hai)
+            # sudo chown -R ${{ secrets.SFTPR_USER }}:www-data .
+
+            # ACL Setup: Taake www-data (Laravel) logs aur cache likh sakay
+            # Hum mojooda files aur aane wali (default) files dono pe set kar rahe hain
+            sudo setfacl -R -m u:www-data:rwx -m u:${{ secrets.SFTPR_USER }}:rwx storage bootstrap/cache
+            sudo setfacl -Rd -m u:www-data:rwx -m u:${{ secrets.SFTPR_USER }}:rwx storage bootstrap/cache
+            
+            # Laravel Optimization
+            if [ -f composer.json ]; then
+                composer install --no-dev --optimize-autoloader --no-interaction
+            fi
+
+            if [ -f .env ]; then
+                php7.4 artisan config:clear
+                php7.4 artisan route:clear
+                php7.4 artisan view:clear
+                php7.4 artisan cache:clear
+            fi
+            
+            echo "Bhai, Deployment aur Permissions Done!"
