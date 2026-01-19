@@ -25,18 +25,18 @@ $grn_data =  DB::Connection('mysql2')->table('grn_data')->where('status',1)->whe
 ?>
 <div class="row">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-right">
-        @if ($approve==true)
-                @if($grn_status==1)
-                <button  onclick="approve_grn({{$row->id}}); btnDis()" id="BtnApproved"  type="button" class="btn btn-success btn-xs hide">Approve</button>
-                @endif
-        @endif
+        <?php if($approve==true): ?>
+                <?php if($grn_status==1): ?>
+                <button  onclick="approve_grn(<?php echo e($row->id); ?>); btnDis()" id="BtnApproved"  type="button" class="btn btn-success btn-xs hide">Approve</button>
+                <?php endif; ?>
+        <?php endif; ?>
                     <?php CommonHelper::displayPrintButtonInView('printGoodsReceiptNoteVoucherDetail','LinkHide','1');?>
             </div>
     </div>
 </div>
 <div style="line-height:5px;">&nbsp;</div>
-<form method="post" action="{{ url('/pdc/qc_submit') }}">
-    <input type="hidden" name="grn_id" value="{{ $row->id }}"/>
+<form method="post" action="<?php echo e(url('/pdc/qc_submit')); ?>">
+    <input type="hidden" name="grn_id" value="<?php echo e($row->id); ?>"/>
 <div class="row">
     <?php if($demandType == 2){?>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-right">
@@ -46,7 +46,7 @@ $grn_data =  DB::Connection('mysql2')->table('grn_data')->where('status',1)->whe
     <div style="line-height:5px;">&nbsp;</div>
     <?php }?>
 
-    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
     <input type="hidden" name="pageType" value="<?php echo $_GET['pageType']?>">
     <input type="hidden" name="parentCode" value="<?php echo $_GET['parentCode']?>">
     <input type="hidden" name="grnNo" value="<?php echo $id; ?>">
@@ -166,18 +166,18 @@ $grn_data =  DB::Connection('mysql2')->table('grn_data')->where('status',1)->whe
 
                             <?php $count=1; ?>
                             <tbody>
-                             @foreach ($grn_data as $key => $row)
+                             <?php $__currentLoopData = $grn_data; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $row): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                              <tr class="text-center">
-                                 <td>{{ $count++ }}</td>
-                                 <td>{{ CommonHelper::get_item_name($row->sub_item_id) }}</td>
-                                 <td>{{ CommonHelper::get_uom($row->sub_item_id) }}</td>
-                                 <td>{{ number_format($row->purchase_recived_qty,2) }}</td>
-                                 <td><input onkeyup="check_qty('{{ $row->purchase_recived_qty }}','{{ $count }}')" onblur="{{ $row->purchase_recived_qty }}" class="form-control requiredField" readonly type="number" name="reject_qty[]" id="reject_qty{{ $count }}" step="0.001" value="{{ 0 }}"></td>
-                                 <td><textarea class="form-control" name="remarks[]" id="remarks{{ $count }}"></textarea></td>
-                                 <td><input   onclick="reject_data('{{ $count }}')" class="" type="checkbox" id="checkd{{ $count }}" /> </td>
-                                 <input type="hidden" name="grn_data_id[]" value="{{ $row->id }}"/>
+                                 <td><?php echo e($count++); ?></td>
+                                 <td><?php echo e(CommonHelper::get_item_name($row->sub_item_id)); ?></td>
+                                 <td><?php echo e(CommonHelper::get_uom($row->sub_item_id)); ?></td>
+                                 <td><?php echo e(number_format($row->purchase_recived_qty,2)); ?></td>
+                                 <td><input onkeyup="check_qty('<?php echo e($row->purchase_recived_qty); ?>','<?php echo e($count); ?>')" onblur="<?php echo e($row->purchase_recived_qty); ?>" class="form-control requiredField" readonly type="number" name="reject_qty[]" id="reject_qty<?php echo e($count); ?>" step="0.001" value="<?php echo e(0); ?>"></td>
+                                 <td><textarea class="form-control" name="remarks[]" id="remarks<?php echo e($count); ?>"></textarea></td>
+                                 <td><input   onclick="reject_data('<?php echo e($count); ?>')" class="" type="checkbox" id="checkd<?php echo e($count); ?>" /> </td>
+                                 <input type="hidden" name="grn_data_id[]" value="<?php echo e($row->id); ?>"/>
                              </tr>
-                             @endforeach
+                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
                             </tbody>
                         </table>
