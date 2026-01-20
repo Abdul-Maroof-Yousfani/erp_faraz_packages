@@ -10,6 +10,7 @@ app/storage/
 # Laravel 5 & Lumen specific
 public/storage
 public/hot
+.env
 
 # Laravel 5 & Lumen specific with changed public path
 public_html/storage
@@ -18,7 +19,6 @@ public/app-assets
 public/assets
 
 storage/*.key
-
 /storage/
 storage/framework/cache/data/65/dd/65dd3ab34ce5e81f53d6c823cd41b885b9cfe793
 storage/framework/views
