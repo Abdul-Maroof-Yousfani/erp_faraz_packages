@@ -2930,7 +2930,7 @@ echo "aa"; die;
         ->join(env('DB_DATABASE').'.uom as b','a.uom','=','b.id')
         ->where('a.main_ic_id',$category_id)
         ->where('a.status',1)
-        ->select('a.id','a.sub_ic','a.item_code','b.uom_name','a.sub_ic')
+        ->select('a.id','a.sub_ic','a.item_code','b.uom_name','a.sub_ic', 'a.pack_size')
         ->get();
         return response()->json($data);
     }

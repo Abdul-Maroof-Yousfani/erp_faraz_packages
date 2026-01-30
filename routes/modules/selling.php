@@ -38,6 +38,7 @@ Route::group(['prefix' => 'saleQuotation', 'middleware' => 'mysql2','before' => 
     Route::get('/createSaleQuotation','SaleQuotationController@createSaleQuotation')->name('createSaleQuotation');
     Route::post('saleQuotaionStore','SaleQuotationController@saleQuotaionStore')->name('saleQuotaionStore');
     Route::get('get_item_by_id','SaleQuotationController@get_item_by_id');
+    Route::get('get_item_by_id_p','SaleQuotationController@get_item_by_id_p');
     Route::get('get_quotation_data','SaleQuotationController@get_quotation_data');
     Route::get('addProduct','SaleQuotationController@addProduct');
     Route::get('listSaleQuotation','SaleQuotationController@listSaleQuotation')->name('listSaleQuotation');

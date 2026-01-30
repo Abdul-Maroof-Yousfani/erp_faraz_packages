@@ -78,15 +78,14 @@ if($_GET['pageType']=='viewlist'){
                     <div class="head-text">
                         <h3 class="subHeadingLabelClass" style="text-align: center;">Purchase Order</h3>
                         <h4>
-                            <span style="font-size: 16px">Zahabiya Chemical Industries (Pvt.) Ltd.</span> <br>
-                            Plot #: 186, Sector 24, Korangi Industrial Area, Karachi, <br>
-                            Tel: +92-21-35051890-91, Email: info@zahabiya.com, <br> Web: https://zahabiya.com
-                            NTN: 5356581-6, <br> STRN: 3277876169232
+                            <span style="font-size: 16px">FARAZ PACKAGES</span> <br>
+                            F-98 S.I.T.E KARACHI. <br>
+                            Phone: 0321-2254444, Email: farazpackages@gmail.com
                         </h4>
                     </div>
                 </div>
                
-                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-3">
+                {{-- <div class="col-lg-4 col-md-4 col-sm-4 col-xs-3">
                     <div class="table-responsive">
                         <table class="table sale_older_tab3 table table-bordered sf-table-list" style="width: 100%" >
                             <tbody>
@@ -104,7 +103,7 @@ if($_GET['pageType']=='viewlist'){
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </div> --}}
             </div>
             <?php  $supplier = CommonHelper::getSupplierDetail($row->supplier_id); ?>
             <div style="line-height:5px;">&nbsp;</div>
@@ -134,10 +133,10 @@ if($_GET['pageType']=='viewlist'){
                                     <td>NTN / STRN</td>
                                     <td>{{ $supplier->ntn }}</td>
                                 </tr>
-                                <tr>
+                                {{-- <tr>
                                     <td>Quotation Ref</td>
                                     <td>{{ $quotation_ref->ref_no ?? '' }}</td>
-                                </tr>
+                                </tr> --}}
                             
                                 <!-- <tr>
                                     <td>PR No.</td>
@@ -164,10 +163,10 @@ if($_GET['pageType']=='viewlist'){
                         <div class="table-responsive">
                             <table  class="table sale_older_tab3 table table-bordered sf-table-list">
                                 <tbody>
-                                <tr>
+                                {{-- <tr>
                                     <td style="width:60%;">PR No.</td>
                                     <td style="width:40%;">{{ strtoupper($purchaseRequestDataDetail[0]->demand_no) }}</td>
-                                </tr>
+                                </tr> --}}
                                 <tr>
                                     <td style="width:50%;">PO NO.</td>
                                     <td style="width:50%;">{{ strtoupper($row->purchase_request_no) }}</td>
@@ -178,7 +177,8 @@ if($_GET['pageType']=='viewlist'){
                                 </tr>
                                 <tr>
                                     <td style="width:60%;">Destination</td>
-                                    <td style="width:40%;">{{ $row->destination }}</td>
+                                    <td style="width:40%;">FARAZ PACKAGES (F-98 S.I.T.E KARACHI.)</td>
+                                    {{-- <td style="width:40%;">{{ $row->destination }}</td> --}}
                                 </tr>
                                 <tr>
                                     <td style="width:60%;">Due Date</td>
@@ -190,13 +190,15 @@ if($_GET['pageType']=='viewlist'){
                                         @if($row->terms_of_paym == 1) Advance 
                                         @elseif($row->terms_of_paym == 2) Against Delivery
                                         @elseif($row->terms_of_paym == 3) Credit
+                                        @else
+                                            {{ $row->terms_of_paym }}
                                         @endif
                                     </td>
                                 </tr>
-                                <tr>
+                                {{-- <tr>
                                     <td style="width:60%;">No. of Days</td>
                                     <td style="width:40%;">{{ $row->no_of_days ?? $supplier->no_of_days ?? '' }}</td>
-                                </tr>
+                                </tr> --}}
 
 
                                 <!-- <tr>
@@ -242,15 +244,16 @@ if($_GET['pageType']=='viewlist'){
                             <table  class="table sale_older_tab3 table table-bordered sf-table-list">
                                 <thead>
                                     <tr>
-                                        <th style="text-align: center">S.NO</th>
+                                        {{-- <th style="text-align: center">S.NO</th> --}}
                                         <!-- <th class="text-center">PR NO</th>
                                         <th style="font-size: 13px;" class="text-center">PR  Date </th> -->
 
-                                        <th style="text-align: center">Item Name</th>
-                                        <th style="text-align: center">UOM</th>
-                                        <th style="text-align: center" >Qty</th>
+                                        <th style="text-align: center">Requisitioner Description</th>
+                                        {{-- <th style="text-align: center">UOM</th> --}}
+                                        <th style="text-align: center" >Ship via per kg</th>
+                                        <th style="text-align: center" >Bags</th>
                                         <!-- <th class="text-center hide" >No Of Carton <span class="rflabelsteric"><strong>*</strong></span></th> -->
-                                        <th style="text-align: center">Rate</th>
+                                        <th style="text-align: center">U.Price</th>
                                         <!-- <th class="text-center">Amount(PKR)</th> -->
                                         <!-- <th class="text-center">Amount</th> -->
 
@@ -258,7 +261,7 @@ if($_GET['pageType']=='viewlist'){
                                         <th class="text-center">Discount Amount</th> -->
                                         <th style="text-align: center">Net Amount</th>
                                         <!-- <th class="text-center showw" style="display: none">Amount In PKR</th> -->
-                                        <th style="text-align: center" class="printHide">View</th>
+                                        {{-- <th style="text-align: center" class="printHide">View</th> --}}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -270,7 +273,7 @@ if($_GET['pageType']=='viewlist'){
                                     foreach ($purchaseRequestDataDetail as $row1){
                                     ?>
                                     <tr>
-                                        <td style="text-align: center">{{ $counter++ }}</td>
+                                        {{-- <td style="text-align: center">{{ $counter++ }}</td> --}}
                                         {{--<td class="text-center">< ?php echo strtoupper($row1->demand_no);?></td>--}}
                                         {{--<td class="text-center">< ?php echo  CommonHelper::changeDateFormat($row1->demand_date);?></td>--}}
 
@@ -291,10 +294,10 @@ if($_GET['pageType']=='viewlist'){
                                         $sub_ic_detail= explode(',',$sub_ic_detail)
                                         ?>
 
-                                        <td> <?php echo CommonHelper::get_uom_name($sub_ic_detail[0]);?>
-                                            <input type="hidden" value="<?php echo $row1->sub_item_id?>" id="sub_<?php echo $counter?>">
-                                        </td>
+                                       
                                         <td style="text-align: center"><?php echo $row1->purchase_approve_qty;?></td>
+                                        <td style="text-align: center"><?php echo $row1->bags_qty;?></td>
+
                                         <td class="text-center hide"><?php echo $row1->no_of_carton;?></td>
                                         <td style="text-align: center">{{ $cur }} {{ number_format($row1->rate, 3) }}</td>
                                         <!-- <td class="text-right"><?php echo number_format($row1->rate * $row1->purchase_approve_qty * $row->currency_rate,3);?></td> -->
@@ -302,9 +305,7 @@ if($_GET['pageType']=='viewlist'){
 
                                         <td style="text-align: center">{{ $cur }} {{ number_format($row1->net_amount,3) }}</td>
                                         <td style="display: none"  class="text-right showw"><?php echo number_format($row1->net_amount*$row->currency_rate,3);?></td>
-                                        <td style="text-align: center" class="printHide">
-                                            <input onclick="view_history(<?php echo $counter?>)" type="checkbox" id="view_history<?php echo $counter?>">
-                                        </td>
+                                        
                                     </tr>
                                     <?php
                                             $actual_amount +=  $row1->rate * $row1->purchase_approve_qty;
@@ -315,35 +316,35 @@ if($_GET['pageType']=='viewlist'){
 
                                     <tr>
 
-                                        <td colspan="5">Total</td>
+                                        <td colspan="4">Total</td>
                                         <!-- <td style="background-color: darkgray" class="text-right"  >{{number_format($actual_amount,2)}} ({{$currency}})</td> -->
                                         <td style="text-align: center" >{{ $cur }} {{number_format($total,2)}}</td>
                                         <!-- <td style="background-color: darkgray;display: none" class="text-right showw">{{number_format($total_exchange,2)}}</td> -->
-                                        <td class="printHide"></td>
+                                        {{-- <td class="printHide"></td> --}}
                                     </tr>
 
                                     <tr>
                                         @php
                                             $pkr_sale_tax_amount = ($total_exchange*$row->sales_tax)/100;
                                         @endphp
-                                        <td colspan="5">{{ 'Sales Tax :'. $row->sales_tax.' %' }}</td>
+                                        <td colspan="4">{{ 'Sales Tax :'. $row->sales_tax.' %' }}</td>
                                         <td style="text-align: center">{{ $cur }} {{ number_format($row->sales_tax_amount,2)}}</td>
                                         <!-- <td class="text-right showw" style="display: none" >{{   number_format($pkr_sale_tax_amount,2)}}</td> -->
-                                        <td class="printHide"></td>
+                                        {{-- <td class="printHide"></td> --}}
                                     </tr>
 
                                     <tr>
 
-                                        <td class="text-center" colspan="5">Grand Total</td>
+                                        <td class="text-center" colspan="4">Grand Total</td>
                                         <td style="text-align: center" >{{ $cur }} {{number_format($total+$row->sales_tax_amount,2)}}</td>
                                         <!-- <td style="background-color: darkgray;display: none"  class="text-right showw" colspan="6">{{number_format($total_exchange+$pkr_sale_tax_amount,2)}}
 
                                         </td> -->
-                                        <td class="printHide"></td>
+                                        {{-- <td class="printHide"></td> --}}
                                     </tr>
                                     <tr>
-                                        <td colspan="6" style="text-transform: capitalize;">Amount In Words : {{ $row->amount_in_words }} </td>
-                                        <td class="printHide"></td>
+                                        <td colspan="5" style="text-transform: capitalize;">Amount In Words : {{ $row->amount_in_words }} </td>
+                                        {{-- <td class="printHide"></td> --}}
                                     </tr>
                                 </tbody>
                             </table>

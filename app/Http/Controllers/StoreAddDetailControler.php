@@ -690,7 +690,6 @@ class StoreAddDetailControler extends Controller
     }
 
     public function insertDirectPurchaseOrder(Request $request){
-
         $edit_mode= $request->id;
         DB::Connection('mysql2')->beginTransaction();
         try {
@@ -789,6 +788,7 @@ class StoreAddDetailControler extends Controller
                 $purch_request_data->purchase_request_date=$request->po_date;
                 $purch_request_data->sub_item_id=$request->input('item_id')[$key];
                 $purch_request_data->description=$row;
+                $purch_request_data->bags_qty=$request->input('bags_qty')[$key];
                 $purch_request_data->purchase_request_qty=$request->input('actual_qty')[$key];
                 $purch_request_data->purchase_approve_qty=$request->input('actual_qty')[$key];
 

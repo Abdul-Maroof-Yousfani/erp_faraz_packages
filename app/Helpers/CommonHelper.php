@@ -1725,7 +1725,7 @@ class CommonHelper
             ->where('c.status', '=', 1)
             ->where('s.status', '=', 1)
             ->where('u.status', '=', 1)
-            ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id')
+            ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id', 's.pack_size')
             // ->whereIn('c.id', $categories_id)
             ->get();
 
@@ -4986,6 +4986,49 @@ class CommonHelper
             ->first();
         return $results;
     }
+
+    public static function get_item_by_id_p($id)
+{
+    // Switch to the mysql2 connection for subitem
+    $sub_iteme = Subitem::on('mysql2')
+    ->where('subitem.id', $id)
+    ->select(
+        'subitem.id',
+        'subitem.uom',
+        'subitem.pack_size',
+        'subitem.purchase_rate',
+        DB::raw("
+            CASE 
+                WHEN (SELECT rate FROM stock WHERE stock.sub_item_id = subitem.id ORDER BY stock.id DESC LIMIT 1) IS NULL 
+                     OR (SELECT rate FROM stock WHERE stock.sub_item_id = subitem.id ORDER BY stock.id DESC LIMIT 1) = 0 
+                THEN subitem.rate
+                ELSE (SELECT rate FROM stock WHERE stock.sub_item_id = subitem.id ORDER BY stock.id DESC LIMIT 1)
+            END as rate
+        "),
+        'subitem.description',
+        'subitem.sub_ic',
+        'subitem.main_ic_id',
+        'subitem.item_code',
+        'subitem.sub_category_id',
+        'subitem.remark',
+        'subitem.discount_check'
+    )
+    ->first();
+
+    // If subitem exists, fetch its related UOM from the mysql connection
+    if ($sub_iteme) {
+        $uom = DB::connection('mysql')
+            ->table('uom')
+            ->where('id', $sub_iteme->uom)
+            ->select('uom_name')
+            ->first();
+
+        // Add the uom_name to the subitem object
+        $sub_iteme->uom_name = $uom->uom_name ?? null;
+    }
+
+    return $sub_iteme;
+}
 
 }
 

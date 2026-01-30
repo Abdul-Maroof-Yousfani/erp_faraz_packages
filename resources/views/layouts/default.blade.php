@@ -2183,7 +2183,7 @@ if (!empty($_GET['pageType'])) {
 				success: function (response) {
 					$('#item_id' + index_val).append(new Option('Select', ''))
 					$.each(response, function (index, element) {
-						$('#item_id' + index_val).append(new Option(element['item_code'] + ' -- '+ element['sub_ic'], element['id'] + '@' + element['uom_name'] + '@' + element['sub_ic']))
+						$('#item_id' + index_val).append(new Option(element['item_code'] + ' -- '+ element['sub_ic'], element['id'] + '@' + element['uom_name'] + '@' + element['sub_ic'] + '@' + element['pack_size']))
 					});
 				}
 			});
