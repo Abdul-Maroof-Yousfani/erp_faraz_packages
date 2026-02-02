@@ -58,7 +58,7 @@ endif;
                                     Denied <span style='font-size:45px !important;'>&#128546;</span></span>
                                 <?php endif;
 
-                            ?>
+                                        ?>
                             </div>
                         </div>
                         <?php if ($MenuPermission == true):?>
@@ -70,7 +70,7 @@ endif;
 
 
         $purchaseRequestNo = CommonHelper::get_unique_po_no_with_status(1);
-                    ?>
+                                ?>
                         <input type="hidden" name="_token" value="{{ csrf_token() }}">
 
                         <input type="hidden" name="pageType" value="<?php    echo $_GET['pageType']?>">
@@ -108,7 +108,7 @@ endif;
                                                                                                 <optgroup label="{{ $y->department_name}}" value="{{ $y->id}}">
                                                                                                     <?php
                                                         $subdepartments = DB::select('select `id`,`sub_department_name` from `sub_department` where  `department_id` =' . $y->id . '');
-                                                                                                    ?>
+                                                                                                                                                                                                                                                    ?>
                                                                                                     @foreach($subdepartments as $key2 => $y2)
                                                                                                         <option value="{{ $y2->id}}">{{ $y2->sub_department_name}}</option>
                                                                                                     @endforeach
@@ -157,13 +157,14 @@ endif;
         foreach ($supplierList as $row1) {
 
             $address = CommonHelper::get_supplier_address($row1->id);
-                                                ?>
+                                                            ?>
                                                     <option
                                                         value="<?php        echo $row1->id . '@#' . $address . '@#' . $row1->ntn . '@#' . $row1->terms_of_payment?>">
-                                                        <?php        echo ucwords($row1->name)?></option>
+                                                        <?php        echo ucwords($row1->name)?>
+                                                    </option>
                                                     <?php
         }
-                                                ?>
+                                                            ?>
                                                 </select>
                                             </div>
 
@@ -280,13 +281,13 @@ endif;
                                                 <span class="rflabelsteric"><strong>*</strong></span>
                                                 <textarea name="main_description" id="main_description" rows="4" cols="50"
                                                     style="resize:none;font-size: 11px;" class="form-control requiredField">YOUR NTN NUMBER AND VALID INCOME TAX EXEMPTION WILL BE REQUIRED FOR PAYMENT, OTHER WISE INCOME TAX WILL BE DEDUCTED AS PER FOLLOWINGS:
-    INCOME TAX:
-    FOR COMPANIES SUPPLIES 4% & SERVICES 8% (FILER) / 12% (NON FILER)
-    FOR INDIVIUALS OR AOP SUPPLIES 4.5% & SERVICES 10% (FILER) / 15% (NON FILER)
-    SALES TAX ON SUPPLIES:
-    A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRO 897 /2013
-    SALES TAX ON SERVICES:
-    A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRB WITHHOLDING RULES-2014</textarea>
+                INCOME TAX:
+                FOR COMPANIES SUPPLIES 4% & SERVICES 8% (FILER) / 12% (NON FILER)
+                FOR INDIVIUALS OR AOP SUPPLIES 4.5% & SERVICES 10% (FILER) / 15% (NON FILER)
+                SALES TAX ON SUPPLIES:
+                A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRO 897 /2013
+                SALES TAX ON SERVICES:
+                A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRB WITHHOLDING RULES-2014</textarea>
                                             </div>
                                         </div>
                                     </div>
@@ -359,15 +360,17 @@ endif;
                                                                 name="hs_code_id[]" id="hs_code_id1">
                                                         </td>
                                                         <td>
-                                                            <input type="text" onkeyup="bag_qq('1')"
-                                                                class="form-control requiredField BagsQty" name="bags_qty[]"
-                                                                id="bags_qty1" placeholder="BAGS QTY" min="1" value="1">
+                                                            <input type="text" class="form-control requiredField BagsQty"
+                                                                name="bags_qty[]" id="bags_qty1" value="1" min="1"
+                                                                oninput="bag_qq(1)">
                                                         </td>
                                                         <td>
                                                             <input type="text" onchange="claculation('1')"
                                                                 class="form-control requiredField ActualQty"
                                                                 name="actual_qty[]" id="actual_qty1"
                                                                 placeholder="ACTUAL QTY" min="1" value="" readonly>
+                                                            <input type="hidden" class="PackQty" name="pack_qty[]"
+                                                                id="pack_qty">
                                                         </td>
 
                                                         <td>
@@ -412,13 +415,13 @@ endif;
                                                     <tr style="font-size:large;font-weight: bold">
                                                         <td class="text-center" colspan="5">Total</td>
                                                         <td class="text-right" colspan="1"><input readonly
-                                                                class="form-control number_format" type="text"
+                                                                class="form-control number_format" type="text" name="pkr_net"
                                                                 id="pkr_net" /> </td>
                                                         <td class="text-right" colspan="1"><input readonly
-                                                                class="form-control number_format" type="text"
+                                                                class="form-control number_format" type="text" name="actual_net"
                                                                 id="actual_net" /> </td>
                                                         <td class="text-right" colspan="1"><input readonly
-                                                                class="form-control number_format" type="text" id="net" />
+                                                                class="form-control number_format" type="text" id="net" name="net"/>
                                                         </td>
                                                         <td></td>
                                                     </tr>
@@ -467,7 +470,7 @@ endif;
                                                 <tr style="font-size:large;font-weight: bold">
                                                     <td class="text-center" colspan="3">Total Amount After Tax(PKR)</td>
                                                     <td id="" class="text-right" colspan="3"><input readonly
-                                                            class="form-control number_format" type="text"
+                                                            class="form-control number_format" type="text" name="net_after_tax"
                                                             id="net_after_tax" /> </td>
                                                     <td></td>
                                                 </tr>
@@ -514,7 +517,7 @@ endif;
                 'class="form-control select2">' +
                 '<option value="">Select</option>' +
                 '@foreach (CommonHelper::get_all_subitem() as $item)' +
-                    '<option value="{{ $item->id }}"  data-hscode="{{CommonHelper::hs_code_name($item->hs_code_id)}}" data-uom="{{$item->uom_name}}">' +
+                    '<option value="{{ $item->id }}"  data-hscode="{{CommonHelper::hs_code_name($item->hs_code_id)}}" data-uom="{{$item->uom_name}}" data-pack_size="{{ $item->pack_size ?? 1 }}">' +
                     '{{ $item->sub_ic }}' +
                     '</option>' +
                 '@endforeach' +
@@ -531,6 +534,10 @@ endif;
                 '</td>' +
                 '<td>' +
                 '<input type="text" onchange="claculation(' + Counter + ')" class="form-control requiredField ActualQty" name="actual_qty[]" id="actual_qty' + Counter + '" placeholder="ACTUAL QTY" readonly>' +
+                '<input type="hidden" ' +
+    'class="PackQty" ' +
+    'name="pack_qty[]" ' +
+    'id="pack_qty">' +
                 '</td>' +
                 '<td>' +
                 '<input type="text" onkeyup="claculation(' + Counter + ')" class="form-control requiredField ActualRate" name="rate[]" id="rate' + Counter + '" placeholder="RATE">' +
@@ -798,13 +805,14 @@ endif;
             //            toWords(1);
         });
 
-        function bag_qq(number) {
-            var bags_qty = $('#bags_qty' + number).val();
-            var qty = $('#actual_qty' + number).val();
-            var total_qty = parseFloat(qty * bags_qty).toFixed(2);
-            $('#actual_qty' + number).val(total_qty);
+        function bag_qq(counter) {
+            var bags_qty = parseFloat($('#bags_qty' + counter).val()) || 1;
+            var pack_qty = parseFloat($('#pack_qty').val()) || 0;
 
+            var total_qty = (bags_qty * pack_qty).toFixed(2);
+            $('#actual_qty' + counter).val(total_qty);
         }
+
         function claculation(number) {
             var qty = $('#actual_qty' + number).val();
             var rate = $('#rate' + number).val();
@@ -1070,6 +1078,16 @@ endif;
             $('#uom_id' + id).val($('#item_' + id).find(':selected').data("uom"));
             $('#hs_code_id' + id).val($('#item_' + id).find(':selected').data("hscode"));
             $('#actual_qty' + id).val($('#item_' + id).find(':selected').data("pack_size"));
+            var packSize = $('#item_' + id).find(':selected').data('pack_size') || 0;
+            $('#pack_qty').val(packSize);
+
+            // Default bags qty to 1
+            if (!$('#bags_qty' + id).val()) {
+                $('#bags_qty' + id).val(1);
+            }
+
+            // Calculate actual qty
+            bag_qq(id);
         }
     </script>
 

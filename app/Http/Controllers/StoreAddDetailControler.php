@@ -690,6 +690,7 @@ class StoreAddDetailControler extends Controller
     }
 
     public function insertDirectPurchaseOrder(Request $request){
+        // dd($request->all());
         $edit_mode= $request->id;
         DB::Connection('mysql2')->beginTransaction();
         try {
@@ -752,6 +753,7 @@ class StoreAddDetailControler extends Controller
             $purchase_request->sales_tax_acc_id =$SalesTaxAccId;
             $purchase_request->sales_tax_amount =CommonHelper::check_str_replace($request->sales_amount_td);
             //$SalesTaxAmount = CommonHelper::check_str_replace($request->sales_amount_td);
+            $purchase_request->total_amount =CommonHelper::check_str_replace($request->net);
             $purchase_request->amount_in_words =$request->rupeess;
             $purchase_request->trn =$request->trn;
             $purchase_request->builty_no =$request->builty_no;
