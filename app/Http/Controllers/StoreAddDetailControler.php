@@ -790,7 +790,7 @@ class StoreAddDetailControler extends Controller
                 $purch_request_data->purchase_request_date=$request->po_date;
                 $purch_request_data->sub_item_id=$request->input('item_id')[$key];
                 $purch_request_data->description=$row;
-                $purch_request_data->bags_qty=$request->input('bags_qty')[$key];
+                $purch_request_data->bags_qty=$request->input('bags_qty')[$key] ?? $request->input('actual_qty')[$key]/25;
                 $purch_request_data->purchase_request_qty=$request->input('actual_qty')[$key];
                 $purch_request_data->purchase_approve_qty=$request->input('actual_qty')[$key];
 
@@ -818,7 +818,7 @@ class StoreAddDetailControler extends Controller
         {
             DB::Connection('mysql2')->rollback();
             echo "EROOR"; //die();
-            dd($e->getLine());
+            dd($e);
         }
         Session::flash('dataInsert','successfully saved.');
         return Redirect::to('store/viewPurchaseRequestList?pageType=view&&parentCode=001&&m='.$_GET['m']);

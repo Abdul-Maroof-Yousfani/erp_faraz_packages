@@ -296,7 +296,7 @@ A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRB WITHHOLDING RULES-2014</tex
                                         <tbody>
                                         <tr  style="font-size:large;font-weight: bold">
                                             <td class="text-center" colspan="7">Total</td>
-                                            <td id="" class="text-right" colspan="1"><input readonly value="{{$total_amount}}" class="form-control" type="text" id="net"/> </td>
+                                            <td id="" class="text-right" colspan="1"><input readonly value="{{$total_amount}}" class="form-control" type="text" id="net" name="net"/> </td>
                                             <td></td>
                                         </tr>
                                         </tbody>
