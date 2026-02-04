@@ -61,6 +61,7 @@ class SalesEditDetailController extends Controller
 
     function updateDeliveryNote(Request $request)
     {
+        // dd($request->all());
         $grand_send_qty = 0;
         DB::Connection('mysql2')->beginTransaction();
         try {
@@ -120,36 +121,36 @@ class SalesEditDetailController extends Controller
                 $out_qty_string = [];
                 $stock_rows = [];
 
-                foreach ($batch_codes as $index => $batch_code) {
-                    
-                    $send_qty = CommonHelper::check_str_replace($out_qtys[$index]);
+                // foreach ($batch_codes as $index => $batch_code) {
+                    $qty = CommonHelper::check_str_replace($request->input('send_qty' . $i));
+                    $amount = CommonHelper::check_str_replace($request->input('send_amount' . $i));
+                    $rate = CommonHelper::check_str_replace($request->input('send_rate' . $i));
+
+                    // $send_qty = CommonHelper::check_str_replace($out_qtys[$index]);
                     $stock_qty = ReuseableCode::get_stock(
                         $request->input('item_id' . $i),
                         $request->input('warehouse' . $i),
-                        $send_qty,
-                        $batch_code);
+                        $qty,
+                        0);
 
                     if ($stock_qty < 0) {
                         DB::rollBack();
-                        die("Stock not available for batch $batch_code");
+                        die("Stock not available for batch 0");
                     }
 
                     $average_cost = ReuseableCode::average_cost_sales(
                         $request->input('item_id' . $i),
                         $request->input('warehouse' . $i),
-                        $batch_code);
+                        0);
 
-                    $qty = CommonHelper::check_str_replace($request->input('qty' . $i));
-                    $amount = CommonHelper::check_str_replace($request->input('send_amount' . $i));
-                    $rate = CommonHelper::check_str_replace($request->input('send_rate' . $i));
-
+                    
                     $actual_qty += $qty;
-                    $total_send_qty += $send_qty;
-                    $grand_send_qty += $send_qty;
+                    $total_send_qty += $qty;
+                    $grand_send_qty += $qty;
                     $total_amount += $amount;
 
-                    $batch_code_string[] = $batch_code;
-                    $out_qty_string[] = $send_qty;
+                    $batch_code_string[] = 0;
+                    $out_qty_string[] = $qty;
 
                     $stock_rows[] = [
                         'main_id' => $id,
@@ -161,11 +162,11 @@ class SalesEditDetailController extends Controller
                         'voucher_type' => 5,
                         'rate' => $rate,
                         'sub_item_id' => $request->input('item_id' . $i),
-                        'batch_code' => $batch_code,
-                        'qty' => $send_qty,
+                        'batch_code' => 0,
+                        'qty' => $qty,
                         'discount_percent' => $request->input('send_discount' . $i) ?? 0,
                         'discount_amount' => 0,
-                        'amount' => $send_qty * $average_cost,
+                        'amount' => $qty * $average_cost,
                         //'amount' => $amount,
                         'status' => 1,
                         'warehouse_id' => $request->input('warehouse' . $i),
@@ -174,7 +175,7 @@ class SalesEditDetailController extends Controller
                         'opening' => 0,
                         'so_data_id' => $request->input('data_id' . $i)
                     ];
-                }
+                // }
 
                 $delivery_note_data = new DeliveryNoteData();
                 $delivery_note_data = $delivery_note_data->SetConnection('mysql2');
@@ -199,7 +200,7 @@ class SalesEditDetailController extends Controller
                 
                 $delivery_note_data->rate = $rate;
                 $delivery_note_data->amount = $amount;
-                $delivery_note_data->qty = $total_send_qty;
+                $delivery_note_data->qty = $qty;
                 $delivery_note_data->save();
                 $master_data_id = $delivery_note_data->id;
 

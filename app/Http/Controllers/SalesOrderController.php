@@ -70,13 +70,14 @@ class SalesOrderController extends Controller
             // ->join('sub_category as sc', 'c.id', '=', 'sc.category_id')
             ->join('subitem as s', 'c.id', '=', 's.main_ic_id')
             ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
-            ->join('packaging_type AS pt' ,'pt.id','=', 's.primary_pack_type')
+            // ->join('packaging_type AS pt' ,'pt.id','=', 's.primary_pack_type')
             // ->where('sc.status', '=', 1)
             ->where('c.status', '=', 1)
+            ->where('s.main_ic_id', '=', 8)
             ->where('s.status', '=', 1)
             ->where('u.status', '=', 1)
             ->where('s.main_ic_id', '=', 8)
-            ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id','pt.type','s.pack_size','s.primary_pack_type','s.color')
+            ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id','s.pack_size','s.color')
             // ->groupBy('s.item_code')
             ->orderBy('s.id')
             ->get();
@@ -93,8 +94,8 @@ class SalesOrderController extends Controller
             ->join('customers', 'customers.id', 'sales_order.buyers_id')
             ->join('subitem AS s', 's.id', 'sales_order_data.item_id')
             ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
-            ->join('packaging_type AS pt' ,'pt.id','=', 's.primary_pack_type')
-            ->select('sales_order_data.id as sale_order_data_id', 's.item_code', 'u.uom_name', 'sales_order_data.*', 'sales_order.*', 'customers.name AS customer_name', 'pt.type','s.pack_size','s.primary_pack_type','s.color','s.id', 's.sub_ic', 's.uom', 's.item_code',)
+            // ->join('packaging_type AS pt' ,'pt.id','=', 's.primary_pack_type')
+            ->select('sales_order_data.id as sale_order_data_id', 's.item_code', 'u.uom_name', 'sales_order_data.*', 'sales_order.*', 'customers.name AS customer_name','s.pack_size','s.primary_pack_type','s.color','s.id', 's.sub_ic', 's.uom', 's.item_code',)
             ->where('sales_order.id', $request->id)
             ->where('sales_order_data.status', 1)
             // ->where('sales_order.status', 1)
@@ -324,6 +325,7 @@ class SalesOrderController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // dd($request->all());
         // echo "<pre>";
         // print_r($request->all());
         // exit();
@@ -400,14 +402,14 @@ class SalesOrderController extends Controller
                 $sales_order_data->desc = $request->item_id[$key];
                 $sales_order_data->thickness = 0;
                 $sales_order_data->diameter = 0;
-                $sales_order_data->item_description = $request->item_description[$key];
+                $sales_order_data->item_description = $request->item_description[$key] ?? null;
                 $sales_order_data->qty = $request->qty[$key];
                 $sales_order_data->rate = $request->rate[$key];
-                $sales_order_data->printing = $request->printing[$key];
-                $sales_order_data->special_instruction = $request->special_ins[$key];
-                $sales_order_data->delivery_date = $request->delivery_date[$key];
+                $sales_order_data->printing = $request->printing[$key] ?? null;
+                $sales_order_data->special_instruction = $request->special_ins[$key] ?? null;
+                $sales_order_data->delivery_date = $request->delivery_date[$key] ?? null;
                 $sales_order_data->amount = $request->total[$key];
-                $sales_order_data->length_bundle = $request->length_bundle[$key];
+                $sales_order_data->length_bundle = $request->length_bundle[$key] ?? null;
 
                 $sales_order_data->tax = $request->sale_tax_rate;
                 $sales_order_data->further_tax = $request->further_tax;

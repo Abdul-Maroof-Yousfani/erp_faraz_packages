@@ -80,7 +80,7 @@ $total_amount = 0;
                                                     <div class="col-lg-9 col-md-9 col-sm-9 col-xs-7">
                                                         <div class="ors_pra">
                                                             <p>{{$sale_order[0]->so_no}}</p>
-                                                            <p>{{$sale_order[0]->purchase_order_no }}</p>
+                                                            <p>{{ $sale_order[0]->purchase_order_no ?: '-' }}</p>
                                                             <p>
                                                                 {{date("d-M-Y", strtotime($sale_order[0]->purchase_order_date ))}}
                                                             </p>
@@ -101,12 +101,13 @@ $total_amount = 0;
                                                     <thead>
                                                     <tr>
                                                         <th class="text-center">Item</th>
-                                                        <th class="text-center">Pack Type</th>
-                                                        <th class="text-center">Color</th>
+                                                        {{-- <th class="text-center">Color</th> --}}
                                                         <th class="text-center">UOM</th>
+                                                        <th class="text-center">Bags Qty</th>
+
                                                         <!-- <th class="wsale2 text-center">Item Description </th> -->
                                                         <!-- <th class="text-center">Unit</th> -->
-                                                        <th class="text-center">Qty</th>
+                                                        <th class="text-center">Quantity</th>
                                                         <th class="text-center">Rate</th>
                                                         <th class="text-center">Total Amount</th>
                                                         <!-- <th>GST</th>
@@ -127,11 +128,13 @@ $total_amount = 0;
                                                         <tr>        
 
                                                             <td class="text-left">{{ $sale_order_item->item_code.' -- '.$sale_order_item->sub_ic }}</td>
-                                                            <td class="text-left">{{ $sale_order_item->pack_size.' '.$sale_order_item->uom_name.' '.$sale_order_item->type }}</td>
-                                                            <td class="text-left">{{ $sale_order_item->color }}</td>
+                                                            {{-- <td class="text-left">{{ $sale_order_item->color }}</td> --}}
                                                             <td class="text-center">{{ $sale_order_item->uom_name }}</td>
+                                                            <td class="text-left">{{ $sale_order_item->qty/$sale_order_item->pack_size}}</td>
+
                                                             <td class="text-right">
-                                                                {{number_format($sale_order_item->qty)}}
+                                                                {{ number_format($sale_order_item->qty, 2) }} KG 
+                                                                ({{ number_format($sale_order_item->qty * 2.20462, 2) }} lb)
                                                             </td>
                                                             <td class="text-right">
                                                                 {{number_format($sale_order_item->rate,2)}}

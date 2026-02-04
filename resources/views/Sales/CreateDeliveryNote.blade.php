@@ -180,7 +180,7 @@ use App\Helpers\ReuseableCode;
                                                     <th class="text-center">Item</th>
                                                     <th class="text-center">Pack Type</th>
                                                     <th class="text-center">Color</th>
-                                                    <th class="text-center">QTY  <span class="rflabelsteric"><strong>*</strong></span></th>
+                                                    <th class="text-center">QTY (KG) <span class="rflabelsteric"><strong>*</strong></span></th>
                                                     <th class="text-center">WareHouse <span class="rflabelsteric"><strong>*</strong></span></th>
                                                     <!-- <th style="width: 150px" class="text-center" >Batch Code <span class="rflabelsteric"><strong>*</strong></span></th> -->
                                                     <!-- <th class="text-center">In Stock<span class="rflabelsteric"><strong>*</strong></span></th> -->
@@ -736,23 +736,23 @@ f
                         `;
                     }
 
-                    $('#append_batch_code' + count).before(`
-                        <tr id="removeBatchCodeRow${count}_${number2}">
-                            <td colspan="5" class="batchQtyError${count}"></td>
-                            <td>
-                                <select name="batch_codes${count}[]" id="batch_code${count}_${number2}" class="form-control select2" onchange="get_stock_qty(${count},${number2})">
-                                    ${data}
-                                </select>
-                            </td>
-                            <td>
-                                <input readonly type="text" name="in_stock_qty${count}[]" id="in_stock_qty${count}_${number2}" class="form-control" />
-                            </td>
-                            <td>
-                                <input type="text" name="out_qtys${count}[]" id="out_qty${count}_${number2}" class="form-control" onkeyup="checkOutQtyLimit(${count})" />
-                            </td>
-                            <td>${actionButtons}</td>
-                        </tr>
-                    `);
+                   // $('#append_batch_code' + count).before(`
+                   //     <tr id="removeBatchCodeRow${count}_${number2}">
+                    //        <td colspan="5" class="batchQtyError${count}"></td>
+                   //         <td>
+                    //            <select name="batch_codes${count}[]" id="batch_code${count}_${number2}" class="form-control select2" onchange="get_stock_qty(${count},${number2})">
+                   //                 ${data}
+                   //             </select>
+                  //          </td>
+                   //         <td>
+                  //              <input readonly type="text" name="in_stock_qty${count}[]" id="in_stock_qty${count}_${number2}" class="form-control" />
+                  //          </td>
+                 //           <td>
+                 //               <input type="text" name="out_qtys${count}[]" id="out_qty${count}_${number2}" class="form-control" onkeyup="checkOutQtyLimit(${count})" />
+                 //           </td>
+                //            <td>${actionButtons}</td>
+                 //       </tr>
+               //     `);
 
                     $('.select2').select2();
                 }

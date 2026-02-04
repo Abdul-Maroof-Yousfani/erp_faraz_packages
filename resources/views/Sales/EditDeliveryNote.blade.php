@@ -172,8 +172,8 @@ use App\Helpers\CommonHelper;
                                                 <tr>
                                                     <th class="text-center">S.NO</th>
                                                     <th class="text-center">Item</th>
-                                                    <th class="text-center">Pack Type</th>
-                                                    <th class="text-center">Color</th>
+                                                    <th class="text-center">Bags</th>
+                                                    {{-- <th class="text-center">Color</th> --}}
                                                     <th class="text-center" >QTY. <span class="rflabelsteric"><strong>*</strong></span></th>
                                                     <th class="text-center" >WareHouse. <span class="rflabelsteric"><strong>*</strong></span></th>
                                                     <!-- <th style="width: 150px" class="text-center" >Batch Code <span class="rflabelsteric"><strong>*</strong></span></th>
@@ -220,8 +220,8 @@ use App\Helpers\CommonHelper;
                                                 <tr>
                                                     <td class="text-center" class="text-center"><?php echo $counter;?></td>
                                                     <td id="{{$row1->item_id}}" class="text-left">{{ $row1->item_code .' -- '. $row1->sub_ic }}</td>
-                                                    <td>{{ $row1->pack_size.' '.$row1->uom_name.' '.$row1->type }}</td>
-                                                    <td>{{ $row1->color }}</td>
+                                                    <td>{{ $row1->qty/$row1->pack_size }}</td>
+                                                    {{-- <td>{{ $row1->color }}</td> --}}
 
                                                     <?php $sub_ic_detail=CommonHelper::get_subitem_detail($row1->item_id);
                                                     $sub_ic_detail= explode(',',$sub_ic_detail);
@@ -417,9 +417,9 @@ use App\Helpers\CommonHelper;
 
                                                 <tr>
 
-                                                    <td id="total_" style="background-color: darkgray" class="text-center" colspan="6">Total</td>
+                                                    <td id="total_" style="background-color: darkgray" class="text-center" colspan="8">Total</td>
 
-                                                    <td   style="background-color: darkgray" class="text-right hidee nett"  colspan="7"><input style="font-weight: bolder" class="form-control text-right comma_seprated" readonly type="text" id="total_amount" value="{{$FinalTot}}" /></td>
+                                                    <td   style="background-color: darkgray" class="text-right hidee nett"  colspan="9"><input style="font-weight: bolder" class="form-control text-right comma_seprated" readonly type="text" id="total_amount" value="{{$FinalTot}}" /></td>
 
 
                                                 </tr>
@@ -596,19 +596,17 @@ use App\Helpers\CommonHelper;
                         <tr id="removeBatchCodeRow${count}_${subIndex}">
                             <td colspan="5" class="batchQtyError${count}"></td>
                             <td>
-                                <select name="batch_codes${count}[]" id="batch_code${count}_${subIndex}" class="form-control select2" onchange="get_stock_qty(${count},1)">
-                                    ${options}
-                                </select>
+                               
+                                <input readonly type="hidden" name="batch_codes${count}[]" id="batch_codes${count}_${subIndex}" class="form-control" oninput="get_stock_qty(${count},1)" />
+
                             </td>
                             <td>
-                                <input readonly type="text" name="in_stock_qty${count}[]" id="in_stock_qty${count}_${subIndex}" class="form-control" />
+                                <input readonly type="hidden" name="in_stock_qty${count}[]" id="in_stock_qty${count}_${subIndex}" class="form-control" />
                             </td>
                             <td>
-                                <input type="text" name="out_qtys${count}[]" id="out_qty${count}_${subIndex}" value="${outQty}" class="form-control" onkeyup="checkOutQtyLimit(${count})" />
+                                <input type="hidden" name="out_qtys${count}[]" id="out_qty${count}_${subIndex}" value="${outQty}" class="form-control" onkeyup="checkOutQtyLimit(${count})" />
                             </td>
-                            <td>
-                                ${buttonHtml}
-                            </td>
+                           
                         </tr>
                     `;
 
@@ -1151,7 +1149,7 @@ use App\Helpers\CommonHelper;
             var advance_tax_rate1 = $('#advance_tax_rate').val();
             var advance_tax = parseFloat((amount / 100) * advance_tax_rate1);
             var cartage_amount = parseFloat($('#cartage_amount').val());
-            alert()
+            // alert()
 
             $('#grand').val(amount + sales_tax + sales_tax_further + advance_tax + cartage_amount);
             var qty = 0;

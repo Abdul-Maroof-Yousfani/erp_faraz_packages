@@ -152,10 +152,10 @@
                                                         <thead>
                                                             <tr>
                                                                 <th class="text-center col-sm-2">Item</th>
-                                                                <th class="text-center">Pack Size</th>
+                                                                <th class="text-center">Bags Qty</th>
                                                                 <th class="text-center">UOM</th>
-                                                                <th class="text-center">Color</th>
-                                                                <th class="text-center">Qty</th>
+                                                                {{-- <th class="text-center">Color</th> --}}
+                                                                <th class="text-center">Qty in KG</th>
                                                                 <th class="text-center">Unit Price</th>
                                                                 <th class="text-center">Total</th>
                                                                 <th class="text-center">Action</th>
@@ -171,8 +171,8 @@
                                                                         <option value="">Select</option>
                                                                         @foreach($sub_item as $val)
                                                                             <option
-                                                                                value="{{ $val->id . '@' . $val->uom_name . '@' . $val->sub_ic . '@' . $val->pack_size . '@' . $val->type . '@' . $val->color }}">
-                                                                                {{ $val->item_code . ' -- ' . $val->sub_ic . ' ' . $val->pack_size . ' ' . $val->uom_name . ' ' . $val->type . ' ' . $val->color }}
+                                                                                value="{{ $val->id . '@' . $val->uom_name . '@' . $val->sub_ic . '@' . $val->pack_size . '@' . $val->color }}">
+                                                                                {{ $val->item_code . ' -- ' . $val->sub_ic . ' ' . $val->pack_size . ' ' . $val->uom_name . ' ' . $val->color }}
                                                                             </option>
                                                                         @endforeach
                                                                     </select>
@@ -185,20 +185,22 @@
                                                                 <input style="display: none" class="form-control"
                                                                     type="text" name="diameter[]" id="diameter">
                                                                 <td>
-                                                                    <input readonly type="text" name="pack_size[]"
-                                                                        id="pack_size1" class="form-control" />
+                                                                    <input type="text" name="pack_size[]"
+                                                                        id="pack_size1" class="form-control" oninput="bag_qq(1)" />
                                                                 </td>
                                                                 <td>
                                                                     <input readonly class="form-control" type="text" name="uom[]" id="uom_id1" value="">
                                                                 </td>
-                                                                <td>
+                                                                {{-- <td>
                                                                     <input readonly type="text" name="color[]"
                                                                         id="color1" class="form-control" />
-                                                                </td>
+                                                                </td> --}}
                                                                 <td>
                                                                     <input class="form-control requiredField"
-                                                                        onkeyup="calculation_amount()" type="number"
-                                                                        name="qty[]" id="qty" step="any" />
+                                                                        onchange="calculation_amount()" type="number"
+                                                                        name="qty[]" id="qty1" step="any" readonly />
+                                                                         <input type="hidden" class="PackQty" name="pack_qty[]"
+                                                                id="pack_qty">
                                                                 </td>
                                                                 <td>
                                                                     <input class="form-control requiredField"
@@ -302,8 +304,8 @@
                         <select onchange="get_item_name(${Counter})" class="form-control  item_id itemsclass" name="item_id[]" id="item_id${Counter}">
                             <option value="">Select</option>
                             @foreach($sub_item as $val)
-                                <option value="{{ $val->id . '@' . $val->uom_name . '@' . $val->sub_ic . '@' . $val->pack_size . '@' . $val->type . '@' . $val->color }}">
-                                    {{ $val->item_code . ' -- ' . $val->sub_ic . ' ' . $val->pack_size . ' ' . $val->uom_name . ' ' . $val->type . ' ' . $val->color }}
+                                <option value="{{ $val->id . '@' . $val->uom_name . '@' . $val->sub_ic . '@' . $val->pack_size . '@' . $val->color }}">
+                                    {{ $val->item_code . ' -- ' . $val->sub_ic . ' ' . $val->pack_size . ' ' . $val->uom_name . ' ' . $val->color }}
                                 </option>
                             @endforeach
                         </select>                  
@@ -312,16 +314,15 @@
                     <input style="display: none" class="form-control" type="text" name="thickness[]" id="thickness">
                     <input style="display: none" class="form-control" type="text" name="diameter[]" id="diameter">
                     <td>
-                        <input readonly type="text" name="pack_size[]" id="pack_size${Counter}" class="form-control" />
+                        <input type="text" name="pack_size[]" id="pack_size${Counter}" oninput="bag_qq(${Counter})" class="form-control" />
                     </td>
                     <td>
                         <input readonly id="uom_id${Counter}" type="text" name="uom[]" class="form-control uom" />
                     </td>
+                   
                     <td>
-                        <input readonly type="text" name="color[]" id="color${Counter}" class="form-control" />
-                    </td>
-                    <td>
-                        <input class="form-control" onkeyup="calculation_amount()" type="text" name="qty[]" id="qty" value="">
+                        <input readonly class="form-control" onkeyup="calculation_amount()" type="text" name="qty[]" id="qty${Counter}" value="">
+                        <input type="hidden" name="pack_qty[]" id="pack_qty">
                     </td>
                     <td>
                         <input class="form-control" onkeyup="calculation_amount()" type="text" name="rate[]" id="rate" value="">
@@ -409,10 +410,17 @@
             var item = $('#item_id' + index).val();
 
             var uom = item.split('@');
+            console.log(uom);
             $('#uom_id' + index).val(uom[1]);
             $('#item_code' + index).val(uom[2]);
-            $('#pack_size' + index).val(uom[3] + ' ' + uom[4]);
+            $('#qty' + index).val(uom[3]);
+            $('#pack_qty').val(uom[3]);
             $('#color' + index).val(uom[5]);
+            $('#pack_size' + index).val(1);
+            console.log(index);
+
+            bag_qq(index);
+
         }
 
         function get_customer_details(id) {
@@ -461,7 +469,7 @@
         //             calculation_amount();
 
         //     }
-        function calculation_amount() {
+        function calculation_amount(index) {
 
             var grad_total = 0;
 
@@ -480,8 +488,10 @@
 
             $('.itemsclass').each(function () {
 
-                var actual_rate = $(this).closest('.main').find('#rate').val();
-                var actual_qty = $(this).closest('.main').find('#qty').val();
+                var actual_rate = $(this).closest('.main').find('[name="rate[]"]').val();
+                var actual_qty = $(this).closest('.main').find('[name="qty[]"]').val();
+
+                console.log(actual_qty);
                 var rate = actual_rate ? actual_rate : 0;
                 var qty = actual_qty ? actual_qty : 0;
                 var total = parseFloat(qty) * parseFloat(rate);
@@ -516,6 +526,15 @@
             // })
             // document.getElementById('grand_total').innerHTML = grad_total;
         }
+
+        function bag_qq(counter) {
+            var bags_qty = parseFloat($('#pack_size' + counter).val()) || 1;
+            var pack_qty = parseFloat($('#pack_qty').val()) || 0;
+            var total_qty = (bags_qty * pack_qty).toFixed(2);
+            $('#qty' + counter).val(total_qty);
+        }
+
+
         function saletax(instance) {
             var value = $(instance).val();
             let excet_value = value.split(',');

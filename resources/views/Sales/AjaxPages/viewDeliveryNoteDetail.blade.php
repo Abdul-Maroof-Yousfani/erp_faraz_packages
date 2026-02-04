@@ -200,8 +200,8 @@ $currentDate = date('Y-m-d');
                                     <tr>
                                         <th class="text-center" style="border:1px solid black;">S.NO</th>
                                         <th class="text-center" style="border:1px solid black;">Item</th>
-                                        <th class="text-center" style="border:1px solid black;">Pack Size</th>
-                                        <th class="text-center" style="border:1px solid black;">Color</th>
+                                        <th class="text-center" style="border:1px solid black;">Bags</th>
+                                        {{-- <th class="text-center" style="border:1px solid black;">Color</th> --}}
                                         <th class="text-center" style="border:1px solid black;">QTY. <span
                                                 class="rflabelsteric"><strong>*</strong></span></th>
                                         <th class="text-center hide" style="border:1px solid black;">Rate</th>
@@ -210,7 +210,7 @@ $currentDate = date('Y-m-d');
                                         <th class="text-center hide" style="border:1px solid black;">Tax Amount</th>
                                         <th class="text-center hide" style="border:1px solid black;">Net Amount</th>
                                         <th class="text-center hide printHide" style="border:1px solid black;">View</th>
-                                        <th class="text-center" style="border:1px solid black;">Batch Codes</th>
+                                        {{-- <th class="text-center" style="border:1px solid black;">Batch Codes</th> --}}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -234,8 +234,8 @@ $currentDate = date('Y-m-d');
                                             <tr>
                                                 <td style="text-align: center; border:1px solid black;">{{ $count++ }}</td>
                                                 <td style="border:1px solid black;">{{ $row->sub_ic }}</td>
-                                                <td style="border:1px solid black;">{{ $row->pack_size.' '.$row->uom_name.' '.$row->type }}</td>
-                                                <td style="border:1px solid black;">{{ $row->color }}</td>
+                                                <td style="border:1px solid black;">{{ $row->qty/$row->pack_size }}</td>
+                                                {{-- <td style="border:1px solid black;">{{ $row->color }}</td> --}}
                                                 <td class="text-right" style="border:1px solid black;">{{ $out_qty[$key] }}</td>
                                                 <!-- <td class="text-right" style="border:1px solid black;">{{ $row->qty }}</td> -->
                                                 <td class="text-right hide" style="border:1px solid black;">{{ number_format($row->rate, 2) }}</td>
@@ -243,7 +243,7 @@ $currentDate = date('Y-m-d');
                                                 <td class="text-right hide" style="border:1px solid black;">{{ $row->tax }}</td>
                                                 <td class="text-right hide" style="border:1px solid black;">{{ number_format($row->tax_amount, 2) }}</td>
                                                 <td class="text-right hide" style="border:1px solid black;">{{ number_format($row->amount, 2) }}</td>
-                                                <td class="text-right" style="border:1px solid black;">{{ trim($batch_code) }}</td>
+                                                {{-- <td class="text-right" style="border:1px solid black;">{{ trim($batch_code) }}</td> --}}
                                             </tr>
                                         @endforeach
                                     @endforeach
