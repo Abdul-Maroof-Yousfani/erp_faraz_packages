@@ -266,16 +266,16 @@ $supplier = CommonHelper::getSupplierDetail($row->supplier_id);
                             <tr>
                                 <th class="text-center">Sr No.</th>
                                 <th class="text-center">Item Name</th>
-                                <th class="text-center">Batch Code</th>
+                                {{-- <th class="text-center">Batch Code</th> --}}
                                 <th class="text-center">Expiry Date</th>
-                                <th class="text-center">Ordered Qty	<span class="rflabelsteric"></span></th>
-                                <th class="text-center">Received Qty<span class="rflabelsteric"></span></th>
+                                <th class="text-center">Ordered Qty (KG) <span class="rflabelsteric"></span></th>
+                                <th class="text-center">Received Qty (KG) <span class="rflabelsteric"></span></th>
                                 <th class="ShowHideRate text-center" style="display: none;" > Rate</th>
                                 <th class="ShowHideAmount text-center" style="display: none;" > Amount</th>
                                 <th class="ShowHideDiscountPercent text-center" style="display: none;" > Discount %</th>
                                 <th class="ShowHideDiscountAmount text-center" style="display: none;" > Discount Amount</th>
                                 <th class="ShowHideNetAmount text-center" style="display: none;" > Net Amount</th>
-                                <th class="text-center">BAL. QTY. Receivable</th>
+                                <th class="text-center">BAL. QTY. Receivable (KG)</th>
                                 <th class="text-center">Location</th>
                             </tr>
                             </thead>
@@ -318,7 +318,6 @@ $supplier = CommonHelper::getSupplierDetail($row->supplier_id);
                                     ?>
                                     <?php endif;?>
                                 </td>
-                                <td class="text-center"><?php echo $row1->batch_code?></td>
                                 <td class="text-center"><?php echo CommonHelper::changeDateFormat($row1->expiry_date)?></td>
                                 <td class="text-center"><?php echo number_format($row1->purchase_approved_qty,2);?></td>
                                 <td class="text-center"><?php echo  number_format($row1->purchase_recived_qty-$row1->qc_qty,2)?></td>

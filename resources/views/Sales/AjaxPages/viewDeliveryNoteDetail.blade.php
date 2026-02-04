@@ -202,7 +202,7 @@ $currentDate = date('Y-m-d');
                                         <th class="text-center" style="border:1px solid black;">Item</th>
                                         <th class="text-center" style="border:1px solid black;">Bags</th>
                                         {{-- <th class="text-center" style="border:1px solid black;">Color</th> --}}
-                                        <th class="text-center" style="border:1px solid black;">QTY. <span
+                                        <th class="text-center" style="border:1px solid black;">QTY. (KG)<span
                                                 class="rflabelsteric"><strong>*</strong></span></th>
                                         <th class="text-center hide" style="border:1px solid black;">Rate</th>
                                         <th class="text-center hide" style="border:1px solid black;">Amount</th>

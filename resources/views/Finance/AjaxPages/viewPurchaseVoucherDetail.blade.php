@@ -133,7 +133,7 @@ foreach ($PurchaseVoucher as $row) {
 
                                             <th class="text-center">Item</th>
                                             <th class="text-center">Uom</th>
-                                            <th class="text-center">Qty</th>
+                                            <th class="text-center">Qty (KG)</th>
                                             <th class="text-center">Rate</th>
                                             <th class="text-center">Amount</th>
                                             <!-- <th class="text-center">EXP%</th> -->
