@@ -837,7 +837,7 @@ Route::group(['prefix' => 'purchase', 'middleware' => 'mysql2', 'before' => 'csr
     Route::get('QaGrn/getGrnDataItems', 'GrnQaController@getGrnDataItems');
 
 
-    
+
 });
 
 
@@ -2200,7 +2200,24 @@ Route::get('/get_pv_merge_chunk', 'AllInOnePaymentVoucherController@get_pv_merge
 Route::get('/pv_acount_head_po_pi_chunk', 'AllInOnePaymentVoucherController@pv_acount_head_po_pi_chunk');
 
 
+Route::group(['prefix' => 'far_production', 'middleware' => 'mysql2', 'before' => 'csrf'], function () {
 
+    Route::get('/createProductionOrderForm', 'FarazProductionController@createProductionOrderForm');
+    Route::get('/viewProductionOrderList', 'FarazProductionController@viewProductionOrderList');
+    Route::get('/viewProductionOrderListDetail', 'FarazProductionController@viewProductionOrderListDetail');
+    Route::get('/viewProductionOrderDetail', 'FarazProductionController@viewProductionOrderDetail');
+    Route::get('/editProductionOrderForm/{id}', 'FarazProductionController@editProductionOrderForm');
+
+});
+
+Route::group(['prefix' => 'far_prod', 'middleware' => 'mysql2', 'before' => 'csrf'], function () {
+
+    Route::post('/addProductionOrderDetail', 'FarazProductionAddDetailController@addProductionOrderDetail');
+    Route::get('/deleteProductionOrder', 'FarazProductionAddDetailController@deleteProductionOrder');
+    Route::post('/approveAndRejectProductionOrder', 'FarazProductionAddDetailController@approveAndRejectProductionOrder');
+    Route::post('/editProductionOrderDetail', 'FarazProductionAddDetailController@editProductionOrderDetail');
+
+});
 
 Route::get('store-items-data', function () {
     DB::Connection('mysql2')->beginTransaction();
@@ -2259,7 +2276,8 @@ Route::get('store-items-data', function () {
         ];
 
         // Function to extract sub_category prefix from raw material description
-        function getRawMaterialSubCategory($description) {
+        function getRawMaterialSubCategory($description)
+        {
             // Check for PP Film or PP Tape first (before PP)
             if (stripos($description, 'PP Film') === 0) {
                 return 'PP Film';
@@ -2289,7 +2307,7 @@ Route::get('store-items-data', function () {
         foreach ($raw_materials as $rawMaterial) {
             $description = $rawMaterial['description'];
             $subCategoryName = getRawMaterialSubCategory($description);
-            
+
             // Create or get sub_category for raw material group
             $subCategory = DB::Connection('mysql2')->table('sub_category')
                 ->where('category_id', $raw_material_category_id)

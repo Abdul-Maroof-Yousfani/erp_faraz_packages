@@ -4971,7 +4971,7 @@ class CommonHelper
         if ($latest) {
             $lastNumber = $latest->pr_no;
             $numberPart = (int) substr($lastNumber, 2);
-            $nextNumber = 'PR' . str_pad($numberPart + 1, 5, '0', STR_PAD_LEFT);
+            $nextNumber = 'PRO' . str_pad($numberPart + 1, 5, '0', STR_PAD_LEFT);
         }
 
         return $nextNumber;
