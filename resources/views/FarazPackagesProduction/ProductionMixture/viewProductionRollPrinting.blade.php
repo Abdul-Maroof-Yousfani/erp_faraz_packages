@@ -21,7 +21,7 @@ $this->m = Session::get('run_company');
                         <div class="row align-items-center">
                             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                                 <div class="headquid">
-                                    <h2 class="subHeadingLabelClass">Production Mixing List</h2>
+                                    <h2 class="subHeadingLabelClass">Production Roll Printing List</h2>
                                 </div>
                             </div>
                             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 text-right">
@@ -47,18 +47,18 @@ $this->m = Session::get('run_company');
                                                 id="EmpExitInterviewList">
                                                 <thead>
                                                     <th class="text-center">S.No</th>
-                                                    <th class="text-center">Produced Mixture</th>
-                                                    <th class="text-center">Mixing No</th>
+                                                    <th class="text-center">Printed Item</th>
+                                                    <th class="text-center">Qty</th>
                                                     <th class="text-center">Status</th>
                                                     <th class="text-center">Action</th>
                                                 </thead>
                                                 <?php $count = 0; ?>
                                                 <tbody id="data">
-                                                    @foreach ($mixingList as $Fil)
+                                                    @foreach ($rollPricingList as $Fil)
                                                         <tr id="remove<?php    echo $Fil['id'] ?>">
                                                             <td>{{++$count}}</td>
-                                                            <td>{{CommonHelper::get_item_name($Fil->produced_item_id)}}</td>
-                                                            <td> {{$Fil->pm_no}} </td>
+                                                            <td>{{CommonHelper::get_item_name($Fil->item_id)}}</td>
+                                                            <td> {{$Fil->no_of_roll}} </td>
                                                             <td>
                                                                 @if($Fil->status == 1)
                                                                     Active
@@ -73,10 +73,8 @@ $this->m = Session::get('run_company');
                                                                             class="fa-solid fa-ellipsis-vertical"></i></button>
                                                                     <ul class="dropdown-menu">
                                                                         <li>
-                                                                            <a onclick="showDetailModelOneParamerter('far_production/viewMixingInfo','{{$Fil->id}}','View Mixture Detail')"
-                                                                                type="button" class="">
-                                                                                View</a>
-                                                                                 <a href="mixtureRolling?id=<?php    echo $Fil['id'] ?>&&m=<?php    echo $this->m?>">Initiate Rolling
+                                                                          
+                                                                                 <a href="rollPrinting?id=<?php    echo $Fil['id'] ?>&&m=<?php    echo $this->m?>">Process Cutting & Packing
                                                                             </a>
                                                                             <a href="mixtureEdit?id=<?php    echo $Fil['id'] ?>&&m=<?php    echo $this->m?>">
                                                                             </a>

@@ -770,7 +770,8 @@ class CommonHelper
             <option value="<?php echo $row['id']; ?>" <?php if ($param2 == $row['id']) {
                    echo 'selected';
                } ?>>
-                <?php echo $row['main_ic']; ?></option>
+                <?php echo $row['main_ic']; ?>
+            </option>
             <?php
         }
     }
@@ -787,7 +788,8 @@ class CommonHelper
             <option value="<?php echo $row['id']; ?>" <?php if ($param2 == $row['id']) {
                    echo 'selected';
                } ?>>
-                <?php echo $row['sub_ic']; ?></option>
+                <?php echo $row['sub_ic']; ?>
+            </option>
             <?php
         }
     }
@@ -4113,7 +4115,7 @@ class CommonHelper
                 ->groupBy('batch_code')
                 ->get(); ?>
 
-            
+
             <option value="">Select</option>
             <?php foreach ($in as $row): ?>
                 <option value="<?php echo $row->batch_code ?>"><?php echo $row->batch_code ?></option><?php
@@ -5004,16 +5006,16 @@ class CommonHelper
     }
 
     public static function get_item_by_id_p($id)
-{
-    // Switch to the mysql2 connection for subitem
-    $sub_iteme = Subitem::on('mysql2')
-    ->where('subitem.id', $id)
-    ->select(
-        'subitem.id',
-        'subitem.uom',
-        'subitem.pack_size',
-        'subitem.purchase_rate',
-        DB::raw("
+    {
+        // Switch to the mysql2 connection for subitem
+        $sub_iteme = Subitem::on('mysql2')
+            ->where('subitem.id', $id)
+            ->select(
+                'subitem.id',
+                'subitem.uom',
+                'subitem.pack_size',
+                'subitem.purchase_rate',
+                DB::raw("
             CASE 
                 WHEN (SELECT rate FROM stock WHERE stock.sub_item_id = subitem.id ORDER BY stock.id DESC LIMIT 1) IS NULL 
                      OR (SELECT rate FROM stock WHERE stock.sub_item_id = subitem.id ORDER BY stock.id DESC LIMIT 1) = 0 
@@ -5021,30 +5023,105 @@ class CommonHelper
                 ELSE (SELECT rate FROM stock WHERE stock.sub_item_id = subitem.id ORDER BY stock.id DESC LIMIT 1)
             END as rate
         "),
-        'subitem.description',
-        'subitem.sub_ic',
-        'subitem.main_ic_id',
-        'subitem.item_code',
-        'subitem.sub_category_id',
-        'subitem.remark',
-        'subitem.discount_check'
-    )
-    ->first();
-
-    // If subitem exists, fetch its related UOM from the mysql connection
-    if ($sub_iteme) {
-        $uom = DB::connection('mysql')
-            ->table('uom')
-            ->where('id', $sub_iteme->uom)
-            ->select('uom_name')
+                'subitem.description',
+                'subitem.sub_ic',
+                'subitem.main_ic_id',
+                'subitem.item_code',
+                'subitem.sub_category_id',
+                'subitem.remark',
+                'subitem.discount_check'
+            )
             ->first();
 
-        // Add the uom_name to the subitem object
-        $sub_iteme->uom_name = $uom->uom_name ?? null;
+        // If subitem exists, fetch its related UOM from the mysql connection
+        if ($sub_iteme) {
+            $uom = DB::connection('mysql')
+                ->table('uom')
+                ->where('id', $sub_iteme->uom)
+                ->select('uom_name')
+                ->first();
+
+            // Add the uom_name to the subitem object
+            $sub_iteme->uom_name = $uom->uom_name ?? null;
+        }
+
+        return $sub_iteme;
     }
 
-    return $sub_iteme;
-}
+    public static function getAccurateFIFOAvgRate($itemId, $issueDate)
+    {
+        // 1. Grouped IN Entries (by date + rate)
+        $inEntries = DB::connection('mysql2')->table('stock')
+            ->where('sub_item_id', $itemId)
+            ->where('voucher_date', '<=', $issueDate)
+            ->whereIn('voucher_type', [1, 4, 6, 10, 11, 12])
+            ->selectRaw('voucher_date as date, rate, SUM(qty) as qty')
+            ->groupBy('voucher_date', 'rate')
+            ->get()
+            ->map(function ($entry) {
+                return [
+                    'type' => 'in',
+                    'qty' => (float) $entry->qty,
+                    'rate' => (float) $entry->rate,
+                    'date' => $entry->date
+                ];
+            });
+
+        // 2. Grouped OUT Entries (by date only)
+        $outEntries = DB::connection('mysql2')->table('stock')
+            ->where('sub_item_id', $itemId)
+            ->where('voucher_date', '<=', $issueDate)
+            ->whereIn('voucher_type', [2, 3, 5, 9, 13, 19])
+            ->selectRaw('voucher_date as date,rate, SUM(qty) as qty')
+            ->groupBy('voucher_date')
+            ->get()
+            ->map(function ($entry) {
+                return [
+                    'type' => 'out',
+                    'qty' => (float) $entry->qty,
+                    'rate' => (float) $entry->rate,
+                    'date' => $entry->date
+                ];
+            });
+
+        // 3. Merge and Sort All by Date Ascending
+        $allEntries = $inEntries->merge($outEntries)->sortBy('date')->values();
+
+        // 4. FIFO Logic
+        $fifoStack = [];
+
+        foreach ($allEntries as $entry) {
+            if ($entry['type'] === 'in') {
+                $fifoStack[] = [
+                    'qty' => $entry['qty'],
+                    'rate' => $entry['rate']
+                ];
+            } else {
+                $remainingOutQty = $entry['qty'];
+                while ($remainingOutQty > 0 && !empty($fifoStack)) {
+                    $current = &$fifoStack[0];
+                    if ($current['qty'] > $remainingOutQty) {
+                        $current['qty'] -= $remainingOutQty;
+                        $remainingOutQty = 0;
+                    } else {
+                        $remainingOutQty -= $current['qty'];
+                        array_shift($fifoStack);
+                    }
+                }
+            }
+        }
+
+        // 5. Final Avg Rate Calculation
+        $totalQty = 0;
+        $totalValue = 0;
+
+        foreach ($fifoStack as $remaining) {
+            $totalQty += $remaining['qty'];
+            $totalValue += $remaining['qty'] * $remaining['rate'];
+        }
+
+        return $totalQty > 0 ? round($totalValue / $totalQty, 3) : 0;
+    }
 
 }
 

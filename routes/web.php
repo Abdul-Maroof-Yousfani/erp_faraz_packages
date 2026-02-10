@@ -2214,6 +2214,12 @@ Route::group(['prefix' => 'far_production', 'middleware' => 'mysql2', 'before' =
     Route::get('/viewMixingInfo', 'FarazProductionController@viewMixingInfo');
     Route::get('/mixtureEdit', 'FarazProductionController@mixtureEdit');
 
+    Route::get('/mixtureRolling', 'FarazProductionController@mixtureRolling');
+    Route::get('/viewProductionRollingList', 'FarazProductionController@viewProductionRollingList');
+    Route::get('/viewProductionRollPrintingList', 'FarazProductionController@viewProductionRollPrintingList');
+
+    Route::get('/rollPrinting', 'FarazProductionController@rollPrinting');
+
 
 });
 
@@ -2227,6 +2233,11 @@ Route::group(['prefix' => 'far_prod', 'middleware' => 'mysql2', 'before' => 'csr
     // production mixing ajax
     Route::post('/addProductionMixingDetail', 'FarazProductionAddDetailController@addProductionMixingDetail');
 
+    // production rolling ajax
+    Route::post('/addProductionRollingDetail', 'FarazProductionAddDetailController@addProductionRollingDetail')->name('FarProduction.Rolling');
+
+    // production roll printing ajax
+    Route::post('/addProductionRollPrintingDetail', 'FarazProductionAddDetailController@addProductionRollPrintingDetail')->name('FarProduction.RollPrint');
 
 });
 

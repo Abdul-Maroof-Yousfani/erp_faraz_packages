@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 
 use App\Models\ProductionMixture;
 use App\Models\ProductionMixtureData;
+use App\Models\ProductionRolling;
+use App\Models\ProductionRollPrinting;
 use Illuminate\Http\Request;
 use App\Helpers\ProductionHelper;
 use App\Helpers\ReuseableCode;
@@ -370,31 +372,168 @@ class FarazProductionController extends Controller
     public function mixtureEdit(Request $request)
     {
         $m = $request->m;
-        $mixture = ProductionMixture::where('status', 1)->where('id',$request->id)->first();
-        $mixtureData = ProductionMixtureData::where('status', 1)->where('production_mixture_id',$mixture->id)->get();
-        
-        $categories_id = explode(',',Auth::user()->categories_id);
+        $mixture = ProductionMixture::where('status', 1)->where('id', $request->id)->first();
+        $mixtureData = ProductionMixtureData::where('status', 1)->where('production_mixture_id', $mixture->id)->get();
+
+        $categories_id = explode(',', Auth::user()->categories_id);
         $sub_item = DB::Connection('mysql2')->table('category as c')
-        ->join('sub_category as sc', 'c.id', '=', 'sc.category_id')
-        ->join('subitem as s', 'sc.id', '=', 's.sub_category_id')
-        ->join(env('DB_DATABASE').'.uom as u', 's.uom', '=', 'u.id')
-        ->where('sc.status', '=', 1)
-        ->where('c.status', '=', 1)
-        ->where('s.status', '=', 1)
-        ->where('u.status', '=', 1)
-        ->where('s.main_ic_id', '=', 8)
-        ->select('s.id', 's.sub_ic','s.uom','s.item_code','u.uom_name','s.hs_code_id')
-        // ->whereIn('c.id', $categories_id)
-        ->groupBy('s.item_code')
-        ->orderBy('s.id')
-        ->get();
+            ->join('sub_category as sc', 'c.id', '=', 'sc.category_id')
+            ->join('subitem as s', 'sc.id', '=', 's.sub_category_id')
+            ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
+            ->where('sc.status', '=', 1)
+            ->where('c.status', '=', 1)
+            ->where('s.status', '=', 1)
+            ->where('u.status', '=', 1)
+            ->where('s.main_ic_id', '=', 8)
+            ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id')
+            // ->whereIn('c.id', $categories_id)
+            ->groupBy('s.item_code')
+            ->orderBy('s.id')
+            ->get();
 
         $raw_material = DB::Connection('mysql2')->table('subitem')
-        ->select('id', 'sub_ic','uom','item_code')
-        ->where('status', '=', 1)->where('main_ic_id', '=', 7)->get();
+            ->select('id', 'sub_ic', 'uom', 'item_code')
+            ->where('status', '=', 1)->where('main_ic_id', '=', 7)->get();
 
-       
-        return view('FarazPackagesProduction.ProductionMixture.editMixture', compact('mixture', 'mixtureData','sub_item','raw_material', 'm'));
+
+        return view('FarazPackagesProduction.ProductionMixture.editMixture', compact('mixture', 'mixtureData', 'sub_item', 'raw_material', 'm'));
+    }
+
+    public function mixtureRolling(Request $request)
+    {
+        $m = $request->m;
+
+        $production_mixture = DB::connection('mysql2')
+            ->table('production_mixture')
+            ->where('id', $request->id)
+            ->first();
+        // Master record
+        $out_source_productions = DB::connection('mysql2')
+            ->table('production_request')
+            ->where('id', $production_mixture->production_order_id)
+            ->first();
+
+        if (!$out_source_productions) {
+            return redirect()->back()->with('error', 'Out Source Production not found.');
+        }
+
+        // Totals
+        $out_source_productions_item = DB::connection('mysql2')
+            ->table('production_mixture_data')
+            ->select(
+                DB::raw('SUM(qty) as total_qty'),
+                DB::raw('SUM(used_qty) as total_used_qty')
+            )
+            ->where('production_mixture_id', $request->id)
+            ->first();
+
+        // Detail items
+        $out_source_productions_details = DB::connection('mysql2')
+            ->table('production_mixture_data')
+            ->where('production_mixture_id', $request->id)
+            ->get();
+
+        $categories_id = explode(',', Auth::user()->categories_id);
+
+        $sub_item = DB::Connection('mysql2')->table('category as c')
+            ->join('sub_category as sc', 'c.id', '=', 'sc.category_id')
+            ->join('subitem as s', 'sc.id', '=', 's.sub_category_id')
+            ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
+            ->where('sc.status', '=', 1)
+            ->where('c.status', '=', 1)
+            ->where('s.status', '=', 1)
+            ->where('u.status', '=', 1)
+            ->where('s.main_ic_id', '=', 8)
+            ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id')
+            // ->whereIn('c.id', $categories_id)
+            ->groupBy('s.item_code')
+            ->orderBy('s.id')
+            ->get();
+
+        $machines = DB::Connection('mysql2')->table('machine')
+            ->select('id', 'name')
+            ->where('status', '=', 1)->get();
+
+        $operators = DB::Connection('mysql2')->table('operators')
+            ->select('id', 'name')
+            ->where('status', '=', 1)->get();
+
+        $shifts = DB::Connection('mysql')->table('shift_type')
+            ->select('id', 'shift_type_name')
+            ->where('status', '=', 1)->get();
+
+        return view('FarazPackagesProduction.ProductionMixture.ProcessedMixtureRolling', compact('production_mixture', 'out_source_productions', 'out_source_productions_item', 'out_source_productions_details', 'sub_item', 'machines', 'operators', 'shifts', 'm'));
+    }
+
+    public function viewProductionRollingList()
+    {
+        $rollingList = ProductionRolling::where('status', '=', 1)->get();
+        $m = $this->m;
+        return view('FarazPackagesProduction.ProductionMixture.viewProductionRolling', compact('rollingList', 'm'));
+    }
+
+    public function viewProductionRollPrintingList()
+    {
+        $rollPricingList = ProductionRollPrinting::where('status', '=', 1)->get();
+        $m = $this->m;
+        return view('FarazPackagesProduction.ProductionMixture.viewProductionRollPrinting', compact('rollPricingList', 'm'));
+    }
+
+    public function rollPrinting(Request $request)
+    {
+        $m = $request->m;
+
+   
+
+        // Totals
+        $out_source_productions_item = DB::connection('mysql2')
+            ->table('production_rolling')
+            ->select(
+                DB::raw('SUM(roll_qty) as total_qty'),
+                DB::raw('SUM(printed_roll_qty) as total_used_qty'),
+                'date',
+                'item_id',
+                'id'
+            )
+            ->where('id', $request->id)
+            ->first();
+
+        // Detail items
+        $out_source_productions_details = DB::connection('mysql2')
+            ->table('production_rolling')
+            ->where('id', $request->id)
+            ->get();
+
+        $categories_id = explode(',', Auth::user()->categories_id);
+
+        $sub_item = DB::Connection('mysql2')->table('category as c')
+            ->join('sub_category as sc', 'c.id', '=', 'sc.category_id')
+            ->join('subitem as s', 'sc.id', '=', 's.sub_category_id')
+            ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
+            ->where('sc.status', '=', 1)
+            ->where('c.status', '=', 1)
+            ->where('s.status', '=', 1)
+            ->where('u.status', '=', 1)
+            ->where('s.main_ic_id', '=', 8)
+            ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id')
+            // ->whereIn('c.id', $categories_id)
+            ->groupBy('s.item_code')
+            ->orderBy('s.id')
+            ->get();
+
+        $machines = DB::Connection('mysql2')->table('machine')
+            ->select('id', 'name')
+            ->where('status', '=', 1)->get();
+
+        $operators = DB::Connection('mysql2')->table('operators')
+            ->select('id', 'name')
+            ->where('status', '=', 1)->get();
+
+        $shifts = DB::Connection('mysql')->table('shift_type')
+            ->select('id', 'shift_type_name')
+            ->where('status', '=', 1)->get();
+
+        return view('FarazPackagesProduction.ProductionMixture.ProcessedRollPrinting', compact( 'out_source_productions_item', 'out_source_productions_details', 'sub_item', 'machines', 'operators', 'shifts', 'm'));
     }
 
 }

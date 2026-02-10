@@ -12,7 +12,7 @@ use Redirect;
 use Session;
 use App\Helpers\ProductionHelper;
 use App\Helpers\CommonHelper;
-class FarazProductionAddDetailController  extends Controller
+class FarazProductionAddDetailController extends Controller
 {
     /**
      * Create a new controller instance.
@@ -30,7 +30,7 @@ class FarazProductionAddDetailController  extends Controller
         $BatchCode = Input::get('batch_code');
 
         $count = count($BatchCode);
-        for($i=0; $i<$count; $i++):
+        for ($i = 0; $i < $count; $i++):
             $InserData['main_id'] = $MainId;
             $InserData['life'] = $request->life[$i];
             $InserData['batch_code'] = $request->batch_code[$i];
@@ -38,10 +38,10 @@ class FarazProductionAddDetailController  extends Controller
             $InserData['cost'] = $request->cost[$i];
             $InserData['username'] = Auth::user()->name;
             $MainId = DB::Connection('mysql2')->table('production_dai_detail')->insertGetId($InserData);
-            ProductionHelper::production_activity($MainId,2,1);
+            ProductionHelper::production_activity($MainId, 2, 1);
         endfor;
 
-        return Redirect::to('production/daiList?m='.$_GET['m'].'#SFR');
+        return Redirect::to('production/daiList?m=' . $_GET['m'] . '#SFR');
 
     }
 
@@ -51,7 +51,7 @@ class FarazProductionAddDetailController  extends Controller
         $ItemId = Input::get('item_id');
 
         $count = count($ItemId);
-        for($i=0; $i<$count; $i++):
+        for ($i = 0; $i < $count; $i++):
             $InserData['main_id'] = $MainId;
             $InserData['item_id'] = $request->item_id[$i];
             $InserData['qty'] = $request->Qty[$i];
@@ -59,7 +59,7 @@ class FarazProductionAddDetailController  extends Controller
             DB::Connection('mysql2')->table('production_bom_data_indirect_material')->insert($InserData);
         endfor;
 
-        return Redirect::to('production/bom_list?m='.$_GET['m'].'#SFR');
+        return Redirect::to('production/bom_list?m=' . $_GET['m'] . '#SFR');
 
     }
 
@@ -74,20 +74,18 @@ class FarazProductionAddDetailController  extends Controller
         $InsertData['charges'] = $request->input('charges');
         $InsertData['status'] = 1;
         $InsertData['username'] = Auth::user()->name;
-        $Count = DB::Connection('mysql2')->table('production_labour_category')->where('labour_category',$request->input('labour_category'))->count();
-        if($Count > 0)
-        {
+        $Count = DB::Connection('mysql2')->table('production_labour_category')->where('labour_category', $request->input('labour_category'))->count();
+        if ($Count > 0) {
             echo 'duplicate';
-        }
-        else
-        {
+        } else {
             DB::Connection('mysql2')->table('production_labour_category')->insert($InsertData);
             echo "yes";
         }
 
     }
 
-    function convertToHoursMins($time, $format = '%02d:%02d') {
+    function convertToHoursMins($time, $format = '%02d:%02d')
+    {
         if ($time < 1) {
             return;
         }
@@ -98,7 +96,7 @@ class FarazProductionAddDetailController  extends Controller
 
     public function insert_operation_detail(Request $request)
     {
-//        echo "<pre>";
+        //        echo "<pre>";
 //        print_r($request->input());
 //        die();
 
@@ -114,9 +112,9 @@ class FarazProductionAddDetailController  extends Controller
         $DetailSection = $request->input('machine_id');
 
         foreach ($DetailSection as $key => $row2):
-            $WaitTime = sprintf("%02d:%02d:%02d",floor($request->input('wait_time')[$key] /60),$request->input('wait_time')[$key] % 60,'00');
-            $MoveTime = sprintf("%02d:%02d:%02d",floor($request->input('move_time')[$key] /60),$request->input('move_time')[$key] % 60,'00');
-            $QueTime= sprintf("%02d:%02d:%02d",floor($request->input('que_time')[$key] /60),$request->input('que_time')[$key] % 60,'00');
+            $WaitTime = sprintf("%02d:%02d:%02d", floor($request->input('wait_time')[$key] / 60), $request->input('wait_time')[$key] % 60, '00');
+            $MoveTime = sprintf("%02d:%02d:%02d", floor($request->input('move_time')[$key] / 60), $request->input('move_time')[$key] % 60, '00');
+            $QueTime = sprintf("%02d:%02d:%02d", floor($request->input('que_time')[$key] / 60), $request->input('que_time')[$key] % 60, '00');
 
 
 
@@ -124,7 +122,7 @@ class FarazProductionAddDetailController  extends Controller
             $DetailDataInsert['master_id'] = $MasterId;
             $DetailDataInsert['machine_id'] = $request->input('machine_id')[$key];
             $DetailDataInsert['capacity'] = $request->input('capacity')[$key];
-//            $DetailDataInsert['labour_category_id'] = $LabCatIds;
+            //            $DetailDataInsert['labour_category_id'] = $LabCatIds;
             $DetailDataInsert['wait_time'] = gmdate("H:i:s", $request->input('wait_time')[$key]);
             $DetailDataInsert['move_time'] = gmdate("H:i:s", $request->input('move_time')[$key]);
             $DetailDataInsert['que_time'] = gmdate("H:i:s", $request->input('que_time')[$key]);
@@ -133,7 +131,7 @@ class FarazProductionAddDetailController  extends Controller
             $DetailDataInsert['username'] = 'Amir Murshad';
 
             $DetailId = DB::Connection('mysql2')->table('production_work_order_data')->insertGetId($DetailDataInsert);
-        //    $DetailSectionLab = $request->input('labour_category');
+            //    $DetailSectionLab = $request->input('labour_category');
 //            foreach ($DetailSectionLab as $key2 => $row3):
 //                $LabCatDetailInsert['master_id'] = $MasterId;
 ////            $LabCatDetailInsert['detail_id'] = $DetailId;
@@ -145,9 +143,9 @@ class FarazProductionAddDetailController  extends Controller
 //            endforeach;
 
         endforeach;
-        ProductionHelper::production_activity($MasterId,7,1);
+        ProductionHelper::production_activity($MasterId, 7, 1);
 
-        return Redirect::to('production/operation_list?m='.$m.'#SFR');
+        return Redirect::to('production/operation_list?m=' . $m . '#SFR');
 
     }
 
@@ -161,9 +159,9 @@ class FarazProductionAddDetailController  extends Controller
         $DetailSection = $request->input('machine_id');
 
         foreach ($DetailSection as $key => $row2):
-            $WaitTime = sprintf("%02d:%02d:%02d",floor($request->input('wait_time')[$key] /60),$request->input('wait_time')[$key] % 60,'00');
-            $MoveTime = sprintf("%02d:%02d:%02d",floor($request->input('move_time')[$key] /60),$request->input('move_time')[$key] % 60,'00');
-            $QueTime= sprintf("%02d:%02d:%02d",floor($request->input('que_time')[$key] /60),$request->input('que_time')[$key] % 60,'00');
+            $WaitTime = sprintf("%02d:%02d:%02d", floor($request->input('wait_time')[$key] / 60), $request->input('wait_time')[$key] % 60, '00');
+            $MoveTime = sprintf("%02d:%02d:%02d", floor($request->input('move_time')[$key] / 60), $request->input('move_time')[$key] % 60, '00');
+            $QueTime = sprintf("%02d:%02d:%02d", floor($request->input('que_time')[$key] / 60), $request->input('que_time')[$key] % 60, '00');
 
 
 
@@ -171,7 +169,7 @@ class FarazProductionAddDetailController  extends Controller
             $DetailDataInsert['master_id'] = $EditId;
             $DetailDataInsert['machine_id'] = $request->input('machine_id')[$key];
             $DetailDataInsert['capacity'] = $request->input('capacity')[$key];
-//            $DetailDataInsert['labour_category_id'] = $LabCatIds;
+            //            $DetailDataInsert['labour_category_id'] = $LabCatIds;
             $DetailDataInsert['wait_time'] = gmdate("H:i:s", $request->input('wait_time')[$key]);
             $DetailDataInsert['move_time'] = gmdate("H:i:s", $request->input('move_time')[$key]);
             $DetailDataInsert['que_time'] = gmdate("H:i:s", $request->input('que_time')[$key]);
@@ -179,9 +177,8 @@ class FarazProductionAddDetailController  extends Controller
             $DetailDataInsert['date'] = date('Y-m-d');
             $DetailDataInsert['username'] = Auth::user()->name;
 
-            DB::Connection('mysql2')->table('production_work_order_data')->where('id',$request->input('detail_id')[$key])->update($DetailDataInsert);
-            if($request->input('detail_id')[$key] == 0)
-            {
+            DB::Connection('mysql2')->table('production_work_order_data')->where('id', $request->input('detail_id')[$key])->update($DetailDataInsert);
+            if ($request->input('detail_id')[$key] == 0) {
                 DB::Connection('mysql2')->table('production_work_order_data')->insert($DetailDataInsert);
             }
             //    $DetailSectionLab = $request->input('labour_category');
@@ -196,10 +193,10 @@ class FarazProductionAddDetailController  extends Controller
 //            endforeach;
 
         endforeach;
-        ProductionHelper::production_activity($EditId,7,2);
+        ProductionHelper::production_activity($EditId, 7, 2);
 
 
-        return Redirect::to('production/operation_list?m='.$m.'#SFR');
+        return Redirect::to('production/operation_list?m=' . $m . '#SFR');
 
     }
 
@@ -216,37 +213,35 @@ class FarazProductionAddDetailController  extends Controller
         DB::Connection('mysql2')->beginTransaction();
         try {
 
-            $data=array
+            $data = array
             (
-                'finish_goods'=>$request->finish_goods,
-                'voucher_no'=>ProductionHelper::get_unique_code_for_routing(),
-                'operation_id'=>$request->operation_id,
-                'status'=>1,
-                'username'=>Auth::user()->name,
-                'date'=>date('Y-m-d'),
+                'finish_goods' => $request->finish_goods,
+                'voucher_no' => ProductionHelper::get_unique_code_for_routing(),
+                'operation_id' => $request->operation_id,
+                'status' => 1,
+                'username' => Auth::user()->name,
+                'date' => date('Y-m-d'),
 
             );
 
-          $id=  DB::Connection('mysql2')->table('production_route')->insertGetId($data);
+            $id = DB::Connection('mysql2')->table('production_route')->insertGetId($data);
 
-            $data1=$request->machine;
-            foreach($data1 as $key => $row):
-                $data2=array
+            $data1 = $request->machine;
+            foreach ($data1 as $key => $row):
+                $data2 = array
                 (
-                    'master_id'=>$id,
-                    'machine_id'=>$row,
-                    'operation_data_id'=>$request->input('operation_data_id')[$key],
-                    'orderby'=>$request->input('orderbyy')[$key],
-                    'status'=>1,
+                    'master_id' => $id,
+                    'machine_id' => $row,
+                    'operation_data_id' => $request->input('operation_data_id')[$key],
+                    'orderby' => $request->input('orderbyy')[$key],
+                    'status' => 1,
 
                 );
                 DB::Connection('mysql2')->table('production_route_data')->insert($data2);
             endforeach;
-            ProductionHelper::production_activity($id,8,1);
+            ProductionHelper::production_activity($id, 8, 1);
             DB::Connection('mysql2')->commit();
-        }
-        catch ( Exception $ex )
-        {
+        } catch (Exception $ex) {
 
             DB::rollBack();
 
@@ -261,24 +256,22 @@ class FarazProductionAddDetailController  extends Controller
         DB::Connection('mysql2')->beginTransaction();
         try {
 
-            $data1=$request->machine;
-            foreach($data1 as $key => $row):
-                $data2=array
+            $data1 = $request->machine;
+            foreach ($data1 as $key => $row):
+                $data2 = array
                 (
-                    'master_id'=>$EditId,
-                    'machine_id'=>$row,
-                    'operation_data_id'=>$request->input('operation_data_id')[$key],
-                    'orderby'=>$request->input('orderbyy')[$key],
-                    'status'=>1,
+                    'master_id' => $EditId,
+                    'machine_id' => $row,
+                    'operation_data_id' => $request->input('operation_data_id')[$key],
+                    'orderby' => $request->input('orderbyy')[$key],
+                    'status' => 1,
 
                 );
-                DB::Connection('mysql2')->table('production_route_data')->where('id',$request->input('detailed_id')[$key])->where('master_id',$EditId)->update($data2);
+                DB::Connection('mysql2')->table('production_route_data')->where('id', $request->input('detailed_id')[$key])->where('master_id', $EditId)->update($data2);
             endforeach;
-            ProductionHelper::production_activity($EditId,8,2);
+            ProductionHelper::production_activity($EditId, 8, 2);
             DB::Connection('mysql2')->commit();
-        }
-        catch ( Exception $ex )
-        {
+        } catch (Exception $ex) {
 
             DB::rollBack();
 
@@ -294,45 +287,43 @@ class FarazProductionAddDetailController  extends Controller
         DB::Connection('mysql2')->beginTransaction();
         try {
 
-            $data=array
+            $data = array
             (
-                'name'=>$request->name,
-                'over_head_category_id'=>$request->over_head_category_id,
-                'desc'=>$request->desc,
-                'status'=>1,
-                'username'=>Auth::user()->name,
-                'date'=>date('Y-m-d'),
+                'name' => $request->name,
+                'over_head_category_id' => $request->over_head_category_id,
+                'desc' => $request->desc,
+                'status' => 1,
+                'username' => Auth::user()->name,
+                'date' => date('Y-m-d'),
 
             );
 
-            $id=  DB::Connection('mysql2')->table('production_factory_overhead')->insertGetId($data);
+            $id = DB::Connection('mysql2')->table('production_factory_overhead')->insertGetId($data);
 
-            $data1=$request->acc_id;
-            foreach($data1 as $key => $row):
-                $data2=array
+            $data1 = $request->acc_id;
+            foreach ($data1 as $key => $row):
+                $data2 = array
                 (
-                    'master_id'=>$id,
-                    'acc_id'=>$row,
-                    'amount'=>$request->input('amount')[$key],
-                    'no_of_piece'=>$request->input('no_of_piece')[$key],
-                    'cost'=>$request->input('cost')[$key],
-                    'status'=>1,
-                    'date'=>date('Y-m-d'),
-                    'username'=>Auth::user()->name,
+                    'master_id' => $id,
+                    'acc_id' => $row,
+                    'amount' => $request->input('amount')[$key],
+                    'no_of_piece' => $request->input('no_of_piece')[$key],
+                    'cost' => $request->input('cost')[$key],
+                    'status' => 1,
+                    'date' => date('Y-m-d'),
+                    'username' => Auth::user()->name,
 
                 );
                 DB::Connection('mysql2')->table('production_factory_overhead_data')->insert($data2);
             endforeach;
-            ProductionHelper::production_activity($id,9,1);
+            ProductionHelper::production_activity($id, 9, 1);
             DB::Connection('mysql2')->commit();
-        }
-        catch ( Exception $ex )
-        {
+        } catch (Exception $ex) {
 
             DB::rollBack();
 
         }
-        return Redirect::to('production/factory_overhead_list?m='.$_GET['m'].'#SFR');
+        return Redirect::to('production/factory_overhead_list?m=' . $_GET['m'] . '#SFR');
     }
 
     public function update_factory_over_head(Request $request)
@@ -341,46 +332,44 @@ class FarazProductionAddDetailController  extends Controller
         $EditId = $request->EditId;
         try {
 
-            $data=array
+            $data = array
             (
-                'name'=>$request->name,
-                'over_head_category_id'=>$request->over_head_category_id,
-                'desc'=>$request->desc,
-                'status'=>1,
-                'username'=>Auth::user()->name,
-                'date'=>date('Y-m-d'),
+                'name' => $request->name,
+                'over_head_category_id' => $request->over_head_category_id,
+                'desc' => $request->desc,
+                'status' => 1,
+                'username' => Auth::user()->name,
+                'date' => date('Y-m-d'),
 
             );
 
-            DB::Connection('mysql2')->table('production_factory_overhead')->where('id','=',$EditId)->update($data);
-            DB::Connection('mysql2')->table('production_factory_overhead_data')->where('master_id','=',$EditId)->delete();
+            DB::Connection('mysql2')->table('production_factory_overhead')->where('id', '=', $EditId)->update($data);
+            DB::Connection('mysql2')->table('production_factory_overhead_data')->where('master_id', '=', $EditId)->delete();
 
-            $data1=$request->acc_id;
-            foreach($data1 as $key => $row):
-                $data2=array
+            $data1 = $request->acc_id;
+            foreach ($data1 as $key => $row):
+                $data2 = array
                 (
-                    'master_id'=>$EditId,
-                    'acc_id'=>$row,
-                    'amount'=>$request->input('amount')[$key],
-                    'no_of_piece'=>$request->input('no_of_piece')[$key],
-                    'cost'=>$request->input('cost')[$key],
-                    'status'=>1,
-                    'date'=>date('Y-m-d'),
-                    'username'=>Auth::user()->name,
+                    'master_id' => $EditId,
+                    'acc_id' => $row,
+                    'amount' => $request->input('amount')[$key],
+                    'no_of_piece' => $request->input('no_of_piece')[$key],
+                    'cost' => $request->input('cost')[$key],
+                    'status' => 1,
+                    'date' => date('Y-m-d'),
+                    'username' => Auth::user()->name,
 
                 );
                 DB::Connection('mysql2')->table('production_factory_overhead_data')->insert($data2);
             endforeach;
-            ProductionHelper::production_activity($EditId,9,2);
+            ProductionHelper::production_activity($EditId, 9, 2);
             DB::Connection('mysql2')->commit();
-        }
-        catch ( Exception $ex )
-        {
+        } catch (Exception $ex) {
 
             DB::rollBack();
 
         }
-        return Redirect::to('production/factory_overhead_list?m='.$_GET['m'].'#SFR');
+        return Redirect::to('production/factory_overhead_list?m=' . $_GET['m'] . '#SFR');
     }
 
 
@@ -398,7 +387,7 @@ class FarazProductionAddDetailController  extends Controller
         $NoOfEmployee = Input::get('NoOfEmployee');
 
         $count = count($NoOfEmployee);
-        for($i=0; $i<$count; $i++):
+        for ($i = 0; $i < $count; $i++):
             $DetailInsert['master_id'] = $MasterId;
             $DetailInsert['description'] = $request->Description[$i];
             $DetailInsert['no_of_employee'] = $request->NoOfEmployee[$i];
@@ -408,8 +397,8 @@ class FarazProductionAddDetailController  extends Controller
 
             DB::Connection('mysql2')->table('production_labour_working_data')->insert($DetailInsert);
         endfor;
-        ProductionHelper::production_activity($MasterId,10,1);
-        return Redirect::to('production/labour_working_list?m='.$_GET['m'].'#SFR');
+        ProductionHelper::production_activity($MasterId, 10, 1);
+        return Redirect::to('production/labour_working_list?m=' . $_GET['m'] . '#SFR');
 
     }
 
@@ -427,14 +416,14 @@ class FarazProductionAddDetailController  extends Controller
 
 
         $MasterId = DB::Connection('mysql2')->table('production_labour_working')->insertGetId($MasterInsert);
-        DB::Connection('mysql2')->table('production_labour_working')->where('id','=',$EditId)->update($Inactive);
-        DB::Connection('mysql2')->table('production_labour_working_data')->where('master_id','=',$EditId)->update($Inactive);
+        DB::Connection('mysql2')->table('production_labour_working')->where('id', '=', $EditId)->update($Inactive);
+        DB::Connection('mysql2')->table('production_labour_working_data')->where('master_id', '=', $EditId)->update($Inactive);
 
 
         $NoOfEmployee = Input::get('NoOfEmployee');
 
         $count = count($NoOfEmployee);
-        for($i=0; $i<$count; $i++):
+        for ($i = 0; $i < $count; $i++):
             $DetailInsert['master_id'] = $MasterId;
             $DetailInsert['description'] = $request->Description[$i];
             $DetailInsert['no_of_employee'] = $request->NoOfEmployee[$i];
@@ -444,9 +433,9 @@ class FarazProductionAddDetailController  extends Controller
 
             DB::Connection('mysql2')->table('production_labour_working_data')->insert($DetailInsert);
         endfor;
-        ProductionHelper::production_activity($MasterId,10,2);
+        ProductionHelper::production_activity($MasterId, 10, 2);
 
-        return Redirect::to('production/labour_working_list?m='.$_GET['m'].'#SFR');
+        return Redirect::to('production/labour_working_list?m=' . $_GET['m'] . '#SFR');
 
     }
 
@@ -463,9 +452,9 @@ class FarazProductionAddDetailController  extends Controller
         $InserData['username'] = Auth::user()->name;
 
         $MainId = DB::Connection('mysql2')->table('production_over_head_category')->insertGetId($InserData);
-        ProductionHelper::production_activity($MainId,11,1);
+        ProductionHelper::production_activity($MainId, 11, 1);
 
-        return Redirect::to('production/factory_over_head_cateogory_list?m='.Session::get('run_company'));
+        return Redirect::to('production/factory_over_head_cateogory_list?m=' . Session::get('run_company'));
 
     }
 
@@ -475,55 +464,53 @@ class FarazProductionAddDetailController  extends Controller
 
         DB::Connection('mysql2')->beginTransaction();
         try {
-            $so_data=$request->so_no;
-            $so_data=explode('*',$so_data);
-            $order_no=ProductionHelper::ppc_no(date('y'),date('m'));
-            $data=array
+            $so_data = $request->so_no;
+            $so_data = explode('*', $so_data);
+            $order_no = ProductionHelper::ppc_no(date('y'), date('m'));
+            $data = array
             (
-                'order_no'=>$order_no,
-                'order_date'=>$request->order_date,
-                'due_date'=>$request->due_date,
-                'start_date'=>$request->start_date,
-                'end_date'=>$request->end_date,
-                'type'=>$request->type,
-                'ppc_status'=>$request->status,
-                'sales_order_id'=>0,
-                'customer'=>0,
-                'usernmae'=>Auth::user()->name,
-                'date'=>date('Y-m-d'),
+                'order_no' => $order_no,
+                'order_date' => $request->order_date,
+                'due_date' => $request->due_date,
+                'start_date' => $request->start_date,
+                'end_date' => $request->end_date,
+                'type' => $request->type,
+                'ppc_status' => $request->status,
+                'sales_order_id' => 0,
+                'customer' => 0,
+                'usernmae' => Auth::user()->name,
+                'date' => date('Y-m-d'),
 
             );
 
-            $id=  DB::Connection('mysql2')->table('production_plane')->insertGetId($data);
+            $id = DB::Connection('mysql2')->table('production_plane')->insertGetId($data);
 
-            $data1=$request->product;
-            foreach($data1 as $key => $row):
-                $data2=array
+            $data1 = $request->product;
+            foreach ($data1 as $key => $row):
+                $data2 = array
                 (
-                    'master_id'=>$id,
-                    'order_no'=>$order_no,
-                    'finish_goods_id'=>$row,
-                    'route'=>$request->input('route')[$key] ??0,
-                    'planned_qty'=>$request->input('planned_qty')[$key],
-                    'status'=>1,
-                    'date'=>date('Y-m-d'),
-                    'username'=>Auth::user()->name,
+                    'master_id' => $id,
+                    'order_no' => $order_no,
+                    'finish_goods_id' => $row,
+                    'route' => $request->input('route')[$key] ?? 0,
+                    'planned_qty' => $request->input('planned_qty')[$key],
+                    'status' => 1,
+                    'date' => date('Y-m-d'),
+                    'username' => Auth::user()->name,
 
                 );
                 DB::Connection('mysql2')->table('production_plane_data')->insert($data2);
             endforeach;
             DB::Connection('mysql2')->commit();
-            return Redirect::to('production/production_plan_list?m='.Session::get('run_company'));
-        }
-        catch ( Exception $ex )
-        {
+            return Redirect::to('production/production_plan_list?m=' . Session::get('run_company'));
+        } catch (Exception $ex) {
 
             DB::rollBack();
 
         }
 
 
-        return redirect('production/ppc_issue_item?id='.$id);
+        return redirect('production/ppc_issue_item?id=' . $id);
     }
 
     public function update_ppc(Request $request)
@@ -536,64 +523,59 @@ class FarazProductionAddDetailController  extends Controller
 
         $SaleOrderId = 0;
         $CustomerId = 0;
-        if(isset($request->so_no))
-        {
-            $so_data=explode('*',$request->so_no);
+        if (isset($request->so_no)) {
+            $so_data = explode('*', $request->so_no);
             $SaleOrderId = $so_data[0];
             $CustomerId = $so_data[2];
         }
 
 
-        DB::Connection('mysql2')->select('Update production_plane_data set status = 0 where id in('.$DeletedIds.') and master_id = '.$EditId.'');
+        DB::Connection('mysql2')->select('Update production_plane_data set status = 0 where id in(' . $DeletedIds . ') and master_id = ' . $EditId . '');
 
         DB::Connection('mysql2')->beginTransaction();
         try {
 
 
-            $data=array
+            $data = array
             (
-                'order_date'=>$request->order_date,
-                'start_date'=>$request->start_date,
-                'end_date'=>$request->end_date,
-                'type'=>$request->type,
-                'ppc_status'=>$request->status,
-                'sales_order_id'=>$SaleOrderId,
-                'customer'=>$CustomerId,
-                'usernmae'=>Auth::user()->name,
-                'date'=>date('Y-m-d'),
+                'order_date' => $request->order_date,
+                'start_date' => $request->start_date,
+                'end_date' => $request->end_date,
+                'type' => $request->type,
+                'ppc_status' => $request->status,
+                'sales_order_id' => $SaleOrderId,
+                'customer' => $CustomerId,
+                'usernmae' => Auth::user()->name,
+                'date' => date('Y-m-d'),
 
             );
 
 
-            DB::Connection('mysql2')->table('production_plane')->where('id',$EditId)->update($data);
+            DB::Connection('mysql2')->table('production_plane')->where('id', $EditId)->update($data);
 
-            $data1=$request->product;
-            foreach($data1 as $key => $row):
-                $data2=array
+            $data1 = $request->product;
+            foreach ($data1 as $key => $row):
+                $data2 = array
                 (
-                    'master_id'=>$EditId,
-                    'order_no'=>$order_no,
-                    'finish_goods_id'=>$row,
-                    'route'=>$request->input('route')[$key],
-                    'planned_qty'=>$request->input('planned_qty')[$key],
-                    'status'=>1,
-                    'date'=>date('Y-m-d'),
-                    'username'=>Auth::user()->name,
+                    'master_id' => $EditId,
+                    'order_no' => $order_no,
+                    'finish_goods_id' => $row,
+                    'route' => $request->input('route')[$key],
+                    'planned_qty' => $request->input('planned_qty')[$key],
+                    'status' => 1,
+                    'date' => date('Y-m-d'),
+                    'username' => Auth::user()->name,
 
                 );
-                if($request->input('detailed_id')[$key] != 0)
-                {
-                    DB::Connection('mysql2')->table('production_plane_data')->where('id',$request->input('detailed_id')[$key])->update($data2);
-                }
-                else{
+                if ($request->input('detailed_id')[$key] != 0) {
+                    DB::Connection('mysql2')->table('production_plane_data')->where('id', $request->input('detailed_id')[$key])->update($data2);
+                } else {
                     DB::Connection('mysql2')->table('production_plane_data')->insert($data2);
                 }
 
             endforeach;
             DB::Connection('mysql2')->commit();
-        }
-        catch ( Exception $ex )
-        {
+        } catch (Exception $ex) {
 
             DB::rollBack();
 
@@ -612,82 +594,82 @@ class FarazProductionAddDetailController  extends Controller
         DB::Connection('mysql2')->beginTransaction();
         try {
 
-            $data=array
+            $data = array
             (
-                'production_plan_id'=>$request->production_plan_id,
-                'status'=>1,
-                'username'=>Auth::user()->name,
-                'date'=>date('Y-m-d'),
+                'production_plan_id' => $request->production_plan_id,
+                'status' => 1,
+                'username' => Auth::user()->name,
+                'date' => date('Y-m-d'),
 
             );
 
-            $id=  DB::Connection('mysql2')->table('production_conversion')->insertGetId($data);
+            $id = DB::Connection('mysql2')->table('production_conversion')->insertGetId($data);
 
-          $production=  ProductionHelper::get_production_plane_detail($request->production_plan_id);
-          $voucher_no=$production->order_no;
+            $production = ProductionHelper::get_production_plane_detail($request->production_plan_id);
+            $voucher_no = $production->order_no;
 
-            $data1=$request->spoilage;
-            foreach($data1 as $key => $row):
-                $data2=array
+            $data1 = $request->spoilage;
+            foreach ($data1 as $key => $row):
+                $data2 = array
                 (
-                    'master_id'=>$id,
-                    'production_plan_data_id'=>$request->input('production_plan_data_id')[$key],
-                    'spoilage'=>$row,
-                    'produce_qty'=>$request->input('produce_qty')[$key],
-                    'status'=>1,
-                    'date'=>date('Y-m-d'),
-                    'username'=>Auth::user()->name,
+                    'master_id' => $id,
+                    'production_plan_data_id' => $request->input('production_plan_data_id')[$key],
+                    'spoilage' => $row,
+                    'produce_qty' => $request->input('produce_qty')[$key],
+                    'status' => 1,
+                    'date' => date('Y-m-d'),
+                    'username' => Auth::user()->name,
 
                 );
-              $production_plan_data_id=  DB::Connection('mysql2')->table('prouction_conversion_data')->insertGetId($data2);
+                $production_plan_data_id = DB::Connection('mysql2')->table('prouction_conversion_data')->insertGetId($data2);
 
 
-            $data3=$request->input('production_plan_issuence_id'.$key);
+                $data3 = $request->input('production_plan_issuence_id' . $key);
 
-            foreach ($data3 as $key2 => $row1):
+                foreach ($data3 as $key2 => $row1):
 
-                $chip=$request->input('chip'.$key)[$key2];
-                if ($chip=='Not Applicable'):
-                    $chip=0;
+                    $chip = $request->input('chip' . $key)[$key2];
+                    if ($chip == 'Not Applicable'):
+                        $chip = 0;
                     endif;
 
-                $turning=$request->input('turning'.$key)[$key2];
-                if ($turning=='Not Applicable'):
-                    $turning=0;
-                endif;
-                $data4=array
-                (
-                    'production_conversion_id'=>$id,
-                    'production_conversion_data_id'=>$production_plan_data_id,
-                    'bom_data_id'=>$request->input('bom_data_id'.$key)[$key2],
-                    'issuence_id'=>$row1,
-                    'type'=>$request->input('type'.$key)[$key2],
-                    'chip'=>$chip,
-                    'turning'=>$turning,
-                    'status'=>1,
-                    'username'=>Auth::user()->name,
-                    'date'=>date('Y-m-d'),
+                    $turning = $request->input('turning' . $key)[$key2];
+                    if ($turning == 'Not Applicable'):
+                        $turning = 0;
+                    endif;
+                    $data4 = array
+                    (
+                        'production_conversion_id' => $id,
+                        'production_conversion_data_id' => $production_plan_data_id,
+                        'bom_data_id' => $request->input('bom_data_id' . $key)[$key2],
+                        'issuence_id' => $row1,
+                        'type' => $request->input('type' . $key)[$key2],
+                        'chip' => $chip,
+                        'turning' => $turning,
+                        'status' => 1,
+                        'username' => Auth::user()->name,
+                        'date' => date('Y-m-d'),
 
-                );
-                DB::Connection('mysql2')->table('production_conversion_data_material')->insert($data4);
+                    );
+                    DB::Connection('mysql2')->table('production_conversion_data_material')->insert($data4);
 
 
-             endforeach;
+                endforeach;
             endforeach;
 
-            $issuence_data=$request->wastage;
+            $issuence_data = $request->wastage;
 
-            foreach($issuence_data  as $key3 => $row):
+            foreach ($issuence_data as $key3 => $row):
 
-                $wastage_data=
+                $wastage_data =
                     array
                     (
 
-                      'issuence_id'=>$request->input('issuence_id')[$key3],
-                      'production_plan_data_id'=>$request->input('bom_data')[$key3],
-                      'ppc_no'=>$voucher_no,
-                      'wastage_per_pirece'=>$row,
-                      'date'=>date('Y-m-d'),
+                        'issuence_id' => $request->input('issuence_id')[$key3],
+                        'production_plan_data_id' => $request->input('bom_data')[$key3],
+                        'ppc_no' => $voucher_no,
+                        'wastage_per_pirece' => $row,
+                        'date' => date('Y-m-d'),
 
                     );
                 DB::Connection('mysql2')->table('production_wastage_data')->insert($wastage_data);
@@ -695,14 +677,12 @@ class FarazProductionAddDetailController  extends Controller
 
 
             DB::Connection('mysql2')->commit();
-        }
-        catch ( Exception $ex )
-        {
+        } catch (Exception $ex) {
 
             DB::rollBack();
 
         }
-        $id= $request->production_plan_id;
+        $id = $request->production_plan_id;
 
 
         $data = DB::Connection('mysql2')->table('production_plane')->where('status', 1)->where('id', $id)->first();
@@ -715,61 +695,59 @@ class FarazProductionAddDetailController  extends Controller
     {
 
         DB::Connection('mysql2')->beginTransaction();
-      //  $uniq=PurchaseHelper::get_unique_no_internal_consumtion(date('y'),date('m'));
+        //  $uniq=PurchaseHelper::get_unique_no_internal_consumtion(date('y'),date('m'));
         try {
-            $id=$request->id;
-            $data=array
+            $id = $request->id;
+            $data = array
             (
-                'voucher_no'=>$request->tr_no,
-                'voucher_date'=>$request->tr_date,
-                'description'=>$request->description,
-                'status'=>1,
-                'date'=>$request->tr_date,
-                'username'=>Auth::user()->name,
+                'voucher_no' => $request->tr_no,
+                'voucher_date' => $request->tr_date,
+                'description' => $request->description,
+                'status' => 1,
+                'date' => $request->tr_date,
+                'username' => Auth::user()->name,
             );
-           DB::Connection('mysql2')->table('internal_consumtion')->where('id',$id)->update($data);
+            DB::Connection('mysql2')->table('internal_consumtion')->where('id', $id)->update($data);
 
-            $data1=$request->item_id;
+            $data1 = $request->item_id;
             $TotAmount = 0;
-            foreach($data1 as $key=>$row):
+            foreach ($data1 as $key => $row):
 
 
 
 
 
-                $data2=array
+                $data2 = array
                 (
-                    'master_id'=>$id,
-                    'voucher_no'=>$request->tr_no,
-                    'item_id'=>$row,
-                    'warehouse_from'=>$request->input('warehouse_from')[$key],
-                    'acc_id'=>$request->input('warehouse_to')[$key],
-                    'qty'=>$request->input('qty')[$key],
-                    'rate'=>$request->input('rate')[$key],
-                    'amount'=>$request->input('amount')[$key],
-                    'batch_code'=>$request->input('batch_code')[$key],
-                    'desc'=>$request->input('des')[$key],
-                    'status'=>1,
+                    'master_id' => $id,
+                    'voucher_no' => $request->tr_no,
+                    'item_id' => $row,
+                    'warehouse_from' => $request->input('warehouse_from')[$key],
+                    'acc_id' => $request->input('warehouse_to')[$key],
+                    'qty' => $request->input('qty')[$key],
+                    'rate' => $request->input('rate')[$key],
+                    'amount' => $request->input('amount')[$key],
+                    'batch_code' => $request->input('batch_code')[$key],
+                    'desc' => $request->input('des')[$key],
+                    'status' => 1,
                 );
 
-                $TotAmount+=$request->input('amount')[$key];
-                $data_id=$request->input('data_id')[$key];
-                if ($data_id==0):
-                $master_data_id= DB::Connection('mysql2')->table('internal_consumtion_data')->insertGetId($data2);
-                    else:
-                        $master_data_id= DB::Connection('mysql2')->table('internal_consumtion_data')->where('id',$data_id)->update($data2);
-                        endif;
+                $TotAmount += $request->input('amount')[$key];
+                $data_id = $request->input('data_id')[$key];
+                if ($data_id == 0):
+                    $master_data_id = DB::Connection('mysql2')->table('internal_consumtion_data')->insertGetId($data2);
+                else:
+                    $master_data_id = DB::Connection('mysql2')->table('internal_consumtion_data')->where('id', $data_id)->update($data2);
+                endif;
 
 
             endforeach;
 
-            CommonHelper::inventory_activity($request->tr_no,$request->tr_date,$TotAmount,10,'Update');
+            CommonHelper::inventory_activity($request->tr_no, $request->tr_date, $TotAmount, 10, 'Update');
 
 
             DB::Connection('mysql2')->commit();
-        }
-        catch(\Exception $e)
-        {
+        } catch (\Exception $e) {
             DB::Connection('mysql2')->rollback();
             echo "EROOR"; //die();
             dd($e->getMessage());
@@ -787,7 +765,7 @@ class FarazProductionAddDetailController  extends Controller
         DB::Connection('mysql2')->beginTransaction();
         try {
             $m = $_GET['m'];
-           
+
             $data['pr_no'] = strip_tags($request->pr_no);
             $data['request_date'] = strip_tags($request->request_date);
             $data['ref_no'] = strip_tags($request->ref_no);
@@ -799,8 +777,7 @@ class FarazProductionAddDetailController  extends Controller
             $data['time'] = date("H:i:s");
             $master_id = DB::Connection('mysql2')->table('production_request')->insertGetId($data);
 
-            foreach ($request->item_id as $key => $row)
-            {
+            foreach ($request->item_id as $key => $row) {
                 $data2['master_id'] = $master_id;
                 $data2['item_id'] = $row;
                 $data2['quantity'] = $request->quantity[$key];
@@ -815,23 +792,22 @@ class FarazProductionAddDetailController  extends Controller
             }
 
             DB::Connection('mysql2')->commit();
-        }
-        catch(\Exception $e) {
+        } catch (\Exception $e) {
             DB::Connection('mysql2')->rollback();
-            echo   $e->getMessage();
+            echo $e->getMessage();
         }
-        
+
         Session::flash('dataInsert', 'Successfully Saved.');
-        return Redirect::to('far_production/viewProductionOrderList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . $_GET['m'] );
+        return Redirect::to('far_production/viewProductionOrderList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . $_GET['m']);
     }
 
-    
+
     public function editProductionOrderDetail(Request $request)
     {
         DB::Connection('mysql2')->beginTransaction();
         try {
             $m = $_GET['m'];
-           
+
             $data['request_date'] = strip_tags($request->request_date);
             $data['ref_no'] = strip_tags($request->ref_no);
             $data['description'] = strip_tags($request->description);
@@ -843,8 +819,7 @@ class FarazProductionAddDetailController  extends Controller
             DB::Connection('mysql2')->table('production_request')->where('id', $request->id)->update($data);
 
             DB::Connection('mysql2')->table('production_request_data')->where('master_id', $request->id)->delete();
-            foreach ($request->item_id as $key => $row)
-            {
+            foreach ($request->item_id as $key => $row) {
                 $data2['master_id'] = $request->id;
                 $data2['item_id'] = $row;
                 // $data2['color'] = $request->color[$key];
@@ -860,14 +835,13 @@ class FarazProductionAddDetailController  extends Controller
             }
 
             DB::Connection('mysql2')->commit();
-        }
-        catch(\Exception $e) {
+        } catch (\Exception $e) {
             DB::Connection('mysql2')->rollback();
-            echo   $e->getMessage();
+            echo $e->getMessage();
         }
-        
+
         Session::flash('dataInsert', 'Successfully Updated.');
-        return Redirect::to('far_production/viewProductionOrderList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . $_GET['m'] );
+        return Redirect::to('far_production/viewProductionOrderList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . $_GET['m']);
     }
 
     public function approveAndRejectProductionOrder(Request $request)
@@ -880,7 +854,7 @@ class FarazProductionAddDetailController  extends Controller
     {
         $production_request = DB::connection('mysql2')->table('production_request')->where('id', $request->id)->update(['status' => 0]);
         $production_request_data = DB::connection('mysql2')->table('production_request_data')->where('master_id', $request->id)->update(['status' => 0]);
-        if($production_request && $production_request_data) {
+        if ($production_request && $production_request_data) {
             return "true";
         }
         return "false";
@@ -896,7 +870,7 @@ class FarazProductionAddDetailController  extends Controller
         DB::Connection('mysql2')->beginTransaction();
         try {
             $m = $_GET['m'];
-           
+
             $data['pm_no'] = strip_tags($request->mixing_no);
             $data['produced_item_id'] = strip_tags($request->finish_item_id);
             $data['production_order_id'] = strip_tags($request->production_order_id);
@@ -907,8 +881,7 @@ class FarazProductionAddDetailController  extends Controller
             $data['status'] = 1;
             $master_id = DB::Connection('mysql2')->table('production_mixture')->insertGetId($data);
 
-            foreach ($request->item_id as $key => $row)
-            {
+            foreach ($request->item_id as $key => $row) {
                 $data2['production_mixture_id'] = $master_id;
                 $data2['item_id'] = $row;
                 $data2['qty'] = $request->required_qty[$key];
@@ -916,14 +889,130 @@ class FarazProductionAddDetailController  extends Controller
             }
 
             DB::Connection('mysql2')->commit();
-        }
-        catch(\Exception $e) {
+        } catch (\Exception $e) {
             DB::Connection('mysql2')->rollback();
-            echo   $e->getMessage();
+            echo $e->getMessage();
         }
-        
+
         Session::flash('dataInsert', 'Successfully Saved.');
-        return Redirect::to('far_production/viewProductionOrderList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . $_GET['m'] );
+        return Redirect::to('far_production/viewProductionMixingList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . $_GET['m']);
     }
 
+    public function addProductionRollingDetail(Request $request)
+    {
+        $request->validate([
+            'item_id' => 'required|array',
+            'machine_id' => 'required|array',
+            'mixture_qty' => 'required|array',
+            'roll_qty' => 'required|array',
+        ]);
+
+        DB::connection('mysql2')->beginTransaction();
+
+        try {
+           
+
+            $production_mixture = DB::connection('mysql2')
+                ->table('production_mixture')
+                ->where('pm_no', $request->code)
+                ->first();
+
+            if (!$production_mixture) {
+                throw new \Exception('Production mixture not found');
+            }
+
+            foreach ($request->item_id as $key => $itemId) {
+
+                $data2 = [
+                    'production_order_id' => $production_mixture->production_order_id,
+                    'production_mixture_id' => $production_mixture->id,
+                    'item_id' => $itemId,
+                    'machine_id' => $request->machine_id[$key],
+                    'operator_id' => $request->operator_id[$key] ?? null,
+                    'shift_id' => $request->shift_id[$key] ?? null,
+                    'mixture_qty' => $request->mixture_qty[$key] ?? 0,
+                    'roll_qty' => $request->roll_qty[$key] ?? 0,
+                    'per_roll_qty_kg' => $request->roll_qty_kg[$key] ?? 0,
+                    'date' => $request->date[$key] ?? now(),
+                    'status' => 1,
+                    'username' => Auth::user()->name,
+                ];
+
+                DB::connection('mysql2')
+                    ->table('production_rolling')
+                    ->insert($data2);
+
+                DB::connection('mysql2')
+                    ->table('production_mixture_data')
+                    ->where('production_mixture_id', $production_mixture->id)
+                    ->where('item_id', $request->raw_item_id[$key])
+                    ->update([
+                        'used_qty' => $request->mixture_qty[$key],
+                    ]);
+            }
+
+            DB::connection('mysql2')->commit();
+
+        } catch (\Exception $e) {
+            DB::connection('mysql2')->rollback();
+            dd($e->getMessage());
+            // return back()->withErrors($e->getMessage());
+        }
+
+        Session::flash('dataInsert', 'Successfully Saved.');
+        return Redirect::to('far_production/viewProductionRollingList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . 1);
+
+    }
+
+    public function addProductionRollPrintingDetail(Request $request)
+    {
+        // dd($request->all());
+        $request->validate([
+            'item_id' => 'required|array',
+            'machine_id' => 'required|array',
+            
+        ]);
+
+        DB::connection('mysql2')->beginTransaction();
+
+        try {
+           
+            foreach ($request->item_id as $key => $itemId) {
+
+                $data2 = [
+                    'production_rolling_id' => $request->roll_id,
+                    'item_id' => $itemId,
+                    'machine_id' => $request->machine_id[$key],
+                    'operator_id' => $request->operator_id[$key] ?? null,
+                    'shift_id' => $request->shift_id[$key] ?? null,
+                    'no_of_roll' => $request->printed_roll_qty[$key] ?? 0,
+                    'date' => $request->date[$key] ?? now(),
+                    'status' => 1,
+                    'username' => Auth::user()->name,
+                ];
+                DB::connection('mysql2')
+                    ->table('production_roll_printing')
+                    ->insert($data2);
+
+               
+            }
+             DB::connection('mysql2')
+                    ->table('production_rolling')
+                    ->where('id', $request->roll_id)
+                    ->where('item_id', $request->raw_item_id[0])
+                    ->update([
+                        'printed_roll_qty' => $request->used_qty_total,
+                    ]);
+            DB::connection('mysql2')->commit();
+
+        } catch (\Exception $e) {
+            DB::connection('mysql2')->rollback();
+            dd($e->getMessage());
+            // return back()->withErrors($e->getMessage());
+        }
+
+        Session::flash('dataInsert', 'Successfully Saved.');
+        return Redirect::to('far_production/viewProductionRollingList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . 1);
+
+    }
 }
