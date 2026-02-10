@@ -2201,21 +2201,32 @@ Route::get('/pv_acount_head_po_pi_chunk', 'AllInOnePaymentVoucherController@pv_a
 
 
 Route::group(['prefix' => 'far_production', 'middleware' => 'mysql2', 'before' => 'csrf'], function () {
-
+    // production order
     Route::get('/createProductionOrderForm', 'FarazProductionController@createProductionOrderForm');
     Route::get('/viewProductionOrderList', 'FarazProductionController@viewProductionOrderList');
     Route::get('/viewProductionOrderListDetail', 'FarazProductionController@viewProductionOrderListDetail');
     Route::get('/viewProductionOrderDetail', 'FarazProductionController@viewProductionOrderDetail');
     Route::get('/editProductionOrderForm/{id}', 'FarazProductionController@editProductionOrderForm');
 
+    // production mixture
+    Route::get('/addProductionMixture', 'FarazProductionController@addProductionMixture');
+    Route::get('/viewProductionMixingList', 'FarazProductionController@viewProductionMixingList');
+    Route::get('/viewMixingInfo', 'FarazProductionController@viewMixingInfo');
+    Route::get('/mixtureEdit', 'FarazProductionController@mixtureEdit');
+
+
 });
 
 Route::group(['prefix' => 'far_prod', 'middleware' => 'mysql2', 'before' => 'csrf'], function () {
-
+    // production order ajax
     Route::post('/addProductionOrderDetail', 'FarazProductionAddDetailController@addProductionOrderDetail');
     Route::get('/deleteProductionOrder', 'FarazProductionAddDetailController@deleteProductionOrder');
     Route::post('/approveAndRejectProductionOrder', 'FarazProductionAddDetailController@approveAndRejectProductionOrder');
     Route::post('/editProductionOrderDetail', 'FarazProductionAddDetailController@editProductionOrderDetail');
+
+    // production mixing ajax
+    Route::post('/addProductionMixingDetail', 'FarazProductionAddDetailController@addProductionMixingDetail');
+
 
 });
 

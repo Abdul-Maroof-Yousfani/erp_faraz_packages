@@ -1,6 +1,7 @@
 <?php
 namespace App\Helpers;
 use App\Models\Countries;
+use App\Models\ProductionMixture;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -4953,6 +4954,21 @@ class CommonHelper
         $latestBOM = ProductionBOM::orderBy('id', 'desc')->first();
 
         $nextNumber = 'F-001';
+
+        if ($latestBOM) {
+            $lastFormulationNumber = $latestBOM->formulation_no;
+            $numberPart = (int) substr($lastFormulationNumber, 2);
+            $nextNumber = 'F-' . str_pad($numberPart + 1, 3, '0', STR_PAD_LEFT);
+        }
+
+        return $nextNumber;
+    }
+
+    public static function generateProductionMixtureNumber()
+    {
+        $latestBOM = ProductionMixture::orderBy('id', 'desc')->first();
+
+        $nextNumber = 'PM-001';
 
         if ($latestBOM) {
             $lastFormulationNumber = $latestBOM->formulation_no;

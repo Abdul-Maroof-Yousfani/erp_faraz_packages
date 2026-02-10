@@ -885,4 +885,45 @@ class FarazProductionAddDetailController  extends Controller
         }
         return "false";
     }
+
+
+
+    // production mixing
+
+    public function addProductionMixingDetail(Request $request)
+    {
+        // dd($request->all());
+        DB::Connection('mysql2')->beginTransaction();
+        try {
+            $m = $_GET['m'];
+           
+            $data['pm_no'] = strip_tags($request->mixing_no);
+            $data['produced_item_id'] = strip_tags($request->finish_item_id);
+            $data['production_order_id'] = strip_tags($request->production_order_id);
+            $data['date'] = strip_tags($request->mixing_date);
+            $data['qty'] = strip_tags($request->qty);
+            $data['description'] = strip_tags($request->description);
+            $data['username'] = Auth::user()->name;
+            $data['status'] = 1;
+            $master_id = DB::Connection('mysql2')->table('production_mixture')->insertGetId($data);
+
+            foreach ($request->item_id as $key => $row)
+            {
+                $data2['production_mixture_id'] = $master_id;
+                $data2['item_id'] = $row;
+                $data2['qty'] = $request->required_qty[$key];
+                DB::Connection('mysql2')->table('production_mixture_data')->insert($data2);
+            }
+
+            DB::Connection('mysql2')->commit();
+        }
+        catch(\Exception $e) {
+            DB::Connection('mysql2')->rollback();
+            echo   $e->getMessage();
+        }
+        
+        Session::flash('dataInsert', 'Successfully Saved.');
+        return Redirect::to('far_production/viewProductionOrderList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . $_GET['m'] );
+    }
+
 }
