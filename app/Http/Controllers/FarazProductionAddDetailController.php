@@ -1015,4 +1015,57 @@ class FarazProductionAddDetailController extends Controller
         return Redirect::to('far_production/viewProductionRollingList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . 1);
 
     }
+
+    public function addProductionCuttingAndPackingDetail(Request $request)
+    {
+        // dd($request->all());
+        $request->validate([
+            'item_id' => 'required|array',
+            'machine_id' => 'required|array',
+            
+        ]);
+
+        DB::connection('mysql2')->beginTransaction();
+
+        try {
+           
+            foreach ($request->item_id as $key => $itemId) {
+
+                $data2 = [
+                    'printed_rolling_id' => $request->roll_id,
+                    'item_id' => $itemId,
+                    'machine_id' => $request->machine_id[$key],
+                    'operator_id' => $request->operator_id[$key] ?? null,
+                    'shift_id' => $request->shift_id[$key] ?? null,
+                    'bags_qty' => $request->bags_qty[$key] ?? 0,
+                    'printed_roll_qty' => $request->no_of_roll[$key] ?? 0,
+                    'date' => $request->date[$key] ?? now(),
+                    'status' => 1,
+                    'username' => Auth::user()->name,
+                ];
+                DB::connection('mysql2')
+                    ->table('production_cutting_and_packing')
+                    ->insert($data2);
+
+               
+            }
+             DB::connection('mysql2')
+                    ->table('production_roll_printing')
+                    ->where('id', $request->roll_id)
+                    ->where('item_id', $request->raw_item_id[0])
+                    ->update([
+                        'used_no_of_roll' => $request->used_qty_total,
+                    ]);
+            DB::connection('mysql2')->commit();
+
+        } catch (\Exception $e) {
+            DB::connection('mysql2')->rollback();
+            dd($e->getMessage());
+            // return back()->withErrors($e->getMessage());
+        }
+
+        Session::flash('dataInsert', 'Successfully Saved.');
+        return Redirect::to('far_production/viewProductionCuttingAndPackingList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . 1);
+
+    }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 
+use App\Models\ProductionCuttingAndPacking;
 use App\Models\ProductionMixture;
 use App\Models\ProductionMixtureData;
 use App\Models\ProductionRolling;
@@ -479,6 +480,13 @@ class FarazProductionController extends Controller
         return view('FarazPackagesProduction.ProductionMixture.viewProductionRollPrinting', compact('rollPricingList', 'm'));
     }
 
+    public function viewProductionCuttingAndPackingList()
+    {
+        $cuttingAndPackingList = ProductionCuttingAndPacking::where('status', '=', 1)->get();
+        $m = $this->m;
+        return view('FarazPackagesProduction.ProductionMixture.viewProductionCuttingAndPacking', compact('cuttingAndPackingList', 'm'));
+    }
+
     public function rollPrinting(Request $request)
     {
         $m = $request->m;
@@ -534,6 +542,63 @@ class FarazProductionController extends Controller
             ->where('status', '=', 1)->get();
 
         return view('FarazPackagesProduction.ProductionMixture.ProcessedRollPrinting', compact( 'out_source_productions_item', 'out_source_productions_details', 'sub_item', 'machines', 'operators', 'shifts', 'm'));
+    }
+
+    public function cuttingAndPacking(Request $request)
+    {
+        $m = $request->m;
+
+   
+
+        // Totals
+        $out_source_productions_item = DB::connection('mysql2')
+            ->table('production_roll_printing')
+            ->select(
+                DB::raw('SUM(no_of_roll) as total_qty'),
+                DB::raw('SUM(used_no_of_roll) as total_used_qty'),
+                'date',
+                'item_id',
+                'id'
+            )
+            ->where('id', $request->id)
+            ->first();
+
+        // Detail items
+        $out_source_productions_details = DB::connection('mysql2')
+            ->table('production_roll_printing')
+            ->where('id', $request->id)
+            ->get();
+
+        $categories_id = explode(',', Auth::user()->categories_id);
+
+        $sub_item = DB::Connection('mysql2')->table('category as c')
+            ->join('sub_category as sc', 'c.id', '=', 'sc.category_id')
+            ->join('subitem as s', 'sc.id', '=', 's.sub_category_id')
+            ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
+            ->where('sc.status', '=', 1)
+            ->where('c.status', '=', 1)
+            ->where('s.status', '=', 1)
+            ->where('u.status', '=', 1)
+            ->where('s.main_ic_id', '=', 8)
+            ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id')
+            // ->whereIn('c.id', $categories_id)
+            ->groupBy('s.item_code')
+            ->orderBy('s.id')
+            ->get();
+
+        $machines = DB::Connection('mysql2')->table('machine')
+            ->select('id', 'name')
+            ->where('status', '=', 1)->get();
+
+        $operators = DB::Connection('mysql2')->table('operators')
+            ->select('id', 'name')
+            ->where('status', '=', 1)->get();
+
+        $shifts = DB::Connection('mysql')->table('shift_type')
+            ->select('id', 'shift_type_name')
+            ->where('status', '=', 1)->get();
+
+        return view('FarazPackagesProduction.ProductionMixture.ProcessedCuttingAndPacking', compact( 'out_source_productions_item', 'out_source_productions_details', 'sub_item', 'machines', 'operators', 'shifts', 'm'));
     }
 
 }

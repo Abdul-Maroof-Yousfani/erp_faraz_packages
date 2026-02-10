@@ -21,7 +21,7 @@ $this->m = Session::get('run_company');
                         <div class="row align-items-center">
                             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                                 <div class="headquid">
-                                    <h2 class="subHeadingLabelClass">Production Roll Printing List</h2>
+                                    <h2 class="subHeadingLabelClass">Production Cutting & Packing List</h2>
                                 </div>
                             </div>
                             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 text-right">
@@ -47,18 +47,18 @@ $this->m = Session::get('run_company');
                                                 id="EmpExitInterviewList">
                                                 <thead>
                                                     <th class="text-center">S.No</th>
-                                                    <th class="text-center">Printed Item</th>
+                                                    <th class="text-center">Item</th>
                                                     <th class="text-center">Qty</th>
                                                     <th class="text-center">Status</th>
                                                     <th class="text-center">Action</th>
                                                 </thead>
                                                 <?php $count = 0; ?>
                                                 <tbody id="data">
-                                                    @foreach ($rollPricingList as $Fil)
+                                                    @foreach ($cuttingAndPackingList as $Fil)
                                                         <tr id="remove<?php    echo $Fil['id'] ?>">
                                                             <td>{{++$count}}</td>
                                                             <td>{{CommonHelper::get_item_name($Fil->item_id)}}</td>
-                                                            <td> {{$Fil->no_of_roll}} </td>
+                                                            <td> {{$Fil->bags_qty}} </td>
                                                             <td>
                                                                 @if($Fil->status == 1)
                                                                     Active
@@ -74,7 +74,7 @@ $this->m = Session::get('run_company');
                                                                     <ul class="dropdown-menu">
                                                                         <li>
                                                                           
-                                                                                 <a href="cuttingAndPacking?id=<?php    echo $Fil['id'] ?>&&m=<?php    echo $this->m?>">Process Cutting & Packing
+                                                                                 <a href="cuttingAndPacking?id=<?php    echo $Fil['id'] ?>&&m=<?php    echo $this->m?>">Process Dispatch
                                                                             </a>
                                                                             <a href="mixtureEdit?id=<?php    echo $Fil['id'] ?>&&m=<?php    echo $this->m?>">
                                                                             </a>
