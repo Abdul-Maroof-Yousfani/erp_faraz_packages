@@ -21,4 +21,8 @@ class ProductionMixture extends Model
         return $this->belongsTo(Subitem::class, 'item_id');
     }
 
+    public function productionOrder()
+    {
+        return $this->belongsTo(ProductionOrder::class, 'production_order_id');
+    }
 }

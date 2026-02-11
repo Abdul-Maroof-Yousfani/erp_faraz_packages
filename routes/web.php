@@ -2206,6 +2206,7 @@ Route::group(['prefix' => 'far_production', 'middleware' => 'mysql2', 'before' =
     Route::get('/viewProductionOrderList', 'FarazProductionController@viewProductionOrderList');
     Route::get('/viewProductionOrderListDetail', 'FarazProductionController@viewProductionOrderListDetail');
     Route::get('/viewProductionOrderDetail', 'FarazProductionController@viewProductionOrderDetail');
+    Route::get('/viewProductionOrderDetailTrack', 'FarazProductionController@viewProductionOrderDetailTrack');
     Route::get('/editProductionOrderForm/{id}', 'FarazProductionController@editProductionOrderForm');
 
     // production mixture

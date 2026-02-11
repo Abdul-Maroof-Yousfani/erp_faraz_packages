@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\InventoryMaster\Machine;
+use App\Models\InventoryMaster\Operator;
 use Illuminate\Database\Eloquent\Model;
 
 class ProductionRolling extends Model
@@ -11,7 +13,7 @@ class ProductionRolling extends Model
     protected $guarded = [];
     public $timestamps = false;
 
-    
+
 
     public function subItem()
     {
@@ -27,6 +29,25 @@ class ProductionRolling extends Model
     {
         return $this->belongsTo(ProductionMixture::class, 'production_mixture_id');
     }
-    
+
+    public function printings()
+    {
+        return $this->hasMany(ProductionRollPrinting::class, 'production_rolling_id');
+    }
+
+    public function machine()
+    {
+        return $this->belongsTo(Machine::class, 'machine_id');
+    }
+
+    public function operator()
+    {
+        return $this->belongsTo(Operator::class, 'operator_id');
+    }
+
+    // public function shift()
+    // {
+    //     return $this->belongsTo(ShiftType::class, 'shift_id');
+    // }
 
 }

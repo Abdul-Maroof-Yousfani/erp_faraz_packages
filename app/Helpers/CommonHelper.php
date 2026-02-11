@@ -4984,12 +4984,12 @@ class CommonHelper
     public static function generateProductionNumber()
     {
         $latest = DB::connection('mysql2')->table('production_request')->orderBy('id', 'desc')->first();
-        $nextNumber = 'PR00001';
+        $nextNumber = 'PROD00001';
 
         if ($latest) {
             $lastNumber = $latest->pr_no;
             $numberPart = (int) substr($lastNumber, 2);
-            $nextNumber = 'PRO' . str_pad($numberPart + 1, 5, '0', STR_PAD_LEFT);
+            $nextNumber = 'PROD' . str_pad($numberPart + 1, 5, '0', STR_PAD_LEFT);
         }
 
         return $nextNumber;

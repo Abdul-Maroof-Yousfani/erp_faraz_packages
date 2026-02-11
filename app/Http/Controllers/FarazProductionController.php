@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Models\ProductionCuttingAndPacking;
 use App\Models\ProductionMixture;
 use App\Models\ProductionMixtureData;
+use App\Models\ProductionOrder;
 use App\Models\ProductionRolling;
 use App\Models\ProductionRollPrinting;
 use Illuminate\Http\Request;
@@ -297,6 +298,13 @@ class FarazProductionController extends Controller
         $production_request_data = DB::connection('mysql2')->table('production_request_data')->where('master_id', $request->id)->get();
         return view('FarazPackagesProduction.viewProductionOrderDetail', compact('production_request', 'production_request_data'));
     }
+    public function viewProductionOrderDetailTrack(Request $request)
+    {
+        $order = ProductionOrder::with(
+            'productionRollings.printings.cuttingAndPackings'
+        )->find($request->id);
+        return view('FarazPackagesProduction.viewProductionOrderDetailTrack', compact('order'));
+    }
 
     public function editProductionOrderForm($id, Request $request)
     {
@@ -359,7 +367,8 @@ class FarazProductionController extends Controller
 
     public function viewProductionMixingList()
     {
-        $mixingList = ProductionMixture::where('status', '=', 1)->get();
+        $mixingList = ProductionMixture::with('productionOrder')
+    ->where('status', '=', 1)->get();
         $m = $this->m;
         return view('FarazPackagesProduction.ProductionMixture.viewProductionMixing', compact('mixingList', 'm'));
     }
@@ -468,21 +477,28 @@ class FarazProductionController extends Controller
 
     public function viewProductionRollingList()
     {
-        $rollingList = ProductionRolling::where('status', '=', 1)->get();
+        $rollingList = ProductionRolling::with('productionOrder')
+    ->where('status', '=', 1)->get();
         $m = $this->m;
         return view('FarazPackagesProduction.ProductionMixture.viewProductionRolling', compact('rollingList', 'm'));
     }
 
     public function viewProductionRollPrintingList()
     {
-        $rollPricingList = ProductionRollPrinting::where('status', '=', 1)->get();
+        $rollPricingList = ProductionRollPrinting::with(
+        'productionRoll.productionOrder'
+    )
+    ->where('status', '=', 1)->get();
         $m = $this->m;
         return view('FarazPackagesProduction.ProductionMixture.viewProductionRollPrinting', compact('rollPricingList', 'm'));
     }
 
     public function viewProductionCuttingAndPackingList()
     {
-        $cuttingAndPackingList = ProductionCuttingAndPacking::where('status', '=', 1)->get();
+        $cuttingAndPackingList = ProductionCuttingAndPacking::with(
+        'printedRoll.productionRoll.productionOrder'
+    )
+    ->where('status', '=', 1)->get();
         $m = $this->m;
         return view('FarazPackagesProduction.ProductionMixture.viewProductionCuttingAndPacking', compact('cuttingAndPackingList', 'm'));
     }

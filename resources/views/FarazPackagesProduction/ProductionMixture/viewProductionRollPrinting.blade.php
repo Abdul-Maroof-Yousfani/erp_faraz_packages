@@ -49,6 +49,7 @@ $this->m = Session::get('run_company');
                                                     <th class="text-center">S.No</th>
                                                     <th class="text-center">Printed Item</th>
                                                     <th class="text-center">Qty</th>
+                                                    <th class="text-center">Prod. Order No.</th>
                                                     <th class="text-center">Status</th>
                                                     <th class="text-center">Action</th>
                                                 </thead>
@@ -59,6 +60,7 @@ $this->m = Session::get('run_company');
                                                             <td>{{++$count}}</td>
                                                             <td>{{CommonHelper::get_item_name($Fil->item_id)}}</td>
                                                             <td> {{$Fil->no_of_roll}} </td>
+                                                            <td>{{ optional($Fil->productionRoll->productionOrder)->pr_no }} </td>
                                                             <td>
                                                                 @if($Fil->status == 1)
                                                                     Active

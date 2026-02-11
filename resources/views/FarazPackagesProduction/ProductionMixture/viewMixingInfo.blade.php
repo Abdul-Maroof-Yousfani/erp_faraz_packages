@@ -23,7 +23,7 @@
                 <tbody>
                     <tr>
                         <td>Produced Mixture:</td>
-                        <td>{{ $mixture->subItem->sub_ic ?? '' }}</td>
+                        <td>{{ CommonHelper::get_item_name($mixture->produced_item_id) }}</td>
                     </tr>
                     
                     <tr>

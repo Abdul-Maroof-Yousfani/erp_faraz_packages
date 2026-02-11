@@ -16,6 +16,7 @@ use App\Helpers\ProductionHelper;
                 <ul class="dropdown-menu">
                     <li>
                         <a onclick="showDetailModelOneParamerter('far_production/viewProductionOrderDetail?m={{ $m }}','{{ $val->id }}','View Production Order')" type="button" class="dropdown-item_sale_order_list dropdown-item "><i class="fa-regular fa-eye"></i> View</a>
+                        <a onclick="showDetailModelOneParamerter('far_production/viewProductionOrderDetailTrack?m={{ $m }}','{{ $val->id }}','View Production Tracking')" type="button" class="dropdown-item_sale_order_list dropdown-item "><i class="fa-regular fa-eye"></i> Track</a>
                         @if($val->approval_status == 1)
                             <a href="{{url('far_production/editProductionOrderForm/'.$val->id.'?m='.$m) }}" type="button" class="dropdown-item_sale_order_list dropdown-item "><i class="fa-solid fa-pencil"></i> Edit</a>
                         @endif

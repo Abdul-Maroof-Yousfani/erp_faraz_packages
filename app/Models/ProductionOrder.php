@@ -21,4 +21,15 @@ class ProductionOrder extends Model
         return $this->belongsTo(Subitem::class, 'item_id');
     }
 
+    public function productionRollings()
+    {
+        return $this->hasMany(ProductionRolling::class, 'production_order_id');
+    }
+
+    public function productionMixings()
+    {
+        return $this->hasMany(ProductionMixture::class, 'production_order_id');
+    }
+
+
 }
