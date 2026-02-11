@@ -960,7 +960,7 @@ class FarazProductionAddDetailController extends Controller
         }
 
         Session::flash('dataInsert', 'Successfully Saved.');
-        return Redirect::to('far_production/viewProductionRollingList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . 1);
+        return Redirect::to('far_production/viewProductionRollPrintingList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . 1);
 
     }
 
