@@ -90,7 +90,7 @@ $m = Session::get('run_company');
                                                                 </select>
                                                             </div>
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                                                <label>Primary Pack size :</label>
+                                                                <label>Primary Bags size :</label>
                                                                 <span class="rflabelsteric"><strong>*</strong></span>
                                                                 <input step="0.01" value="0" min="0" class="form-control requiredField" type="number" name="pack_size" id="pack_size">
                                                             </div>
