@@ -2232,7 +2232,7 @@ Route::group(['prefix' => 'far_production', 'middleware' => 'mysql2', 'before' =
 
     Route::get('/packing', 'FarazProductionController@packing');
 
-    Route::get('/getItemByCategory', 'FarazProductionController@getItemByCategory');
+    // Route::get('/getItemByCategory', 'FarazProductionController@getItemByCategory');
 
 });
 

@@ -32,6 +32,7 @@ $icons = [
     "Machine Production" => "glyphicon glyphicon-cog",
     "Brand" => "glyphicon glyphicon-cog",
     "Color" => "glyphicon glyphicon-cog",
+    "Invertory Master" => "glyphicon glyphicon-cog",
 ];
     CommonHelper::reconnectMasterDatabase();
     ?>
