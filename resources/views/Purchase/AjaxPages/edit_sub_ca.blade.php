@@ -23,30 +23,49 @@ use App\Helpers\CommonHelper;
                                 <div class="panel">
                                     <div class="panel-body">
                                         <div class="row">
-                                            <?php echo Form::open(array('url' => 'pad/edit_sub?id='.$id,'id'=>'addCategoryForm'));?>
+                                            <?php echo Form::open(array('url' => 'pad/edit_sub?id=' . $id, 'id' => 'addCategoryForm'));?>
 
 
-                                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
                                                 <label>Category</label>
-                                                <input type="text" name=""  id="" value="{{CommonHelper::get_category_name($data->category_id)}}" readonly class="form-control" onkeyup="" />
+                                                <input type="text" name="" id=""
+                                                    value="{{CommonHelper::get_category_name($data->category_id)}}"
+                                                    readonly class="form-control" onkeyup="" />
                                             </div>
-                                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
                                                 <label>Sub Category Name</label>
                                                 <span class="rflabelsteric"><strong>*</strong></span>
-                                                <input type="text" name="SubCategoryName"  id="SubCategoryName" value="{{$data->sub_category_name}}" class="form-control requiredField" onkeyup="" />
+                                                <input type="text" name="SubCategoryName" id="SubCategoryName"
+                                                    value="{{$data->sub_category_name}}"
+                                                    class="form-control requiredField" onkeyup="" />
                                                 <span id="DuplicateMsg"></span>
                                             </div>
+                                            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                                                <label>Type</label>
+
+                                                <select name="Type" id="Type" class="form-control select2">
+                                                    <option value="">Select Option</option>
+
+                                                    <option value="Gala Cutting" {{ isset($data->type) && $data->type == 'Gala Cutting' ? 'selected' : '' }}>
+                                                        Gala Cutting
+                                                    </option>
+
+                                                </select>
+                                            </div>
+
                                             <div>&nbsp;</div>
                                             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                                <button type="submit" class="btn btn-success" id="BtnSub">Submit</button>
-                                                <button  type="reset" id="reset" class="btn btn-primary">Clear Form</button>
+                                                <button type="submit" class="btn btn-success"
+                                                    id="BtnSub">Submit</button>
+                                                <button type="reset" id="reset" class="btn btn-primary">Clear
+                                                    Form</button>
 
                                                 <?php
-                                                //echo Form::submit('Click Me!');
+//echo Form::submit('Click Me!');
                                                 ?>
                                             </div>
                                             <?php
-                                            echo Form::close();
+echo Form::close();
                                             ?>
                                         </div>
                                     </div>

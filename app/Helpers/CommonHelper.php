@@ -4974,8 +4974,8 @@ class CommonHelper
 
         if ($latestBOM) {
             $lastFormulationNumber = $latestBOM->formulation_no;
-            $numberPart = (int) substr($lastFormulationNumber, 2);
-            $nextNumber = 'F-' . str_pad($numberPart + 1, 3, '0', STR_PAD_LEFT);
+            $numberPart = (int) substr($lastFormulationNumber, 3);
+            $nextNumber = 'PM-' . str_pad($numberPart + 2, 3, '0', STR_PAD_LEFT);
         }
 
         return $nextNumber;
@@ -4988,7 +4988,7 @@ class CommonHelper
 
         if ($latest) {
             $lastNumber = $latest->pr_no;
-            $numberPart = (int) substr($lastNumber, 2);
+            $numberPart = (int) substr($lastNumber, 4); // FIXED
             $nextNumber = 'PROD' . str_pad($numberPart + 1, 5, '0', STR_PAD_LEFT);
         }
 

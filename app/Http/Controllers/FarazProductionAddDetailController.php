@@ -777,10 +777,9 @@ class FarazProductionAddDetailController extends Controller
             $data['time'] = date("H:i:s");
             $master_id = DB::Connection('mysql2')->table('production_request')->insertGetId($data);
 
-            foreach ($request->item_id as $key => $row) {
+            foreach ($request->sub_category as $key => $row) {
                 $data2['master_id'] = $master_id;
-                $data2['item_id'] = $row;
-                $data2['quantity'] = $request->quantity[$key];
+                $data2['sub_category_id'] = $row;
                 $data2['purpose'] = $request->purpose[$key];
                 $data2['required_date'] = $request->required_date[$key];
                 $data2['username'] = Auth::user()->name;
@@ -819,11 +818,10 @@ class FarazProductionAddDetailController extends Controller
             DB::Connection('mysql2')->table('production_request')->where('id', $request->id)->update($data);
 
             DB::Connection('mysql2')->table('production_request_data')->where('master_id', $request->id)->delete();
-            foreach ($request->item_id as $key => $row) {
+            foreach ($request->sub_category as $key => $row) {
                 $data2['master_id'] = $request->id;
-                $data2['item_id'] = $row;
+                $data2['sub_category_id'] = $row;
                 // $data2['color'] = $request->color[$key];
-                $data2['quantity'] = $request->quantity[$key];
                 $data2['purpose'] = $request->purpose[$key];
                 $data2['required_date'] = $request->required_date[$key];
                 $data2['username'] = Auth::user()->name;
@@ -910,7 +908,7 @@ class FarazProductionAddDetailController extends Controller
         DB::connection('mysql2')->beginTransaction();
 
         try {
-           
+
 
             $production_mixture = DB::connection('mysql2')
                 ->table('production_mixture')
@@ -960,7 +958,7 @@ class FarazProductionAddDetailController extends Controller
         }
 
         Session::flash('dataInsert', 'Successfully Saved.');
-        return Redirect::to('far_production/viewProductionRollPrintingList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . 1);
+        return Redirect::to('far_production/viewProductionRollingList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . 1);
 
     }
 
@@ -970,13 +968,13 @@ class FarazProductionAddDetailController extends Controller
         $request->validate([
             'item_id' => 'required|array',
             'machine_id' => 'required|array',
-            
+
         ]);
 
         DB::connection('mysql2')->beginTransaction();
 
         try {
-           
+
             foreach ($request->item_id as $key => $itemId) {
 
                 $data2 = [
@@ -985,6 +983,10 @@ class FarazProductionAddDetailController extends Controller
                     'machine_id' => $request->machine_id[$key],
                     'operator_id' => $request->operator_id[$key] ?? null,
                     'shift_id' => $request->shift_id[$key] ?? null,
+                    'type' => $request->type_id[$key] ?? null,
+                    'color_id' => $request->color[$key] ?? null,
+                    'brand_id' => $request->brand[$key] ?? null,
+                    'remarks' => $request->remarks[$key] ?? null,
                     'no_of_roll' => $request->printed_roll_qty[$key] ?? 0,
                     'date' => $request->date[$key] ?? now(),
                     'status' => 1,
@@ -994,15 +996,15 @@ class FarazProductionAddDetailController extends Controller
                     ->table('production_roll_printing')
                     ->insert($data2);
 
-               
+
             }
-             DB::connection('mysql2')
-                    ->table('production_rolling')
-                    ->where('id', $request->roll_id)
-                    ->where('item_id', $request->raw_item_id[0])
-                    ->update([
-                        'printed_roll_qty' => $request->used_qty_total,
-                    ]);
+            DB::connection('mysql2')
+                ->table('production_rolling')
+                ->where('id', $request->roll_id)
+                ->where('item_id', $request->raw_item_id[0])
+                ->update([
+                    'printed_roll_qty' => $request->used_qty_total,
+                ]);
             DB::connection('mysql2')->commit();
 
         } catch (\Exception $e) {
@@ -1012,23 +1014,23 @@ class FarazProductionAddDetailController extends Controller
         }
 
         Session::flash('dataInsert', 'Successfully Saved.');
-        return Redirect::to('far_production/viewProductionRollingList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . 1);
+        return Redirect::to('far_production/viewProductionRollPrintingList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . 1);
 
     }
 
-    public function addProductionCuttingAndPackingDetail(Request $request)
+    public function addProductionCuttingAndSealingDetail(Request $request)
     {
         // dd($request->all());
         $request->validate([
             'item_id' => 'required|array',
             'machine_id' => 'required|array',
-            
+
         ]);
 
         DB::connection('mysql2')->beginTransaction();
 
         try {
-           
+
             foreach ($request->item_id as $key => $itemId) {
 
                 $data2 = [
@@ -1037,25 +1039,25 @@ class FarazProductionAddDetailController extends Controller
                     'machine_id' => $request->machine_id[$key],
                     'operator_id' => $request->operator_id[$key] ?? null,
                     'shift_id' => $request->shift_id[$key] ?? null,
-                    'bags_qty' => $request->bags_qty[$key] ?? 0,
+                    'qty' => $request->qty[$key] ?? 0,
                     'printed_roll_qty' => $request->no_of_roll[$key] ?? 0,
                     'date' => $request->date[$key] ?? now(),
                     'status' => 1,
                     'username' => Auth::user()->name,
                 ];
                 DB::connection('mysql2')
-                    ->table('production_cutting_and_packing')
+                    ->table('production_cutting_and_sealing')
                     ->insert($data2);
 
-               
+
             }
-             DB::connection('mysql2')
-                    ->table('production_roll_printing')
-                    ->where('id', $request->roll_id)
-                    ->where('item_id', $request->raw_item_id[0])
-                    ->update([
-                        'used_no_of_roll' => $request->used_qty_total,
-                    ]);
+            DB::connection('mysql2')
+                ->table('production_roll_printing')
+                ->where('id', $request->roll_id)
+                ->where('item_id', $request->raw_item_id[0])
+                ->update([
+                    'used_no_of_roll' => $request->used_qty_total,
+                ]);
             DB::connection('mysql2')->commit();
 
         } catch (\Exception $e) {
@@ -1065,7 +1067,132 @@ class FarazProductionAddDetailController extends Controller
         }
 
         Session::flash('dataInsert', 'Successfully Saved.');
-        return Redirect::to('far_production/viewProductionCuttingAndPackingList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . 1);
+        return Redirect::to('far_production/viewProductionCuttingAndSealingList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . 1);
 
     }
+
+    public function addProductionGalaCuttingDetail(Request $request)
+    {
+        // dd($request->all());
+        $request->validate([
+            'item_id' => 'required|array',
+            'machine_id' => 'required|array',
+
+        ]);
+
+        DB::connection('mysql2')->beginTransaction();
+
+        try {
+
+            foreach ($request->item_id as $key => $itemId) {
+
+                $data2 = [
+                    'cutting_sealing_id' => $request->roll_id,
+                    'item_id' => $itemId,
+                    'machine_id' => $request->machine_id[$key],
+                    'operator_id' => $request->operator_id[$key] ?? null,
+                    'shift_id' => $request->shift_id[$key] ?? null,
+                    'cs_qty' => $request->qty[$key] ?? 0,
+                    'gala_qty' => $request->gala_qty[$key] ?? 0,
+                    'date' => $request->date[$key] ?? now(),
+                    'status' => 1,
+                    'username' => Auth::user()->name,
+                ];
+                DB::connection('mysql2')
+                    ->table('production_gala_cutting')
+                    ->insert($data2);
+
+
+            }
+            DB::connection('mysql2')
+                ->table('production_cutting_and_sealing')
+                ->where('id', $request->roll_id)
+                ->where('item_id', $request->raw_item_id[0])
+                ->update([
+                    'used_qty' => $request->used_qty_total,
+                ]);
+            DB::connection('mysql2')->commit();
+
+        } catch (\Exception $e) {
+            DB::connection('mysql2')->rollback();
+            dd($e->getMessage());
+            // return back()->withErrors($e->getMessage());
+        }
+
+        Session::flash('dataInsert', 'Successfully Saved.');
+        return Redirect::to('far_production/viewProductionGalaCuttingList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . 1);
+
+    }
+
+    public function addProductionPackingDetail(Request $request)
+    {
+        // dd($request->all());
+        $request->validate([
+            'item_id' => 'required|array',
+            'machine_id' => 'required|array',
+        ]);
+
+        DB::connection('mysql2')->beginTransaction();
+
+        try {
+
+            foreach ($request->item_id as $key => $itemId) {
+
+                $rollField = ($request->cutting_type == 'cutting and sealing')
+                    ? ['cutting_sealing_id' => $request->roll_id]
+                    : ['gala_cutting_id' => $request->roll_id];
+
+                $data2 = array_merge($rollField, [
+                    'item_id' => $itemId,
+                    'machine_id' => $request->machine_id[$key],
+                    'operator_id' => $request->operator_id[$key] ?? null,
+                    'shift_id' => $request->shift_id[$key] ?? null,
+                    'cutting_qty' => $request->qty[$key] ?? 0,
+                    'packing_bags_qty' => $request->gala_qty[$key] ?? 0,
+                    'date' => $request->date[$key] ?? now(),
+                    'status' => 1,
+                    'username' => Auth::user()->name,
+                ]);
+
+                DB::connection('mysql2')
+                    ->table('production_packing')
+                    ->insert($data2);
+            }
+
+            // update used qty
+            if ($request->cutting_type == 'cutting and sealing') {
+                DB::connection('mysql2')
+                    ->table('production_cutting_and_sealing')
+                    ->where('id', $request->roll_id)
+                    ->where('item_id', $request->raw_item_id[0])
+                    ->update([
+                        'used_qty' => $request->used_qty_total,
+                    ]);
+            } else {
+                DB::connection('mysql2')
+                    ->table('production_gala_cutting')
+                    ->where('id', $request->roll_id)
+                    ->where('item_id', $request->raw_item_id[0])
+                    ->update([
+                        'used_qty' => $request->used_qty_total,
+                    ]);
+            }
+
+            DB::connection('mysql2')->commit();
+
+        } catch (\Exception $e) {
+            DB::connection('mysql2')->rollback();
+            dd($e->getMessage());
+        }
+
+        Session::flash('dataInsert', 'Successfully Saved.');
+
+        return Redirect::to(
+            'far_production/viewProductionPackingList?pageType=' .
+            Input::get('pageType') .
+            '&&parentCode=' . Input::get('parentCode') .
+            '&&m=1'
+        );
+    }
+
 }

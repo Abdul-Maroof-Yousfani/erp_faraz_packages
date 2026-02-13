@@ -36,7 +36,7 @@ use App\Helpers\NotificationHelper;
                             <label class="sf-label">PO Date.</label>
                             <span class="rflabelsteric"><strong>*</strong></span>
                             <input type="date" class="form-control requiredField"
-                                max="{{ date('Y-m-d') }}" name="request_date" id="request_date"
+                                 name="request_date" id="request_date"
                                 value="{{ date('Y-m-d') }}" />
                         </div>
                         <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
@@ -67,13 +67,13 @@ use App\Helpers\NotificationHelper;
                                 <table class="userlittab table table-bordered sf-table-list">
                                     <thead>
                                         <tr>
-                                            <th class="text-center col-sm-2">Finish Item</th>
-                                            <th class="text-center">UOM</th>
+                                            <th class="text-center col-sm-2">Sub Category</th>
+                                            {{-- <th class="text-center">UOM</th> --}}
                                             {{-- <th class="text-center">Color</th> --}}
-                                            <th class="text-center">QTY (KG)</th>
+                                            {{-- <th class="text-center">QTY (KG)</th> --}}
                                             <th class="text-center">Reason</th>
                                             <th class="text-center col-sm-2">When Required</th>
-                                            <th class="text-center">History</th>
+                                            {{-- <th class="text-center">History</th> --}}
                                             <th class="text-center">Action</th>
                                         </tr>
                                     </thead>
@@ -81,22 +81,22 @@ use App\Helpers\NotificationHelper;
                                         <tr>
                                             <td>
                                                 <select style="width: 100% !important;"
-                                                    onchange="get_item_name(1)" name="item_id[]"
-                                                    id="item_id1"
+                                                    name="sub_category[]"
+                                                    id="sub_category1"
                                                     class="form-control requiredField select2">
                                                     <option value="">Select</option>
-                                                    @foreach($sub_item as $val)
+                                                    @foreach($sub_categories as $val)
                                                         <option
-                                                            value="{{ $val->id . '@' . $val->uom_name . '@' . $val->sub_ic }}">
-                                                            {{ $val->item_code . ' -- ' . $val->sub_ic }}
+                                                            value="{{$val->id}}">
+                                                            {{ $val->sub_category_name }}
                                                         </option>
                                                     @endforeach
                                                 </select>
                                             </td>
-                                            <td>
+                                            {{-- <td>
                                                 <input readonly type="text" class="form-control"
                                                     name="uom_id[]" id="uom_id1">
-                                            </td>
+                                            </td> --}}
                                             {{-- <td>
                                                 <select style="width: 100% !important;" class="form-control select2 requiredField" name="color[]" id="color1">
                                                     <option value="">Select Color</option>
@@ -105,22 +105,22 @@ use App\Helpers\NotificationHelper;
                                                     @endforeach
                                                 </select>
                                             </td> --}}
-                                            <td>
+                                            {{-- <td>
                                                 <input type="text" class="form-control requiredField"
                                                     name="quantity[]" id="quantity1">
-                                            </td>
+                                            </td> --}}
                                             <td>
                                                 <input type="text" class="form-control" name="purpose[]"
                                                     id="purpose1">
                                             </td>
                                             <td>
-                                                <input min="{{ date('Y-m-d') }}" type="date"
+                                                <input type="date"
                                                     class="form-control" name="required_date[]"
                                                     id="required_date1">
                                             </td>
-                                            <td class="text-center"><input onclick="view_history(1)"
+                                            {{-- <td class="text-center"><input onclick="view_history(1)"
                                                     type="checkbox" id="view_history1">
-                                            </td>
+                                            </td> --}}
                                             <td> <a href="#" class="btn btn-sm btn-primary"
                                                     onclick="AddMoreDetails()"><span
                                                         class="glyphicon glyphicon-plus-sign"></span>
@@ -150,19 +150,19 @@ use App\Helpers\NotificationHelper;
             <tr class="RemoveRows${Counter}">
                 <td>
                     <select style="width: 100% !important;"
-                        onchange="get_item_name(${Counter})" name="item_id[]"
-                        id="item_id${Counter}"
+                        name="sub_category[]"
+                        id="sub_category${Counter}"
                         class="form-control requiredField select2">
                         <option>Select</option>
-                        @foreach($sub_item as $val)
+                        @foreach($sub_categories as $val)
                             <option
-                                value="{{ $val->id . '@' . $val->uom_name . '@' . $val->sub_ic }}">
-                                {{ $val->item_code . ' -- ' . $val->sub_ic }}
+                                value="{{ $val->id }}">
+                                {{ $val->sub_category_name }}
                             </option>
                         @endforeach
                     </select>
                 </td>
-                <td>
+                {{-- <td>
                     <input readonly type="text" class="form-control"
                         name="uom_id[]" id="uom_id${Counter}">
                 </td>
@@ -170,19 +170,19 @@ use App\Helpers\NotificationHelper;
                 <td>
                     <input type="text" class="form-control requiredField"
                         name="quantity[]" id="quantity${Counter}">
-                </td>
+                </td> --}}
                 <td>
                     <input type="text" class="form-control" name="purpose[]"
                         id="purpose${Counter}">
                 </td>
                 <td>
-                    <input min="{{ date('Y-m-d') }}" type="date"
+                    <input type="date"
                         class="form-control" name="required_date[]"
                         id="required_date${Counter}">
                 </td>
-                <td class="text-center"><input onclick="view_history(1)"
+                {{-- <td class="text-center"><input onclick="view_history(1)"
                         type="checkbox" id="view_history${Counter}">
-                </td>
+                </td> --}}
                 <td> <a href="#" class="btn btn-sm btn-danger"
                         onclick="RemoveSection(${Counter})"><span
                             class="glyphicon glyphicon-trash"></span>
@@ -190,7 +190,7 @@ use App\Helpers\NotificationHelper;
                 </td>
             </tr>`);
 
-        $('#item_id' + Counter).select2();
+        $('#sub_category' + Counter).select2();
         $('#color' + Counter).select2();
     }
 

@@ -72,9 +72,9 @@ $counter = 1;
                             <thead>
                                 <tr>
                                     <th class="text-center">S.No</th>
-                                    <th class="text-center">Item</th>
-                                    <th class="text-center">Color</th>
-                                    <th class="text-center">Quantity</th>
+                                    <th class="text-center">Category</th>
+                                    {{-- <th class="text-center">Color</th> --}}
+                                    {{-- <th class="text-center">Quantity</th> --}}
                                     <th class="text-center">Reason</th>
                                     <th class="text-center">Required Date</th>
                                     {{-- <th class="text-center">View Recipe</th> --}}
@@ -85,10 +85,10 @@ $counter = 1;
                                 <tr>
                                     <td class="text-center">{{ $counter++ }}</td>
                                     <td class="text-center">
-                                        {{ CommonHelper::get_item_by_id($val->item_id)->item_code . ' -- ' . CommonHelper::get_item_by_id($val->item_id)->sub_ic }}
+                                        {{ CommonHelper::get_sub_category_name($val->sub_category_id) }}
                                     </td>
-                                    <td class="text-center">{{ $val->color }}</td>
-                                    <td class="text-center">{{ number_format($val->quantity, 2) }}</td>
+                                    {{-- <td class="text-center">{{ $val->color }}</td> --}}
+                                    {{-- <td class="text-center">{{ number_format($val->quantity, 2) }}</td> --}}
                                     <td class="text-center">{{ $val->purpose }}</td>
                                     <td class="text-center">{{ CommonHelper::changeDateFormat($val->required_date) }}</td>
                                     {{-- <td class="text-center">

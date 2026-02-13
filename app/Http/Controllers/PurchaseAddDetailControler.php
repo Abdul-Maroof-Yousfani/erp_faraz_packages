@@ -640,10 +640,12 @@ class PurchaseAddDetailControler extends Controller
     {
         $m = $_GET['m'];
         $CategoryId = Input::get('CategoryId');
+        $Type = Input::get('Type');
         $SubCategoryName = Input::get('SubCategoryName');
 
         $SubCategoryInsert['category_id'] = $CategoryId;
         $SubCategoryInsert['sub_category_name'] = $SubCategoryName;
+        $SubCategoryInsert['type'] = $Type;
 
 
 
@@ -653,7 +655,7 @@ class PurchaseAddDetailControler extends Controller
 
         CommonHelper::reconnectMasterDatabase();
         $Count = DB::Connection('mysql2')->selectOne('SELECT COUNT(sub_category_name) as data_count FROM sub_category
-        WHERE category_id = '.$CategoryId.' AND sub_category_name collate latin1_swedish_ci = "'.$SubCategoryName.'"')->data_count;
+        WHERE category_id = '.$CategoryId.' AND sub_category_name collate latin1_swedish_ci = "'.$SubCategoryName.'" AND type = "'.$Type.'"')->data_count;
         //echo  $Count; die();
         if ($Count > 0)
         {
@@ -3694,6 +3696,7 @@ class PurchaseAddDetailControler extends Controller
     {
          $id= $request->id;
          $data['sub_category_name']=$request->SubCategoryName;
+         $data['type']=$request->Type;
 
         DB::Connection('mysql2')->table('sub_category')->where('id',$id)->update($data);
         return Redirect::to('purchase/viewSubCategoryList?pageType=view&&parentCode=95&&m=' . Session::get('run_company') . '#murtazaCorporation');

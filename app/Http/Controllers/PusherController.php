@@ -34,7 +34,7 @@ class PusherController extends Controller
     }
     public function edit_sub_ca(Request $request)
     {
-       $data= DB::Connection('mysql2')->table('sub_category')->where('id',$request->id)->select('sub_category_name','category_id')->first();
+       $data= DB::Connection('mysql2')->table('sub_category')->where('id',$request->id)->select('sub_category_name','category_id','type')->first();
         $id=$request->id;
         return view('Purchase.AjaxPages.edit_sub_ca',compact('data','id'));
     }

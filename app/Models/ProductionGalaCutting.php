@@ -6,10 +6,10 @@ use App\Models\InventoryMaster\Machine;
 use App\Models\InventoryMaster\Operator;
 use Illuminate\Database\Eloquent\Model;
 
-class ProductionRollPrinting extends Model
+class ProductionGalaCutting extends Model
 {
     public $connection = "mysql2";
-    protected $table = "production_roll_printing";
+    protected $table = "production_gala_cutting";
     protected $guarded = [];
     public $timestamps = false;
 
@@ -20,14 +20,9 @@ class ProductionRollPrinting extends Model
         return $this->belongsTo(Subitem::class, 'item_id');
     }
 
-    public function productionRoll()
+    public function cuttingAndSealing()
     {
-        return $this->belongsTo(ProductionRolling::class, 'production_rolling_id');
-    }
-
-    public function cuttingAndSealings()
-    {
-        return $this->hasMany(ProductionCuttingAndSealing::class, 'printed_rolling_id');
+        return $this->belongsTo(ProductionCuttingAndSealing::class, 'cutting_sealing_id');
     }
 
     public function machine()
@@ -39,15 +34,4 @@ class ProductionRollPrinting extends Model
     {
         return $this->belongsTo(Operator::class, 'operator_id');
     }
-
-    public function brand()
-    {
-        return $this->belongsTo(Brand::class, 'brand_id');
-    }
-
-    public function color()
-    {
-        return $this->belongsTo(Color::class, 'color_id');
-    }
-
 }

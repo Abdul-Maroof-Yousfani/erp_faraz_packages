@@ -21,7 +21,7 @@ $this->m = Session::get('run_company');
                         <div class="row align-items-center">
                             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                                 <div class="headquid">
-                                    <h2 class="subHeadingLabelClass">Production Cutting & Packing List</h2>
+                                    <h2 class="subHeadingLabelClass">Production Cutting & Sealing List</h2>
                                 </div>
                             </div>
                             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 text-right">
@@ -40,6 +40,7 @@ $this->m = Session::get('run_company');
                         <div class="panel">
                             <div class="panel-body" id="PrintEmpExitInterviewList">
                                 <?php echo CommonHelper::headerPrintSectionInPrintView($m); ?>
+                                
                                 <div class="row">
                                     <div class="col-lg-12 col-md-12 col-sm-12col-xs-12">
                                         <div class="table-responsive">
@@ -49,17 +50,21 @@ $this->m = Session::get('run_company');
                                                     <th class="text-center">S.No</th>
                                                     <th class="text-center">Item</th>
                                                     <th class="text-center">Qty</th>
+                                                    <th class="text-center">Rolls Used</th>
+                                                    <th class="text-center">Date</th>
                                                     <th class="text-center">Prod. Order No.</th>
                                                     <th class="text-center">Status</th>
                                                     <th class="text-center">Action</th>
                                                 </thead>
                                                 <?php $count = 0; ?>
                                                 <tbody id="data">
-                                                    @foreach ($cuttingAndPackingList as $Fil)
+                                                    @foreach ($cuttingAndSealingList as $Fil)
                                                         <tr id="remove<?php    echo $Fil['id'] ?>">
                                                             <td>{{++$count}}</td>
                                                             <td>{{CommonHelper::get_item_name($Fil->item_id)}}</td>
-                                                            <td> {{$Fil->bags_qty}} </td>
+                                                            <td> {{$Fil->qty}} </td>
+                                                            <td> {{$Fil->printed_roll_qty}} </td>
+                                                            <td> {{$Fil->date}} </td>
                                                             <td>{{ optional($Fil->printedRoll->productionRoll->productionOrder)->pr_no }} </td>
                                                             <td>
                                                                 @if($Fil->status == 1)
@@ -76,8 +81,16 @@ $this->m = Session::get('run_company');
                                                                     <ul class="dropdown-menu">
                                                                         <li>
                                                                           
-                                                                                 <a href="cuttingAndPacking?id=<?php    echo $Fil['id'] ?>&&m=<?php    echo $this->m?>">Process Dispatch
-                                                                            </a>
+
+                                                                            @if(isset($Fil->subItem->subCategory->type) && $Fil->subItem->subCategory->type == 'Gala Cutting')
+                                                                                <a href="galaCutting?id=<?php    echo $Fil['id'] ?>&&m=<?php    echo $this->m?>">Processed Gala Cutting</a>
+                                                                            @else
+                                                                                <a href="packing?id=<?php echo $Fil['id'] ?>&m=<?php echo $this->m ?>&cutting_type=cutting and sealing">
+                                                                                    Processed Packing
+                                                                                </a>
+
+                                                                            @endif
+
                                                                             <a href="mixtureEdit?id=<?php    echo $Fil['id'] ?>&&m=<?php    echo $this->m?>">
                                                                             </a>
                                                                            

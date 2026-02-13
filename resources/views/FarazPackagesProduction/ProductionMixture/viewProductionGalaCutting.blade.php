@@ -21,7 +21,7 @@ $this->m = Session::get('run_company');
                         <div class="row align-items-center">
                             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                                 <div class="headquid">
-                                    <h2 class="subHeadingLabelClass">Production Rolling List</h2>
+                                    <h2 class="subHeadingLabelClass">Production Cutting & Sealing List</h2>
                                 </div>
                             </div>
                             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 text-right">
@@ -40,6 +40,7 @@ $this->m = Session::get('run_company');
                         <div class="panel">
                             <div class="panel-body" id="PrintEmpExitInterviewList">
                                 <?php echo CommonHelper::headerPrintSectionInPrintView($m); ?>
+
                                 <div class="row">
                                     <div class="col-lg-12 col-md-12 col-sm-12col-xs-12">
                                         <div class="table-responsive">
@@ -47,22 +48,25 @@ $this->m = Session::get('run_company');
                                                 id="EmpExitInterviewList">
                                                 <thead>
                                                     <th class="text-center">S.No</th>
-                                                    <th class="text-center">Rolled Item</th>
-                                                    <th class="text-center">Qty</th>
-                                                    <th class="text-center">Mixture used</th>
+                                                    <th class="text-center">Item</th>
+                                                    <th class="text-center">Gala Qty</th>
+                                                    <th class="text-center">C&S Qty</th>
+                                                    <th class="text-center">Date</th>
                                                     <th class="text-center">Prod. Order No.</th>
                                                     <th class="text-center">Status</th>
                                                     <th class="text-center">Action</th>
                                                 </thead>
                                                 <?php $count = 0; ?>
                                                 <tbody id="data">
-                                                    @foreach ($rollingList as $Fil)
+                                                    @foreach ($galaCuttingList as $Fil)
                                                         <tr id="remove<?php    echo $Fil['id'] ?>">
                                                             <td>{{++$count}}</td>
                                                             <td>{{CommonHelper::get_item_name($Fil->item_id)}}</td>
-                                                            <td> {{$Fil->roll_qty}} </td>
-                                                            <td> {{$Fil->mixture_qty}} </td>
-                                                            <td>{{ optional($Fil->productionOrder)->pr_no }} </td>
+                                                            <td> {{$Fil->gala_qty}} </td>
+                                                            <td> {{$Fil->cs_qty}} </td>
+                                                            <td> {{$Fil->date}} </td>
+                                                            <td>{{ optional($Fil->cuttingAndSealing->printedRoll->productionRoll->productionOrder)->pr_no }}
+                                                            </td>
                                                             <td>
                                                                 @if($Fil->status == 1)
                                                                     Active
@@ -77,19 +81,20 @@ $this->m = Session::get('run_company');
                                                                             class="fa-solid fa-ellipsis-vertical"></i></button>
                                                                     <ul class="dropdown-menu">
                                                                         <li>
-                                                                          
-                                                                                 <a href="rollPrinting?id=<?php    echo $Fil['id'] ?>&&m=<?php    echo $this->m?>">Process Roll Printing
+
+                                                                            <a
+                                                                                href="packing?id=<?php    echo $Fil['id'] ?>&m=<?php    echo $this->m ?>&cutting_type=gala cutting">
+                                                                                Processed Packing
                                                                             </a>
-                                                                            <a href="mixtureEdit?id=<?php    echo $Fil['id'] ?>&&m=<?php    echo $this->m?>">
-                                                                            </a>
-                                                                           
+
+
 
                                                                             {{-- @if($Fil->status == 1)
-                                                                                <a
-                                                                                    onclick="showDetailModelOneParamerter('recipe/changeFormulationStatus','{{$Fil->id . '--' . '2'}}','','{{$this->m}}')">Disable</a>
+                                                                            <a
+                                                                                onclick="showDetailModelOneParamerter('recipe/changeFormulationStatus','{{$Fil->id . '--' . '2'}}','','{{$this->m}}')">Disable</a>
                                                                             @elseif($Fil->status == 2)
-                                                                                <a
-                                                                                    onclick="changeFormulationStatus('{{$Fil->id}}','1','{{$this->m}}')">Enable</a>
+                                                                            <a
+                                                                                onclick="changeFormulationStatus('{{$Fil->id}}','1','{{$this->m}}')">Enable</a>
                                                                             @endif --}}
                                                                         </li>
                                                                     </ul>
@@ -99,6 +104,7 @@ $this->m = Session::get('run_company');
                                                     @endforeach
                                                 </tbody>
                                             </table>
+
                                         </div>
                                     </div>
                                 </div>

@@ -6,10 +6,10 @@ use App\Models\InventoryMaster\Machine;
 use App\Models\InventoryMaster\Operator;
 use Illuminate\Database\Eloquent\Model;
 
-class ProductionCuttingAndPacking extends Model
+class ProductionCuttingAndSealing extends Model
 {
     public $connection = "mysql2";
-    protected $table = "production_cutting_and_packing";
+    protected $table = "production_cutting_and_sealing";
     protected $guarded = [];
     public $timestamps = false;
 

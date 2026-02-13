@@ -85,7 +85,7 @@ $Operator   = [];
                                                             >
                                                         </div>
 <div class="col-md-2">
-                                                            <label for="">Initial Qty</label>
+                                                            <label for="">Initial Qty (Mixture)</label>
                                                             <input 
                                                                 type="number"
                                                                 readonly
@@ -188,7 +188,7 @@ $global_avg_amt=0;
                                                         
 
                                                         <div class="col-md-2">
-                                                            <label for="">Not Used Qty</label>
+                                                            <label for="">Not Consumed Mixture</label>
                                                             <input 
                                                                 type="number"
                                                                 readonly
@@ -201,9 +201,10 @@ $global_avg_amt=0;
 
 
                                                         <div class="col-md-2">
-                                                            <label for="">Used qty</label>
+                                                            <label for="">Consumed Mixture</label>
                                                             <input 
                                                                 type="text"
+                                                                readonly
                                                                 id="used_qty_total"
                                                                 name="used_qty_total"
                                                                 class="form-control move-next used_qty_total"
@@ -215,7 +216,7 @@ $global_avg_amt=0;
 
 
                                                         <div class="col-md-2">
-                                                            <label for="">Remaining qty</label>
+                                                            <label for="">Balance Mixture</label>
                                                             <input 
                                                                 type="number"
                                                                 readonly
@@ -333,7 +334,7 @@ $global_avg_amt=0;
                                                         </div>
 
                                                         <div class="col-md-1">
-                                                            <label for="">Raw Qty. (KG)</label>
+                                                            <label for="">Mixture Qty.</label>
                                                             <input 
                                                                 type="text" 
                                                                 name="mixture_qty[]"
@@ -347,7 +348,7 @@ $global_avg_amt=0;
 
 
                                                         <div class="col-md-1">
-                                                            <label for="">Kg per Roll</label>
+                                                            <label for="">Rolls Qty (Kg)</label>
                                                             <input 
                                                                 type="text" 
                                                                 name="roll_qty_kg[]"
@@ -531,7 +532,7 @@ $global_avg_amt=0;
                         </div>
 
                         <div class="col-md-1">
-                            <label for="">Raw Qty. (KG)</label>
+                            <label for="">Mixture Qty.</label>
                             <input 
                                 type="text" 
                                 name="mixture_qty[]"
@@ -544,7 +545,7 @@ $global_avg_amt=0;
                         </div>
 
                         <div class="col-md-1">
-                            <label for="">Kg per Roll</label>
+                            <label for="">Rolls Qty (Kg)</label>
                             <input 
                                 type="text" 
                                 name="roll_qty_kg[]"
@@ -646,7 +647,6 @@ function cal_amt() {
     }
 
     // Always update remaining qty
-    $('#remaining_qty').val(issued_qty - used_qty_total);
     $('#issued_rate').val(raw_avg_amt / used_qty_total);
 
     // Get all mixture_qty fields
@@ -654,23 +654,40 @@ function cal_amt() {
     let count = mixture_qty_inputs.length;
 
     // ---- CASE 1: Auto distribute when Used Qty changes ----
-    if (count > 0 && used_qty_total > 0 && event?.type === "keyup" && $(event.target).hasClass("used_qty_total")) {
-        let mixture_qty_avg = used_qty_total / count;
-        mixture_qty_inputs.each(function () {
-            $(this).val(mixture_qty_avg.toFixed(2));
-        });
+    
+
+// ---- CASE 2: Validate manual mixture_qty edits ----
+let sum_mixture_qty = 0;
+
+mixture_qty_inputs.each(function () {
+    sum_mixture_qty += parseFloat($(this).val()) || 0;
+});
+
+if (sum_mixture_qty > issued_qty) {
+    alert("Total Raw Qty cannot exceed Issued Qty!");
+
+    // reset last changed input
+    if (event && event.target) {
+        $(event.target).val(0);
     }
 
-    // ---- CASE 2: Validate manual mixture_qty edits ----
-    let sum_mixture_qty = 0;
+    // 🔥 recalculate sum again after reset
+    sum_mixture_qty = 0;
     mixture_qty_inputs.each(function () {
         sum_mixture_qty += parseFloat($(this).val()) || 0;
     });
+}
 
-    if (sum_mixture_qty > used_qty_total) {
-        alert("Total Raw Qty cannot exceed Used Qty!");
-        $(event.target).val(0); // reset the last changed input
-    }
+// update used qty
+$('.used_qty_total').val(sum_mixture_qty.toFixed(2));
+used_qty_total = sum_mixture_qty;
+
+// correct remaining calculation
+$('#remaining_qty').val((issued_qty - sum_mixture_qty).toFixed(2));
+
+
+
+    
 
     
      // ---- CASE 3: Calculate Finish Amount = Qty * Rate ----

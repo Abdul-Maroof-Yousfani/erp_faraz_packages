@@ -16,7 +16,7 @@ $Operator   = [];
                     <h1>Production</h1>
                 </li>
                 <li>
-                    <h3><span class="glyphicon glyphicon-chevron-right"></span> &nbsp;Create Production Cutting & Packing</h3>
+                    <h3><span class="glyphicon glyphicon-chevron-right"></span> &nbsp;Create Production Sealing & Cutting</h3>
                 </li>
             </ul>
         </div>
@@ -40,7 +40,7 @@ $Operator   = [];
                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                         <div class="panel">
                             <div class="panel-body">
-                               <form action="{{route('FarProduction.CuttingAndPacking')}}" method="post">
+                               <form action="{{route('FarProduction.CuttingAndSealing')}}" method="post">
                                     <input type="hidden" name="_token" value="{{ csrf_token() }}">
                                     <input type="hidden" id="for_disabled_btn">
 
@@ -49,7 +49,7 @@ $Operator   = [];
                                             <div class="row qout-h" style="padding: 10px">
                                                 <div class="col-md-12 bor-bo">
                                                     <div class="pips_create">
-                                                        <h1 style="display: inline-block;">Cutting & Packing</h1>
+                                                        <h1 style="display: inline-block;">Cutting & Sealing</h1>
                                                     </div>
                                                    
                                                 </div>
@@ -91,6 +91,7 @@ $Operator   = [];
                                                                 value="{{ CommonHelper::get_item_name($out_source_productions_item->item_id) }}"
                                                             >
                                                             <input type="hidden" name="roll_id" value="{{ $out_source_productions_item->id }}">
+                                                            <input type="hidden" name="cutting_type" value="cutting and sealing">
 
                                                         </div>
 
@@ -241,32 +242,34 @@ $global_avg_amt=0;
                                                     <hr> 
                                                     <div class="row">
                                                         <div class="col-md-12 text-right mr-4">
-                                                            <a onclick="addRawMaterial()" class="btn btn-primary mr-1">Add More Printed Rolls</a>
+                                                            <a onclick="addRawMaterial()" class="btn btn-primary mr-1">Add More Sealing & Cutting</a>
                                                         </div>
                                                     </div>
                                                 </div>
 
 
 
-                                                <h1 style="display: inline-block;">Cutting & Packing Item Detail</h1>
+                                                <h1 style="display: inline-block;">Sealing & Cutting Item Detail</h1>
 
                                                 <div class="col-md-12 padt pos-r" id="out_source_production_data_to_finish_received" >
 
                                                     <div class="row">
                                                         <div class="col-md-2">
                                                             <label for="">Item</label>
-                                                             <select style="width: 100% !important;"
+                                                            <select style="width: 100% !important;"
                                                                 name="item_id[]"
                                                                 id="item_id1"
-                                                                class="form-control requiredField select2">
+                                                                class="form-control requiredField select2" disabled>
                                                                 <option value="">Select</option>
                                                                 @foreach($sub_item as $val)
                                                                     <option
-                                                                        value="{{ $val->id . '@' . $val->uom_name . '@' . $val->sub_ic }}">
+                                                                        value="{{ $val->id . '@' . $val->uom_name . '@' . $val->sub_ic }}"
+                                                                        {{ $out_source_productions_item->item_id == $val->id ? 'selected' : '' }}>
                                                                         {{ $val->item_code . ' -- ' . $val->sub_ic }}
                                                                     </option>
                                                                 @endforeach
                                                             </select>
+                                                            <input type="hidden" name="item_id[]" value="{{ $val->id }}">
                                                         </div>
                                                         
                                                         
@@ -345,12 +348,12 @@ $global_avg_amt=0;
 
 
                                                         <div class="col-md-1">
-                                                            <label for="">Bags</label>
+                                                            <label for="">Qty (KG)</label>
                                                             <input 
                                                                 type="text" 
-                                                                name="bags_qty[]"
-                                                                id="bags_qty_1"
-                                                                class="form-control move-next bags_qty_1 requiredField"
+                                                                name="qty[]"
+                                                                id="qty_1"
+                                                                class="form-control move-next qty_1 requiredField"
                                                                 onkeyup="cal_amt()"
                                                                 required 
 
@@ -534,9 +537,9 @@ $global_avg_amt=0;
                             <label for="">Bags</label>
                             <input 
                                 type="text" 
-                                name="bags_qty[]"
-                                id="bags_qty_${count}"
-                                class="form-control move-next bags_qty_${count} requiredField"
+                                name="qty[]"
+                                id="qty_${count}"
+                                class="form-control move-next qty_${count} requiredField"
                                 onkeyup="cal_amt()"
                                 required 
 

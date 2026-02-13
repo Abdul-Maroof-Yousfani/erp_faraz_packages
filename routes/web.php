@@ -740,6 +740,7 @@ Route::group(['prefix' => 'purchase', 'middleware' => 'mysql2', 'before' => 'csr
     Route::get('/deleteSubItemRecord', 'PurchaseDeleteController@deleteSubItemRecord');
     Route::get('/repostSubItemRecord', 'PurchaseDeleteController@repostSubItemRecord');
     Route::resource('brands', 'BrandController');
+    Route::resource('colors', 'ColorController');
 
     //amir
     Route::get('/createDemandTypeForm', 'PurchaseController@createDemandTypeForm');
@@ -2218,12 +2219,18 @@ Route::group(['prefix' => 'far_production', 'middleware' => 'mysql2', 'before' =
     Route::get('/mixtureRolling', 'FarazProductionController@mixtureRolling');
     Route::get('/viewProductionRollingList', 'FarazProductionController@viewProductionRollingList');
     Route::get('/viewProductionRollPrintingList', 'FarazProductionController@viewProductionRollPrintingList');
-    Route::get('/viewProductionCuttingAndPackingList', 'FarazProductionController@viewProductionCuttingAndPackingList');
+    Route::get('/viewProductionCuttingAndSealingList', 'FarazProductionController@viewProductionCuttingAndSealingList');
+    Route::get('/viewProductionGalaCuttingList', 'FarazProductionController@viewProductionGalaCuttingList');
+    Route::get('/viewProductionPackingList', 'FarazProductionController@viewProductionPackingList');
+
 
     Route::get('/rollPrinting', 'FarazProductionController@rollPrinting');
 
-    Route::get('/cuttingAndPacking', 'FarazProductionController@cuttingAndPacking');
+    Route::get('/cuttingAndSealing', 'FarazProductionController@cuttingAndSealing');
 
+    Route::get('/galaCutting', 'FarazProductionController@galaCutting');
+
+    Route::get('/packing', 'FarazProductionController@packing');
 
 
 });
@@ -2245,8 +2252,15 @@ Route::group(['prefix' => 'far_prod', 'middleware' => 'mysql2', 'before' => 'csr
     Route::post('/addProductionRollPrintingDetail', 'FarazProductionAddDetailController@addProductionRollPrintingDetail')->name('FarProduction.RollPrint');
 
     // production cutting and packing ajax
-    Route::post('/addProductionCuttingAndPackingDetail', 'FarazProductionAddDetailController@addProductionCuttingAndPackingDetail')->name('FarProduction.CuttingAndPacking');
+    Route::post('/addProductionCuttingAndSealingDetail', 'FarazProductionAddDetailController@addProductionCuttingAndSealingDetail')->name('FarProduction.CuttingAndSealing');
 
+    // production gala cutting ajax
+    Route::post('/addProductionGalaCuttingDetail', 'FarazProductionAddDetailController@addProductionGalaCuttingDetail')->name('FarProduction.GalaCutting');
+
+    // production packing ajax
+    Route::post('/addProductionPackingDetail', 'FarazProductionAddDetailController@addProductionPackingDetail')->name('FarProduction.Packing');
+
+    
 });
 
 Route::get('store-items-data', function () {

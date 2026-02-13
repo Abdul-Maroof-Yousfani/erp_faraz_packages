@@ -16,6 +16,11 @@ class Subitem extends Model{
 	{
 		return $this->belongsTo(UOM::class,'uom','id');
 	}
+
+	public function subCategory()
+	{
+		return $this->belongsTo(SubCategory::class,'sub_category_id','id');
+	}
 }
 
 

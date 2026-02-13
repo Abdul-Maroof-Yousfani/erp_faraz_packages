@@ -16,7 +16,7 @@ $Operator   = [];
                     <h1>Production</h1>
                 </li>
                 <li>
-                    <h3><span class="glyphicon glyphicon-chevron-right"></span> &nbsp;Create Production Roll Printing</h3>
+                    <h3><span class="glyphicon glyphicon-chevron-right"></span> &nbsp;Create Production Gala Cutting</h3>
                 </li>
             </ul>
         </div>
@@ -40,7 +40,7 @@ $Operator   = [];
                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                         <div class="panel">
                             <div class="panel-body">
-                               <form action="{{route('FarProduction.RollPrint')}}" method="post">
+                               <form action="{{route('FarProduction.GalaCutting')}}" method="post">
                                     <input type="hidden" name="_token" value="{{ csrf_token() }}">
                                     <input type="hidden" id="for_disabled_btn">
 
@@ -49,7 +49,7 @@ $Operator   = [];
                                             <div class="row qout-h" style="padding: 10px">
                                                 <div class="col-md-12 bor-bo">
                                                     <div class="pips_create">
-                                                        <h1 style="display: inline-block;">Roll Printing</h1>
+                                                        <h1 style="display: inline-block;">Gala Cutting</h1>
                                                     </div>
                                                    
                                                 </div>
@@ -82,7 +82,7 @@ $Operator   = [];
                                                             >
                                                         </div>
                                                         <div class="col-md-2">
-                                                            <label for="">Selected Roll</label>
+                                                            <label for="">Selected Cutting & Sealing</label>
                                                             <input 
                                                                 type="text"  
                                                                 readonly
@@ -91,6 +91,7 @@ $Operator   = [];
                                                                 value="{{ CommonHelper::get_item_name($out_source_productions_item->item_id) }}"
                                                             >
                                                             <input type="hidden" name="roll_id" value="{{ $out_source_productions_item->id }}">
+                                                            <input type="hidden" name="cutting_type" value="gala cutting">
 
                                                         </div>
 
@@ -116,17 +117,17 @@ $global_avg_amt=0;
             <tbody>
     @forelse($out_source_productions_details as $key => $detail)
         @php 
-            $allowed_qty = $detail->roll_qty - ($detail->used_qty ?? 0);
+            $allowed_qty = $detail->qty - ($detail->used_qty ?? 0);
             
             $rate = App\Helpers\CommonHelper::getAccurateFIFOAvgRate($detail->item_id, $out_source_productions_item->date);
 
-            $global_avg_amt += $rate * $detail->roll_qty;   // sum of (rate × qty)
-        $global_avg_qty += $detail->roll_qty;           // sum of qty
+            $global_avg_amt += $rate * $detail->qty;   // sum of (rate × qty)
+        $global_avg_qty += $detail->qty;           // sum of qty
         @endphp
         <tr>
             <td>{{ $key+1 }}</td>
             <td>{{ $detail->item_id }}</td>
-            <td>{{ $detail->roll_qty }}</td>
+            <td>{{ $detail->qty }}</td>
             <td>{{ $detail->used_qty ?? 0 }}</td>
 
             {{-- Row-specific input --}}
@@ -144,7 +145,7 @@ $global_avg_amt=0;
             <td>{{ $rate }}
             <input type="hidden" name="raw_item_id[]" value="{{ $detail->item_id }}">
             </td>
-            <td>{{ number_format($detail->roll_qty * $rate, 2) }}</td>
+            <td>{{ number_format($detail->qty * $rate, 2) }}</td>
         </tr>
     @empty
         <tr>
@@ -199,7 +200,7 @@ $global_avg_amt=0;
 
 
                                                         <div class="col-md-2">
-                                                            <label for="">Used No. of Rolls</label>
+                                                            <label for="">Used Cutting & Sealing</label>
                                                             <input 
                                                                 type="text"
                                                                 id="used_qty_total"
@@ -213,7 +214,7 @@ $global_avg_amt=0;
 
 
                                                         <div class="col-md-2">
-                                                            <label for="">Remaining No. of Roll</label>
+                                                            <label for="">Remaining Cutting & Sealing</label>
                                                             <input 
                                                                 type="number"
                                                                 readonly
@@ -241,19 +242,19 @@ $global_avg_amt=0;
                                                     <hr> 
                                                     <div class="row">
                                                         <div class="col-md-12 text-right mr-4">
-                                                            <a onclick="addRawMaterial()" class="btn btn-primary mr-1">Add More Printed Rolls</a>
+                                                            <a onclick="addRawMaterial()" class="btn btn-primary mr-1">Add More Gala Cutting</a>
                                                         </div>
                                                     </div>
                                                 </div> --}}
 
 
 
-                                                <h1 style="display: inline-block;">Printed Roll Item Detail</h1>
+                                                <h1 style="display: inline-block;">Gala Cutting Item Detail</h1>
 
                                                 <div class="col-md-12 padt pos-r" id="out_source_production_data_to_finish_received" >
 
-                                                    <div class="row d-flex flex-wrap" style="gap:15px;">
-                                                        <div style="width: 300px;">
+                                                    <div class="row">
+                                                        <div class="col-md-2">
                                                             <label for="">Item</label>
                                                              <select style="width: 100% !important;"
                                                                 name="item_id[]"
@@ -269,12 +270,11 @@ $global_avg_amt=0;
                                                                 @endforeach
                                                             </select>
                                                             <input type="hidden" name="item_id[]" value="{{ $val->id }}">
-
                                                         </div>
                                                         
                                                         
 
-                                                        <div style="width: 150px;">
+                                                        <div class="col-md-2">
                                                             <label for="">Operator</label>
                                                              <select style="width: 100% !important;"
                                                                 name="operator_id[]"
@@ -289,7 +289,7 @@ $global_avg_amt=0;
                                                                 @endforeach
                                                             </select>
                                                         </div>
-                                                        <div style="width: 100px;">
+                                                        <div class="col-md-2">
                                                             <label for="">Machine</label>
                                                              <select style="width: 100% !important;"
                                                                 name="machine_id[]"
@@ -304,7 +304,7 @@ $global_avg_amt=0;
                                                                 @endforeach
                                                             </select>
                                                         </div>
-                                                        <div style="width: 100px;">
+                                                        <div class="col-md-1">
                                                             <label for="">Shift</label>
                                                              <select style="width: 100% !important;"
                                                                 name="shift_id[]"
@@ -319,58 +319,8 @@ $global_avg_amt=0;
                                                                 @endforeach
                                                             </select>
                                                         </div>
-                                                       <div style="width: 120px;">
-                                                            <label for="">Type</label>
-                                                                <select style="width: 100% !important;"
-                                                                name="type_id[]"
-                                                                id="type_id1"
-                                                                class="form-control requiredField select2">
-                                                                <option value="">Select</option>
-                                                                <option value="Printed">Printed</option>
-                                                                <option value="Non-Printed">Non-Printed</option>
-                                                            </select>
-                                                        </div>
-                                                        <div style="width: 100px;">
-                                                            <label for="">Brand</label>
-                                                            <select style="width: 100% !important;"
-                                                                name="brand[]"
-                                                                id="brand1"
-                                                                class="form-control requiredField select2">
-                                                                <option value="">Select</option>
-                                                                @foreach($brands as $val)
-                                                                    <option
-                                                                        value="{{$val->id}}">
-                                                                        {{ $val->name }}
-                                                                    </option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
-                                                        <div style="width: 100px;">
-                                                            <label for="">Color</label>
-                                                            <select style="width: 100% !important;"
-                                                                name="color[]"
-                                                                id="color1"
-                                                                class="form-control requiredField select2">
-                                                                <option value="">Select</option>
-                                                                @foreach($colors as $val)
-                                                                    <option
-                                                                        value="{{$val->id}}">
-                                                                        {{ $val->name }}
-                                                                    </option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
-                                                        <div style="width: 100px;">
-                                                            <label for="">Remarks</label>
-                                                            <input 
-                                                                type="text" 
-                                                                name="remarks[]"
-                                                                id="remarks_1"
-                                                                class="form-control move-next remarks_1 requiredField"
-                                                                onkeyup="cal_amt()"
-                                                            >
-                                                        </div>
-                                                        <div style="width: 150px;">
+                                                       
+                                                        <div class="col-md-2">
                                                             <label for="">Date</label>
                                                             <input 
                                                                 type="date"
@@ -383,13 +333,13 @@ $global_avg_amt=0;
                                                             
                                                         </div>
 
-                                                        <div style="width: 100px;">
-                                                            <label for="">Roll Qty</label>
+                                                        <div class="col-md-1">
+                                                            <label for="">C&S Qty</label>
                                                             <input 
                                                                 type="text" 
-                                                                name="roll_qty[]"
-                                                                id="roll_qty_1"
-                                                                class="form-control move-next roll_qty_1 requiredField"
+                                                                name="qty[]"
+                                                                id="qty_1"
+                                                                class="form-control move-next qty_1 requiredField"
                                                                 onkeyup="cal_amt()"
                                                                 required 
 
@@ -397,13 +347,13 @@ $global_avg_amt=0;
                                                         </div>
 
 
-                                                        <div style="width: 150px;">
-                                                            <label for="">Printed Roll Qty</label>
+                                                        <div class="col-md-1">
+                                                            <label for="">Qty (KG)</label>
                                                             <input 
                                                                 type="text" 
-                                                                name="printed_roll_qty[]"
-                                                                id="printed_roll_qty_1"
-                                                                class="form-control move-next printed_roll_qty_1 requiredField"
+                                                                name="gala_qty[]"
+                                                                id="gala_qty_1"
+                                                                class="form-control move-next gala_qty_1 requiredField"
                                                                 onkeyup="cal_amt()"
                                                                 required 
 
@@ -491,8 +441,8 @@ $global_avg_amt=0;
     function addRawMaterial() 
     {
         let html = `
-                    <div class="row d-flex flex-wrap" style="gap:15px;" id="row_${count}">
-                        <div style="width: 300px;">
+                    <div class="row" id="row_${count}">
+                        <div class="col-md-2">
                             <label for="">Item</label>
                              <select style="width: 100% !important;"
                                  name="item_id[]"
@@ -510,7 +460,7 @@ $global_avg_amt=0;
                         
                         
 
-                        <div style="width: 150px;">
+                        <div class="col-md-2">
                             <label for="">Operator</label>
                                 <select style="width: 100% !important;"
                                 name="operator_id[]"
@@ -525,7 +475,7 @@ $global_avg_amt=0;
                                 @endforeach
                             </select>
                         </div>
-                        <div style="width: 100px;">
+                        <div class="col-md-2">
                             <label for="">Machine</label>
                                 <select style="width: 100% !important;"
                                 name="machine_id[]"
@@ -540,7 +490,7 @@ $global_avg_amt=0;
                                 @endforeach
                             </select>
                         </div>
-                        <div style="width: 100px;">
+                        <div class="col-md-1">
                             <label for="">Shift</label>
                                 <select style="width: 100% !important;"
                                 name="shift_id[]"
@@ -555,38 +505,8 @@ $global_avg_amt=0;
                                 @endforeach
                             </select>
                         </div>
-                        <div style="width: 120px;">
-                            <label for="">Type</label>
-                                <select style="width: 100% !important;"
-                                name="type_id[]"
-                                id="type_id${count}"
-                                class="form-control requiredField select2">
-                                <option value="">Select</option>
-                                <option value="Printed">Printed</option>
-                                <option value="Non-Printed">Non-Printed</option>
-                            </select>
-                        </div>
-                        <div style="width: 100px;">
-                            <label for="">Color</label>
-                            <input 
-                                type="text" 
-                                name="color[]"
-                                id="color_${count}"
-                                class="form-control move-next color_${count} requiredField"
-                                onkeyup="cal_amt()"
-                            >
-                        </div>
-                        <div style="width: 100px;">
-                            <label for="">Remarks</label>
-                            <input 
-                                type="text" 
-                                name="remarks[]"
-                                id="remarks_${count}"
-                                class="form-control move-next remarks_${count} requiredField"
-                                onkeyup="cal_amt()"
-                               >
-                        </div>
-                        <div style="width: 150px;">
+                        
+                        <div class="col-md-2">
                             <label for="">Date</label>
                             <input 
                                 type="date"
@@ -600,36 +520,73 @@ $global_avg_amt=0;
                             
                         </div>
 
-                        <div style="width: 100px;">
-                            <label for="">Roll Qty</label>
+                        <div class="col-md-1">
+                            <label for="">C&S Qty</label>
                             <input 
                                 type="text" 
-                                name="roll_qty[]"
-                                id="roll_qty_${count}"
-                                class="form-control move-next roll_qty_${count} requiredField"
+                                name="qty[]"
+                                id="qty_${count}"
+                                class="form-control move-next qty_${count} requiredField"
                                 onkeyup="cal_amt()"
                                 required 
 
                             >
                         </div>
 
-                        <div style="width: 150px;">
-                            <label for="">Printed Roll Qty</label>
+                        <div class="col-md-1">
+                            <label for="">Qty (KG)</label>
                             <input 
                                 type="text" 
-                                name="printed_roll_qty[]"
-                                id="printed_roll_qty_${count}"
-                                class="form-control move-next printed_roll_qty_${count} requiredField"
+                                name="gala_qty[]"
+                                id="gala_qty_${count}"
+                                class="form-control move-next gala_qty_${count} requiredField"
                                 onkeyup="cal_amt()"
                                 required 
 
                             >
                         </div>
                       
-           
+                        {{-- <div class="col-md-1">
+                            <label for="">rate</label>
+                            <input 
+                                type="text"
+                                id="finish_rate_${count}"
+                                name="finish_rate[]"
+                                class="form-control move-next finish_rate_${count} requiredField"
+                                onkeyup="cal_amt()" 
+                                required
+                            >
+                        </div>
+
+                        <div class="col-md-1">
+                            <label for="">Amount</label>
+                            <input 
+                                type="number"
+                                readonly
+                                id="finish_amount_${count}"
+                                name="finish_amount[]"
+                                class="form-control move-next finish_amount_${count} requiredField"
+                                value="0" 
+                                required
+                            >
+                        </div> --}}
+
+
+                        {{-- <div class="col-md-1">
+                            <label for="">End Amount</label>
+                            <input 
+                                type="number"
+                                readonly
+                                id="finish_end_amount_${count}"
+                                name="finish_end_amount[]"
+                                class="form-control move-next finish_end_amount_${count} requiredField"
+                                value="0" 
+                                required
+                            >
+                        </div> --}}
                     
-                        <div style="width: 20px; padding-top: 21px;">
-                            <a class="btn btn-danger" style="" onclick="removeDiv('row_${count}')">-</a>
+                        <div class="col-md-1" style="padding-top: 41px;">
+                            <a class="btn btn-danger mr-1" style="" onclick="removeDiv('row_${count}')">-</a>
                         </div>
                     
                     </div>
@@ -671,39 +628,37 @@ function cal_amt() {
     $('#remaining_qty').val(issued_qty - used_qty_total);
     $('#issued_rate').val(raw_avg_amt / used_qty_total);
 
-    // Get all roll_qty fields
-    let roll_qty_inputs = $("input[name='roll_qty[]']");
-    let printed_roll_qty_inputs = $("input[name='printed_roll_qty[]']");
-    let count = roll_qty_inputs.length;
+    // Get all qty fields
+    let qty_inputs = $("input[name='qty[]']");
+    let printed_qty_inputs = $("input[name='printed_qty[]']");
+    let count = qty_inputs.length;
 
     // ---- CASE 1: Auto distribute when Used Qty changes ----
     if (count > 0 && used_qty_total > 0 && event?.type === "keyup" && $(event.target).hasClass("used_qty_total")) {
-        let roll_qty_avg = used_qty_total / count;
-        roll_qty_inputs.each(function () {
-            $(this).val(roll_qty_avg.toFixed(2));
+        let qty_avg = used_qty_total / count;
+        qty_inputs.each(function () {
+            $(this).val(qty_avg.toFixed(2));
         });
-        printed_roll_qty_inputs.each(function () {
-            $(this).val(roll_qty_avg.toFixed(2));
-        });
+        
     }
 
-    // ---- CASE 2: Validate manual roll_qty edits ----
-    let sum_roll_qty = 0;
-    roll_qty_inputs.each(function () {
-        sum_roll_qty += parseFloat($(this).val()) || 0;
+    // ---- CASE 2: Validate manual qty edits ----
+    let sum_qty = 0;
+    qty_inputs.each(function () {
+        sum_qty += parseFloat($(this).val()) || 0;
     });
 
-    if (sum_roll_qty > used_qty_total) {
+    if (sum_qty > used_qty_total) {
         alert("Total Raw Qty cannot exceed Used Qty!");
         $(event.target).val(0); // reset the last changed input
     }
 
     
      // ---- CASE 3: Calculate Finish Amount = Qty * Rate ----
-$("[id^='roll_qty_']").each(function (index) {
+$("[id^='qty_']").each(function (index) {
     let row = index + 1;
 
-    let qty = parseFloat($(`#roll_qty_${row}`).val()) || 0;
+    let qty = parseFloat($(`#qty_${row}`).val()) || 0;
     let rate = parseFloat($(`#finish_rate_${row}`).val()) || 0;
 
     let amount = qty * rate;

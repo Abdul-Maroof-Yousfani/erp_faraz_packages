@@ -62,7 +62,7 @@ if ($accType == 'client') {
                                             </div>
                                             <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
                                                 <label for="">Mixing Date</label>
-                                                <input min="{{ date('Y-m-d') }}" type="date" class="form-control"
+                                                <input type="date" class="form-control"
                                                     name="mixing_date" id="mixing_date">
                                             </div>
                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
@@ -88,10 +88,10 @@ if ($accType == 'client') {
 
                                             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                                 <label class="sf-label">Description</label>
-                                                <span class="rflabelsteric"><strong>*</strong></span>
+                                                <span class="rflabelsteric"></span>
                                                 <textarea name="description" id="description" rows="4" cols="50"
                                                     style="resize: none; font-size: 11px"
-                                                    class="form-control requiredField"></textarea>
+                                                    class="form-control"></textarea>
                                             </div>
                                         </div>
                                     </div>
@@ -105,7 +105,7 @@ if ($accType == 'client') {
                                                     <th class="text-center col-sm-1">S.No</th>
                                                     <th class="text-center col-sm-3">Item</th>
                                                     <th class="text-center col-sm-2">UOM</th>
-                                                    <th class="text-center col-sm-2">QTY</th>
+                                                    <th class="text-center col-sm-2">QTY (KG)</th>
                                                     <th class="text-center col-sm-1">Action</th>
                                                 </thead>
                                                 <tbody id="tableData">
