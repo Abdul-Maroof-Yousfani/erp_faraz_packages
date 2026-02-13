@@ -107,7 +107,8 @@ $total_amount = 0;
 
                                                         <!-- <th class="wsale2 text-center">Item Description </th> -->
                                                         <!-- <th class="text-center">Unit</th> -->
-                                                        <th class="text-center">Quantity</th>
+                                                        <th class="text-center">Quantity (KG)</th>
+                                                        <th class="text-center">Quantity (lbs)</th>
                                                         <th class="text-center">Rate</th>
                                                         <th class="text-center">Total Amount</th>
                                                         <!-- <th>GST</th>
@@ -134,7 +135,9 @@ $total_amount = 0;
 
                                                             <td class="text-right">
                                                                 {{ number_format($sale_order_item->qty, 2) }} KG 
-                                                                ({{ number_format($sale_order_item->qty * 2.20462, 2) }} lb)
+                                                            </td>
+                                                            <td class="text-right">
+                                                                {{ number_format($sale_order_item->qty_lbs, 2) }} lbs 
                                                             </td>
                                                             <td class="text-right">
                                                                 {{number_format($sale_order_item->rate,2)}}

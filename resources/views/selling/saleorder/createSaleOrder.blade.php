@@ -156,6 +156,7 @@
                                                                 <th class="text-center">UOM</th>
                                                                 {{-- <th class="text-center">Color</th> --}}
                                                                 <th class="text-center">Qty in KG</th>
+                                                                <th class="text-center">Qty (lbs)</th>
                                                                 <th class="text-center">Unit Price</th>
                                                                 <th class="text-center">Total</th>
                                                                 <th class="text-center">Action</th>
@@ -201,6 +202,11 @@
                                                                         name="qty[]" id="qty1" step="any" readonly />
                                                                          <input type="hidden" class="PackQty" name="pack_qty[]"
                                                                 id="pack_qty">
+                                                                </td>
+                                                                <td>
+                                                                    <input class="form-control requiredField"
+                                                                        type="number" id="qty_lbs1"
+                                                                        name="qty_lbs[]" step="any" readonly />
                                                                 </td>
                                                                 <td>
                                                                     <input class="form-control requiredField"
@@ -325,6 +331,11 @@
                         <input type="hidden" name="pack_qty[]" id="pack_qty">
                     </td>
                     <td>
+                        <input class="form-control requiredField"
+                            type="number" id="qty_lbs${Counter}"
+                            name="qty_lbs[]" step="any" readonly />
+                    </td>
+                    <td>
                         <input class="form-control" onkeyup="calculation_amount()" type="text" name="rate[]" id="rate" value="">
                     </td>
                     <td>
@@ -414,6 +425,7 @@
             $('#uom_id' + index).val(uom[1]);
             $('#item_code' + index).val(uom[2]);
             $('#qty' + index).val(uom[3]);
+            $('#qty_lbs' + index).val(uom[3]*2.20462);
             $('#pack_qty').val(uom[3]);
             $('#color' + index).val(uom[5]);
             $('#pack_size' + index).val(1);
@@ -488,13 +500,18 @@
 
             $('.itemsclass').each(function () {
 
-                var actual_rate = $(this).closest('.main').find('[name="rate[]"]').val();
-                var actual_qty = $(this).closest('.main').find('[name="qty[]"]').val();
+                var row = $(this).closest('.main');
 
-                console.log(actual_qty);
+                var actual_rate = row.find('[name="rate[]"]').val();
+                var actual_qty = row.find('[name="qty[]"]').val();
+
                 var rate = actual_rate ? actual_rate : 0;
                 var qty = actual_qty ? actual_qty : 0;
-                var total = parseFloat(qty) * parseFloat(rate);
+
+                var qty_lbs = parseFloat(qty) * 2.20462 || 0;
+                row.find('[name="qty_lbs[]"]').val(qty_lbs.toFixed(2));
+
+                var total = parseFloat(qty_lbs) * parseFloat(rate);
 
                 var sale_tax_amount = total / 100 * sale_tax;
                 var further_tax_amount = total / 100 * further_tax;
@@ -503,8 +520,9 @@
                 grad_total += total + sale_tax_amount + advance_tax_amount + cartage_amount + further_tax_amount;
                 befor_tax += total;
                 all_tax += sale_tax_amount + advance_tax_amount + further_tax_amount;
-                $(this).closest('.main').find('#total').val(total);
-            })
+
+                row.find('[name="total[]"]').val(total);
+            });
 
             $('#total_tax').val(all_tax);
             $('#grand_total').val(befor_tax);
@@ -512,26 +530,15 @@
             $('#d_t_amount_1').val(grad_total);
 
             toWords(1);
-
-
-            // var grad_total = 0;
-            // $('.items_class').each(function(){
-            //    var actual_rate =  $(this).closest('.main').find('#rate').val();
-            //    var actual_qty =  $(this).closest('.main').find('#qty').val();
-            //    var rate =  actual_rate? actual_rate : 0;
-            //    var qty =  actual_qty? actual_qty : 0;
-            //    var total = parseFloat(qty) * parseFloat(rate);
-            //    grad_total +=total;
-            //     $(this).closest('.main').find('#total').val(total);
-            // })
-            // document.getElementById('grand_total').innerHTML = grad_total;
         }
+
 
         function bag_qq(counter) {
             var bags_qty = parseFloat($('#pack_size' + counter).val()) || 1;
             var pack_qty = parseFloat($('#pack_qty').val()) || 0;
             var total_qty = (bags_qty * pack_qty).toFixed(2);
             $('#qty' + counter).val(total_qty);
+            $('#qty_lbs' + counter).val(total_qty*2.20462);
         }
 
 

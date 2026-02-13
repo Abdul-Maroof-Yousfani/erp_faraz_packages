@@ -111,7 +111,7 @@ class SalesOrderController extends Controller
      */
     public function store(Request $request)
     {
-
+// dd($request->all());
         DB::Connection('mysql2')->beginTransaction();
         try {
 
@@ -181,6 +181,7 @@ class SalesOrderController extends Controller
                 $sales_order_data->diameter = 0;
                 $sales_order_data->item_description = $request->item_description[$key] ?? '';
                 $sales_order_data->qty = $request->qty[$key];
+                $sales_order_data->qty_lbs = $request->qty_lbs[$key];
                 $sales_order_data->rate = $request->rate[$key];
                 $sales_order_data->printing = $request->printing[$key] ?? '';
                 $sales_order_data->special_instruction = $request->special_ins[$key] ?? '';
@@ -404,6 +405,7 @@ class SalesOrderController extends Controller
                 $sales_order_data->diameter = 0;
                 $sales_order_data->item_description = $request->item_description[$key] ?? null;
                 $sales_order_data->qty = $request->qty[$key];
+                $sales_order_data->qty_lbs = $request->qty_lbs[$key];
                 $sales_order_data->rate = $request->rate[$key];
                 $sales_order_data->printing = $request->printing[$key] ?? null;
                 $sales_order_data->special_instruction = $request->special_ins[$key] ?? null;

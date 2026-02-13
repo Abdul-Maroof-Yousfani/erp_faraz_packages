@@ -160,6 +160,7 @@ $count = 1;
                                                                 <th class="text-center">UOM</th>
                                                                 {{-- <th class="text-center">Color</th> --}}
                                                                 <th class="text-center">Qty in KG</th>
+                                                                <th class="text-center">Qty (lbs)</th>
                                                                 <th class="text-center">Unit Price</th>
                                                                 <th class="text-center">Total</th>
                                                                 <th class="text-center">Action</th>
@@ -197,6 +198,11 @@ $count = 1;
                                                                 <td>
                                                                     <input readonly class="form-control" onkeyup="calculation_amount()" type="text" name="qty[]" id="qty{{ $count }}" value="{{$value->qty}}">
                                                                     <input type="hidden" class="PackQty" name="pack_qty[]" id="pack_qty" value="{{ $value->pack_size }}">
+                                                                </td>
+                                                                <td>
+                                                                    <input class="form-control requiredField"
+                                                                        type="number" id="qty_lbs1" value="{{$value->qty_lbs}}"
+                                                                        name="qty_lbs[]" step="any" readonly />
                                                                 </td>
                                                                 <td>
                                                                     <input class="form-control" onkeyup="calculation_amount()" type="text" name="rate[]" id="rate" value="{{$value->rate}}">
@@ -324,6 +330,11 @@ $count = 1;
                         <input type="hidden" name="pack_qty[]" id="pack_qty">
                     </td>
                     <td>
+                        <input class="form-control requiredField"
+                            type="number" id="qty_lbs${Counter}"
+                            name="qty_lbs[]" step="any" readonly />
+                    </td>
+                    <td>
                         <input class="form-control" onkeyup="calculation_amount()" type="text" name="rate[]" id="rate" value="">
                     </td>
                     <td>
@@ -406,6 +417,7 @@ $count = 1;
             $('#item_code' + index).val(uom[2]);
             $('#qty' + index).val(uom[3]);
             $('#pack_qty').val(uom[3]);
+            $('#qty_lbs' + index).val(uom[3]*2.20462);
             $('#color' + index).val(uom[5]);
             $('#pack_size' + index).val(1);
             console.log(index);
@@ -437,6 +449,7 @@ $count = 1;
             var pack_qty = parseFloat($('#pack_qty').val()) || 0;
             var total_qty = (bags_qty * pack_qty).toFixed(2);
             $('#qty' + counter).val(total_qty);
+            $('#qty_lbs' + counter).val(total_qty*2.20462);
         }
 
 
@@ -504,51 +517,56 @@ $count = 1;
          
 //     }
 
-    function calculation_amount()
-    {
-        var grad_total = 0;
-        var tax = $('#sale_tax_rate').val();
-        var fTax = $('#further_tax').val();
-        var aTax = $('#advance_tax').val();
+function calculation_amount(index) {
 
-        let cartage_amount = parseFloat($('#cartage_amount').val()) || 0;
+            var grad_total = 0;
 
-        var sale_tax = tax ? tax : 0;
-        var advance_tax = aTax ? aTax : 0;
-        var further_tax = fTax ? fTax : 0;
+            var tax = $('#sale_tax_rate').val();
+            var fTax = $('#further_tax').val();
+            var aTax = $('#advance_tax').val();
 
-        // console.log(sale_tax);
-        // return;
+            let cartage_amount = parseFloat($('#cartage_amount').val()) || 0;
 
-        var befor_tax = 0;
-        var all_tax= 0;
+            var sale_tax = tax ? tax : 0;
+            var advance_tax = aTax ? aTax : 0;
+            var further_tax = fTax ? fTax : 0;
 
-        $('.itemsclass').each(function() {
-         
-            var actual_rate = $(this).closest('.main').find('[name="rate[]"]').val();
-            var actual_qty = $(this).closest('.main').find('[name="qty[]"]').val();
+            var befor_tax = 0;
+            var all_tax = 0;
 
-            console.log(actual_qty);
-            var rate =  actual_rate? actual_rate : 0;
-            var qty =  actual_qty? actual_qty : 0;
-            var total = parseFloat(qty) * parseFloat(rate);
+            $('.itemsclass').each(function () {
 
-            var sale_tax_amount = total / 100 * sale_tax;
-            var further_tax_amount = total / 100 * further_tax;
-            var advance_tax_amount = total / 100 * advance_tax;
+                var row = $(this).closest('.main');
 
-            grad_total += total + sale_tax_amount + advance_tax_amount + cartage_amount + further_tax_amount;
-            befor_tax +=total;
-            all_tax += sale_tax_amount + advance_tax_amount + further_tax_amount;
-            $(this).closest('.main').find('#total').val(total.toFixed(3));
-        })
+                var actual_rate = row.find('[name="rate[]"]').val();
+                var actual_qty = row.find('[name="qty[]"]').val();
 
-        $('#total_tax').val(all_tax.toFixed(3));
-        $('#grand_total').val(befor_tax.toFixed(3));
-        $('#grand_total_with_tax').val(grad_total.toFixed(3));
-        $('#d_t_amount_1').val(grad_total);
+                var rate = actual_rate ? actual_rate : 0;
+                var qty = actual_qty ? actual_qty : 0;
 
-        toWords(1);
+                var qty_lbs = parseFloat(qty) * 2.20462 || 0;
+                row.find('[name="qty_lbs[]"]').val(qty_lbs.toFixed(2));
+
+                var total = parseFloat(qty_lbs) * parseFloat(rate);
+
+                var sale_tax_amount = total / 100 * sale_tax;
+                var further_tax_amount = total / 100 * further_tax;
+                var advance_tax_amount = total / 100 * advance_tax;
+
+                grad_total += total + sale_tax_amount + advance_tax_amount + cartage_amount + further_tax_amount;
+                befor_tax += total;
+                all_tax += sale_tax_amount + advance_tax_amount + further_tax_amount;
+
+                row.find('[name="total[]"]').val(total);
+            });
+
+            $('#total_tax').val(all_tax);
+            $('#grand_total').val(befor_tax);
+            $('#grand_total_with_tax').val(grad_total);
+            $('#d_t_amount_1').val(grad_total);
+
+            toWords(1);
+        
 
 
         // var grad_total = 0;
