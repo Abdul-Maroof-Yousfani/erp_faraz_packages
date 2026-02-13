@@ -30,6 +30,8 @@ $icons = [
     "Productions" => "glyphicon glyphicon-wrench",
     "Assets" => "glyphicon glyphicon-list",
     "Machine Production" => "glyphicon glyphicon-cog",
+    "Brand" => "glyphicon glyphicon-cog",
+    "Color" => "glyphicon glyphicon-cog",
 ];
     CommonHelper::reconnectMasterDatabase();
     ?>
