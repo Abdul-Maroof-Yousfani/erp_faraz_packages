@@ -1813,6 +1813,23 @@ class CommonHelper
         $sub_iteme = $sub_iteme->where('id', $id)->select('uom', 'pack_size', 'rate', 'description', 'sub_ic', 'main_ic_id', 'item_code')->first();
         return $sub_iteme->uom . ',' . $sub_iteme->pack_size . ',' . $sub_iteme->rate . ',' . $sub_iteme->item_code . ',' . $sub_iteme->sub_ic . ',' . $sub_iteme->main_ic_id;
     }
+
+    public static function get_subitem_detail2($id)
+    {
+        return Subitem::on('mysql2')
+            ->where('id', $id)
+            ->select(
+                'uom',
+                'pack_size',
+                'rate',
+                'description',
+                'sub_ic',
+                'main_ic_id',
+                'item_code'
+            )
+            ->first();
+    }
+
     public static function get_item_by_id($id)
     {
         $sub_iteme = new Subitem();

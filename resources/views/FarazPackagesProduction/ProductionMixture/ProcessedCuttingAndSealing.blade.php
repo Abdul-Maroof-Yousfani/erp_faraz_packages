@@ -238,14 +238,14 @@ $global_avg_amt=0;
                                                     </div>
 
                                                 </div> --}}
-                                                <div class="col-md-12">
+                                                {{-- <div class="col-md-12">
                                                     <hr> 
                                                     <div class="row">
                                                         <div class="col-md-12 text-right mr-4">
                                                             <a onclick="addRawMaterial()" class="btn btn-primary mr-1">Add More Sealing & Cutting</a>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                </div> --}}
 
 
 

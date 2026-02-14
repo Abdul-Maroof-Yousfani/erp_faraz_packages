@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ReuseableCode;
 use App\Http\Requests;
 use Illuminate\Http\Request;
 use Input;
@@ -864,36 +865,105 @@ class FarazProductionAddDetailController extends Controller
 
     public function addProductionMixingDetail(Request $request)
     {
-        // dd($request->all());
-        DB::Connection('mysql2')->beginTransaction();
+        DB::connection('mysql2')->beginTransaction();
+
         try {
+
             $m = $_GET['m'];
 
-            $data['pm_no'] = strip_tags($request->mixing_no);
-            $data['produced_item_id'] = strip_tags($request->finish_item_id);
-            $data['production_order_id'] = strip_tags($request->production_order_id);
-            $data['date'] = strip_tags($request->mixing_date);
-            $data['qty'] = strip_tags($request->qty);
-            $data['description'] = strip_tags($request->description);
-            $data['username'] = Auth::user()->name;
-            $data['status'] = 1;
-            $master_id = DB::Connection('mysql2')->table('production_mixture')->insertGetId($data);
+            $data = [
+                'pm_no' => strip_tags($request->mixing_no),
+                'produced_item_id' => strip_tags($request->finish_item_id),
+                'production_order_id' => strip_tags($request->production_order_id),
+                'date' => strip_tags($request->mixing_date),
+                'qty' => strip_tags($request->qty),
+                'description' => strip_tags($request->description),
+                'username' => Auth::user()->name,
+                'status' => 1,
+            ];
 
-            foreach ($request->item_id as $key => $row) {
-                $data2['production_mixture_id'] = $master_id;
-                $data2['item_id'] = $row;
-                $data2['qty'] = $request->required_qty[$key];
-                DB::Connection('mysql2')->table('production_mixture_data')->insert($data2);
+            $master_id = DB::connection('mysql2')
+                ->table('production_mixture')
+                ->insertGetId($data);
+
+
+
+            $finishItemDetail = CommonHelper::get_subitem_detail2($request->finish_item_id);
+
+            $finishRate = $finishItemDetail->rate ?? 0;
+            $finishName = $finishItemDetail->sub_ic ?? '';
+
+            ReuseableCode::postStock(
+                $master_id,
+                0,
+                $request->mixing_no,
+                $request->mixing_date,
+                11,
+                $finishRate,
+                $request->finish_item_id,
+                $finishName,
+                $request->qty
+            );
+
+
+            foreach ($request->item_id as $key => $itemId) {
+
+                $requiredQty = $request->required_qty[$key];
+
+                $data2 = [
+                    'production_mixture_id' => $master_id,
+                    'item_id' => $itemId,
+                    'qty' => $requiredQty,
+                ];
+
+                DB::connection('mysql2')
+                    ->table('production_mixture_data')
+                    ->insert($data2);
+
+
+                $availableQty = ReuseableCode::get_stock($itemId, 0, $requiredQty, 0);
+
+                if ($availableQty < 0) {
+                    DB::connection('mysql2')->rollBack();
+                    return "This item " . CommonHelper::get_item_name($itemId) . " has 0 qty in stock";
+                }
+
+
+                $itemDetail = CommonHelper::get_subitem_detail2($itemId);
+
+                $itemRate = $itemDetail->rate ?? 0;
+                $itemName = $itemDetail->sub_ic ?? '';
+
+                ReuseableCode::postStock(
+                    $master_id,
+                    0,
+                    $request->mixing_no,
+                    $request->mixing_date,
+                    9,
+                    $itemRate,
+                    $itemId,
+                    $itemName,
+                    $requiredQty
+                );
             }
 
-            DB::Connection('mysql2')->commit();
+            DB::connection('mysql2')->commit();
+
         } catch (\Exception $e) {
-            DB::Connection('mysql2')->rollback();
-            echo $e->getMessage();
+
+            DB::connection('mysql2')->rollBack();
+            return $e->getMessage();
         }
 
         Session::flash('dataInsert', 'Successfully Saved.');
-        return Redirect::to('far_production/viewProductionMixingList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . $_GET['m']);
+
+        return Redirect::to(
+            'far_production/viewProductionMixingList?pageType=' .
+            Input::get('pageType') .
+            '&&parentCode=' .
+            Input::get('parentCode') .
+            '&&m=' . $_GET['m']
+        );
     }
 
     public function addProductionRollingDetail(Request $request)
@@ -909,7 +979,6 @@ class FarazProductionAddDetailController extends Controller
 
         try {
 
-
             $production_mixture = DB::connection('mysql2')
                 ->table('production_mixture')
                 ->where('pm_no', $request->code)
@@ -921,6 +990,28 @@ class FarazProductionAddDetailController extends Controller
 
             foreach ($request->item_id as $key => $itemId) {
 
+                $mixtureQty = $request->mixture_qty[$key] ?? 0;
+                $rollQty = $request->roll_qty[$key] ?? 0;
+
+                // ========================
+                // CHECK STOCK (RAW MIXTURE)
+                // ========================
+                $availableQty = ReuseableCode::get_stock(
+                    $request->raw_item_id[$key],
+                    0,
+                    $mixtureQty,
+                    0
+                );
+
+                if ($availableQty < 0) {
+                    DB::connection('mysql2')->rollBack();
+                    return "Insufficient stock for item " .
+                        CommonHelper::get_item_name($request->raw_item_id[$key]);
+                }
+
+                // ========================
+                // INSERT ROLLING RECORD
+                // ========================
                 $data2 = [
                     'production_order_id' => $production_mixture->production_order_id,
                     'production_mixture_id' => $production_mixture->id,
@@ -928,47 +1019,88 @@ class FarazProductionAddDetailController extends Controller
                     'machine_id' => $request->machine_id[$key],
                     'operator_id' => $request->operator_id[$key] ?? null,
                     'shift_id' => $request->shift_id[$key] ?? null,
-                    'mixture_qty' => $request->mixture_qty[$key] ?? 0,
-                    'roll_qty' => $request->roll_qty[$key] ?? 0,
+                    'mixture_qty' => $mixtureQty,
+                    'roll_qty' => $rollQty,
                     'per_roll_qty_kg' => $request->roll_qty_kg[$key] ?? 0,
                     'date' => $request->date[$key] ?? now(),
                     'status' => 1,
                     'username' => Auth::user()->name,
                 ];
 
-                DB::connection('mysql2')
+                $rollingId = DB::connection('mysql2')
                     ->table('production_rolling')
-                    ->insert($data2);
+                    ->insertGetId($data2);
 
+                // ========================
+                // UPDATE MIXTURE USED QTY
+                // ========================
                 DB::connection('mysql2')
                     ->table('production_mixture_data')
                     ->where('production_mixture_id', $production_mixture->id)
                     ->where('item_id', $request->raw_item_id[$key])
                     ->update([
-                        'used_qty' => $request->mixture_qty[$key],
+                        'used_qty' => $mixtureQty,
                     ]);
+
+                // ========================
+                // STOCK OUT (RAW MIXTURE)
+                // ========================
+                $rawDetail = CommonHelper::get_subitem_detail2($request->raw_item_id[$key]);
+
+                ReuseableCode::postStock(
+                    $rollingId,
+                    0,
+                    $request->code,
+                    $request->date[$key] ?? now(),
+                    9, // OUT
+                    $rawDetail->rate ?? 0,
+                    $request->raw_item_id[$key],
+                    $rawDetail->sub_ic ?? '',
+                    $mixtureQty
+                );
+
+                // ========================
+                // STOCK IN (PRODUCED ROLL)
+                // ========================
+                $finishDetail = CommonHelper::get_subitem_detail2($itemId);
+
+                ReuseableCode::postStock(
+                    $rollingId,
+                    0,
+                    $request->code,
+                    $request->date[$key] ?? now(),
+                    11, // IN
+                    $finishDetail->rate ?? 0,
+                    $itemId,
+                    $finishDetail->sub_ic ?? '',
+                    $rollQty
+                );
             }
 
             DB::connection('mysql2')->commit();
 
         } catch (\Exception $e) {
             DB::connection('mysql2')->rollback();
-            dd($e->getMessage());
-            // return back()->withErrors($e->getMessage());
+            return $e->getMessage();
         }
 
         Session::flash('dataInsert', 'Successfully Saved.');
-        return Redirect::to('far_production/viewProductionRollingList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . 1);
 
+        return Redirect::to(
+            'far_production/viewProductionRollingList?pageType=' .
+            Input::get('pageType') .
+            '&&parentCode=' .
+            Input::get('parentCode') .
+            '&&m=1'
+        );
     }
+
 
     public function addProductionRollPrintingDetail(Request $request)
     {
-        // dd($request->all());
         $request->validate([
             'item_id' => 'required|array',
             'machine_id' => 'required|array',
-
         ]);
 
         DB::connection('mysql2')->beginTransaction();
@@ -977,6 +1109,12 @@ class FarazProductionAddDetailController extends Controller
 
             foreach ($request->item_id as $key => $itemId) {
 
+                $printedQty = $request->printed_roll_qty[$key] ?? 0;
+
+
+                // ========================
+                // INSERT PRINTING RECORD
+                // ========================
                 $data2 = [
                     'production_rolling_id' => $request->roll_id,
                     'item_id' => $itemId,
@@ -987,44 +1125,82 @@ class FarazProductionAddDetailController extends Controller
                     'color_id' => $request->color[$key] ?? null,
                     'brand_id' => $request->brand[$key] ?? null,
                     'remarks' => $request->remarks[$key] ?? null,
-                    'no_of_roll' => $request->printed_roll_qty[$key] ?? 0,
+                    'no_of_roll' => $printedQty,
                     'date' => $request->date[$key] ?? now(),
                     'status' => 1,
                     'username' => Auth::user()->name,
                 ];
-                DB::connection('mysql2')
+
+                $printingId = DB::connection('mysql2')
                     ->table('production_roll_printing')
-                    ->insert($data2);
+                    ->insertGetId($data2);
 
+                // ========================
+                // STOCK OUT (RAW ROLL)
+                // ========================
+                $rawDetail = CommonHelper::get_subitem_detail2($request->raw_item_id[$key]);
 
+                ReuseableCode::postStock(
+                    $printingId,
+                    0,
+                    $request->roll_id,
+                    $request->date[$key] ?? now(),
+                    9,
+                    $rawDetail->rate ?? 0,
+                    $request->raw_item_id[$key],
+                    $rawDetail->sub_ic ?? '',
+                    $printedQty
+                );
+
+                // ========================
+                // STOCK IN (PRINTED ITEM)
+                // ========================
+                $finishDetail = CommonHelper::get_subitem_detail2($itemId);
+
+                ReuseableCode::postStock(
+                    $printingId,
+                    0,
+                    $request->roll_id,
+                    $request->date[$key] ?? now(),
+                    11,
+                    $finishDetail->rate ?? 0,
+                    $itemId,
+                    $finishDetail->sub_ic ?? '',
+                    $printedQty
+                );
             }
+
             DB::connection('mysql2')
                 ->table('production_rolling')
                 ->where('id', $request->roll_id)
-                ->where('item_id', $request->raw_item_id[0])
                 ->update([
                     'printed_roll_qty' => $request->used_qty_total,
                 ]);
+
             DB::connection('mysql2')->commit();
 
         } catch (\Exception $e) {
             DB::connection('mysql2')->rollback();
-            dd($e->getMessage());
-            // return back()->withErrors($e->getMessage());
+            return $e->getMessage();
         }
 
         Session::flash('dataInsert', 'Successfully Saved.');
-        return Redirect::to('far_production/viewProductionRollPrintingList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . 1);
 
+        return Redirect::to(
+            'far_production/viewProductionRollPrintingList?pageType=' .
+            Input::get('pageType') .
+            '&&parentCode=' .
+            Input::get('parentCode') .
+            '&&m=1'
+        );
     }
+
 
     public function addProductionCuttingAndSealingDetail(Request $request)
     {
-        // dd($request->all());
         $request->validate([
             'item_id' => 'required|array',
             'machine_id' => 'required|array',
-
         ]);
 
         DB::connection('mysql2')->beginTransaction();
@@ -1033,51 +1209,111 @@ class FarazProductionAddDetailController extends Controller
 
             foreach ($request->item_id as $key => $itemId) {
 
+                $qty = $request->qty[$key] ?? 0;
+
+                // ========================
+                // CHECK STOCK (PRINTED ROLL)
+                // ========================
+                // $availableQty = ReuseableCode::get_stock(
+                //     $request->raw_item_id[$key],
+                //     0,
+                //     $qty,
+                //     0
+                // );
+
+                // if ($availableQty < 0) {
+                //     DB::connection('mysql2')->rollBack();
+                //     return "Insufficient stock for item " .
+                //         CommonHelper::get_item_name($request->raw_item_id[$key]);
+                // }
+
+                // ========================
+                // INSERT CUTTING & SEALING
+                // ========================
                 $data2 = [
                     'printed_rolling_id' => $request->roll_id,
                     'item_id' => $itemId,
                     'machine_id' => $request->machine_id[$key],
                     'operator_id' => $request->operator_id[$key] ?? null,
                     'shift_id' => $request->shift_id[$key] ?? null,
-                    'qty' => $request->qty[$key] ?? 0,
+                    'qty' => $qty,
                     'printed_roll_qty' => $request->no_of_roll[$key] ?? 0,
                     'date' => $request->date[$key] ?? now(),
                     'status' => 1,
                     'username' => Auth::user()->name,
                 ];
-                DB::connection('mysql2')
+
+                $csId = DB::connection('mysql2')
                     ->table('production_cutting_and_sealing')
-                    ->insert($data2);
+                    ->insertGetId($data2);
 
+                // ========================
+                // STOCK OUT (PRINTED ROLL)
+                // ========================
+                $rawDetail = CommonHelper::get_subitem_detail2($request->raw_item_id[$key]);
 
+                // ReuseableCode::postStock(
+                //     $csId,
+                //     0,
+                //     $request->roll_id,
+                //     $request->date[$key] ?? now(),
+                //     9,
+                //     $rawDetail->rate ?? 0,
+                //     $request->raw_item_id[$key],
+                //     $rawDetail->sub_ic ?? '',
+                //     $qty
+                // );
+
+                // ========================
+                // STOCK IN (CUT/SEALED ITEM)
+                // ========================
+                $finishDetail = CommonHelper::get_subitem_detail2($itemId);
+
+                ReuseableCode::postStock(
+                    $csId,
+                    0,
+                    $request->roll_id,
+                    $request->date[$key] ?? now(),
+                    11,
+                    $finishDetail->rate ?? 0,
+                    $itemId,
+                    $finishDetail->sub_ic ?? '',
+                    $qty
+                );
             }
+
+            // update used qty in printing
             DB::connection('mysql2')
                 ->table('production_roll_printing')
                 ->where('id', $request->roll_id)
-                ->where('item_id', $request->raw_item_id[0])
                 ->update([
                     'used_no_of_roll' => $request->used_qty_total,
                 ]);
+
             DB::connection('mysql2')->commit();
 
         } catch (\Exception $e) {
             DB::connection('mysql2')->rollback();
-            dd($e->getMessage());
-            // return back()->withErrors($e->getMessage());
+            return $e->getMessage();
         }
 
         Session::flash('dataInsert', 'Successfully Saved.');
-        return Redirect::to('far_production/viewProductionCuttingAndSealingList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . 1);
 
+        return Redirect::to(
+            'far_production/viewProductionCuttingAndSealingList?pageType=' .
+            Input::get('pageType') .
+            '&&parentCode=' .
+            Input::get('parentCode') .
+            '&&m=1'
+        );
     }
+
 
     public function addProductionGalaCuttingDetail(Request $request)
     {
-        // dd($request->all());
         $request->validate([
             'item_id' => 'required|array',
             'machine_id' => 'required|array',
-
         ]);
 
         DB::connection('mysql2')->beginTransaction();
@@ -1086,43 +1322,106 @@ class FarazProductionAddDetailController extends Controller
 
             foreach ($request->item_id as $key => $itemId) {
 
+                $csQty = $request->qty[$key] ?? 0;   // raw qty
+                $galaQty = $request->gala_qty[$key] ?? 0; // produced qty
+
+                // ========================
+                // CHECK STOCK (CUT/SEALED ITEM)
+                // ========================
+                // $availableQty = ReuseableCode::get_stock(
+                //     $request->raw_item_id[$key],
+                //     0,
+                //     $csQty,
+                //     0
+                // );
+
+                // if ($availableQty < 0) {
+                //     DB::connection('mysql2')->rollBack();
+                //     return "Insufficient stock for item " .
+                //         CommonHelper::get_item_name($request->raw_item_id[$key]);
+                // }
+
+                // ========================
+                // INSERT GALA CUTTING
+                // ========================
                 $data2 = [
                     'cutting_sealing_id' => $request->roll_id,
                     'item_id' => $itemId,
                     'machine_id' => $request->machine_id[$key],
                     'operator_id' => $request->operator_id[$key] ?? null,
                     'shift_id' => $request->shift_id[$key] ?? null,
-                    'cs_qty' => $request->qty[$key] ?? 0,
-                    'gala_qty' => $request->gala_qty[$key] ?? 0,
+                    'cs_qty' => $csQty,
+                    'gala_qty' => $galaQty,
                     'date' => $request->date[$key] ?? now(),
                     'status' => 1,
                     'username' => Auth::user()->name,
                 ];
-                DB::connection('mysql2')
+
+                $galaId = DB::connection('mysql2')
                     ->table('production_gala_cutting')
-                    ->insert($data2);
+                    ->insertGetId($data2);
 
+                // ========================
+                // STOCK OUT (CUT/SEALED ITEM)
+                // ========================
+                $rawDetail = CommonHelper::get_subitem_detail2($request->raw_item_id[$key]);
 
+                // ReuseableCode::postStock(
+                //     $galaId,
+                //     0,
+                //     $request->roll_id,
+                //     $request->date[$key] ?? now(),
+                //     9,
+                //     $rawDetail->rate ?? 0,
+                //     $request->raw_item_id[$key],
+                //     $rawDetail->sub_ic ?? '',
+                //     $csQty
+                // );
+
+                // ========================
+                // STOCK IN (GALA ITEM)
+                // ========================
+                $finishDetail = CommonHelper::get_subitem_detail2($itemId);
+
+                ReuseableCode::postStock(
+                    $galaId,
+                    0,
+                    $request->roll_id,
+                    $request->date[$key] ?? now(),
+                    11,
+                    $finishDetail->rate ?? 0,
+                    $itemId,
+                    $finishDetail->sub_ic ?? '',
+                    $galaQty
+                );
             }
+
+            // update used qty in cutting & sealing
             DB::connection('mysql2')
                 ->table('production_cutting_and_sealing')
                 ->where('id', $request->roll_id)
-                ->where('item_id', $request->raw_item_id[0])
                 ->update([
                     'used_qty' => $request->used_qty_total,
                 ]);
+
             DB::connection('mysql2')->commit();
 
         } catch (\Exception $e) {
             DB::connection('mysql2')->rollback();
-            dd($e->getMessage());
-            // return back()->withErrors($e->getMessage());
+            return $e->getMessage();
         }
 
         Session::flash('dataInsert', 'Successfully Saved.');
-        return Redirect::to('far_production/viewProductionGalaCuttingList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . 1);
 
+        return Redirect::to(
+            'far_production/viewProductionGalaCuttingList?pageType=' .
+            Input::get('pageType') .
+            '&&parentCode=' .
+            Input::get('parentCode') .
+            '&&m=1'
+        );
     }
+
 
     public function addProductionPackingDetail(Request $request)
     {
@@ -1154,9 +1453,23 @@ class FarazProductionAddDetailController extends Controller
                     'username' => Auth::user()->name,
                 ]);
 
-                DB::connection('mysql2')
+                $packingId = DB::connection('mysql2')
                     ->table('production_packing')
                     ->insert($data2);
+
+                $finishDetail = CommonHelper::get_subitem_detail2($itemId);
+
+                ReuseableCode::postStock(
+                    $packingId,
+                    0,
+                    $request->roll_id,
+                    $request->date[$key] ?? now(),
+                    11, // IN
+                    $finishDetail->rate ?? 0,
+                    $itemId,
+                    $finishDetail->sub_ic ?? '',
+                    $request->gala_qty[$key]
+                );
             }
 
             // update used qty

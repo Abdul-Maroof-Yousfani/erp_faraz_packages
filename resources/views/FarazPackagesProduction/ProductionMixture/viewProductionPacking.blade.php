@@ -65,11 +65,12 @@ $this->m = Session::get('run_company');
                                                             <td> {{$Fil->cutting_qty}} </td>
                                                             <td> {{$Fil->date}} </td>
                                                             <td>
-                                                                @if($Fil->galaCutting->cuttingAndSealing->printedRoll->productionRoll)
+                                                            -
+                                                                {{-- @if($Fil->galaCutting->cuttingAndSealing->printedRoll->productionRoll)
                                                                     {{ $Fil->galaCutting->cuttingAndSealing->printedRoll->productionRoll->productionOrder->pr_no ?? 'N/A' }}
                                                                 @else
                                                                     {{ $Fil->cuttingAndSealing->printedRoll->productionRoll->productionOrder->pr_no ?? 'N/A' }}
-                                                                @endif
+                                                                @endif --}}
                                                             </td>
 
                                                             </td>
