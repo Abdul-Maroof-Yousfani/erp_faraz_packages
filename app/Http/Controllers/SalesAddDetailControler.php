@@ -1800,7 +1800,7 @@ class SalesAddDetailControler extends Controller
             $byers_id = explode('*', $byers_id);
             $byers_id = $byers_id[0];
 
-            foreach ($request->sub_ic_des as $key => $value) {
+            foreach ($request->item_id as $key => $value) {
 
                 $stock = array
                 (
@@ -1812,7 +1812,7 @@ class SalesAddDetailControler extends Controller
                     'customer_id' => $byers_id,
                     'voucher_type' => 5,
                     'rate' => $request->rate[$key],
-                    'sub_item_id' => $request->sub_ic_des[$key],
+                    'sub_item_id' => $request->item_id[$key],
                     'batch_code' => $request->batch_code[$key] ?? '0',
                     'qty' => $request->actual_qty[$key],
                     'discount_percent' => '',
@@ -1867,7 +1867,7 @@ class SalesAddDetailControler extends Controller
 
 
             $total_amount = 0;
-            foreach ($request->sub_ic_des as $key => $value) {
+            foreach ($request->item_id as $key => $value) {
                 # code...
 
                 $sales_tax_invoice_data = new SalesTaxInvoiceData();
@@ -1875,7 +1875,7 @@ class SalesAddDetailControler extends Controller
                 $sales_tax_invoice_data->master_id = $id;
                 $sales_tax_invoice_data->groupby = 1;
                 $sales_tax_invoice_data->gi_no = $gi_no;
-                $sales_tax_invoice_data->item_id = $request->sub_ic_des[$key];
+                $sales_tax_invoice_data->item_id = $request->item_id[$key];
                 $sales_tax_invoice_data->description = '';
                 $qty = $request->actual_qty[$key];
                 $rate = $request->rate[$key];

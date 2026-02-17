@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests;
-use App\Models\NewRvs;use Faker\Test\Provider\ProviderOverrideTest;use Illuminate\Http\Request;
+use App\Models\NewRvs;use App\Models\Stock;
+use Faker\Test\Provider\ProviderOverrideTest;use Illuminate\Http\Request;
 use App\category;
 use App\Models\Account;
 use App\Models\TaxSection;
@@ -923,6 +924,7 @@ class FinanceDataCallController extends Controller
             $sales_tax_acc_id = $purchase_voucher->sales_tax_acc_id;
             $sales_tax_amount = $purchase_voucher->sales_tax_amount;
             $supplier = $purchase_voucher->supplier;
+            $description = $purchase_voucher->description;
             $supp_acc_id = CommonHelper::get_supplier_acc_id($supplier);
             $grn_data=  DB::Connection('mysql2')->table('goods_receipt_note')->where('id',$purchase_voucher->grn_id);
             $po_no= $grn_data->value('po_no');
@@ -961,6 +963,31 @@ class FinanceDataCallController extends Controller
                     $transaction->save();
 
                     $credit_amount+=$value->net_amount;
+
+
+                    $stock = new Stock();
+                    $stock=$stock->SetConnection('mysql2');
+
+                    $stock->voucher_no=$value->pv_no;
+                    $stock->main_id=$value->master_id;
+                    $stock->master_id=$value->id;
+                    $stock->supplier_id=$supplier;
+                    $stock->voucher_date=$purchase_date;
+                    $stock->voucher_type=1;
+                    $stock->sub_item_id=$value->sub_item;
+                    $stock->qty=$value->qty;
+                    $stock->rate=$value->rate;
+                    $stock->amount_before_discount=$value->amount;
+                    $stock->discount_percent=0;
+                    $stock->discount_amount=$value->discount_amount ;
+                    $stock->amount=$value->net_amount;
+                    $stock->warehouse_id=$value->warehouse_id;
+                    $stock->description=$description;
+                    $stock->batch_code=0;
+                    $stock->status=$status;
+                    $stock->created_date=date('Y-m-d');
+                    $stock->username=Auth::user()->name;
+                    $stock->save();
 
                 }
 
@@ -1004,6 +1031,32 @@ class FinanceDataCallController extends Controller
                     $transaction->voucher_type=4;
                     $transaction->save();
                     $credit_amount+=$exp->net_amount;
+
+
+                    $stock = new Stock();
+                    $stock=$stock->SetConnection('mysql2');
+
+                    $stock->voucher_no=$value->pv_no;
+                    $stock->main_id=$value->master_id;
+                    $stock->master_id=$value->id;
+                    $stock->supplier_id=$supplier;
+                    $stock->voucher_date=$purchase_date;
+                    $stock->voucher_type=1;
+                    $stock->sub_item_id=$value->sub_item;
+                    $stock->qty=$value->qty;
+                    $stock->rate=$value->rate;
+                    $stock->amount_before_discount=$value->amount;
+                    $stock->discount_percent=0;
+                    $stock->discount_amount=$value->discount_amount ;
+                    $stock->amount=$value->net_amount + $sales_tax_amount;
+                    $stock->warehouse_id=$value->warehouse_id;
+                    $stock->description=$description;
+                    $stock->batch_code=0;
+                    $stock->status=$status;
+                    $stock->created_date=date('Y-m-d');
+                    $stock->username=Auth::user()->name;
+                    $stock->save();
+
                 endforeach;
 
 

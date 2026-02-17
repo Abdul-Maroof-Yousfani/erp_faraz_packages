@@ -45,7 +45,7 @@ $Supplier = CommonHelper::get_single_row('supplier','id',$row->supplier);
             <button class="btn btn-sm btn-primary" onclick="printViewTwo('printPurchaseVoucherDetail','','1')" style="">
                 <span class="glyphicon glyphicon-print"> Print</span>
             </button>
-            @if ($row->pv_status == 2 && $row->grn_no == '0')
+            @if ($row->pv_status == 2 && $row->grn_no == 0)
                 <button type="button" data-pvno="{{ $row->pv_no }}" class="btn btn-sm btn-warning reverse-direct-invoice" style="">
                     Reverse Direct Invoice
                 </button>

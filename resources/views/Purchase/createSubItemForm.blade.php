@@ -37,7 +37,7 @@ $m = Session::get('run_company');
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                                 <label>Category :</label>
                                                                 <span class="rflabelsteric"><strong>*</strong></span>
-                                                                <select autofocus  name="CategoryId" id="CategoryId" onchange="get_sub_category_by_id()" class="form-control requiredField select2">
+                                                                <select autofocus  name="CategoryId" id="CategoryId" onchange="get_sub_category_by_id()" class="form-control requiredField select2 " required>
                                                                     <option value="">Select Category</option>
                                                                     @foreach(CommonHelper::get_category()->get() as $key => $y)
                                                                         <option value="{{ $y->id}}">{{ $y->main_ic}}</option>
@@ -47,7 +47,7 @@ $m = Session::get('run_company');
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                                 <label>Sub Category :</label>
                                                                 <span class="rflabelsteric"><strong>*</strong></span>
-                                                                <select autofocus  name="SubCategoryId" id="SubCategoryId" class="form-control requiredField select2">
+                                                                <select autofocus  name="SubCategoryId" id="SubCategoryId" class="form-control requiredField select2 " required>
                                                                     <option value="">Select Category</option>
                                                 
                                                                 </select>
@@ -65,12 +65,13 @@ $m = Session::get('run_company');
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                                 <label>Item Name :</label>
                                                                 <span class="rflabelsteric"><strong>*</strong></span>
-                                                                <input type="text" name="sub_item_name" id="sub_item_name" value="" class="form-control" />
+                                                                <input type="text" name="sub_item_name" id="sub_item_name" value="" class="form-control requiredField " required />
                                                             </div>
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                                 <label>Item Code :</label>
                                                                 <span class="rflabelsteric"><strong>*</strong></span>
-                                                                <input  type="text" name="item_code" id="item_code" value="" class="form-control" />
+                                                                <span class="rflabelsteric"></span>
+                                                                <input  type="text" name="item_code" id="item_code" value="" class="form-control requiredField " required/>
                                                             </div>
                                                         </div>
 
@@ -82,7 +83,7 @@ $m = Session::get('run_company');
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                                 <label>Primary UOM :</label>
                                                                 <span class="rflabelsteric"><strong>*</strong></span>
-                                                                <select name="uom_id" id="uom_id" class="form-control requiredField select2">
+                                                                <select name="uom_id" id="uom_id" class="form-control requiredField select2 " required>
                                                                     <option value="">Select UOM</option>
                                                                     @foreach($uom as $key => $i)
                                                                         <option value="{{ $i->id}}">{{ $i->uom_name}}</option>
@@ -92,12 +93,12 @@ $m = Session::get('run_company');
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                                 <label>Primary Bags size :</label>
                                                                 
-                                                                <span class="rflabelsteric"><strong>*</strong></span>
-                                                                <input step="0.01" value="0" min="0" class="form-control requiredField" type="number" name="pack_size" id="pack_size">
+                                                                {{-- <span class="rflabelsteric"><strong>*</strong></span> --}}
+                                                                <input step="0.01" value="0" min="0" class="form-control requiredField" type="number" name="pack_size" id="pack_size" required>
                                                             </div>
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                                 <label>Primary Packaging Type</label>
-                                                                <span class="rflabelsteric"><strong>*</strong></span>
+                                                                {{-- <span class="rflabelsteric"><strong>*</strong></span> --}}
                                                                 <select style="width: 100%" name="primary_pack_type" id="primary_pack_type" class="form-control requiredField select2">
                                                                     <option value="">Select Option</option>
                                                                     @foreach($pack_type as $row)
@@ -108,7 +109,7 @@ $m = Session::get('run_company');
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                                 <label>Rate :</label>
                                                                 <span class="rflabelsteric"><strong>*</strong></span>
-                                                                <input step="0.01" value="0" class="form-control text-right requiredField" type="number" name="rate" id="rate" />
+                                                                <input step="0.01" value="0" class="form-control text-right requiredField" type="number" name="rate" id="rate" required>
                                                             </div>
                                                         </div>
 
@@ -128,6 +129,7 @@ $m = Session::get('run_company');
                                                             </div>
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                                 <label>Secondary Packaging Type</label>
+                                                                {{-- <span class="rflabelsteric"><strong>*</strong></span> --}}
                                                                 <select style="width: 100%" name="secondary_pack_type" id="secondary_pack_type" class="form-control select2">
                                                                 <option value="">Select Option</option> 
                                                                     @foreach($pack_type as $row)
@@ -151,6 +153,7 @@ $m = Session::get('run_company');
 
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                                 <label>Type</label>
+                                                                {{-- <span class="rflabelsteric"><strong>*</strong></span> --}}
                                                                 <select style="width: 100%" name="maintain" id="maintain" class="form-control requiredField">
                                                                     @foreach(CommonHelper::get_all_demand_type() as $row)
                                                                         <option value="{{ $row->id }}">{{ ucwords($row->name) }}</option>
@@ -176,10 +179,10 @@ $m = Session::get('run_company');
                                                             <thead>
                                                             <tr>
                                                                 <th class="text-center" style="">SR No</th>
-                                                                <th style="" class="text-center" >Warehouse<span class="rflabelsteric"><strong>*</strong></span></th>
-                                                                <th style="" class="text-center" > Closing Stock<span class="rflabelsteric"><strong>*</strong></span></th>
-                                                                <th class="text-center">Closing Value<span class="rflabelsteric"><strong>*</strong></span></th>
-                                                                <th class="text-center">Batch Code<span class="rflabelsteric"><strong>*</strong></span></th>
+                                                                <th style="" class="text-center" >Warehouse<span class="rflabelsteric"></span></th>
+                                                                <th style="" class="text-center" > Closing Stock<span class="rflabelsteric"></span></th>
+                                                                <th class="text-center">Closing Value<span class="rflabelsteric"></span></th>
+                                                                <th class="text-center">Batch Code<span class="rflabelsteric"></span></th>
                                                             </tr>
                                                             </thead>
                                                             <tbody id="append_bundle">
@@ -421,21 +424,6 @@ $m = Session::get('run_company');
 
         $(document).ready(function() {
 
-            $('#bank_detail').change(function(){
-                if ($(this).is(':checked'))
-                {
-
-                    $(".banks").css("display", "block");
-                    $(".required").addClass("requiredField");
-
-                    //   $("#pra").addClass("requiredField");
-                } else {
-                    $(".banks").css("display", "none");
-                    $(".required").removeClass("requiredField");
-                    //  $('#pra').val("");
-                    // $("#pra").removeClass("requiredField");
-                }
-            });
 
 
             $(".btn-success").click(function(e){

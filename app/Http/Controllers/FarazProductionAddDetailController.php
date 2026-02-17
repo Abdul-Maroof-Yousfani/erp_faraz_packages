@@ -865,6 +865,7 @@ class FarazProductionAddDetailController extends Controller
 
     public function addProductionMixingDetail(Request $request)
     {
+        // dd($request->all());
         DB::connection('mysql2')->beginTransaction();
 
         try {
@@ -909,11 +910,13 @@ class FarazProductionAddDetailController extends Controller
             foreach ($request->item_id as $key => $itemId) {
 
                 $requiredQty = $request->required_qty[$key];
+                $machine_id = $request->machine_id[$key];
 
                 $data2 = [
                     'production_mixture_id' => $master_id,
                     'item_id' => $itemId,
                     'qty' => $requiredQty,
+                    'machine_id' => $machine_id,
                 ];
 
                 DB::connection('mysql2')
@@ -1138,36 +1141,36 @@ class FarazProductionAddDetailController extends Controller
                 // ========================
                 // STOCK OUT (RAW ROLL)
                 // ========================
-                $rawDetail = CommonHelper::get_subitem_detail2($request->raw_item_id[$key]);
+                // $rawDetail = CommonHelper::get_subitem_detail2($request->raw_item_id[$key]);
 
-                ReuseableCode::postStock(
-                    $printingId,
-                    0,
-                    $request->roll_id,
-                    $request->date[$key] ?? now(),
-                    9,
-                    $rawDetail->rate ?? 0,
-                    $request->raw_item_id[$key],
-                    $rawDetail->sub_ic ?? '',
-                    $printedQty
-                );
+                // ReuseableCode::postStock(
+                //     $printingId,
+                //     0,
+                //     $request->roll_id,
+                //     $request->date[$key] ?? now(),
+                //     9,
+                //     $rawDetail->rate ?? 0,
+                //     $request->raw_item_id[$key],
+                //     $rawDetail->sub_ic ?? '',
+                //     $printedQty
+                // );
 
                 // ========================
                 // STOCK IN (PRINTED ITEM)
                 // ========================
-                $finishDetail = CommonHelper::get_subitem_detail2($itemId);
+                // $finishDetail = CommonHelper::get_subitem_detail2($itemId);
 
-                ReuseableCode::postStock(
-                    $printingId,
-                    0,
-                    $request->roll_id,
-                    $request->date[$key] ?? now(),
-                    11,
-                    $finishDetail->rate ?? 0,
-                    $itemId,
-                    $finishDetail->sub_ic ?? '',
-                    $printedQty
-                );
+                // ReuseableCode::postStock(
+                //     $printingId,
+                //     0,
+                //     $request->roll_id,
+                //     $request->date[$key] ?? now(),
+                //     11,
+                //     $finishDetail->rate ?? 0,
+                //     $itemId,
+                //     $finishDetail->sub_ic ?? '',
+                //     $printedQty
+                // );
             }
 
             DB::connection('mysql2')
@@ -1195,9 +1198,11 @@ class FarazProductionAddDetailController extends Controller
         );
     }
 
+    
 
     public function addProductionCuttingAndSealingDetail(Request $request)
     {
+        // dd($request->all());
         $request->validate([
             'item_id' => 'required|array',
             'machine_id' => 'required|array',
@@ -1214,18 +1219,18 @@ class FarazProductionAddDetailController extends Controller
                 // ========================
                 // CHECK STOCK (PRINTED ROLL)
                 // ========================
-                // $availableQty = ReuseableCode::get_stock(
-                //     $request->raw_item_id[$key],
-                //     0,
-                //     $qty,
-                //     0
-                // );
+                $availableQty = ReuseableCode::get_stock(
+                    $request->raw_item_id[0],
+                    0,
+                    $request->no_of_roll[$key],
+                    0
+                );
 
-                // if ($availableQty < 0) {
-                //     DB::connection('mysql2')->rollBack();
-                //     return "Insufficient stock for item " .
-                //         CommonHelper::get_item_name($request->raw_item_id[$key]);
-                // }
+                if ($availableQty < 0) {
+                    DB::connection('mysql2')->rollBack();
+                    return "Insufficient stock for item " .
+                        CommonHelper::get_item_name($request->raw_item_id[0]);
+                }
 
                 // ========================
                 // INSERT CUTTING & SEALING
@@ -1233,16 +1238,16 @@ class FarazProductionAddDetailController extends Controller
                 $data2 = [
                     'printed_rolling_id' => $request->roll_id,
                     'item_id' => $itemId,
-                    'machine_id' => $request->machine_id[$key],
+                    'machine_id' => $request->machine_id[$key] ?? null,
                     'operator_id' => $request->operator_id[$key] ?? null,
                     'shift_id' => $request->shift_id[$key] ?? null,
-                    'qty' => $qty,
+                    'qty' => $qty ?? 0,
                     'printed_roll_qty' => $request->no_of_roll[$key] ?? 0,
                     'date' => $request->date[$key] ?? now(),
                     'status' => 1,
                     'username' => Auth::user()->name,
                 ];
-
+// dd($data2);
                 $csId = DB::connection('mysql2')
                     ->table('production_cutting_and_sealing')
                     ->insertGetId($data2);
@@ -1250,20 +1255,19 @@ class FarazProductionAddDetailController extends Controller
                 // ========================
                 // STOCK OUT (PRINTED ROLL)
                 // ========================
-                $rawDetail = CommonHelper::get_subitem_detail2($request->raw_item_id[$key]);
+                $rawDetail = CommonHelper::get_subitem_detail2($request->raw_item_id[0]);
 
-                // ReuseableCode::postStock(
-                //     $csId,
-                //     0,
-                //     $request->roll_id,
-                //     $request->date[$key] ?? now(),
-                //     9,
-                //     $rawDetail->rate ?? 0,
-                //     $request->raw_item_id[$key],
-                //     $rawDetail->sub_ic ?? '',
-                //     $qty
-                // );
-
+                ReuseableCode::postStock(
+                    $csId,
+                    0,
+                    $request->roll_id,
+                    $request->date[$key] ?? now(),
+                    9,
+                    $rawDetail->rate ?? 0,
+                    $request->raw_item_id[0],
+                    $rawDetail->sub_ic ?? '',
+                    $request->no_of_roll[$key]
+                );
                 // ========================
                 // STOCK IN (CUT/SEALED ITEM)
                 // ========================
@@ -1280,7 +1284,9 @@ class FarazProductionAddDetailController extends Controller
                     $finishDetail->sub_ic ?? '',
                     $qty
                 );
+
             }
+// dd("ok");
 
             // update used qty in printing
             DB::connection('mysql2')
@@ -1328,18 +1334,18 @@ class FarazProductionAddDetailController extends Controller
                 // ========================
                 // CHECK STOCK (CUT/SEALED ITEM)
                 // ========================
-                // $availableQty = ReuseableCode::get_stock(
-                //     $request->raw_item_id[$key],
-                //     0,
-                //     $csQty,
-                //     0
-                // );
+                $availableQty = ReuseableCode::get_stock(
+                    $request->raw_item_id[0],
+                    0,
+                    $csQty,
+                    0
+                );
 
-                // if ($availableQty < 0) {
-                //     DB::connection('mysql2')->rollBack();
-                //     return "Insufficient stock for item " .
-                //         CommonHelper::get_item_name($request->raw_item_id[$key]);
-                // }
+                if ($availableQty < 0) {
+                    DB::connection('mysql2')->rollBack();
+                    return "Insufficient stock for item " .
+                        CommonHelper::get_item_name($request->raw_item_id[0]);
+                }
 
                 // ========================
                 // INSERT GALA CUTTING
@@ -1364,19 +1370,19 @@ class FarazProductionAddDetailController extends Controller
                 // ========================
                 // STOCK OUT (CUT/SEALED ITEM)
                 // ========================
-                $rawDetail = CommonHelper::get_subitem_detail2($request->raw_item_id[$key]);
+                $rawDetail = CommonHelper::get_subitem_detail2($request->raw_item_id[0]);
 
-                // ReuseableCode::postStock(
-                //     $galaId,
-                //     0,
-                //     $request->roll_id,
-                //     $request->date[$key] ?? now(),
-                //     9,
-                //     $rawDetail->rate ?? 0,
-                //     $request->raw_item_id[$key],
-                //     $rawDetail->sub_ic ?? '',
-                //     $csQty
-                // );
+                ReuseableCode::postStock(
+                    $galaId,
+                    0,
+                    $request->roll_id,
+                    $request->date[$key] ?? now(),
+                    9,
+                    $rawDetail->rate ?? 0,
+                    $request->raw_item_id[0],
+                    $rawDetail->sub_ic ?? '',
+                    $csQty
+                );
 
                 // ========================
                 // STOCK IN (GALA ITEM)
@@ -1437,6 +1443,23 @@ class FarazProductionAddDetailController extends Controller
 
             foreach ($request->item_id as $key => $itemId) {
 
+                // ========================
+                // CHECK STOCK (CUT/SEALED ITEM)
+                // ========================
+                $availableQty = ReuseableCode::get_stock(
+                    $request->raw_item_id[0],
+                    0,
+                    $request->qty[$key],
+                    0
+                );
+
+                if ($availableQty < 0) {
+                    DB::connection('mysql2')->rollBack();
+                    return "Insufficient stock for item " .
+                        CommonHelper::get_item_name($request->raw_item_id[0]);
+                }
+
+
                 $rollField = ($request->cutting_type == 'cutting and sealing')
                     ? ['cutting_sealing_id' => $request->roll_id]
                     : ['gala_cutting_id' => $request->roll_id];
@@ -1447,7 +1470,7 @@ class FarazProductionAddDetailController extends Controller
                     'operator_id' => $request->operator_id[$key] ?? null,
                     'shift_id' => $request->shift_id[$key] ?? null,
                     'cutting_qty' => $request->qty[$key] ?? 0,
-                    'packing_bags_qty' => $request->gala_qty[$key] ?? 0,
+                    'packing_bags_qty' => $request->bags_qty[$key] ?? 0,
                     'date' => $request->date[$key] ?? now(),
                     'status' => 1,
                     'username' => Auth::user()->name,
@@ -1456,6 +1479,22 @@ class FarazProductionAddDetailController extends Controller
                 $packingId = DB::connection('mysql2')
                     ->table('production_packing')
                     ->insert($data2);
+
+
+                    $rawDetail = CommonHelper::get_subitem_detail2($request->raw_item_id[0]);
+
+                ReuseableCode::postStock(
+                    $packingId,
+                    0,
+                    $request->roll_id,
+                    $request->date[$key] ?? now(),
+                    9,
+                    $rawDetail->rate ?? 0,
+                    $request->raw_item_id[0],
+                    $rawDetail->sub_ic ?? '',
+                    $request->qty[$key]
+                );
+
 
                 $finishDetail = CommonHelper::get_subitem_detail2($itemId);
 
@@ -1468,7 +1507,7 @@ class FarazProductionAddDetailController extends Controller
                     $finishDetail->rate ?? 0,
                     $itemId,
                     $finishDetail->sub_ic ?? '',
-                    $request->gala_qty[$key]
+                    $request->bags_qty[$key]
                 );
             }
 

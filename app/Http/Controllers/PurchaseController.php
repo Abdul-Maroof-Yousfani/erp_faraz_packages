@@ -910,6 +910,15 @@ class PurchaseController extends Controller
         return view('Purchase.createPurchaseVoucherFormThroughGrn', compact('department', 'ids'));
     }
 
+
+    public function createDirectPurchaseVoucherForm(Request $request)
+    {
+        $supplierList = DB::Connection('mysql2')->table('supplier')->where('status', 1)->get();
+        $departments = new Department;
+        $departments = $departments::where('status', '=', '1')->select('id', 'department_name')->orderBy('id')->get();
+        return view('Purchase.createDirectPurchaseVoucherForm', compact('supplierList', 'departments'));
+    }
+
     public function createJobOrder()
     {
         $survey = new Survey();
@@ -1266,7 +1275,7 @@ class PurchaseController extends Controller
             ->get();
 
         $item = Subitem::findOrFail($qcValue->item_id);
-// dd($item);
+        // dd($item);
         // $item = DB::table('subitem')->where('id', $qcValue->item_id)->select('id', 'sub_category_id', 'item_code', 'sub_ic')->first();
         // $sub_category = DB::table('sub_category')->where('id', $item->sub_category_id)->select('id', 'category_id')->first();
         // $category = DB::table('category')->where('main_ic_id', $sub_category->category_id)->select('id')->first();

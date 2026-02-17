@@ -87,6 +87,11 @@ $export=ReuseableCode::check_rights(236);
                                                 <th class="text-center">Bill Date</th>
                                                 <th class="text-center">Pv Status</th>
                                                 <th class="text-center">Supplier</th>
+                                              
+                                                <th class="text-center">Total Amount</th>
+                                                  <th class="text-center">Item</th>
+                                                <th class="text-center">Rate</th>
+                                                <th class="text-center">Qty</th>
                                                 <th class="text-center">Amount</th>
                                                 <th class="text-center hide">GRN Amount</th>
                                                 <th class="text-center">Action</th>

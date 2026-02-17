@@ -238,14 +238,14 @@ $global_avg_amt=0;
                                                     </div>
 
                                                 </div> --}}
-                                                {{-- <div class="col-md-12">
+                                                <div class="col-md-12">
                                                     <hr> 
                                                     <div class="row">
                                                         <div class="col-md-12 text-right mr-4">
                                                             <a onclick="addRawMaterial()" class="btn btn-primary mr-1">Add More Sealing & Cutting</a>
                                                         </div>
                                                     </div>
-                                                </div> --}}
+                                                </div>
 
 
 
@@ -254,27 +254,37 @@ $global_avg_amt=0;
                                                 <div class="col-md-12 padt pos-r" id="out_source_production_data_to_finish_received" >
 
                                                     <div class="row">
-                                                        <div class="col-md-2">
-                                                            <label for="">Item</label>
+                                                        <div class="col-md-1">
+                                                            <label for="">Category</label>
                                                             <select style="width: 100% !important;"
-                                                                name="item_id[]"
-                                                                id="item_id1"
-                                                                class="form-control requiredField select2" disabled>
+                                                                onchange="get_sub_item('category_id1')" name="category[]"
+                                                                id="category_id1"
+                                                                class="form-control category select2 requiredField">
                                                                 <option value="">Select</option>
-                                                                @foreach($sub_item as $val)
-                                                                    <option
-                                                                        value="{{ $val->id . '@' . $val->uom_name . '@' . $val->sub_ic }}"
-                                                                        {{ $out_source_productions_item->item_id == $val->id ? 'selected' : '' }}>
-                                                                        {{ $val->item_code . ' -- ' . $val->sub_ic }}
+                                                                @foreach (CommonHelper::get_all_category() as $category)
+                                                                    <option value="{{ $category->id }}">
+                                                                        {{ $category->main_ic }}
                                                                     </option>
                                                                 @endforeach
                                                             </select>
-                                                            <input type="hidden" name="item_id[]" value="{{ $val->id }}">
                                                         </div>
                                                         
-                                                        
+                                                         <div class="col-md-2">
+                                                            <label for="">Item</label>
+                                                            <select style="width: 100% !important;"
+                                                                onchange="get_uom_name_by_item_id(this.value, 1)"
+                                                                name="item_id[]" id="item_id1"
+                                                                class="form-control requiredField select2">
+                                                                <option>Select</option>
+                                                            </select>
+                                                        </div>
+                                                         <div class="col-md-1">
+                                                            <label for="">Uom</label>
+                                                            <input type="text" class="form-control" name="uom[]" id="uom1"
+                                                                readonly>
+                                                        </div>
 
-                                                        <div class="col-md-2">
+                                                        <div class="col-md-1">
                                                             <label for="">Operator</label>
                                                              <select style="width: 100% !important;"
                                                                 name="operator_id[]"
@@ -289,7 +299,7 @@ $global_avg_amt=0;
                                                                 @endforeach
                                                             </select>
                                                         </div>
-                                                        <div class="col-md-2">
+                                                        <div class="col-md-1">
                                                             <label for="">Machine</label>
                                                              <select style="width: 100% !important;"
                                                                 name="machine_id[]"
@@ -442,25 +452,35 @@ $global_avg_amt=0;
     {
         let html = `
                     <div class="row" id="row_${count}">
+                        <div class="col-md-1">
+                            <label for="">Category</label>
+                                               <select style="width: 100% !important;"
+                    onchange="get_sub_item('category_id${count}')" name="category[]"
+                    id="category_id${count}"
+                    class="form-control category select2 requiredField">
+                    <option value="">Select</option>
+                    @foreach (CommonHelper::get_all_category() as $category)
+                        <option value="{{ $category->id }}">
+                            {{ $category->main_ic }} </option>
+                    @endforeach
+                </select>
+                        </div>
+                        
                         <div class="col-md-2">
                             <label for="">Item</label>
                              <select style="width: 100% !important;"
-                                 name="item_id[]"
-                                id="item_id${count}"
-                                class="form-control requiredField select2">
-                                <option value="">Select</option>
-                                @foreach($sub_item as $val)
-                                    <option
-                                        value="{{ $val->id . '@' . $val->uom_name . '@' . $val->sub_ic }}">
-                                        {{ $val->item_code . ' -- ' . $val->sub_ic }}
-                                    </option>
-                                @endforeach
-                            </select>
+                    onchange="get_uom_name_by_item_id(this.value, ${count})" name="item_id[]" id="item_id${count}"
+                    class="form-control requiredField select2">
+                    <option>Select</option>
+                </select>
                         </div>
-                        
-                        
+                        <div class="col-md-1">
+                            <label for="">Uom</label>
+                                               <input type="text" class="form-control" name="uom[]" id="uom${count}" readonly>
 
-                        <div class="col-md-2">
+                        </div>
+
+                        <div class="col-md-1">
                             <label for="">Operator</label>
                                 <select style="width: 100% !important;"
                                 name="operator_id[]"
@@ -475,7 +495,7 @@ $global_avg_amt=0;
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-1">
                             <label for="">Machine</label>
                                 <select style="width: 100% !important;"
                                 name="machine_id[]"
@@ -534,7 +554,7 @@ $global_avg_amt=0;
                         </div>
 
                         <div class="col-md-1">
-                            <label for="">Bags</label>
+                            <label for="">Qty (KG)</label>
                             <input 
                                 type="text" 
                                 name="qty[]"
@@ -596,7 +616,23 @@ $global_avg_amt=0;
 
         count++
     }
+ function get_uom_name_by_item_id(ItemId, num = null) {
 
+            $.ajax({
+                url: '{{ url("pdc/get_uom_name_by_item_id") }}',
+                type: 'Get',
+                data: { ItemId: ItemId },
+                success: function (response) {
+                    if (num == null) {
+                        $('#uom').val(response)
+                    } else {
+                        $('#uom' + num).val(response)
+                    }
+
+
+                }
+            });
+        }
 function validateUsedQty(input) {
     let maxAllowed = parseFloat(input.getAttribute('data-max')) || 0;
     let currentVal = parseFloat(input.value) || 0;

@@ -268,7 +268,7 @@ $global_avg_amt=0;
                                                                     </option>
                                                                 @endforeach
                                                             </select>
-                                                            <input type="hidden" name="item_id[]" value="{{ $val->id }}">
+                                                            <input type="hidden" name="item_id[]" id="item_id1" value="{{ $out_source_productions_item->item_id }}">
 
                                                         </div>
                                                         

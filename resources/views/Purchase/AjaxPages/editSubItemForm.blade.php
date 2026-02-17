@@ -42,7 +42,7 @@ use App\Helpers\ImportHelper;
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                                 <label>Category :</label>
                                                                 <span class="rflabelsteric"><strong>*</strong></span>
-                                                                <select autofocus  name="" id="CategoryId" class="form-control select2" onchange="get_sub_category_by_id({{ $sub_item->sub_category_id }})" disabled>
+                                                                <select autofocus  name="" id="CategoryId" class="form-control requiredField select2" onchange="get_sub_category_by_id({{ $sub_item->sub_category_id }})" disabled>
                                                                     <option value="">Select Category</option>
                                                                     @foreach($categories as $key => $y)
                                                                         <option value="{{ $y->id}}" <?php if($sub_item->main_ic_id == $y->id){echo "selected";}?>>{{ $y->main_ic}}</option>
@@ -52,7 +52,8 @@ use App\Helpers\ImportHelper;
                                                             </div>
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                                 <label>Sub Category :</label>
-                                                                <select autofocus  name="SubCategoryId" id="SubCategoryId" class="form-control requiredField select2">
+                                                                <span class="rflabelsteric"><strong>*</strong></span>
+                                                                <select autofocus  name="SubCategoryId" id="SubCategoryId" class="form-control requiredField select2" >
                                                                     <option value="">Select Category</option>
                                                                 </select>
                                                             </div>
@@ -66,13 +67,14 @@ use App\Helpers\ImportHelper;
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                                 <label>Item Code :</label>
                                                                 <span class="rflabelsteric"><strong>*</strong></span>
+                                                                <span class="rflabelsteric"></span>
                                                                 <input  type="text" name="item_code" id="item_code" value="<?php echo $sub_item->item_code?>" class="form-control requiredField" />
                                                             </div>
                                                         </div>
                                                         <div class="row">
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 hide">
                                                                 <label>SKU :</label>
-                                                                <span class="rflabelsteric"><strong>*</strong></span>
+                                                                <span class="rflabelsteric"></span>
                                                                 <input  type="text" name="sku" id="sku" value="<?php echo $sub_item->sku_code?>" class="form-control" />
                                                             </div>
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
@@ -86,14 +88,14 @@ use App\Helpers\ImportHelper;
                                                                 </select>
                                                             </div>
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                                                <label>Primary Pack size :</label>
-                                                                <span class="rflabelsteric"><strong>*</strong></span>
+                                                                <label>Primary Bags size :</label>
+                                                                {{-- <span class="rflabelsteric"><strong>*</strong></span> --}}
                                                                 <input step="0.01" value="{{ $sub_item->pack_size }}" min="0" class="form-control requiredField" type="number" name="pack_size" id="pack_size">
                                                             </div>
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                                 <label>Primary Packaging Type</label>
-                                                                <span class="rflabelsteric"><strong>*</strong></span>
-                                                                <select style="width: 100%" name="primary_pack_type" id="primary_pack_type" class="form-control requiredField select2">
+                                                                {{-- <span class="rflabelsteric"><strong>*</strong></span> --}}
+                                                                <select style="width: 100%" name="primary_pack_type" id="primary_pack_type" class="form-control select2">
                                                                     <option value="">Select Option</option>
                                                                     @foreach($pack_type as $row)
                                                                         <option @if($sub_item->primary_pack_type == $row->id) selected @endif value="{{ $row->id }}">{{ $row->type }}</option>
@@ -142,6 +144,7 @@ use App\Helpers\ImportHelper;
                                                             </div>
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                                 <label>Type</label>
+                                                                {{-- <span class="rflabelsteric"><strong>*</strong></span> --}}
                                                                 <select style="width: 100%" name="maintain" id="maintain" class="form-control requiredField">
                                                                     @foreach(CommonHelper::get_all_demand_type() as $row)
                                                                         <option @if($sub_item->stockType == $row->id) selected @endif value="{{ $row->id }}">{{ ucwords($row->name) }}</option>
@@ -149,7 +152,8 @@ use App\Helpers\ImportHelper;
                                                                 </select>
                                                             </div>
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                                                <label>Type</label><br>
+                                                                <label>Type</label>
+                                                                <br>
                                                                 <label>
                                                                     <input @if($sub_item->packing_type == 'primary') checked @endif type="checkbox" name="packing_type" value="primary"> Primary Packing
                                                                 </label><br>
@@ -166,10 +170,10 @@ use App\Helpers\ImportHelper;
                                                             <thead>
                                                             <tr>
                                                                 <th class="text-center" style="">SR No</th>
-                                                                <th style="" class="text-center" >Warehouse<span class="rflabelsteric"><strong>*</strong></span></th>
-                                                                <th style="" class="text-center" > Closing Stock<span class="rflabelsteric"><strong>*</strong></span></th>
-                                                                <th class="text-center">Closing Value<span class="rflabelsteric"><strong>*</strong></span></th>
-                                                                <th class="text-center">Batch Code<span class="rflabelsteric"><strong></strong></span></th>
+                                                                <th style="" class="text-center" >Warehouse<span class="rflabelsteric"></span></th>
+                                                                <th style="" class="text-center" > Closing Stock<span class="rflabelsteric"></span></th>
+                                                                <th class="text-center">Closing Value<span class="rflabelsteric"></span></th>
+                                                                <th class="text-center">Batch Code<span class="rflabelsteric"></span></th>
 
                                                             </tr>
                                                             </thead>

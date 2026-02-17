@@ -174,7 +174,7 @@ use App\Helpers\ReuseableCode;
 																->get();
 
                                             ?>
-                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 ">
+                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12 ">
                                                 <label class="sf-label">Cr Account<span class="rflabelsteric requiredField"><strong>*</strong></span></label>
                                                 <select class="form-control" id="acc_id" name="acc_id" >
                                                     <option value="">Select</option>
@@ -188,7 +188,7 @@ use App\Helpers\ReuseableCode;
                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                 <label class="sf-label"> <a href="#" onclick="showDetailModelOneParamerter('pdc/createCurrencyTypeForm')" class="">Currency</a></label>
                                                 <span class="rflabelsteric"><strong>*</strong></span>
-                                                <select onchange="" name="curren" id="curren" class="form-control select2 requiredField">
+                                                <select onchange="" name="curren" id="curren" style="width: 100%;" class="form-control select2 requiredField">
 
                                                     <option value="0">PKR</option>
                                                     @foreach(CommonHelper::get_all_currency() as $row)
@@ -238,46 +238,70 @@ use App\Helpers\ReuseableCode;
 	                                 <table class="table table-bordered">
 	                                    <thead>
 	                                       <tr class="text-center">
-	                                          <th colspan="4" class="text-center">Sales Order Detail</th>
-	                                          <th colspan="2" class="text-center">
+	                                          <th colspan="11" class="text-center">Sales Invoice Detail</th>
+	                                          {{-- <th colspan="2" class="text-center">
 	                                             <input type="button" class="btn btn-sm btn-primary" onclick="AddMoreDetails()" value="Add More Rows" />
-	                                          </th>
+	                                          </th> --}}
 	                                          <th class="text-center">
 	                                             <span class="badge badge-success" id="span">1</span>
 	                                          </th>
 	                                       </tr>
 	                                       <tr>
-	                                          <th class="text-center" style="width: 20%;">Item</th>
+	                                          <th class="text-center" style="width: 10%;">Category</th>
+	                                          <th class="text-center" style="width: 15%;">Item</th>
+											  <th class="text-center">Bags Qty</th>
 	                                          <th class="text-center" >Uom<span class="rflabelsteric"><strong>*</strong></span></th>
-	                                          <th class="text-center" > QTY.<span class="rflabelsteric"><strong>*</strong></span></th>
+	                                          <th class="text-center" > QTY in KG<span class="rflabelsteric"><strong>*</strong></span></th>
+	                                          <th class="text-center" > QTY (lbs)<span class="rflabelsteric"><strong>*</strong></span></th>
 	                                          <th class="text-center"> WareHouse.<span class="rflabelsteric"><strong>*</strong></span></th>
-											  <th style="width: 10%" class="text-center hide" >Batch Code <span class="rflabelsteric"><strong>*</strong></span></th>
+											  {{-- <th style="width: 10%" class="text-center hide" >Batch Code <span class="rflabelsteric"><strong>*</strong></span></th> --}}
 											  <th class="text-center" >In Stock<span class="rflabelsteric"><strong>*</strong></span></th>
 											  <th class="text-center">Rate<span class="rflabelsteric"><strong>*</strong></span></th>
 	                                          <th class="text-center">Amount<span class="rflabelsteric"><strong>*</strong></span></th>
 	                                          <th class="text-center hide">Sales Tax %<span class="rflabelsteric"><strong>*</strong></span></th>
 	                                          <th class="text-center hide">Tax Amount<span class="rflabelsteric"><strong>*</strong></span></th>
 	                                          <th class="text-center">Net Amount<span class="rflabelsteric"><strong>*</strong></span></th>
-	                                          <th class="text-center">Delete<span class="rflabelsteric"><strong>*</strong></span></th>
+	                                          <th class="text-center">Action</th>
+	                                          {{-- <th class="text-center">Delete<span class="rflabelsteric"><strong>*</strong></span></th> --}}
 	                                       </tr>
 	                                    </thead>
 	                                    <tbody id="AppnedHtml">
 	                                    <tr class="cnt" title="1">
-											<td>
-												<select onchange="get_uom('{{ 1 }}')" name="sub_ic_des[]" id="sub_ic_des{{ 1 }}" class="form-control select2">
-													<option value="">Select</option>
-														@foreach ( CommonHelper::get_all_subitem() as $row )
-														<?php $uom =  CommonHelper::get_uom($row->id); ?>
-														<option value="{{ $row->id.','.$uom }}" >{{ $row->sub_ic }}</option>
-														@endforeach
-												</select>
+										<td>
+											<select style="width: 100% !important;" onchange="get_sub_item('category_id1')" name="category[]" id="category_id1"  class="form-control category select2 requiredField">
+												<option value="">Select</option>
+												@foreach (CommonHelper::get_all_category() as $category)
+												<option value="{{ $category->id }}"> {{ $category->main_ic }} </option>
+												@endforeach
+											</select>
 											</td>
+											<td>
+											<select style="width: 100% !important;" onchange="get_item_name(1)" name="item_id[]" id="item_id1" class="form-control requiredField select2">
+												<option>Select</option>
+											</select>
+											</td>
+											  <td>
+                                                                    <input type="text" name="pack_size[]"
+                                                                        id="pack_size1" class="form-control" oninput="bag_qq(1)" />
+                                                                </td>
 	                                	<td>
 	                                          <input readonly type="text" class="form-control" name="uom_id[]" id="uom_id1" >
 	                                    </td>
-	                                    <td>
+										 <td>
+                                                                    <input class="form-control requiredField"
+                                                                        onchange="claculation()" type="number"
+                                                                        name="actual_qty[]" id="actual_qty1" step="any" readonly />
+                                                                         <input type="hidden" class="PackQty" name="pack_qty[]"
+                                                                id="pack_qty">
+                                                                </td>
+                                                                <td>
+                                                                    <input class="form-control requiredField"
+                                                                        type="number" id="qty_lbs1"
+                                                                        name="qty_lbs[]" step="any" readonly />
+                                                                </td>
+	                                    {{-- <td>
 	                                         <input type="text" onkeyup="claculation('1')" onblur="claculation('1')" class="form-control requiredField zerovalidate" name="actual_qty[]" id="actual_qty1"  min="1" value="">
-	                                    </td>
+	                                    </td> --}}
 										<td class="">
 											<select onchange="get_stock_qty(this.id,'1');ApplyAll('1')" class="form-control  ClsAll ShowOn1" name="warehouse[]" id="warehouse1">
 												<option value="">Select</option>
@@ -314,14 +338,17 @@ use App\Helpers\ReuseableCode;
 	                                    <td>
 	                                        <input type="text" class="form-control net_amount_dis" name="after_dis_amount[]" id="after_dis_amount1"  min="1" value="0.00" readonly>
 	                                    </td>
-	                                    <td style="background-color: #ccc">
-											{{-- <input onclick="view_history(1)" type="checkbox" id="view_history1"> --}}
+	                                    {{-- <td style="background-color: #ccc">
+											<input onclick="view_history(1)" type="checkbox" id="view_history1">	
+										</td> --}}
+										<td style="background-color: #ccc">
+	                                             <input type="button" class="btn btn-sm btn-primary" onclick="AddMoreDetails()" value="+" />
 										</td>
 	                                </tr>
 	                        </tbody>
 	                        <tbody>
 	                               <tr  style="font-size:large;font-weight: bold">
-	                                  <td class="text-center" colspan="6">Total</td>
+	                                  <td class="text-center" colspan="9">Total</td>
 	                                   <td id="" class="text-right" colspan="2"><input readonly class="form-control" type="text" id="net"/> </td>
 	                                   <td></td>
 	                                </tr>
@@ -440,25 +467,55 @@ use App\Helpers\ReuseableCode;
 
    var Counter = 1
 
-   function AddMoreDetails()
-   {
+   function AddMoreDetails() {
+    Counter++;
+    var category = 'category_id' + Counter;
 
+    $('#AppnedHtml').append(`
+        <tr class="cnt" id="RemoveRows${Counter}">
+            <td>
+                <select style="width:100%!important;"
+                    onchange="get_sub_item('${category}')"
+                    name="category[]"
+                    id="category_id${Counter}"
+                    class="form-control category select2">
 
-   	Counter++;
-   	$('#AppnedHtml').append(`<tr class="cnt" id="RemoveRows${Counter}"><td><select onchange="get_uom('${Counter}')" name="sub_ic_des[]" id="sub_ic_des${Counter}" class="form-control select2">
-													<option value="">Select</option>
-														@foreach ( CommonHelper::get_all_subitem() as $row )
-														<?php $uom =  CommonHelper::get_uom($row->id); ?>
-														<option value="{{ $row->id.','.$uom }}" >{{ $row->sub_ic }}</option>
-														@endforeach
-												</select>
-											</td>
-	                                	<td>
+                    <option value="">Select</option>
+
+                    @foreach (CommonHelper::get_all_category() as $category)
+                        <option value="{{ $category->id }}">
+                            {{ $category->main_ic }}
+                        </option>
+                    @endforeach
+
+                </select>
+            </td>
+
+            <td>
+                <select style="width:100%!important;"
+                    onchange="get_item_name(${Counter})"
+                    name="item_id[]"
+                    id="item_id${Counter}"
+                    class="form-control select2">
+                    <option>Select</option>
+                </select>
+            </td>
+			  <td>
+                        <input type="text" name="pack_size[]" id="pack_size${Counter}" oninput="bag_qq(${Counter})" class="form-control" />
+                    </td>
+<td>
 	                                          <input readonly type="text" class="form-control" name="uom_id[]" id="uom_id${Counter}" >
 	                                    </td>
-	                                    <td>
-	                                         <input type="text" onkeyup="claculation(${Counter})" onblur="claculation(${Counter})" class="form-control requiredField zerovalidate" name="actual_qty[]" id="actual_qty${Counter}"  min="1" value="">
-	                                    </td>
+										<td>
+                        <input readonly class="form-control" onkeyup="claculation()" type="text" name="actual_qty[]" id="actual_qty${Counter}" value="">
+                        <input type="hidden" name="pack_qty[]" id="pack_qty">
+                    </td>
+                    <td>
+                        <input class="form-control requiredField"
+                            type="number" id="qty_lbs${Counter}"
+                            name="qty_lbs[]" step="any" readonly />
+                    </td>
+	                                   
 										<td class="">
 											<select onchange="get_stock_qty(this.id,${Counter});ApplyAll(${Counter})" class="form-control  ClsAll ShowOn${Counter}" name="warehouse[]" id="warehouse${Counter}">
 												<option value="">Select</option>
@@ -587,7 +644,30 @@ use App\Helpers\ReuseableCode;
    	$('#span').text(itemsCount);
    }
 
+function get_item_name(index)
+   {
+	var item = $('#item_id'+index).val();
+	var uom =item.split('@');
+    console.log(uom);
+    $('#uom_id'+index).val(uom[1]);
+	 $('#item_code' + index).val(uom[2]);
+            $('#actual_qty' + index).val(uom[3]);
+            $('#qty_lbs' + index).val(uom[3]*2.20462);
+            $('#pack_qty').val(uom[3]);
+            $('#color' + index).val(uom[5]);
+            $('#pack_size' + index).val(1);
+            console.log(index);
 
+            bag_qq(index);
+   }
+
+   function bag_qq(counter) {
+            var bags_qty = parseFloat($('#pack_size' + counter).val()) || 1;
+            var pack_qty = parseFloat($('#pack_qty').val()) || 0;
+            var total_qty = (bags_qty * pack_qty).toFixed(2);
+            $('#actual_qty' + counter).val(total_qty);
+            $('#qty_lbs' + counter).val(total_qty*2.20462);
+        }
 </script>
 <script>
    function view_history(id)
@@ -745,7 +825,9 @@ $('#total_after_sales_tax').val(net_amount);
    {
    	var  qty=$('#actual_qty'+number).val();
    	var  rate=$('#rate'+number).val();
-   	var total=parseFloat(qty*rate).toFixed(2);
+	 var qty_lbs = parseFloat(qty) * 2.20462 || 0;
+
+   	var total=parseFloat(qty_lbs*rate).toFixed(2);
    	$('#amount'+number).val(total);
 
    	var amount = 0;
@@ -823,7 +905,7 @@ $('#total_after_sales_tax').val(net_amount);
 
 
             var warehouse=$('#warehouse'+number).val();
-			var myArray=$('#sub_ic_des'+number).find(":selected").val();
+			var myArray=$('#item_id'+number).find(":selected").val();
 			var  item= myArray.split(",");
             var batch_code=0;
             $.ajax({
@@ -951,6 +1033,7 @@ $('#total_after_sales_tax').val(net_amount);
    {
    	var ntn=$('#ntn').val();
    	ntn=ntn.split('*');
+	console.log(ntn);
    	$('#buyers_ntn').val(ntn[1]);
    	$('#buyers_sales').val(ntn[2]);
    	$('#model_terms_of_payment').val(ntn[3]);

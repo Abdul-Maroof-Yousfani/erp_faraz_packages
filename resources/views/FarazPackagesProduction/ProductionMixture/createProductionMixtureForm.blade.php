@@ -49,12 +49,12 @@ if ($accType == 'client') {
                                                     @endforeach
                                                 </select>
                                             </div>
-                                             <div class="col-lg-1 col-md-1 col-sm-1 col-xs-12">
+                                            <div class="col-lg-1 col-md-1 col-sm-1 col-xs-12">
                                                 <label class="sf-label">uom</label>
                                                 <input class="form-control" type="text" name="uom" id="uom" value=""
                                                     readonly />
                                             </div>
-                                             <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
                                                 <label class="sf-label">Quantity</label>
                                                 <span class="rflabelsteric"><strong>*</strong></span>
                                                 <input class="form-control requiredField" type="text" name="qty" id="qty"
@@ -62,8 +62,7 @@ if ($accType == 'client') {
                                             </div>
                                             <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
                                                 <label for="">Mixing Date</label>
-                                                <input type="date" class="form-control"
-                                                    name="mixing_date" id="mixing_date">
+                                                <input type="date" class="form-control" name="mixing_date" id="mixing_date" value="{{ date('Y-m-d') }}">
                                             </div>
                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                 <label class="sf-label">Production Order</label>
@@ -78,7 +77,7 @@ if ($accType == 'client') {
                                                     @endforeach
                                                 </select>
                                             </div>
-                                            
+
                                             <div class="col-lg-1 col-md-1 col-sm-1 col-xs-12">
                                                 <label for="">Mixing Number</label>
                                                 <input type="text" class="form-control requiredField" name="mixing_no"
@@ -90,8 +89,7 @@ if ($accType == 'client') {
                                                 <label class="sf-label">Description</label>
                                                 <span class="rflabelsteric"></span>
                                                 <textarea name="description" id="description" rows="4" cols="50"
-                                                    style="resize: none; font-size: 11px"
-                                                    class="form-control"></textarea>
+                                                    style="resize: none; font-size: 11px" class="form-control"></textarea>
                                             </div>
                                         </div>
                                     </div>
@@ -103,90 +101,80 @@ if ($accType == 'client') {
                                             <table class="userlittab table table-bordered sf-table-list">
                                                 <thead>
                                                     <th class="text-center col-sm-1">S.No</th>
+                                                    <th class="text-center col-sm-3">Category</th>
                                                     <th class="text-center col-sm-3">Item</th>
                                                     <th class="text-center col-sm-2">UOM</th>
                                                     <th class="text-center col-sm-2">QTY (KG)</th>
+                                                    <th class="text-center col-sm-2">Machine</th>
                                                     <th class="text-center col-sm-1">Action</th>
                                                 </thead>
                                                 <tbody id="tableData">
-                                                    @if(isset($copied_recipe_data) && $copied_recipe_data->count() > 0)
-                                                        @foreach($copied_recipe_data as $key => $item)
-                                                            <tr id="RemoveRows{{ $counter }}">
-                                                                <td class="text-center">{{ $counter }}</td>
-                                                                <td>
-                                                                    <select style="width: 100%;"
-                                                                        class="form-control requiredField select2 item_id"
-                                                                        name="item_id[]" id="item_id{{ $counter }}"
-                                                                        onchange="get_uom_name_by_item_id(this.value, {{ $counter }})">
-                                                                        <option value="">Select Raw Material</option>
-                                                                        @foreach ($raw_material as $raw_key => $raw_value)
-                                                                            <option value="{{ $raw_value->id }}"
-                                                                                @if($item->item_id == $raw_value->id) selected @endif>
-                                                                                {{ $raw_value->item_code . ' - ' . $raw_value->sub_ic }}
-                                                                            </option>
-                                                                        @endforeach
-                                                                    </select>
-                                                                </td>
-                                                                <td class="text-center">
-                                                                    <input type="text" class="form-control" name="uom[]"
-                                                                        id="uom{{ $counter }}"
-                                                                        value="{{ $item->subItem && $item->subItem->uomData ? $item->subItem->uomData->uom_name : '' }}"
-                                                                        readonly>
-                                                                </td>
-                                                                <td class="text-center">
-                                                                    <input type="text"
-                                                                        class="form-control requiredField required_qty"
-                                                                        name="required_qty[]" id="required_qty{{ $counter }}"
-                                                                        value="{{ $item->category_total_qty ?? '' }}"
-                                                                        onkeyup="calculateTotalQuantity()">
-                                                                </td>
-                                                                <td class="text-center">
-                                                                    @if($key == 0)
-                                                                        <a href="javascript:;" class="btn btn-sm btn-primary"
-                                                                            onclick="AddMoreDetails()"><span
-                                                                                class="glyphicon glyphicon-plus-sign"></span> </a>
-                                                                    @else
-                                                                        <a href="javascript:;" class="btn btn-sm btn-danger"
-                                                                            onclick="RemoveSection({{ $counter }})"><span
-                                                                                class="glyphicon glyphicon-trash"></span> </a>
-                                                                    @endif
-                                                                </td>
-                                                            </tr>
-                                                            @php $counter++ @endphp
-                                                        @endforeach
-                                                    @else
-                                                        <tr>
-                                                            <td class="text-center">{{ $counter++ }}</td>
-                                                            <td>
-                                                                <select style="width: 100%;"
-                                                                    class="form-control requiredField select2 item_id"
-                                                                    name="item_id[]" id="item_id1"
-                                                                    onchange="get_uom_name_by_item_id(this.value, 1)">
-                                                                    <option value="">Select Raw Material</option>
-                                                                    @foreach ($raw_material as $key => $value)
-                                                                        <option value="{{ $value->id }}">
-                                                                            {{ $value->item_code . ' - ' . $value->sub_ic }}
-                                                                        </option>
-                                                                    @endforeach
-                                                                </select>
-                                                            </td>
-                                                            <td class="text-center">
-                                                                <input type="text" class="form-control" name="uom[]" id="uom1"
-                                                                    readonly>
-                                                            </td>
-                                                            <td class="text-center">
-                                                                <input type="text"
-                                                                    class="form-control requiredField required_qty"
-                                                                    name="required_qty[]" id="required_qty1"
-                                                                    onkeyup="calculateTotalQuantity()">
-                                                            </td>
-                                                            <td class="text-center">
-                                                                <a href="javascript:;" class="btn btn-sm btn-primary"
-                                                                    onclick="AddMoreDetails()"><span
-                                                                        class="glyphicon glyphicon-plus-sign"></span> </a>
-                                                            </td>
-                                                        </tr>
-                                                    @endif
+
+                                                    <tr>
+                                                        <td class="text-center">{{ $counter++ }}</td>
+                                                        {{-- <td>
+                                                            <select style="width: 100%;"
+                                                                class="form-control requiredField select2 item_id"
+                                                                name="item_id[]" id="item_id1"
+                                                                onchange="get_uom_name_by_item_id(this.value, 1)">
+                                                                <option value="">Select Raw Material</option>
+                                                                @foreach ($raw_material as $key => $value)
+                                                                <option value="{{ $value->id }}">
+                                                                    {{ $value->item_code . ' - ' . $value->sub_ic }}
+                                                                </option>
+                                                                @endforeach
+                                                            </select>
+                                                        </td> --}}
+                                                        <td>
+                                                            <select style="width: 100% !important;"
+                                                                onchange="get_sub_item('category_id1')" name="category[]"
+                                                                id="category_id1"
+                                                                class="form-control category select2 requiredField">
+                                                                <option value="">Select</option>
+                                                                @foreach (CommonHelper::get_all_category() as $category)
+                                                                    <option value="{{ $category->id }}">
+                                                                        {{ $category->main_ic }}
+                                                                    </option>
+                                                                @endforeach
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <select style="width: 100% !important;"
+                                                                onchange="get_uom_name_by_item_id(this.value, 1)"
+                                                                name="item_id[]" id="item_id1"
+                                                                class="form-control requiredField select2">
+                                                                <option>Select</option>
+                                                            </select>
+                                                        </td>
+                                                        <td class="text-center">
+                                                            <input type="text" class="form-control" name="uom[]" id="uom1"
+                                                                readonly>
+                                                        </td>
+                                                        <td class="text-center">
+                                                            <input type="text"
+                                                                class="form-control requiredField required_qty"
+                                                                name="required_qty[]" id="required_qty1"
+                                                                onkeyup="calculateTotalQuantity()">
+                                                        </td>
+                                                        <td class="text-center">
+
+                                                            <select style="width: 100% !important;" name="machine_id[]"
+                                                                id="machine_id1" class="form-control requiredField select2">
+                                                                <option value="">Select</option>
+                                                                @foreach($machines as $val)
+                                                                    <option value="{{$val->id}}">
+                                                                        {{ $val->name }}
+                                                                    </option>
+                                                                @endforeach
+                                                            </select>
+                                                        </td>
+
+                                                        <td class="text-center">
+                                                            <a href="javascript:;" class="btn btn-sm btn-primary"
+                                                                onclick="AddMoreDetails()"><span
+                                                                    class="glyphicon glyphicon-plus-sign"></span> </a>
+                                                        </td>
+                                                    </tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -235,26 +223,51 @@ if ($accType == 'client') {
         function AddMoreDetails() {
             Counter++;
             $("#tableData").append(`
-          <tr id="RemoveRows${Counter}">
-            <td class="text-center">${Counter}</td>
-            <td>
-              <select style="width: 100%;" class="form-control requiredField select2 item_id" name="item_id[]" id="item_id${Counter}" onchange="get_uom_name_by_item_id(this.value, ${Counter})">
-                <option value="">Select Raw Material</option>
-                @foreach ($raw_material as $key => $value)
-                      <option value="{{ $value->id }}"> {{ $value->item_code . ' - ' . $value->sub_ic }} </option>
-                @endforeach
-              </select>
-            </td>
-            <td class="text-center">
-              <input type="text" class="form-control" name="uom[]" id="uom${Counter}" readonly>
-            </td>
-            <td class="text-center">
-              <input type="text" class="form-control requiredField required_qty" name="required_qty[]" id="required_qty${Counter}" onkeyup="calculateTotalQuantity()">
-            </td>
-            <td class="text-center">
-              <a href="javascript:;" class="btn btn-sm btn-danger" onclick="RemoveSection(${Counter})"><span class="glyphicon glyphicon-trash"></span> </a>
-            </td>
-          </tr>`
+              <tr id="RemoveRows${Counter}">
+                <td class="text-center">${Counter}</td>
+                <td>
+                  <select style="width: 100% !important;"
+                    onchange="get_sub_item('category_id${Counter}')" name="category[]"
+                    id="category_id${Counter}"
+                    class="form-control category select2 requiredField">
+                    <option value="">Select</option>
+                    @foreach (CommonHelper::get_all_category() as $category)
+                        <option value="{{ $category->id }}">
+                            {{ $category->main_ic }} </option>
+                    @endforeach
+                </select>
+                </td>
+                 <td>
+                 <select style="width: 100% !important;"
+                    onchange="get_uom_name_by_item_id(this.value, ${Counter})" name="item_id[]" id="item_id${Counter}"
+                    class="form-control requiredField select2">
+                    <option>Select</option>
+                </select>
+                </td>
+                <td class="text-center">
+                  <input type="text" class="form-control" name="uom[]" id="uom${Counter}" readonly>
+                </td>
+                <td class="text-center">
+                  <input type="text" class="form-control requiredField required_qty" name="required_qty[]" id="required_qty${Counter}" onkeyup="calculateTotalQuantity()">
+                </td>
+                 <td>
+                   <select style="width: 100% !important;"
+                                                                    name="machine_id[]"
+                                                                    id="machine_id${Counter}"
+                                                                    class="form-control requiredField select2">
+                                                                    <option value="">Select</option>
+                                                                    @foreach($machines as $val)
+                                                                        <option
+                                                                            value="{{$val->id}}">
+                                                                            {{ $val->name }}
+                                                                        </option>
+                                                                    @endforeach
+                                                                </select>
+                </td>
+                <td class="text-center">
+                  <a href="javascript:;" class="btn btn-sm btn-danger" onclick="RemoveSection(${Counter})"><span class="glyphicon glyphicon-trash"></span> </a>
+                </td>
+              </tr>`
             );
 
             $('.select2').select2();
@@ -314,7 +327,7 @@ if ($accType == 'client') {
                 // Recalculate total quantity for copied items
                 calculateTotalQuantity();
             @endif
-      });
+          });
     </script>
 
     <script src="{{ URL::asset('assets/js/select2/js_tabindex.js') }}"></script>

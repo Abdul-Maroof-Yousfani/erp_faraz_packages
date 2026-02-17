@@ -708,6 +708,7 @@ Route::group(['prefix' => 'purchase', 'middleware' => 'mysql2', 'before' => 'csr
     // opening stock eend
 
     Route::post('/createPurchaseVoucherFormThroughGrn', 'PurchaseController@createPurchaseVoucherFormThroughGrn');
+    Route::get('/createDirectPurchaseVoucherForm', 'PurchaseController@createDirectPurchaseVoucherForm');
     Route::get('/editPurchaseVoucherForm/{id?}', 'PurchaseController@editPurchaseVoucherForm');
 
     Route::get('/createCategoryForm', 'PurchaseController@createCategoryForm');
@@ -923,6 +924,7 @@ Route::group(['prefix' => 'pad', 'middleware' => 'mysql2', 'before' => 'csrf'], 
 
     Route::post('/createPurchaseVoucher', 'PurchaseAddDetailControler@createPurchaseVoucher');
     Route::post('/addPurchaseVoucherThorughGrn', 'PurchaseAddDetailControler@addPurchaseVoucherThorughGrn');
+    Route::post('/insertDirectPurchaseVoucher', 'PurchaseAddDetailControler@insertDirectPurchaseVoucher');
     Route::post('/editPurchaseVoucher/{id}', 'PurchaseEditDetailControler@editPurchaseVoucher');
     Route::post('/addDemandTypeDetail', 'PurchaseAddDetailControler@addDemandTypeDetail');
     Route::post('/addDirectGrnForm', 'PurchaseAddDetailControler@addDirectGrnForm');

@@ -256,25 +256,37 @@ $global_avg_amt=0;
                                                 <div class="col-md-12 padt pos-r" id="out_source_production_data_to_finish_received" >
 
                                                     <div class="row">
-                                                        <div class="col-md-2">
-                                                            <label for="">Item</label>
+                                                        <div class="col-md-1">
+                                                            <label for="">Category</label>
                                                              <select style="width: 100% !important;"
-                                                                name="item_id[]"
-                                                                id="item_id1"
-                                                                class="form-control requiredField select2">
+                                                                onchange="get_sub_item('category_id1')" name="category[]"
+                                                                id="category_id1"
+                                                                class="form-control category select2 requiredField">
                                                                 <option value="">Select</option>
-                                                                @foreach($sub_item as $val)
-                                                                    <option
-                                                                        value="{{ $val->id . '@' . $val->uom_name . '@' . $val->sub_ic }}">
-                                                                        {{ $val->item_code . ' -- ' . $val->sub_ic }}
+                                                                @foreach (CommonHelper::get_all_category() as $category)
+                                                                    <option value="{{ $category->id }}">
+                                                                        {{ $category->main_ic }}
                                                                     </option>
                                                                 @endforeach
                                                             </select>
                                                         </div>
-                                                        
-                                                        
-
                                                         <div class="col-md-2">
+                                                            <label for="">Item</label>
+                                                              <select style="width: 100% !important;"
+                                                                onchange="get_uom_name_by_item_id(this.value, 1)"
+                                                                name="item_id[]" id="item_id1"
+                                                                class="form-control requiredField select2">
+                                                                <option>Select</option>
+                                                            </select>
+                                                        </div>
+                                                        
+                                                         <div class="col-md-1">
+                                                            <label for="">Uom</label>
+                                                             <input type="text" class="form-control" name="uom[]" id="uom1"
+                                                                readonly>
+                                                        </div>
+                                                        
+                                                        <div class="col-md-1">
                                                             <label for="">Operator</label>
                                                              <select style="width: 100% !important;"
                                                                 name="operator_id[]"
@@ -320,7 +332,7 @@ $global_avg_amt=0;
                                                             </select>
                                                         </div>
                                                        
-                                                        <div class="col-md-2">
+                                                        <div class="col-md-1">
                                                             <label for="">Date</label>
                                                             <input 
                                                                 type="date"
@@ -453,25 +465,37 @@ $global_avg_amt=0;
     {
         let html = `
                     <div class="row" id="row_${count}">
-                        <div class="col-md-2">
-                            <label for="">Item</label>
-                             <select style="width: 100% !important;"
-                                 name="item_id[]"
-                                id="item_id${count}"
-                                class="form-control requiredField select2">
+                        <div class="col-md-1">
+                            <label for="">Category</label>
+                                <select style="width: 100% !important;"
+                                onchange="get_sub_item('category_id${count}')" name="category[]"
+                                id="category_id${count}"
+                                class="form-control category select2 requiredField">
                                 <option value="">Select</option>
-                                @foreach($sub_item as $val)
-                                    <option
-                                        value="{{ $val->id . '@' . $val->uom_name . '@' . $val->sub_ic }}">
-                                        {{ $val->item_code . ' -- ' . $val->sub_ic }}
+                                @foreach (CommonHelper::get_all_category() as $category)
+                                    <option value="{{ $category->id }}">
+                                        {{ $category->main_ic }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
-                        
-                        
-
                         <div class="col-md-2">
+                            <label for="">Item</label>
+                                <select style="width: 100% !important;"
+                                onchange="get_uom_name_by_item_id(this.value, ${count})"
+                                name="item_id[]" id="item_id${count}"
+                                class="form-control requiredField select2">
+                                <option>Select</option>
+                            </select>
+                        </div>
+                        
+                        
+                        <div class="col-md-1">
+                            <label for="">Uom</label>
+                                <input type="text" class="form-control" name="uom[]" id="uom${count}"
+                                readonly>
+                        </div>
+                        <div class="col-md-1">
                             <label for="">Operator</label>
                                 <select style="width: 100% !important;"
                                 name="operator_id[]"
@@ -517,7 +541,7 @@ $global_avg_amt=0;
                             </select>
                         </div>
                         
-                        <div class="col-md-2">
+                        <div class="col-md-1">
                             <label for="">Date</label>
                             <input 
                                 type="date"
@@ -632,7 +656,23 @@ function validateUsedQty(input) {
     }
 }
 
+ function get_uom_name_by_item_id(ItemId, num = null) {
 
+            $.ajax({
+                url: '{{ url("pdc/get_uom_name_by_item_id") }}',
+                type: 'Get',
+                data: { ItemId: ItemId },
+                success: function (response) {
+                    if (num == null) {
+                        $('#uom').val(response)
+                    } else {
+                        $('#uom' + num).val(response)
+                    }
+
+
+                }
+            });
+        }
 function cal_amt() {
     let issued_qty = parseFloat($('.issued_qty').val()) || 0;
     let used_qty_total = parseFloat($('.used_qty_total').val()) || 0;
