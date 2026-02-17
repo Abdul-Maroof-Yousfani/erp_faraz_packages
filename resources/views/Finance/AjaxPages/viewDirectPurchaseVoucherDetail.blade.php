@@ -138,14 +138,14 @@ $Supplier = CommonHelper::get_single_row('supplier','id',$row->supplier);
                                             <th class="text-center" style="width:50px;">S.No</th>
 
                                             <th class="text-center">Account</th>
-                                            <th class="text-center hide">Uom</th>
-                                            <th class="text-center hide">Qty</th>
-                                            <th class="text-center hide">Rate</th>
+                                            <th class="text-center">Uom</th>
+                                            <th class="text-center">Qty</th>
+                                            <th class="text-center">Rate</th>
                                             <th class="text-center" colspan="8">Amount</th>
-                                            <th class="text-center hide">EXP%</th>
-                                            <th class="text-center hide">Additional Expenses</th>
-                                            <th class="text-center hide">Discount Amount</th>
-                                            <th class="text-center hide" colspan="7">Net Amount</th>
+                                            <th class="text-center">EXP%</th>
+                                            <th class="text-center">Additional Expenses</th>
+                                            <th class="text-center">Discount Amount</th>
+                                            <th class="text-center" colspan="7">Net Amount</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -181,16 +181,16 @@ $Supplier = CommonHelper::get_single_row('supplier','id',$row->supplier);
                                         <td class="text-center"><?php echo $counter++;?></td>
 
                                         <td title="{{$row2->sub_item}}">{{ CommonHelper::get_name_of_account_operat_by_id($row2->sub_item) }} </td>
-                                        <td class="hide">
+                                        <td>
                                             <?php echo CommonHelper::get_uom($row2->sub_item);?>
                                         </td>
-                                        <td class="hide"><?php  echo $row2->qty?></td>
-                                        <td class="hide"><?php  echo $row2->rate?></td>
+                                        <td><?php  echo $row2->qty?></td>
+                                        <td><?php  echo $row2->rate?></td>
                                         <td colspan="8"><?php  echo $row2->amount; ?></td>
-                                        <td class="hide"><?php  echo number_format($item_amount_percent,3); ?></td>
-                                        <td class="hide">{{  number_format($exp_amount_apply,2) }}</td>
-                                        <td class="hide"><?php  echo $row2->discount_amount; ?></td>
-                                        <td  class="hide"><?php  echo number_format($row2->net_amount+$exp_amount_apply,2); $TotalAmount +=$row2->net_amount+$exp_amount_apply;?></td>
+                                        <td><?php  echo number_format($item_amount_percent,3); ?></td>
+                                        <td>{{  number_format($exp_amount_apply,2) }}</td>
+                                        <td><?php  echo $row2->discount_amount; ?></td>
+                                        <td ><?php  echo number_format($row2->net_amount+$exp_amount_apply,2); $TotalAmount +=$row2->net_amount+$exp_amount_apply;?></td>
 
 
 
