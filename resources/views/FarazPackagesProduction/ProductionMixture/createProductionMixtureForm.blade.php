@@ -59,8 +59,8 @@ if ($accType == 'client') {
                                                 <input type="text" class="form-control requiredField" name="mixing_no"
                                                     id="mixing_no" value="{{ $pm_no }}" readonly>
                                             </div>
-                                            
-                                            
+
+
                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                 <label for="">Mixing Date</label>
                                                 <input type="date" class="form-control" name="mixing_date" id="mixing_date"
@@ -88,8 +88,8 @@ if ($accType == 'client') {
                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                 <label class="sf-label">Mixture Machine</label>
                                                 <span class="rflabelsteric"><strong>*</strong></span>
-                                                <select class="form-control select2 requiredField"
-                                                    name="mixture_machine_id" id="mixture_machine_id">
+                                                <select class="form-control select2 requiredField" name="mixture_machine_id"
+                                                    id="mixture_machine_id">
                                                     <option value="">Select Mixture Machine</option>
                                                     @foreach ($mixture_machines as $key => $value)
                                                         <option value="{{ $value->id }}">
@@ -111,6 +111,12 @@ if ($accType == 'client') {
                                     </div>
                                 </div>
                                 <div class="lineHeight">&nbsp;</div>
+                                <div class="text-end my-2" style="float: right; margin-bottom: 10px;">
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="AddMoreDetails()">
+                                        <span class="glyphicon glyphicon-plus-sign"></span> Add More
+                                    </button>
+                                </div>
+
                                 <div class="row">
                                     <div class="col-lg-12 col-md-12 col-sm-12col-xs-12">
                                         <div class="table-responsive">
@@ -120,19 +126,20 @@ if ($accType == 'client') {
                                                     {{-- <th class="text-center col-sm-3">Category</th> --}}
                                                     <th class="text-center col-sm-3">Item</th>
                                                     <th class="text-center col-sm-2">UOM</th>
+                                                    <th class="text-center col-sm-1">In Stock</th>
                                                     <th class="text-center col-sm-2">QTY (KG)</th>
                                                     {{-- <th class="text-center col-sm-2">Machine</th> --}}
                                                     <th class="text-center col-sm-1">Action</th>
                                                 </thead>
                                                 <tbody id="tableData">
 
-                                                    <tr>
+                                                    <tr id="RemoveRows1">
                                                         <td class="text-center">{{ $counter++ }}</td>
                                                         <td>
                                                             <select style="width: 100%;"
                                                                 class="form-control requiredField select2 item_id"
                                                                 name="item_id[]" id="item_id1"
-                                                                onchange="get_uom_name_by_item_id(this.value, 1)">
+                                                                onchange="get_stock_qty(this.value,'1');get_uom_name_by_item_id(this.value, 1)">
                                                                 <option value="">Select Raw Material</option>
                                                                 @foreach ($raw_material as $key => $value)
                                                                     <option value="{{ $value->id }}">
@@ -167,6 +174,10 @@ if ($accType == 'client') {
                                                                 readonly>
                                                         </td>
                                                         <td class="text-center">
+                                                            <input readonly class="form-control instock zerovalidate"
+                                                                name="instock[]" type="text" value="" id="instock1" />
+                                                        </td>
+                                                        <td class="text-center">
                                                             <input type="text"
                                                                 class="form-control requiredField required_qty"
                                                                 name="required_qty[]" id="required_qty1"
@@ -186,10 +197,14 @@ if ($accType == 'client') {
                                                         </td> --}}
 
                                                         <td class="text-center">
-                                                            <a href="javascript:;" class="btn btn-sm btn-primary"
-                                                                onclick="AddMoreDetails()"><span
-                                                                    class="glyphicon glyphicon-plus-sign"></span> </a>
+
+
+
+                                                            <a href="javascript:;" class="btn btn-sm btn-danger"
+                                                                onclick="RemoveSection(1)"><span
+                                                                    class="glyphicon glyphicon-trash"></span> </a>
                                                         </td>
+
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -239,43 +254,89 @@ if ($accType == 'client') {
         function AddMoreDetails() {
             Counter++;
             $("#tableData").append(`
-                      <tr id="RemoveRows${Counter}">
-                        <td class="text-center">${Counter}</td>
-                       <td>
-                            <select style="width: 100%;"
-                                class="form-control requiredField select2 item_id"
-                                name="item_id[]" id="item_id${Counter}"
-                                onchange="get_uom_name_by_item_id(this.value, ${Counter})">
-                                <option value="">Select Raw Material</option>
-                                @foreach ($raw_material as $key => $value)
-                                    <option value="{{ $value->id }}">
-                                        {{ $value->item_code . ' - ' . $value->sub_ic }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </td>
-                        <td class="text-center">
-                          <input type="text" class="form-control" name="uom[]" id="uom${Counter}" readonly>
-                        </td>
-                        <td class="text-center">
-                          <input type="text" class="form-control requiredField required_qty" name="required_qty[]" id="required_qty${Counter}" onkeyup="calculateTotalQuantity()">
-                        </td>
+                                      <tr id="RemoveRows${Counter}">
+                                        <td class="text-center">${Counter}</td>
+                                       <td>
+                                            <select style="width: 100%;"
+                                                class="form-control requiredField select2 item_id"
+                                                name="item_id[]" id="item_id${Counter}"
+                                                onchange="get_stock_qty(this.value,${Counter});get_uom_name_by_item_id(this.value, ${Counter})">
+                                                <option value="">Select Raw Material</option>
+                                                @foreach ($raw_material as $key => $value)
+                                                    <option value="{{ $value->id }}">
+                                                        {{ $value->item_code . ' - ' . $value->sub_ic }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td class="text-center">
+                                          <input type="text" class="form-control" name="uom[]" id="uom${Counter}" readonly>
+                                        </td>
+                                        <td class="text-center">
+                                          <input readonly   class="form-control instock"  type="text" name="instock[]" id="instock${Counter}"/>
+                                        </td>
+                                        <td class="text-center">
+                                          <input type="text" class="form-control requiredField required_qty" name="required_qty[]" id="required_qty${Counter}" onkeyup="calculateTotalQuantity()">
+                                        </td>
 
-                        <td class="text-center">
-                          <a href="javascript:;" class="btn btn-sm btn-danger" onclick="RemoveSection(${Counter})"><span class="glyphicon glyphicon-trash"></span> </a>
-                        </td>
-                      </tr>`
+                                        <td class="text-center">
+                                          <a href="javascript:;" class="btn btn-sm btn-danger" onclick="RemoveSection(${Counter})"><span class="glyphicon glyphicon-trash"></span> </a>
+                                        </td>
+                                      </tr>`
             );
 
             $('.select2').select2();
         }
 
+        //function RemoveSection(Row) {
+        //   $("#RemoveRows" + Row).remove();
+        //    Counter--;
+        //}
+
         function RemoveSection(Row) {
+
+            // check total rows in table
+            let totalRows = $("#tableData tr").length;
+
+            if (totalRows <= 1) {
+                alert("At least 1 row is required.");
+                return;
+            }
+
             $("#RemoveRows" + Row).remove();
-            Counter--;
         }
 
 
+        function get_stock_qty(warehouse, number) {
+
+
+            var warehouse = null;
+            var myArray = $('#item_id' + number).find(":selected").val();
+            var item = myArray.split(",");
+            var batch_code = 0;
+            $.ajax({
+                url: '<?php echo url('/')?>/pdc/get_stock_location_wise?batch_code=' + batch_code,
+                type: "GET",
+                data: { warehouse: warehouse, item: item[0] },
+                success: function (data) {
+
+                    //   $('#batch_code'+number).html(data);
+
+                    data = data.split('/');
+
+                    $('#instock' + number).val(data[0]);
+
+                    if (data[0] == 0) {
+                        $("#" + item).css("background-color", "red");
+                    }
+                    else {
+                        $("#" + item).css("background-color", "");
+                    }
+
+                }
+            });
+
+        }
 
         function calculateTotalQuantity() {
             let totalQuantity = 0;
@@ -324,7 +385,7 @@ if ($accType == 'client') {
                 // Recalculate total quantity for copied items
                 calculateTotalQuantity();
             @endif
-                  });
+                                  });
     </script>
 
     <script src="{{ URL::asset('assets/js/select2/js_tabindex.js') }}"></script>

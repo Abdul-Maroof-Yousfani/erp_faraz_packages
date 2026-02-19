@@ -3168,7 +3168,7 @@ echo "aa"; die;
         if ($bacth_code == ''):
             $in = DB::Connection('mysql2')->table('stock')->where('status', 1)
                 ->where('sub_item_id', $item)
-                ->where('warehouse_id', $warehouse)
+                // ->where('warehouse_id', $warehouse)
                 ->where('batch_code', '!=', '')
                 ->where('batch_code', '!=', '0')
                 // ->where('batch_code','is not',null)
@@ -3189,7 +3189,7 @@ echo "aa"; die;
             $in = DB::Connection('mysql2')->table('stock')->where('status', 1)
                 ->whereIn('voucher_type', [1, 4, 6, 3, 10, 11])
                 ->where('sub_item_id', $item)
-                ->where('warehouse_id', $warehouse)
+                // ->where('warehouse_id', $warehouse)
                 ->where('batch_code', $bacth_code)
                 ->select('stock.*', DB::raw('SUM(qty) As qty'), DB::raw('SUM(amount) As amount'))
                 ->first();
@@ -3197,7 +3197,7 @@ echo "aa"; die;
             $out = DB::Connection('mysql2')->table('stock')->where('status', 1)
                 ->whereIn('voucher_type', [2, 5, 9, 8])
                 ->where('sub_item_id', $item)
-                ->where('warehouse_id', $warehouse)
+                // ->where('warehouse_id', $warehouse)
                 ->where('batch_code', $bacth_code)
                 ->select('stock.*',DB::raw('SUM(qty) As qty'), DB::raw('SUM(amount) As amount'))
                 ->first();
