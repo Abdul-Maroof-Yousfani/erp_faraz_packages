@@ -2234,7 +2234,7 @@ Route::group(['prefix' => 'far_production', 'middleware' => 'mysql2', 'before' =
 
     Route::get('/packing', 'FarazProductionController@packing');
 
-    // Route::get('/getItemByCategory', 'FarazProductionController@getItemByCategory');
+    Route::resource('mixture_machines', 'MixtureMachineController');
 
 });
 

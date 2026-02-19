@@ -876,6 +876,7 @@ class FarazProductionAddDetailController extends Controller
                 'pm_no' => strip_tags($request->mixing_no),
                 'produced_item_id' => strip_tags($request->finish_item_id),
                 'production_order_id' => strip_tags($request->production_order_id),
+                'mixture_machine_id' => strip_tags($request->mixture_machine_id),
                 'date' => strip_tags($request->mixing_date),
                 'qty' => strip_tags($request->qty),
                 'description' => strip_tags($request->description),
@@ -910,13 +911,13 @@ class FarazProductionAddDetailController extends Controller
             foreach ($request->item_id as $key => $itemId) {
 
                 $requiredQty = $request->required_qty[$key];
-                $machine_id = $request->machine_id[$key];
+                // $machine_id = $request->machine_id[$key];
 
                 $data2 = [
                     'production_mixture_id' => $master_id,
                     'item_id' => $itemId,
                     'qty' => $requiredQty,
-                    'machine_id' => $machine_id,
+                    // 'machine_id' => $machine_id,
                 ];
 
                 DB::connection('mysql2')

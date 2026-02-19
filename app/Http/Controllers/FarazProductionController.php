@@ -338,7 +338,7 @@ class FarazProductionController extends Controller
             ->where('c.status', '=', 1)
             ->where('s.status', '=', 1)
             ->where('u.status', '=', 1)
-            ->where('s.main_ic_id', '=', 8)
+            ->where('s.main_ic_id', '=', 7)
             ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id')
             // ->whereIn('c.id', $categories_id)
             ->groupBy('s.item_code')
@@ -353,12 +353,12 @@ class FarazProductionController extends Controller
             ->where('status', '=', 1)
             // ->where('approval_status', '=', 2)
             ->select('id', 'pr_no')->get();
-        $machines = DB::Connection('mysql2')->table('machine')
+        $mixture_machines = DB::Connection('mysql2')->table('mixture_machines')
             ->select('id', 'name')
             ->where('status', '=', 1)->get();
         $pm_no = CommonHelper::generateProductionMixtureNumber();
 
-        return view('FarazPackagesProduction.ProductionMixture.createProductionMixtureForm', compact('sub_item', 'raw_material', 'production_order', 'machines', 'pm_no'));
+        return view('FarazPackagesProduction.ProductionMixture.createProductionMixtureForm', compact('sub_item', 'raw_material', 'production_order', 'mixture_machines', 'pm_no'));
     }
 
     public function viewProductionMixingList()
