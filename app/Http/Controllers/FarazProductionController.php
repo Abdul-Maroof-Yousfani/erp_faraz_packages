@@ -347,7 +347,7 @@ class FarazProductionController extends Controller
 
         $raw_material = DB::Connection('mysql2')->table('subitem')
             ->select('id', 'sub_ic', 'uom', 'item_code')
-            ->where('status', '=', 1)->where('main_ic_id', '=', 7)->get();
+            ->where('status', '=', 1)->where('main_ic_id', '=', 9)->get();
 
         $production_order = DB::Connection('mysql2')->table('production_request')
             ->where('status', '=', 1)
