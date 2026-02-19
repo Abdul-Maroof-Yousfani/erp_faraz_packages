@@ -338,7 +338,7 @@ class FarazProductionController extends Controller
             ->where('c.status', '=', 1)
             ->where('s.status', '=', 1)
             ->where('u.status', '=', 1)
-            ->where('s.main_ic_id', '=', 7)
+            ->where('s.main_ic_id', '=', 14)
             ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id')
             // ->whereIn('c.id', $categories_id)
             ->groupBy('s.item_code')
