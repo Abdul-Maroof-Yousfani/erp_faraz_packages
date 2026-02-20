@@ -35,7 +35,49 @@ endif;
     @include('modal')
     @include('number_formate')
 
+    <style>
+        .table-compact {
+            font-size: 0.92rem;
+            line-height: 1.15;
+        }
 
+        .table-compact th,
+        .table-compact td {
+            padding: 5px 6px !important;
+            vertical-align: middle;
+        }
+
+        .table-compact input.form-control,
+        .table-compact select.form-control {
+            font-size: 0.88rem;
+            padding: 4px 6px;
+            height: 28px;
+        }
+
+        .table-compact .btn-sm {
+            padding: 3px 8px;
+            font-size: 0.82rem;
+        }
+
+        .table-compact th {
+            white-space: nowrap;
+            font-weight: 600;
+        }
+
+        .col-narrow {
+            width: 95px !important;
+            min-width: 95px !important;
+        }
+
+        .col-very-narrow {
+            width: 70px !important;
+            min-width: 70px !important;
+        }
+
+        .nowrap {
+            white-space: nowrap;
+        }
+    </style>
     <script>
         var counter = 1;
     </script>
@@ -58,7 +100,7 @@ endif;
                                     Denied <span style='font-size:45px !important;'>&#128546;</span></span>
                                 <?php endif;
 
-                                            ?>
+                                                        ?>
                             </div>
                         </div>
                         <?php if ($MenuPermission == true):?>
@@ -70,7 +112,7 @@ endif;
 
 
         $purchaseRequestNo = CommonHelper::get_unique_po_no_with_status(1);
-                                    ?>
+                                                ?>
                         <input type="hidden" name="_token" value="{{ csrf_token() }}">
 
                         <input type="hidden" name="pageType" value="<?php    echo $_GET['pageType']?>">
@@ -108,7 +150,7 @@ endif;
                                                                                                 <optgroup label="{{ $y->department_name}}" value="{{ $y->id}}">
                                                                                                     <?php
                                                         $subdepartments = DB::select('select `id`,`sub_department_name` from `sub_department` where  `department_id` =' . $y->id . '');
-                                                                                                                                                                                                                                                                                                    ?>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                    ?>
                                                                                                     @foreach($subdepartments as $key2 => $y2)
                                                                                                         <option value="{{ $y2->id}}">{{ $y2->sub_department_name}}</option>
                                                                                                     @endforeach
@@ -157,14 +199,14 @@ endif;
         foreach ($supplierList as $row1) {
 
             $address = CommonHelper::get_supplier_address($row1->id);
-                                                                ?>
+                                                                            ?>
                                                     <option
                                                         value="<?php        echo $row1->id . '@#' . $address . '@#' . $row1->ntn . '@#' . $row1->terms_of_payment?>">
                                                         <?php        echo ucwords($row1->name)?>
                                                     </option>
                                                     <?php
         }
-                                                                ?>
+                                                                            ?>
                                                 </select>
                                             </div>
 
@@ -281,13 +323,13 @@ endif;
                                                 <span class="rflabelsteric"><strong>*</strong></span>
                                                 <textarea name="main_description" id="main_description" rows="4" cols="50"
                                                     style="resize:none;font-size: 11px;" class="form-control requiredField">YOUR NTN NUMBER AND VALID INCOME TAX EXEMPTION WILL BE REQUIRED FOR PAYMENT, OTHER WISE INCOME TAX WILL BE DEDUCTED AS PER FOLLOWINGS:
-                    INCOME TAX:
-                    FOR COMPANIES SUPPLIES 4% & SERVICES 8% (FILER) / 12% (NON FILER)
-                    FOR INDIVIUALS OR AOP SUPPLIES 4.5% & SERVICES 10% (FILER) / 15% (NON FILER)
-                    SALES TAX ON SUPPLIES:
-                    A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRO 897 /2013
-                    SALES TAX ON SERVICES:
-                    A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRB WITHHOLDING RULES-2014</textarea>
+                                INCOME TAX:
+                                FOR COMPANIES SUPPLIES 4% & SERVICES 8% (FILER) / 12% (NON FILER)
+                                FOR INDIVIUALS OR AOP SUPPLIES 4.5% & SERVICES 10% (FILER) / 15% (NON FILER)
+                                SALES TAX ON SUPPLIES:
+                                A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRO 897 /2013
+                                SALES TAX ON SERVICES:
+                                A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRB WITHHOLDING RULES-2014</textarea>
                                             </div>
                                         </div>
                                     </div> --}}
@@ -296,48 +338,49 @@ endif;
                                 <div class="row">
                                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                         <div class="table-responsive">
-                                            <table class="table table-bordered">
+                                            <table class="table table-bordered table-compact">
                                                 <thead>
                                                     <tr class="text-center">
-                                                        <th colspan="11" class="text-center">Purchase Invoice Detail</th>
-                                                        {{-- <th colspan="2" class="text-center">
-                                                            <input type="button" class="btn btn-sm btn-primary"
-                                                                onclick="AddMoreDetails()" value="Add More Rows" />
-                                                        </th> --}}
+                                                        <th colspan="12" class="text-center">Purchase Invoice Detail</th>
                                                         <th class="text-center">
                                                             <span class="badge badge-success" id="span">1</span>
                                                         </th>
                                                     </tr>
                                                     <tr>
-                                                        <th class="text-center" style="width: 10%;">Category</th>
-                                                        <th class="text-center" style="width: 12%;">Item</th>
-                                                        <th class="text-center">Uom<span
+                                                        <th class="text-center nowrap" style="width: 9%; font-size:0.9rem;">
+                                                            Category</th>
+                                                        <th class="text-center nowrap"
+                                                            style="width: 13%; font-size:0.9rem;">Item</th>
+                                                        <th class="text-center nowrap col-very-narrow"
+                                                            style="font-size:0.9rem;">UoM<span
                                                                 class="rflabelsteric"><strong>*</strong></span></th>
-                                                        {{-- <th class="text-center">HS Code<span
-                                                                class="rflabelsteric"><strong>*</strong></span></th> --}}
-                                                        <th class="text-center">Bags Qty<span
+                                                        <th class="text-center nowrap col-narrow" style="font-size:0.9rem;">
+                                                            Bags Qty<span class="rflabelsteric"><strong>*</strong></span>
+                                                        </th>
+                                                        <th class="text-center nowrap col-narrow" style="font-size:0.9rem;">
+                                                            Qty (KG)<span class="rflabelsteric"><strong>*</strong></span>
+                                                        </th>
+                                                        <th class="text-center nowrap col-narrow" style="font-size:0.9rem;">
+                                                            Qty (lbs)<span class="rflabelsteric"><strong>*</strong></span>
+                                                        </th>
+                                                        <th class="text-center nowrap col-narrow" style="font-size:0.9rem;">
+                                                            Rate Cal. By<span
                                                                 class="rflabelsteric"><strong>*</strong></span></th>
-                                                        <th class="text-center">Qty in KG<span
+                                                        <th class="text-center nowrap col-narrow" style="font-size:0.9rem;">
+                                                            Rate<span class="rflabelsteric"><strong>*</strong></span></th>
+                                                        <th class="text-center nowrap col-narrow" style="font-size:0.9rem;">
+                                                            Amount<span class="rflabelsteric"><strong>*</strong></span></th>
+                                                        <th class="text-center nowrap col-narrow" style="font-size:0.9rem;">
+                                                            Amount (PKR)<span
                                                                 class="rflabelsteric"><strong>*</strong></span></th>
-                                                        <th class="text-center">QTY (lbs)<span
+                                                        <th class="text-center nowrap col-narrow" style="font-size:0.9rem;">
+                                                            Net Amount (PKR)<span
                                                                 class="rflabelsteric"><strong>*</strong></span></th>
-                                                        <th class="text-center">Rate<span
+                                                        <th class="text-center nowrap"
+                                                            style="width: 11%; font-size:0.9rem;">Location<span
                                                                 class="rflabelsteric"><strong>*</strong></span></th>
-                                                        <th class="text-center">Amount(PKR)<span
-                                                                class="rflabelsteric"><strong>*</strong></span></th>
-                                                        <th class="text-center"> Amount<span
-                                                                class="rflabelsteric"><strong>*</strong></span></th>
-                                                        {{-- <th class="text-center">Discount %<span
-                                                                class="rflabelsteric"><strong>*</strong></span></th>
-                                                        <th class="text-center">Discount Amount<span
-                                                                class="rflabelsteric"><strong>*</strong></span></th> --}}
-                                                        <th class="text-center">Net Amount(PKR)<span
-                                                                class="rflabelsteric"><strong>*</strong></span></th>
-                                                        <th class="text-center">Location<span
-                                                                class="rflabelsteric"><strong>*</strong></span></th>
-                                                        <th class="text-center">Action</th>
-                                                        {{-- <th class="text-center">Delete<span
-                                                                class="rflabelsteric"><strong>*</strong></span></th> --}}
+                                                        <th class="text-center" style="width: 50px; font-size:0.9rem;">
+                                                            Action</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="AppnedHtml">
@@ -350,7 +393,8 @@ endif;
                                                                 <option value="">Select</option>
                                                                 @foreach (CommonHelper::get_all_category() as $category)
                                                                     <option value="{{ $category->id }}">
-                                                                        {{ $category->main_ic }} </option>
+                                                                        {{ $category->main_ic }}
+                                                                    </option>
                                                                 @endforeach
                                                             </select>
                                                         </td>
@@ -402,10 +446,20 @@ endif;
                                                                 id="qty_lbs1" name="qty_lbs[]" step="any" readonly />
                                                         </td>
                                                         <td>
+                                                            <select required class="form-control select2"
+                                                                name="rate_cal_by[]" id="rate_cal_by_1"
+                                                                onchange="calculateLineAmount(this)">
+                                                                <option value="1">By BAGS</option>
+                                                                <option value="2">By KGS</option>
+                                                                <option value="3">By LBS</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
                                                             <input type="text" onkeyup="claculation('1')"
                                                                 class="form-control requiredField ActualRate" name="rate[]"
                                                                 id="rate1" placeholder="RATE" min="1" value="">
                                                         </td>
+
                                                         <td>
                                                             <input type="text" class="form-control number_format"
                                                                 name="amount[]" id="amount1" placeholder="AMOUNT" min="1"
@@ -601,6 +655,14 @@ endif;
                 '</td>' +
                 '<td>' +
                 '<input type="text" class="form-control requiredField" name="qty_lbs[]" id="qty_lbs' + Counter + '" placeholder="QTY LBS">' +
+                '</td>' +
+                '<td>' +
+                '<select name="rate_cal_by[]" id="rate_cal_by_' + Counter + '"' +
+                'class="form-control select2 rate-cal-by">' +
+                '<option value="1">By BAGS</option>' +
+                '<option value="2">By KGS</option>' +
+                '<option value="3">By LBS</option>' +
+                '</select>' +
                 '</td>' +
                 '<td>' +
                 '<input type="text" onkeyup="claculation(' + Counter + ')" class="form-control requiredField ActualRate" name="rate[]" id="rate' + Counter + '" placeholder="RATE">' +
@@ -890,38 +952,67 @@ endif;
         }
 
         function claculation(number) {
-            var qty = $('#actual_qty' + number).val();
-            var rate = $('#rate' + number).val();
-            var currency = $('#currency_rate').val();
-            var qty_lbs = parseFloat(qty) * 2.20462 || 0;
+            // ───────────────────────────────────────────────
+            // 1. Get the selected calculation method
+            // ───────────────────────────────────────────────
+            var rate_cal_by = $('#rate_cal_by_' + number).val() || "0";
 
-            var actual = parseFloat(qty_lbs * rate).toFixed(2);
-            if (currency == '') {
-                currency = 1;
+            // Get base values
+            var bags_qty = parseFloat($('#bags_qty' + number).val()) || 0;
+            // If your bags field is actually called pack_size (from earlier code):
+            // var bags_qty = parseFloat($('#pack_size' + number).val()) || 0;
+
+            var qty_kg = parseFloat($('#actual_qty' + number).val()) || 0;
+            var qty_lbs = parseFloat($('#qty_lbs' + number).val()) || 0;
+            var rate = parseFloat($('#rate' + number).val()) || 0;
+
+            var currency = $('#currency_rate').val() || 1;
+            if (currency === '') currency = 1;
+            currency = parseFloat(currency);
+
+            // ───────────────────────────────────────────────
+            // 2. Decide which quantity to use as multiplier
+            // ───────────────────────────────────────────────
+            var multiplier = 0;
+
+            if (rate_cal_by === "1") {           // By BAGS
+                multiplier = bags_qty;
             }
+            else if (rate_cal_by === "2") {      // By KGS
+                multiplier = qty_kg;
+            }
+            else if (rate_cal_by === "3") {      // By LBS
+                multiplier = qty_lbs;
+            }
+            // If nothing selected or invalid → multiplier stays 0 → amount = 0
 
-            var total = parseFloat(qty_lbs * rate * currency).toFixed(2);
+            // ───────────────────────────────────────────────
+            // 3. Calculate amounts
+            // ───────────────────────────────────────────────
+            // Main amount (with currency)
+            var total = (multiplier * rate * currency).toFixed(2);
 
+            // Optional: actual amount in lbs (your original logic - keeping it)
+            var actual = (qty_lbs * rate).toFixed(2);
+
+            // Update fields
             $('#amount' + number).val(total);
-            $('#actual_amount' + number).val(actual);
-            
+            $('#actual_amount' + number).val(total);
 
-            var amount = 0;
-            count = 1;
+            // ───────────────────────────────────────────────
+            // 4. Recalculate totals / discount / tax / net
+            // ───────────────────────────────────────────────
+            var grand_total = 0;
             $('.net_amount_dis').each(function (i, obj) {
-
-                amount += +$('#' + obj.id).val();
-
-                count++;
+                grand_total += parseFloat($('#' + obj.id).val()) || 0;
             });
-            amount = parseFloat(amount);
 
-
+            // You can use grand_total if needed later
 
             discount_percent('discount_percent' + number);
             net_amount();
             sales_tax('sales_taxx');
-            //  toWords(1);
+            // toWords(1);   // uncomment if still needed
         }
         function sales_tax(id) {
             var sales_tax = 0;
@@ -988,6 +1079,57 @@ endif;
             calculate_due_date();
         }
 
+        function calculateLineAmount(element) {
+            // element = the <select> that was changed
+            var rowCounter = element.id.replace('rate_cal_by_', '');   // "1", "2", "3" etc.
+
+            // ───────────────────────────────────────────────
+            // Get all needed values from this row
+            // ───────────────────────────────────────────────
+            var rate_cal_by = $('#rate_cal_by_' + rowCounter).val() || "0";
+
+            var bags_qty = parseFloat($('#bags_qty' + rowCounter).val()) || 0;
+            // If your bags field is still called pack_size[] instead of bags_qty[], use this:
+            // var bags_qty    = parseFloat($('#pack_size' + rowCounter).val())   || 0;
+
+            var qty_kg = parseFloat($('#actual_qty' + rowCounter).val()) || 0;
+            var qty_lbs = parseFloat($('#qty_lbs' + rowCounter).val()) || 0;
+            var rate = parseFloat($('#rate' + rowCounter).val()) || 0;
+            var currency = parseFloat($('#currency_rate').val()) || 1;
+
+            // Decide which quantity is the multiplier
+            var multiplier = 0;
+
+            if (rate_cal_by === "1") {          // By BAGS
+                multiplier = bags_qty;
+            }
+            else if (rate_cal_by === "2") {     // By KGS
+                multiplier = qty_kg;
+            }
+            else if (rate_cal_by === "3") {     // By LBS
+                multiplier = qty_lbs;
+            }
+            // else → remains 0 (invalid selection → amount = 0)
+
+            // Calculate line amount
+            var line_amount = (multiplier * rate * currency).toFixed(2);
+
+            // Update amount field
+            $('#amount' + rowCounter).val(line_amount);
+            $('#actual_amount' + rowCounter).val(line_amount);
+
+            // If you still keep actual_amount (in lbs * rate without currency)
+
+
+            // Now trigger your existing summary / total / tax / discount logic
+            // (same calls you had in your original claculation function)
+            discount_percent('discount_percent' + rowCounter);
+            net_amount();
+            sales_tax('sales_taxx');
+
+            // Optional: if you want to keep calling your old function too (for other fields)
+            // claculation(rowCounter);
+        }
 
         function get_rate() {
             var currency_id = $('#curren').val();
