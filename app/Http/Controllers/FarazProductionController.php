@@ -474,7 +474,9 @@ class FarazProductionController extends Controller
     public function viewProductionRollingList()
     {
         $rollingList = ProductionRolling::with('productionOrder')
-            ->where('status', '=', 1)->get();
+            ->where('status', '=', 1)
+            ->where('roll_qty', '!=', 0)
+            ->get();
         $m = $this->m;
         return view('FarazPackagesProduction.ProductionMixture.viewProductionRolling', compact('rollingList', 'm'));
     }

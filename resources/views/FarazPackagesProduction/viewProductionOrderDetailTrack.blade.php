@@ -120,7 +120,10 @@ $counter = 1;
                             @foreach($order->productionRollings as $roll)
                                 @php $totalRoll += $roll->roll_qty; @endphp
                                 <tr>
-                                    <td>{{ $roll->subItem->sub_ic ?? '' }}</td>
+                                    <td>
+                                        {{ $roll->subItem->sub_ic ?? '' }}
+                                        <span style="color: red;">{{ $roll->roll_qty == 0 ? '(wastage)' : '' }}</span>
+                                    </td>
                                     <td class="text-center">{{ number_format($roll->mixture_qty, 2) }}</td>
                                     <td class="text-center">{{ number_format($roll->roll_qty, 2) }}</td>
                                     <td class="text-center">{{ $roll->date }}</td>
@@ -190,18 +193,22 @@ $counter = 1;
                             </tr>
 
                             @php $totalCut = 0; @endphp
-                            @foreach($order->productionRollings as $roll)
-                                @foreach($roll->printings as $print)
-                                    @foreach($print->cuttingAndPackings as $cut)
+
+                            @foreach($order->productionRollings ?? [] as $roll)
+                                @foreach($roll->printings ?? [] as $print)
+                                    @foreach($print->cuttingAndPackings ?? [] as $cut)
+
                                         @php $totalCut += $cut->bags_qty; @endphp
+
                                         <tr>
                                             <td>{{ $cut->subItem->sub_ic ?? '' }}</td>
                                             <td class="text-center">{{ number_format($cut->bags_qty, 2) }}</td>
                                             <td class="text-center">{{ $cut->date }}</td>
                                             <td class="text-center">{{ number_format($cut->printed_roll_qty, 2) }}</td>
-                                            <td>{{ $roll->machine->name }}</td>
-                                            <td class="text-center">{{ $roll->operator->name }}</td>
+                                            <td>{{ $roll->machine->name ?? '' }}</td>
+                                            <td class="text-center">{{ $roll->operator->name ?? '' }}</td>
                                         </tr>
+
                                     @endforeach
                                 @endforeach
                             @endforeach

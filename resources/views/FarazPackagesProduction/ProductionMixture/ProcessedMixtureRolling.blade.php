@@ -259,7 +259,7 @@ $global_avg_amt=0;
                                                         <div class="col-md-1">
                                                             <label for="">Category</label>
                                                              <select style="width: 100% !important;"
-                                                                onchange="get_sub_item('category_id1')" name="category[]"
+                                                                onchange="get_sub_item('category_id1');handleCategoryChange(this, 1)" name="category[]"
                                                                 id="category_id1"
                                                                 class="form-control category select2 requiredField">
                                                                 <option value="">Select</option>
@@ -345,10 +345,10 @@ $global_avg_amt=0;
                                                             
                                                         </div>
 
-                                                        <div class="col-md-1">
-                                                            <label for="">Mixture Qty.</label>
+                                                        {{-- <div class="col-md-1">
+                                                            <label for="">Mixture Qty.</label> --}}
                                                             <input 
-                                                                type="text" 
+                                                                type="hidden" 
                                                                 name="mixture_qty[]"
                                                                 id="mixture_qty_1"
                                                                 class="form-control move-next mixture_qty_1 requiredField"
@@ -356,11 +356,11 @@ $global_avg_amt=0;
                                                                 required 
 
                                                             >
-                                                        </div>
+                                                        {{-- </div> --}}
 
 
                                                         <div class="col-md-1">
-                                                            <label for="">Rolls Qty (Kg)</label>
+                                                            <label for="" id="roll_qty_label_1">Rolls Qty (Kg)</label>
                                                             <input 
                                                                 type="text" 
                                                                 name="roll_qty_kg[]"
@@ -468,7 +468,7 @@ $global_avg_amt=0;
                         <div class="col-md-1">
                             <label for="">Category</label>
                                 <select style="width: 100% !important;"
-                                onchange="get_sub_item('category_id${count}')" name="category[]"
+                                onchange="get_sub_item('category_id${count}');handleCategoryChange(this, ${count})" name="category[]"
                                 id="category_id${count}"
                                 class="form-control category select2 requiredField">
                                 <option value="">Select</option>
@@ -554,11 +554,11 @@ $global_avg_amt=0;
                             >
                             
                         </div>
-
+{{-- 
                         <div class="col-md-1">
-                            <label for="">Mixture Qty.</label>
+                            <label for="">Mixture Qty.</label> --}}
                             <input 
-                                type="text" 
+                                type="hidden" 
                                 name="mixture_qty[]"
                                 id="mixture_qty_${count}"
                                 class="form-control move-next mixture_qty_${count} requiredField"
@@ -566,10 +566,10 @@ $global_avg_amt=0;
                                 required 
 
                             >
-                        </div>
+                        {{-- </div> --}}
 
                         <div class="col-md-1">
-                            <label for="">Rolls Qty (Kg)</label>
+                            <label for="" id="roll_qty_label_${count}">Rolls Qty (Kg)</label>
                             <input 
                                 type="text" 
                                 name="roll_qty_kg[]"
@@ -656,6 +656,27 @@ function validateUsedQty(input) {
     }
 }
 
+function handleCategoryChange(el, row) {
+    let categoryId = $(el).val();
+
+    if (categoryId == 15) {
+
+        // change label to Wastage
+        $("#roll_qty_label_" + row).text("Wastage Qty (Kg)");
+
+        // set No of Rolls = 0 and readonly
+        $("#roll_qty_" + row).val(0).prop("readonly", true);
+
+    } else {
+
+        // restore label
+        $("#roll_qty_label_" + row).text("Rolls Qty (Kg)");
+
+        // make editable again
+        $("#roll_qty_" + row).prop("readonly", false);
+    }
+}
+
  function get_uom_name_by_item_id(ItemId, num = null) {
 
             $.ajax({
@@ -689,21 +710,22 @@ function cal_amt() {
     // Always update remaining qty
     $('#issued_rate').val(raw_avg_amt / used_qty_total);
 
-    // Get all mixture_qty fields
-    let mixture_qty_inputs = $("input[name='mixture_qty[]']");
-    let count = mixture_qty_inputs.length;
+    // Get all roll_qty_kg fields
+    let roll_qty_kg_inputs = $("input[name='roll_qty_kg[]']");
+    
+    let count = roll_qty_kg_inputs.length;
 
     // ---- CASE 1: Auto distribute when Used Qty changes ----
     
 
-// ---- CASE 2: Validate manual mixture_qty edits ----
-let sum_mixture_qty = 0;
+// ---- CASE 2: Validate manual roll_qty_kg edits ----
+let sum_roll_qty_kg = 0;
 
-mixture_qty_inputs.each(function () {
-    sum_mixture_qty += parseFloat($(this).val()) || 0;
+roll_qty_kg_inputs.each(function () {
+    sum_roll_qty_kg += parseFloat($(this).val()) || 0;
 });
 
-if (sum_mixture_qty > issued_qty) {
+if (sum_roll_qty_kg > issued_qty) {
     alert("Total Raw Qty cannot exceed Issued Qty!");
 
     // reset last changed input
@@ -712,22 +734,29 @@ if (sum_mixture_qty > issued_qty) {
     }
 
     // 🔥 recalculate sum again after reset
-    sum_mixture_qty = 0;
-    mixture_qty_inputs.each(function () {
-        sum_mixture_qty += parseFloat($(this).val()) || 0;
+    sum_roll_qty_kg = 0;
+    roll_qty_kg_inputs.each(function () {
+        sum_roll_qty_kg += parseFloat($(this).val()) || 0;
     });
 }
 
 // update used qty
-$('.used_qty_total').val(sum_mixture_qty.toFixed(2));
-used_qty_total = sum_mixture_qty;
+$('.used_qty_total').val(sum_roll_qty_kg.toFixed(2));
+used_qty_total = sum_roll_qty_kg;
 
 // correct remaining calculation
-$('#remaining_qty').val((issued_qty - sum_mixture_qty).toFixed(2));
+$('#remaining_qty').val((issued_qty - sum_roll_qty_kg).toFixed(2));
 
 
 
-    
+// ---- Copy Rolls Qty → Mixture Qty ----
+$("[id^='roll_qty_kg_']").each(function () {
+    let id = $(this).attr("id");     // roll_qty_kg_1
+    let row = id.split("_").pop();   // 1
+    let roll_value = parseFloat($(this).val()) || 0;
+
+    $("#mixture_qty_" + row).val(roll_value);
+});    
 
     
      // ---- CASE 3: Calculate Finish Amount = Qty * Rate ----

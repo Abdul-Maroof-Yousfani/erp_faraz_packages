@@ -925,7 +925,7 @@ class FarazProductionAddDetailController extends Controller
                     ->insert($data2);
 
 
-                $availableQty = ReuseableCode::get_stock($itemId, 0, $requiredQty, 0);
+                $availableQty = ReuseableCode::get_stock_with_pack_size($itemId, 0, $requiredQty, 0);
 
                 if ($availableQty < 0) {
                     DB::connection('mysql2')->rollBack();
