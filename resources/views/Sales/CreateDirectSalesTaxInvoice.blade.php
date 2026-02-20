@@ -32,6 +32,50 @@ use App\Helpers\ReuseableCode;
         label {
             text-transform: capitalize;
         }
+
+		.table-compact {
+        font-size: 0.92rem;           /* slightly smaller than default ~1rem */
+        line-height: 1.2;             /* tighter vertical spacing */
+    }
+
+    .table-compact th, 
+    .table-compact td {
+        padding: 4px 6px !important;  /* much less padding → more rows visible */
+        vertical-align: middle;
+    }
+
+    .table-compact input.form-control,
+    .table-compact select.form-control {
+        font-size: 0.9rem;
+        padding: 4px 6px;
+        height: 28px;                 /* smaller input height */
+    }
+
+    .table-compact .btn-sm {
+        padding: 3px 8px;
+        font-size: 0.8rem;
+    }
+
+    .table-compact th {
+        font-size: 0.85rem;
+        white-space: nowrap;          /* prevent header wrapping */
+    }
+
+    /* Optional: make really narrow columns even tighter */
+    .col-very-narrow {
+        width: 60px !important;
+        min-width: 60px !important;
+    }
+
+    .col-narrow {
+        width: 90px !important;
+        min-width: 90px !important;
+    }
+
+    /* Prevent text wrapping in critical columns */
+    .nowrap {
+        white-space: nowrap;
+    }
     </style>
 
 
@@ -235,36 +279,30 @@ use App\Helpers\ReuseableCode;
 	                        <div class="row">
 	                           <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 	                              <div class="table-responsive" >
-	                                 <table class="table table-bordered">
-	                                    <thead>
-	                                       <tr class="text-center">
-	                                          <th colspan="11" class="text-center">Sales Invoice Detail</th>
-	                                          {{-- <th colspan="2" class="text-center">
-	                                             <input type="button" class="btn btn-sm btn-primary" onclick="AddMoreDetails()" value="Add More Rows" />
-	                                          </th> --}}
-	                                          <th class="text-center">
-	                                             <span class="badge badge-success" id="span">1</span>
-	                                          </th>
-	                                       </tr>
-	                                       <tr>
-	                                          <th class="text-center" style="width: 10%;">Category</th>
-	                                          <th class="text-center" style="width: 15%;">Item</th>
-											  <th class="text-center">Bags Qty</th>
-	                                          <th class="text-center" >Uom<span class="rflabelsteric"><strong>*</strong></span></th>
-	                                          <th class="text-center" > QTY in KG<span class="rflabelsteric"><strong>*</strong></span></th>
-	                                          <th class="text-center" > QTY (lbs)<span class="rflabelsteric"><strong>*</strong></span></th>
-	                                          <th class="text-center"> WareHouse.<span class="rflabelsteric"><strong>*</strong></span></th>
-											  {{-- <th style="width: 10%" class="text-center hide" >Batch Code <span class="rflabelsteric"><strong>*</strong></span></th> --}}
-											  <th class="text-center" >In Stock<span class="rflabelsteric"><strong>*</strong></span></th>
-											  <th class="text-center">Rate<span class="rflabelsteric"><strong>*</strong></span></th>
-	                                          <th class="text-center">Amount<span class="rflabelsteric"><strong>*</strong></span></th>
-	                                          <th class="text-center hide">Sales Tax %<span class="rflabelsteric"><strong>*</strong></span></th>
-	                                          <th class="text-center hide">Tax Amount<span class="rflabelsteric"><strong>*</strong></span></th>
-	                                          <th class="text-center">Net Amount<span class="rflabelsteric"><strong>*</strong></span></th>
-	                                          <th class="text-center">Action</th>
-	                                          {{-- <th class="text-center">Delete<span class="rflabelsteric"><strong>*</strong></span></th> --}}
-	                                       </tr>
-	                                    </thead>
+	                                <table class="table table-bordered table-compact">
+    <thead>
+        <tr class="text-center">
+            <th colspan="11" class="text-center">Sales Invoice Detail</th>
+            <th class="text-center">
+                <span class="badge badge-success" id="span">1</span>
+            </th>
+        </tr>
+        <tr>
+            <th class="text-center nowrap" style="width: 9%;">Category</th>
+            <th class="text-center nowrap" style="width: 14%;">Item</th>
+            <th class="text-center col-narrow">Bags Qty</th>
+            <th class="text-center col-very-narrow">UoM<span class="rflabelsteric"><strong>*</strong></span></th>
+            <th class="text-center col-narrow">Qty (KG)<span class="rflabelsteric"><strong>*</strong></span></th>
+            <th class="text-center col-narrow">Qty (lbs)<span class="rflabelsteric"><strong>*</strong></span></th>
+            <th class="text-center" style="width: 11%;">Warehouse<span class="rflabelsteric"><strong>*</strong></span></th>
+            <th class="text-center col-narrow">In Stock</th>
+            <th class="text-center col-narrow">Rate<span class="rflabelsteric"><strong>*</strong></span></th>
+            <th class="text-center col-narrow">Amount</th>
+          
+            <th class="text-center col-narrow">Net Amount</th>
+            <th class="text-center" style="width: 50px;">Action</th>
+        </tr>
+    </thead>
 	                                    <tbody id="AppnedHtml">
 	                                    <tr class="cnt" title="1">
 										<td>
