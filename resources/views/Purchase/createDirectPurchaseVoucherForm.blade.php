@@ -310,12 +310,12 @@ endif;
                                                     </tr>
                                                     <tr>
                                                         <th class="text-center" style="width: 10%;">Category</th>
-                                                        <th class="text-center" style="width: 15%;">Item</th>
+                                                        <th class="text-center" style="width: 12%;">Item</th>
                                                         <th class="text-center">Uom<span
                                                                 class="rflabelsteric"><strong>*</strong></span></th>
                                                         {{-- <th class="text-center">HS Code<span
                                                                 class="rflabelsteric"><strong>*</strong></span></th> --}}
-                                                        <th class="text-center">Bugs Qty<span
+                                                        <th class="text-center">Bags Qty<span
                                                                 class="rflabelsteric"><strong>*</strong></span></th>
                                                         <th class="text-center">Qty in KG<span
                                                                 class="rflabelsteric"><strong>*</strong></span></th>

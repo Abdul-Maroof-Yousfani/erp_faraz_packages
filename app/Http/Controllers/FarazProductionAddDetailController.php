@@ -1000,7 +1000,7 @@ class FarazProductionAddDetailController extends Controller
                 // ========================
                 // CHECK STOCK (RAW MIXTURE)
                 // ========================
-                $availableQty = ReuseableCode::get_stock(
+                $availableQty = ReuseableCode::get_stock_with_pack_size(
                     $request->raw_item_id[$key],
                     0,
                     $mixtureQty,

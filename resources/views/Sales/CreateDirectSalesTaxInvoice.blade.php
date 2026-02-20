@@ -827,7 +827,7 @@ $('#total_after_sales_tax').val(net_amount);
    	var  rate=$('#rate'+number).val();
 	 var qty_lbs = parseFloat(qty) * 2.20462 || 0;
 
-   	var total=parseFloat(qty_lbs*rate).toFixed(2);
+   	var total=parseFloat(qty*rate).toFixed(2);
    	$('#amount'+number).val(total);
 
    	var amount = 0;
