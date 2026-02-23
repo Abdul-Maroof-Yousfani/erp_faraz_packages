@@ -282,7 +282,7 @@ $aeCounter = 1;
 														?>
 											
 														<td class="text-left"> <?php echo CommonHelper::get_uom_name($sub_ic_detail[0]);?></td>
-														<td class="text-center">{{$orderd_qty->qty}}</td>
+														<td class="text-center">{{$sale_data->qty}}</td>
 														<td class="text-center">{{$return_qty}}</td>
 														<td>
 															<input readonly type="text" onkeyup="claculation({{$key}})" onblur="claculation({{$key}})" class="form-control requiredField zerovalidate" name="qty{{$counter}}" id="qty{{$counter}}"  min="1" value="{{($sale_data->qty)}}">
@@ -969,7 +969,7 @@ $aeCounter = 1;
 		var send_qty = parseFloat($('#qty'+num).val());
 		var rate = parseFloat($('#rate'+num).val());
 		var total = send_qty*rate;
-alert(total)
+// alert(total)
 		var x = parseFloat($('#discount_percent'+num).val());
 		var tax = parseFloat($('#tax_amount'+num).val());
 		var sales_tax_further = parseFloat($('#sales_tax_further'+num).val());
