@@ -208,7 +208,7 @@ class PurchaseEditDetailControler extends Controller
         $item_code = Input::get('item_code');
         $sub_item_name = Input::get('sub_item_name');
         $uom_id = Input::get('uom_id');
-        $uom2 = Input::get('uom_id');
+        $uom2 = Input::get('uom2');
         $pack_size = Input::get('pack_size');
         $hs_code_id = Input::get('hs_code_id');
         $rate = Input::get('rate');

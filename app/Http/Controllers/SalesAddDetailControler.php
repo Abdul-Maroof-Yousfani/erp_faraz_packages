@@ -1822,7 +1822,6 @@ class SalesAddDetailControler extends Controller
                     'warehouse_id' => $request->warehouse[$key],
                     'username' => Auth::user()->username,
                     'created_date' => date('Y-m-d'),
-                    'created_date' => date('Y-m-d'),
                     'opening' => 0,
                     'so_data_id' => '',
                 );
@@ -1881,6 +1880,8 @@ class SalesAddDetailControler extends Controller
                 $rate = $request->rate[$key];
                 $amount = $request->amount[$key];
                 $sales_tax_invoice_data->qty = $qty;
+                $sales_tax_invoice_data->uom = CommonHelper::get_uom_id($request->uom_id);
+                // dd($sales_tax_invoice_data->uom);
                 $sales_tax_invoice_data->rate = $rate;
                 $sales_tax_invoice_data->tax = $request->tax[$key];
                 $sales_tax_invoice_data->tax_amount = $request->tax_amount[$key];

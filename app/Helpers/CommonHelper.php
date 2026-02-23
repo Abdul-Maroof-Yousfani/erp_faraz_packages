@@ -4406,6 +4406,12 @@ class CommonHelper
         return $uom_id = DB::table('uom')->where('status', 1)->where('id', $uom_id)->select('uom_name')->value('uom_name');
 
     }
+
+    public static function get_uom_id($name)
+    {
+        return $uom_id = DB::Connection('mysql2')->table('uom')->where('status', 1)->where('uom_name', $name)->select('id')->value('id');
+    }
+
     public static function get_location($id)
     {
         return DB::Connection('mysql2')->table('warehouse')->where('status', 1)->where('id', $id)->select('name')->value('name');

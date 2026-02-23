@@ -223,8 +223,8 @@ $AmountInWordsMain =0;
                                     <th class="text-center" style="border:1px solid black;">QTY. (KG)</th>
                                     <th class="text-center" style="border:1px solid black;">Rate</th>
                                     <th class="text-center" style="border:1px solid black;">Amount</th>
-                                    <th class="text-center" style="border:1px solid black;">Tax %</th>
-                                    <th class="text-center" style="border:1px solid black;">Tax Amount</th>
+                                    {{-- <th class="text-center" style="border:1px solid black;">Tax %</th> --}}
+                                    {{-- <th class="text-center" style="border:1px solid black;">Tax Amount</th> --}}
                                     <th class="text-center" style="border:1px solid black;">Further Tax %</th>
                                     <th class="text-center" style="border:1px solid black;">Further Tax Amount</th>
                                     <th class="text-center" style="border:1px solid black;">Net Amount</th>
@@ -255,14 +255,14 @@ $AmountInWordsMain =0;
                                             <td style="border:1px solid black;"> {{ $count++ }} </td>
                                             <td style="border:1px solid black;">{{ CommonHelper::get_item_name($row->item_id) }}</td>
                                             <td style="border:1px solid black;">{{ $row->hs_code_id }}</td>
-                                            <td style="border:1px solid black;">{{ $row->qty/$row->pack_size }}</td>
+                                            <td style="border:1px solid black;">{{ $row->qty/$row->final_pack_size }}</td>
                                             {{-- <td style="border:1px solid black;">{{ $row->color }}</td> --}}
-                                            <td style="border:1px solid black;">{{ CommonHelper::get_uom($row->item_id) }}</td>
+                                            <td style="border:1px solid black;">{{ CommonHelper::get_uom_name($row->uom) ??  CommonHelper::get_uom($row->item_id) }}</td>
                                             <td class="text-right" style="border:1px solid black;">{{ $row->qty }}</td>
                                             <td class="text-right" style="border:1px solid black;">{{ number_format($row->rate,2) }}</td>
                                             <td class="text-right" style="border:1px solid black;">{{ number_format($row->rate * $row->qty,2) }}</td>
-                                            <td class="text-right" style="border:1px solid black;">{{ $row->tax }}</td>
-                                            <td class="text-right" style="border:1px solid black;">{{ number_format($row->tax_amount,2) }}</td>
+                                            {{-- <td class="text-right" style="border:1px solid black;">{{ $row->tax }}</td> --}}
+                                            {{-- <td class="text-right" style="border:1px solid black;">{{ number_format($row->tax_amount,2) }}</td> --}}
                                             <td class="text-right" style="border:1px solid black;">{{ $row->sales_tax_further_per }}</td>
                                             <td class="text-right" style="border:1px solid black;">{{ number_format($row->sales_tax_further,2) }}</td>
                                             <td class="text-right" style="border:1px solid black;">{{ number_format($row->amount,2) }}</td>
@@ -274,9 +274,9 @@ $AmountInWordsMain =0;
                                     @endforeach
                                         
                                     <tr class="text-center" style="font-weight: bold">
-                                        <td  colspan="12" style="border:1px solid black;"> Total </td>
-                                        <!-- <td class="text-right" colspan="1" style="border:1px solid black;"> {{ number_format($total_qty,2) }} </td>
-                                        <td colspan="5"></td> -->
+                                        <td  colspan="5" style="border:1px solid black;"> Total </td>
+                                        <td class="text-right" colspan="1" style="border:1px solid black;"> {{ number_format($total_qty,2) }} </td>
+                                        <td colspan="4"></td>
 
                                         <!-- <td class="text-right hide" colspan="1" style="border:1px solid black;"> {{ number_format($total_before_tax) }} </td>
                                         <td></td>
@@ -285,11 +285,11 @@ $AmountInWordsMain =0;
                                     </tr>
 
                                     <tr class="text-center" style="font-weight: bold">
-                                        <td colspan="12" style="border:1px solid black;">Advance Tax</td>
+                                        <td colspan="10" style="border:1px solid black;">Advance Tax</td>
                                         <td class="text-right" style="border:1px solid black;"> {{ number_format($sales_tax_invoice->advance_tax_amount,2) }} </td>
                                     </tr>
                                     <tr class="text-center" style="font-weight: bold">
-                                        <td colspan="12" style="border:1px solid black;">Cartage Amount</td>
+                                        <td colspan="10" style="border:1px solid black;">Cartage Amount</td>
                                         <td class="text-right" style="border:1px solid black;"> {{ number_format($sales_tax_invoice->cartage_amount,2) }} </td>
                                     </tr>
                                     <?php
@@ -300,7 +300,7 @@ $AmountInWordsMain =0;
                                         @foreach($AddionalExpense->get() as $Fil)
                                             <tr class="text-center">
 
-                                                <td style="border:1px solid black;" colspan="12">
+                                                <td style="border:1px solid black;" colspan="10">
                                                         <?php $Accounts = CommonHelper::get_single_row('accounts','id',$Fil->acc_id);
                                                         ?>
                                                     <strong><?php echo $Accounts->name ?? '';?></strong>
@@ -312,7 +312,7 @@ $AmountInWordsMain =0;
                                     @endif
 
                                     <tr class="text-center" style="font-weight: bold">
-                                        <td colspan="12" style="border:1px solid black;">Grand Total</td>
+                                        <td colspan="10" style="border:1px solid black;">Grand Total</td>
                                         <td class="text-right" style="border:1px solid black;"> {{ number_format($total_after_tax + $total_expense + $sales_tax_invoice->cartage_amount + $sales_tax_invoice->advance_tax_amount,2) }} </td>
                                     </tr>
 

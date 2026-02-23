@@ -2772,7 +2772,10 @@ class PurchaseAddDetailControler extends Controller
             // ───────────────────────────────────────────────
             $item_ids = $request->input('item_id', []);
             $categorys = $request->input('category', []);
-            $actual_qtys = $request->input('actual_qty', []);
+            $bags_qtys = $request->input('bags_qty', []);
+            $kg_actual_qtys = $request->input('actual_qty', []);
+            $qtys_lbs = $request->input('qty_lbs', []);
+            $rate_cal_by = $request->input('rate_cal_by', []);
             $rates = $request->input('rate', []);
             $amounts = $request->input('amount', []);           // may be gross
             $net_amounts = $request->input('after_dis_amount', $request->input('actual_amount', []));
@@ -2787,23 +2790,29 @@ class PurchaseAddDetailControler extends Controller
                 if (empty($item_id))
                     continue;
 
-                $qty = floatval($actual_qtys[$index] ?? 0);
+                $bag_qty = floatval($bags_qtys[$index] ?? 0);
+                $kg_qty = floatval($kg_actual_qtys[$index] ?? 0);
+                $lbs_qty = floatval($qtys_lbs[$index] ?? 0);
+                $rate_cal_by = $rate_cal_by[$index] ?? 0;
                 $category = floatval($categorys[$index] ?? 0);
                 $rate = floatval($rates[$index] ?? 0);
-                $amount = floatval($net_amounts[$index] ?? ($qty * $rate));
+                $amount = floatval($net_amounts[$index]);
 
                 $detail = new NewPurchaseVoucherData();
                 $detail->setConnection('mysql2');
 
                 $detail->master_id = $master_id;
                 $detail->pv_no = $pv_no;
-                $detail->sub_item = $item_id;                    
-                $detail->category_id = $category;                    
+                $detail->sub_item = $item_id;
+                $detail->category_id = $category;
                 $detail->uom = $request->input('uom_id')[$index] ?? null;
-                $detail->qty = $qty;
+                $detail->bag_qty = $bag_qty;
+                $detail->qty = $kg_qty;
+                $detail->lbs_qty = $lbs_qty;
+                $detail->rate_cal_by = $rate_cal_by;
                 $detail->rate = $rate;
                 $detail->warehouse_id = $warehouse_id[$index];
-                $detail->amount = floatval($amounts[$index] ?? ($qty * $rate));
+                $detail->amount = floatval($amounts[$index]);
                 $detail->net_amount = $amount;
                 $detail->discount_amount = floatval($request->input('discount_amount')[$index] ?? 0);
 
@@ -2823,7 +2832,11 @@ class PurchaseAddDetailControler extends Controller
                         'master_id' => $detail->id,
                         'voucher_no' => $pv_no,
                         'item_id' => $item_id,
-                        'qty' => $qty,
+                        'qty' => $rate_cal_by == 1
+                            ? $bag_qty
+                            : ($rate_cal_by == 2
+                                ? $kg_qty
+                                : ($rate_cal_by == 3 ? $lbs_qty : 0)),
                         'amount' => $amount,
                         'opening' => 0,
                         'status' => 1,

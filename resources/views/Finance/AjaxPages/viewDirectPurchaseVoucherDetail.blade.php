@@ -139,7 +139,9 @@ $Supplier = CommonHelper::get_single_row('supplier','id',$row->supplier);
 
                                             <th class="text-center">Account</th>
                                             <th class="text-center">Uom</th>
-                                            <th class="text-center">Qty</th>
+                                            <th class="text-center">No. of Bags</th>
+                                            <th class="text-center">Qty (KG)</th>
+                                            <th class="text-center">Qty (Pound)</th>
                                             <th class="text-center">Rate</th>
                                             <th class="text-center" colspan="8">Amount</th>
                                             <th class="text-center">EXP%</th>
@@ -157,6 +159,9 @@ $Supplier = CommonHelper::get_single_row('supplier','id',$row->supplier);
                                     $type = 5;
                                     FinanceHelper::reconnectMasterDatabase();
                                     $counter = 1;
+                                    $TotalBagQty=0;
+                                    $TotalQty=0;
+                                    $TotalLbsQty=0;
                                     $TotalAmount=0;
                                             $TotalAddional = 0;
                                             $count= count($PurchaseVoucherData);
@@ -184,7 +189,9 @@ $Supplier = CommonHelper::get_single_row('supplier','id',$row->supplier);
                                         <td>
                                             <?php echo CommonHelper::get_uom($row2->sub_item);?>
                                         </td>
+                                        <td><?php  echo $row2->bag_qty?></td>
                                         <td><?php  echo $row2->qty?></td>
+                                        <td><?php  echo $row2->lbs_qty?></td>
                                         <td><?php  echo $row2->rate?></td>
                                         <td colspan="8"><?php  echo $row2->amount; ?></td>
                                         <td><?php  echo number_format($item_amount_percent,3); ?></td>
@@ -192,7 +199,11 @@ $Supplier = CommonHelper::get_single_row('supplier','id',$row->supplier);
                                         <td><?php  echo $row2->discount_amount; ?></td>
                                         <td ><?php  echo number_format($row2->net_amount+$exp_amount_apply,2); $TotalAmount +=$row2->net_amount+$exp_amount_apply;?></td>
 
-
+<?php
+$TotalBagQty +=$row2->bag_qty;
+$TotalQty +=$row2->qty;
+$TotalLbsQty +=$row2->lbs_qty;
+?>
 
 
                                     </tr>
@@ -200,9 +211,13 @@ $Supplier = CommonHelper::get_single_row('supplier','id',$row->supplier);
                                     }
                                     ?>
                                     <tr class="sf-table-total">
-                                        <td colspan="7" class="text-center">
+                                        <td colspan="3" class="text-center">
                                             <label for="field-1" class="sf-label"><b>Total</b></label>
                                         </td>
+                                        <td class="text-center"><b><?php echo number_format($TotalBagQty,2)?></b></td>
+                                        <td class="text-center"><b><?php echo number_format($TotalQty,2)?></b></td>
+                                        <td class="text-center"><b><?php echo number_format($TotalLbsQty,2)?></b></td>
+                                        <td class="text-center"></td>
                                         <td class="text-center"><b><?php echo number_format($TotalAmount,2)?></b></td>
                                         <input type="hidden" id="Total" value="<?php echo $TotalAmount?>">
                                     </tr>
