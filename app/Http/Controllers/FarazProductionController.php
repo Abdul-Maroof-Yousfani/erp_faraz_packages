@@ -688,6 +688,23 @@ class FarazProductionController extends Controller
             ->orderBy('s.id')
             ->get();
 
+        $sub_item_wastage = DB::Connection('mysql2')->table('category as c')
+            ->join('sub_category as sc', 'c.id', '=', 'sc.category_id')
+            ->join('subitem as s', 'sc.id', '=', 's.sub_category_id')
+            ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
+            ->where('sc.status', '=', 1)
+            ->where('c.status', '=', 1)
+            ->where('s.status', '=', 1)
+            ->where('u.status', '=', 1)
+            ->where('s.main_ic_id', '=', 15)
+            ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id')
+            // ->whereIn('c.id', $categories_id)
+            ->groupBy('s.item_code')
+            ->orderBy('s.id')
+            ->get();
+
+            
+
         $machines = DB::Connection('mysql2')->table('machine')
             ->select('id', 'name')
             ->where('status', '=', 1)->get();
@@ -700,7 +717,7 @@ class FarazProductionController extends Controller
             ->select('id', 'shift_type_name')
             ->where('status', '=', 1)->get();
 
-        return view('FarazPackagesProduction.ProductionMixture.ProcessedGalaCutting', compact('out_source_productions_item', 'out_source_productions_details', 'sub_item', 'machines', 'operators', 'shifts', 'm'));
+        return view('FarazPackagesProduction.ProductionMixture.ProcessedGalaCutting', compact('out_source_productions_item', 'out_source_productions_details', 'sub_item', 'sub_item_wastage', 'machines', 'operators', 'shifts', 'm'));
     }
 
     public function packing(Request $request)

@@ -238,14 +238,14 @@ $global_avg_amt=0;
                                                     </div>
 
                                                 </div> --}}
-                                                {{-- <div class="col-md-12">
+                                                <div class="col-md-12">
                                                     <hr> 
                                                     <div class="row">
                                                         <div class="col-md-12 text-right mr-4">
-                                                            <a onclick="addRawMaterial()" class="btn btn-primary mr-1">Add More Gala Cutting</a>
+                                                            <a onclick="addRawMaterial()" class="btn btn-primary mr-1">Add Wastage</a>
                                                         </div>
                                                     </div>
-                                                </div> --}}
+                                                </div>
 
 
 
@@ -449,7 +449,7 @@ $global_avg_amt=0;
                                 id="item_id${count}"
                                 class="form-control requiredField select2">
                                 <option value="">Select</option>
-                                @foreach($sub_item as $val)
+                                @foreach($sub_item_wastage as $val)
                                     <option
                                         value="{{ $val->id . '@' . $val->uom_name . '@' . $val->sub_ic }}">
                                         {{ $val->item_code . ' -- ' . $val->sub_ic }}

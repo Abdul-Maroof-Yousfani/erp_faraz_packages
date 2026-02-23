@@ -25,6 +25,18 @@ class ProductionCuttingAndSealing extends Model
         return $this->belongsTo(ProductionRollPrinting::class, 'printed_rolling_id');
     }
 
+
+    public function galaCutting()
+    {
+        return $this->hasMany(ProductionGalaCutting::class, 'cutting_sealing_id');
+    }
+
+   public function packing()
+    {
+        return $this->hasMany(ProductionPacking::class, 'cutting_sealing_id');
+    }
+
+
     public function machine()
     {
         return $this->belongsTo(Machine::class, 'machine_id');

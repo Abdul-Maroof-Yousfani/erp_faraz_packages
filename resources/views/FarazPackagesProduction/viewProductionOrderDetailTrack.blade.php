@@ -164,8 +164,8 @@ $counter = 1;
 
                                         <td class="text-center">{{ number_format($print->no_of_roll, 2) }}</td>
                                         <td class="text-center">{{ $print->date }}</td>
-                                        <td>{{ $roll->machine->name }}</td>
-                                        <td class="text-center">{{ $roll->operator->name }}</td>
+                                        <td>{{ $print->machine->name }}</td>
+                                        <td class="text-center">{{ $print->operator->name }}</td>
                                     </tr>
                                 @endforeach
                             @endforeach
@@ -180,12 +180,12 @@ $counter = 1;
 
                             {{-- ================= CUTTING & PACKING ================= --}}
                             <tr style="background:#f2f2f2;">
-                                <th colspan="6">CUTTING & PACKING</th>
+                                <th colspan="6">CUTTING & SEALINGS</th>
                             </tr>
 
                             <tr>
                                 <th>Item</th>
-                                <th>Bags Qty</th>
+                                <th>C&S Qty</th>
                                 <th>Date</th>
                                 <th>Roll Used</th>
                                 <th>Machine</th>
@@ -196,7 +196,7 @@ $counter = 1;
 
                             @foreach($order->productionRollings ?? [] as $roll)
                                 @foreach($roll->printings ?? [] as $print)
-                                    @foreach($print->cuttingAndPackings ?? [] as $cut)
+                                    @foreach($print->cuttingAndSealings ?? [] as $cut)
 
                                         @php $totalCut += $cut->bags_qty; @endphp
 
@@ -205,8 +205,8 @@ $counter = 1;
                                             <td class="text-center">{{ number_format($cut->bags_qty, 2) }}</td>
                                             <td class="text-center">{{ $cut->date }}</td>
                                             <td class="text-center">{{ number_format($cut->printed_roll_qty, 2) }}</td>
-                                            <td>{{ $roll->machine->name ?? '' }}</td>
-                                            <td class="text-center">{{ $roll->operator->name ?? '' }}</td>
+                                            <td>{{ $cut->machine->name ?? '' }}</td>
+                                            <td class="text-center">{{ $cut->operator->name ?? '' }}</td>
                                         </tr>
 
                                     @endforeach
@@ -218,6 +218,112 @@ $counter = 1;
                                 <td class="text-center">{{ number_format($totalCut, 2) }}</td>
                                 <td colspan="4"></td>
                             </tr>
+
+                            {{-- ================= GALA CUTTING ================= --}}
+                            <tr style="background:#f2f2f2;">
+                                <th colspan="6"> GALA CUTTING</th>
+                            </tr>
+
+                            <tr>
+                                <th>Item</th>
+                                <th>Gala Qty</th>
+                                <th>Date</th>
+                                <th>Roll Used</th>
+                                <th>Machine</th>
+                                <th>Operator</th>
+                            </tr>
+
+                            @php $totalCut = 0; @endphp
+
+                            @foreach($order->productionRollings ?? [] as $roll)
+                                @foreach($roll->printings ?? [] as $print)
+                                    @foreach($print->cuttingAndSealings ?? [] as $cut)
+                                        @foreach($cut->galaCutting ?? [] as $gala)
+
+                                            @php $totalCut += $gala->gala_qty; @endphp
+
+                                            <tr>
+                                                <td>{{ $gala->subItem->sub_ic ?? '' }}</td>
+                                                <td class="text-center">{{ number_format($gala->gala_qty, 2) }}</td>
+                                                <td class="text-center">{{ $gala->date }}</td>
+                                                <td class="text-center">{{ number_format($gala->cs_qty, 2) }}</td>
+                                                <td>{{ $gala->machine->name ?? '' }}</td>
+                                                <td class="text-center">{{ $gala->operator->name ?? '' }}</td>
+                                            </tr>
+
+                                        @endforeach
+                                    @endforeach
+                                @endforeach
+                            @endforeach
+
+                            <tr style="font-weight:bold;">
+                                <td class="text-right">Total Gala Cutting</td>
+                                <td class="text-center">{{ number_format($totalCut, 2) }}</td>
+                                <td colspan="4"></td>
+                            </tr>
+
+
+                            {{-- ================= Packing ================= --}}
+                            <tr style="background:#f2f2f2;">
+                                <th colspan="6"> Packing</th>
+                            </tr>
+
+                            <tr>
+                                <th>Item</th>
+                                <th>Pack Qty</th>
+                                <th>Date</th>
+                                <th>Cutting Used</th>
+                                <th>Machine</th>
+                                <th>Operator</th>
+                            </tr>
+
+                            @php $totalCut = 0; @endphp
+
+                            @foreach($order->productionRollings ?? [] as $roll)
+                                @foreach($roll->printings ?? [] as $print)
+                                    @foreach($print->cuttingAndSealings ?? [] as $cut)
+
+                                        @foreach($cut->packing ?? [] as $pack)
+
+                                            @php $totalCut += $pack->packing_bags_qty; @endphp
+
+                                            <tr>
+                                                <td>{{ $pack->subItem->sub_ic ?? '' }}</td>
+                                                <td class="text-center">{{ number_format($pack->packing_bags_qty, 2) }}</td>
+                                                <td class="text-center">{{ $pack->date }}</td>
+                                                <td class="text-center">{{ number_format($pack->cutting_qty, 2) }}</td>
+                                                <td>{{ $pack->machine->name ?? '' }}</td>
+                                                <td class="text-center">{{ $pack->operator->name ?? '' }}</td>
+                                            </tr>
+
+                                        @endforeach
+
+                                        @foreach($cut->galaCutting ?? [] as $gala)
+                                            @foreach($gala->packing ?? [] as $pack)
+
+                                                @php $totalCut += $pack->packing_bags_qty; @endphp
+
+                                                <tr>
+                                                    <td>{{ $pack->subItem->sub_ic ?? '' }}</td>
+                                                    <td class="text-center">{{ number_format($pack->packing_bags_qty, 2) }}</td>
+                                                    <td class="text-center">{{ $pack->date }}</td>
+                                                    <td class="text-center">{{ number_format($pack->cutting_qty, 2) }}</td>
+                                                    <td>{{ $pack->machine->name ?? '' }}</td>
+                                                    <td class="text-center">{{ $pack->operator->name ?? '' }}</td>
+                                                </tr>
+
+                                            @endforeach
+                                        @endforeach
+                                    @endforeach
+                                @endforeach
+                            @endforeach
+
+                            <tr style="font-weight:bold;">
+                                <td class="text-right">Total Gala Cutting</td>
+                                <td class="text-center">{{ number_format($totalCut, 2) }}</td>
+                                <td colspan="4"></td>
+                            </tr>
+
 
                         </table>
                     </div>
