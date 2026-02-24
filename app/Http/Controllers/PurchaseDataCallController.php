@@ -608,7 +608,7 @@ class PurchaseDataCallController extends Controller
         $edit=ReuseableCode::check_rights(291);
         $delete=ReuseableCode::check_rights(292);
 
-        $uom = DB::table('uom')->where('status', '=', 1)->get();
+        $uom = DB::Connection('mysql2')->table('uom')->where('status', '=', 1)->get();
 
         CommonHelper::companyDatabaseConnection($m);
 //        $subitems = new Subitem;
@@ -624,16 +624,16 @@ class PurchaseDataCallController extends Controller
             $subitems = Subitem::where('status', '=', 1)->get();
         }
 
-        // $packaging_type = DB::table('packaging_type')->where('status', '=', 1)->get();
-        // $packaging_data = [];
-        // foreach($packaging_type as $val) {
-        //     $packaging_data[$val->id] = $val->type; 
-        // }
+        $packaging_type = DB::Connection('mysql2')->table('packaging_type')->where('status', '=', 1)->get();
+        $packaging_data = [];
+        foreach($packaging_type as $val) {
+            $packaging_data[$val->id] = $val->type; 
+        }
 
-        // $uom_data = [];
-        // foreach($uom as $val) {
-        //     $uom_data[$val->id] = $val->uom_name; 
-        // }
+        $uom_data = [];
+        foreach($uom as $val) {
+            $uom_data[$val->id] = $val->uom_name; 
+        }
         CommonHelper::reconnectMasterDatabase();
         $counter = 1;
         foreach ($subitems as $row) {
@@ -641,12 +641,12 @@ class PurchaseDataCallController extends Controller
             ?>
             <tr id="RemoveTr<?php echo $row['id'] ?>" title="<?php echo $row['id'] ?>">
                 <td class="text-center"><?php echo $row['id']; ?></td>
-                <td>-</td>
+                <td><?php echo CommonHelper::getCompanyDatabaseTableValueById($m, 'category', 'main_ic', $row['main_ic_id']); ?></td>
                 <td><?php echo $row['item_code']; ?></td>
                 <td><?php echo $row['sub_ic']; ?></td>
-                <td>-</td>
+                <td><?php if(array_key_exists($row['primary_pack_type'],$packaging_data)): echo $packaging_data[$row['primary_pack_type']]; endif; ?></td>
                 <td><?php echo $row['pack_size']; ?></td>
-                <td>-</td>
+                <td><?php if(array_key_exists($row['uom'],$uom_data)): echo $uom_data[$row['uom']]; endif; ?></td>
                 <td><?php echo $row['color']; ?></td>
                 <td><?php echo $row['hs_code_id']; ?></td>
                 <td class="text-center col-sm-1">
