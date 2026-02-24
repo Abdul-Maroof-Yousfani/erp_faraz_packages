@@ -641,7 +641,7 @@ class PurchaseDataCallController extends Controller
             ?>
             <tr id="RemoveTr<?php echo $row['id'] ?>" title="<?php echo $row['id'] ?>">
                 <td class="text-center"><?php echo $row['id']; ?></td>
-                <td><?php echo CommonHelper::getCompanyDatabaseTableValueById($m, 'category', 'main_ic', $row['main_ic_id']); ?></td>
+                <td>-</td>
                 <td><?php echo $row['item_code']; ?></td>
                 <td><?php echo $row['sub_ic']; ?></td>
                 <td>-</td>
