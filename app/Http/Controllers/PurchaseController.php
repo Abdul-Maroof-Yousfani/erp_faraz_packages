@@ -317,7 +317,7 @@ class PurchaseController extends Controller
     {
         $countries = new Countries;
         $countries = $countries::where('status', '=', 1)->get();
-        CommonHelper::companyDatabaseConnection($_GET['m']);
+        // CommonHelper::companyDatabaseConnection($_GET['m']);
         $accounts = new Account;
         $accounts = $accounts::orderBy('level1', 'ASC')
             ->orderBy('level2', 'ASC')
