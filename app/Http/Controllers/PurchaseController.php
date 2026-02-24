@@ -319,7 +319,7 @@ class PurchaseController extends Controller
         $countries = $countries::where('status', '=', 1)->get();
         // CommonHelper::companyDatabaseConnection($_GET['m']);
         // $accounts = new Account;
-        $accounts = DB::Connection('mysql2')->table('brands')->orderBy('level1', 'ASC')
+        $accounts = DB::Connection('mysql2')->table('accounts')->orderBy('level1', 'ASC')
             ->orderBy('level2', 'ASC')
             ->orderBy('level3', 'ASC')
             ->orderBy('level4', 'ASC')
