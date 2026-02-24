@@ -356,7 +356,7 @@ use App\Helpers\ReuseableCode;
 													<tr class="cnt" title="1">
 														<td>
 															<select style="width: 100% !important;"
-																onchange="get_sub_item('category_id1')" name="category[]"
+																onchange="get_sub_item2('category_id1')" name="category[]"
 																id="category_id1"
 																class="form-control category select2 requiredField">
 																<option value="">Select</option>
@@ -601,7 +601,7 @@ use App\Helpers\ReuseableCode;
 					<tr class="cnt" id="RemoveRows${Counter}">
 						<td>
 							<select style="width:100%!important;"
-								onchange="get_sub_item('${category}')"
+								onchange="get_sub_item2('${category}')"
 								name="category[]"
 								id="category_id${Counter}"
 								class="form-control category select2">

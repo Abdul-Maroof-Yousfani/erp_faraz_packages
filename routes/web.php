@@ -998,6 +998,7 @@ Route::group(['prefix' => 'pdc', 'middleware' => 'mysql2', 'before' => 'csrf'], 
 
     Route::get('/createSupplierAccount', 'PurchaseDataCallController@createSupplierAccount');
     Route::get('/get_sub_category', 'PurchaseDataCallController@get_sub_category');
+    Route::get('/get_sub_category2', 'PurchaseDataCallController@get_sub_category2');
     Route::get('/getSubCategoryList', 'PurchaseDataCallController@getSubCategoryList');
     Route::get('/getItemBySubCategory', 'PurchaseDataCallController@getItemBySubCategory');
 

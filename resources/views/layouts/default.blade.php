@@ -2183,6 +2183,26 @@ if (!empty($_GET['pageType'])) {
 				success: function (response) {
 					$('#item_id' + index_val).append(new Option('Select', ''))
 					$.each(response, function (index, element) {
+						$('#item_id' + index_val).append(new Option(element['item_code'] + ' -- '+ element['sub_ic'], element['id'] + '@' + element['uom_name'] + '@' + element['sub_ic'] + '@' + element['pack_size']))
+					});
+				}
+			});
+		}
+
+		function get_sub_item2(id) {
+
+			var category = $('#' + id).val();
+			console.log(category);
+			var index_val = id.replace("category_id", "");
+
+			$('#item_id' + index_val).html('');
+			$.ajax({
+				url: '{{ url("/pdc/get_sub_category2") }}',
+				type: 'Get',
+				data: { category: category },
+				success: function (response) {
+					$('#item_id' + index_val).append(new Option('Select', ''))
+					$.each(response, function (index, element) {
 						$('#item_id' + index_val).append(new Option(element['item_code'] + ' -- '+ element['sub_ic'], element['id'] + '@' + element['uom_name'] + '@' + element['uom_name2'] + '@' + element['sub_ic'] + '@' + element['pack_size'] + '@' + element['secondary_pack_size']))
 					});
 				}
