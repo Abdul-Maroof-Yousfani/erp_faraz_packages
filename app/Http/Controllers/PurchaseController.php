@@ -565,9 +565,9 @@ class PurchaseController extends Controller
         $categories = $categories::where('status', '=', '1')->get();
 
         // $brand = DB::Connection('mysql2')->table('brands')->where('status', 1)->get();
-        $pack_type = DB::Connection('mysql2')->table('packaging_type')->where('status', 1)->get();
+        // $pack_type = DB::Connection('mysql2')->table('packaging_type')->where('status', 1)->get();
 
-        return view('Purchase.createSubItemForm', compact('categories', 'uom', 'pack_type'));
+        return view('Purchase.createSubItemForm', compact('categories', 'uom'));
     }
 
     public function viewSubItemList()

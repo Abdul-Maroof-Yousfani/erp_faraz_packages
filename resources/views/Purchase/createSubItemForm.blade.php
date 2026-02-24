@@ -101,9 +101,10 @@ $m = Session::get('run_company');
                                                                 {{-- <span class="rflabelsteric"><strong>*</strong></span> --}}
                                                                 <select style="width: 100%" name="primary_pack_type" id="primary_pack_type" class="form-control requiredField select2">
                                                                     <option value="">Select Option</option>
-                                                                    @foreach($pack_type as $row)
+                                                                    <option value="4">Bag</option>
+                                                                    {{-- @foreach($pack_type as $row)
                                                                         <option value="{{ $row->id }}">{{ $row->type }}</option>
-                                                                    @endforeach
+                                                                    @endforeach --}}
                                                                 </select>
                                                             </div>
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
@@ -132,9 +133,11 @@ $m = Session::get('run_company');
                                                                 {{-- <span class="rflabelsteric"><strong>*</strong></span> --}}
                                                                 <select style="width: 100%" name="secondary_pack_type" id="secondary_pack_type" class="form-control select2">
                                                                 <option value="">Select Option</option> 
-                                                                    @foreach($pack_type as $row)
+                                                                <option value="4">Bag</option>
+
+                                                                    {{-- @foreach($pack_type as $row)
                                                                         <option value="{{ $row->id }}">{{ $row->type }}</option>
-                                                                    @endforeach
+                                                                    @endforeach --}}
                                                                 </select>
                                                             </div>
                                                             
