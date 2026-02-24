@@ -560,9 +560,9 @@ class PurchaseController extends Controller
         $uom = $uom::where('status', '=', '1')->get();
 
 
-        CommonHelper::companyDatabaseConnection(Session::get('run_company'));
-        $categories = new Category;
-        $categories = $categories::where('status', '=', '1')->get();
+        // CommonHelper::companyDatabaseConnection(Session::get('run_company'));
+        // $categories = new Category;
+        $categories =DB::Connection('mysql2')->table('category')->where('status', '=', '1')->get();
 
         // $brand = DB::Connection('mysql2')->table('brands')->where('status', 1)->get();
         // $pack_type = DB::Connection('mysql2')->table('packaging_type')->where('status', 1)->get();
