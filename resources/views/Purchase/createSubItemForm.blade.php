@@ -52,7 +52,7 @@ $m = Session::get('run_company');
                                                 
                                                                 </select>
                                                             </div>
-                                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 hide">
+                                                            {{-- <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 hide">
                                                                 <label>Brand :</label>
                                                                 <span class="rflabelsteric"></span>
                                                                 <select autofocus  name="brand" id="brand" class="form-control  select2">
@@ -61,7 +61,7 @@ $m = Session::get('run_company');
                                                                         <option value="{{ $row->id}}">{{ $row->name}}</option>
                                                                     @endforeach
                                                                 </select>
-                                                            </div>
+                                                            </div> --}}
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                                 <label>Item Name :</label>
                                                                 <span class="rflabelsteric"><strong>*</strong></span>
