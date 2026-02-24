@@ -52,7 +52,7 @@ $m = Session::get('run_company');
                                                 
                                                                 </select>
                                                             </div>
-                                                            {{-- <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 hide">
+                                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 hide">
                                                                 <label>Brand :</label>
                                                                 <span class="rflabelsteric"></span>
                                                                 <select autofocus  name="brand" id="brand" class="form-control  select2">
@@ -61,7 +61,7 @@ $m = Session::get('run_company');
                                                                         <option value="{{ $row->id}}">{{ $row->name}}</option>
                                                                     @endforeach
                                                                 </select>
-                                                            </div> --}}
+                                                            </div>
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                                 <label>Item Name :</label>
                                                                 <span class="rflabelsteric"><strong>*</strong></span>
@@ -101,10 +101,9 @@ $m = Session::get('run_company');
                                                                 {{-- <span class="rflabelsteric"><strong>*</strong></span> --}}
                                                                 <select style="width: 100%" name="primary_pack_type" id="primary_pack_type" class="form-control requiredField select2">
                                                                     <option value="">Select Option</option>
-                                                                    <option value="4">Bag</option>
-                                                                    {{-- @foreach($pack_type as $row)
+                                                                    @foreach($pack_type as $row)
                                                                         <option value="{{ $row->id }}">{{ $row->type }}</option>
-                                                                    @endforeach --}}
+                                                                    @endforeach
                                                                 </select>
                                                             </div>
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
@@ -133,11 +132,9 @@ $m = Session::get('run_company');
                                                                 {{-- <span class="rflabelsteric"><strong>*</strong></span> --}}
                                                                 <select style="width: 100%" name="secondary_pack_type" id="secondary_pack_type" class="form-control select2">
                                                                 <option value="">Select Option</option> 
-                                                                <option value="4">Bag</option>
-
-                                                                    {{-- @foreach($pack_type as $row)
+                                                                    @foreach($pack_type as $row)
                                                                         <option value="{{ $row->id }}">{{ $row->type }}</option>
-                                                                    @endforeach --}}
+                                                                    @endforeach
                                                                 </select>
                                                             </div>
                                                             
