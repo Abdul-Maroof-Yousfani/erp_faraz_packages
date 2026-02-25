@@ -1000,18 +1000,18 @@ class FarazProductionAddDetailController extends Controller
                 // ========================
                 // CHECK STOCK (RAW MIXTURE)
                 // ========================
-                $availableQty = ReuseableCode::get_stock_with_pack_size(
-                    $request->raw_item_id[$key],
-                    0,
-                    $mixtureQty,
-                    0
-                );
+                // $availableQty = ReuseableCode::get_stock_with_pack_size(
+                //     $request->raw_item_id[$key],
+                //     0,
+                //     $mixtureQty,
+                //     0
+                // );
 
-                if ($availableQty < 0) {
-                    DB::connection('mysql2')->rollBack();
-                    return "Insufficient stock for item " .
-                        CommonHelper::get_item_name($request->raw_item_id[$key]);
-                }
+                // if ($availableQty < 0) {
+                //     DB::connection('mysql2')->rollBack();
+                //     return "Insufficient stock for item " .
+                //         CommonHelper::get_item_name($request->raw_item_id[$key]);
+                // }
 
                 // ========================
                 // INSERT ROLLING RECORD
