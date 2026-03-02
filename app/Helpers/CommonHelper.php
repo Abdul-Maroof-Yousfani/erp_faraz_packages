@@ -4996,9 +4996,9 @@ class CommonHelper
         $nextNumber = 'PM-001';
 
         if ($latestBOM) {
-            $lastFormulationNumber = $latestBOM->formulation_no;
+            $lastFormulationNumber = $latestBOM->pm_no;
             $numberPart = (int) substr($lastFormulationNumber, 3);
-            $nextNumber = 'PM-' . str_pad($numberPart + 2, 3, '0', STR_PAD_LEFT);
+            $nextNumber = 'PM-' . str_pad($numberPart + 1, 3, '0', STR_PAD_LEFT);
         }
 
         return $nextNumber;
@@ -5006,7 +5006,7 @@ class CommonHelper
 
     public static function generateProductionNumber()
     {
-        $latest = DB::connection('mysql2')->table('production_request')->orderBy('id', 'desc')->first();
+        $latest = DB::connection('mysql2')->table('production_request')->where('status',1)->orderBy('id', 'desc')->first();
         $nextNumber = 'PROD00001';
 
         if ($latest) {

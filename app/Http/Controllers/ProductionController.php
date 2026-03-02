@@ -1455,7 +1455,7 @@ class ProductionController extends Controller
                     $makeProductId = MakeProduct::insertGetId($makeProduct);
 
 
-                    ReuseableCode::postStock($makeProductId, 0, $requestData['data_ppc_no_'.$planKey][$key], date('Y-m-d'), 11, 0, $requestData['item_'.$planKey][$key], $recipeItemDetail->sub_ic, $requestData['req_qty_'.$planKey][$key]);
+                    ReuseableCode::postStock($makeProductId, 0, $requestData['data_ppc_no_'.$planKey][$key], date('Y-m-d'), 11, 0, $requestData['item_'.$planKey][$key], $recipeItemDetail->sub_ic, $requestData['req_qty_'.$planKey][$key], null);
                     // $productionBomDataDetailType1 = ProductionBomData::where('main_id', $bom_id)->where('type', 1)->where('work_station_id', $work_station_id)->get();
                     // $productionBomDataDetailType2 = ProductionBomData::where('main_id', $bom_id)->where('type', 2)->where('work_station_id', $work_station_id)->get();
                     // dd($request, $productionBomDataDetailType1, $productionBomDataDetailType2);
@@ -1481,7 +1481,7 @@ class ProductionController extends Controller
                         $makeProductData['created_by']        = Auth::user()->name;
                         $makeProductDataId = MakeProductData::insertGetId($makeProductData);
 
-                        ReuseableCode::postStock($makeProductId, $requestData['master_id'.$planKey], $requestData['data_ppc_no_'.$planKey][$key2], date('Y-m-d'), 9, 0, $item, $productionBomDataDetailType1->subItem->sub_ic, $requestData['data_required_'.$planKey.'_qty'][$key2]);
+                        ReuseableCode::postStock($makeProductId, $requestData['master_id'.$planKey], $requestData['data_ppc_no_'.$planKey][$key2], date('Y-m-d'), 9, 0, $item, $productionBomDataDetailType1->subItem->sub_ic, $requestData['data_required_'.$planKey.'_qty'][$key2], null);
                     }
                     DB::commit();
                     // echo "success";

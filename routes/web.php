@@ -2,16 +2,7 @@
 
 use App\Helpers\ReuseableCode;
 use App\Http\Controllers\SalesController;
-/*
-|--------------------------------------------------------------------------
-| Application Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register all of the routes for an application.
-| It's a breeze. Simply tell Laravel the URIs it should respond to
-| and give it the controller to call when that URI is requested.
-|
-*/
+/* |-------------------------------------------------------------------------- | Application Routes |-------------------------------------------------------------------------- | | Here is where you can register all of the routes for an application. | It's a breeze. Simply tell Laravel the URIs it should respond to | and give it the controller to call when that URI is requested. | */
 
 
 Route::auth();
@@ -24,7 +15,8 @@ Route::get('login', function () {
     if (Auth::check()) {
 
         return Redirect::to('dClient');
-    } else {
+    }
+    else {
         return view('auth/login');
     }
 });
@@ -54,7 +46,8 @@ Route::get('/', function () {
 
 
         return Redirect::to('dClient');
-    } else {
+    }
+    else {
 
         return view('Visitor.visitorDashboard');
     }
@@ -2177,11 +2170,11 @@ Route::group(['prefix' => 'Finance/CashFlowHead', 'middleware' => 'mysql2', 'bef
 
     // Define the cancel route
     Route::get('/cancel', function () {
-        return redirect(url('Finance/CashFlowHead/'));
+            return redirect(url('Finance/CashFlowHead/'));
         // Replace 'CashFlowHead.index' with your actual index route
-    })->name('CashFlowHead.cancel');
-
-});
+        }
+        )->name('CashFlowHead.cancel');
+    });
 
 Route::group(['prefix' => 'Finance/CashFlowSubHead', 'middleware' => 'mysql2', 'before' => 'csrf'], function () {
     Route::get('/', 'Finance\CashFlowHeadController@CashFlowSubHead');
@@ -2228,6 +2221,8 @@ Route::group(['prefix' => 'far_production', 'middleware' => 'mysql2', 'before' =
 
 
     Route::get('/rollPrinting', 'FarazProductionController@rollPrinting');
+    Route::get('/bulkRollPrinting', 'FarazProductionController@bulkRollPrinting');
+    Route::get('/getRollingItemsForBulkPrinting', 'FarazProductionController@getRollingItemsForBulkPrinting')->name('FarProduction.getRollingItems');
 
     Route::get('/cuttingAndSealing', 'FarazProductionController@cuttingAndSealing');
 
@@ -2264,7 +2259,8 @@ Route::group(['prefix' => 'far_prod', 'middleware' => 'mysql2', 'before' => 'csr
     // production packing ajax
     Route::post('/addProductionPackingDetail', 'FarazProductionAddDetailController@addProductionPackingDetail')->name('FarProduction.Packing');
 
-    
+
+
 });
 
 Route::get('store-items-data', function () {
@@ -2324,290 +2320,293 @@ Route::get('store-items-data', function () {
         ];
 
         // Function to extract sub_category prefix from raw material description
-        function getRawMaterialSubCategory($description)
-        {
-            // Check for PP Film or PP Tape first (before PP)
-            if (stripos($description, 'PP Film') === 0) {
-                return 'PP Film';
-            }
-            if (stripos($description, 'PP Tape') === 0) {
-                return 'PP Tape';
-            }
-            // Check for other prefixes
-            if (stripos($description, 'Lottrene') === 0) {
-                return 'Lottrene';
-            }
-            if (stripos($description, 'LLD') === 0) {
-                return 'LLD';
-            }
-            if (stripos($description, 'HD') === 0) {
-                return 'HD';
-            }
-            if (stripos($description, 'Calpet') === 0) {
-                return 'Calpet';
-            }
-            // Default: return first word
-            $words = explode(' ', $description);
-            return $words[0];
-        }
-
-        // Process Raw Materials
-        foreach ($raw_materials as $rawMaterial) {
-            $description = $rawMaterial['description'];
-            $subCategoryName = getRawMaterialSubCategory($description);
-
-            // Create or get sub_category for raw material group
-            $subCategory = DB::Connection('mysql2')->table('sub_category')
-                ->where('category_id', $raw_material_category_id)
-                ->where('sub_category_name', $subCategoryName)
-                ->where('status', 1)
-                ->first();
-
-            if (!$subCategory) {
-                $subCategoryId = DB::Connection('mysql2')->table('sub_category')->insertGetId([
-                    'category_id' => $raw_material_category_id,
-                    'sub_category_name' => $subCategoryName,
-                    'acc_id' => $raw_material_acc_id ?? 0,
-                    'status' => 1,
-                    'username' => Auth::user()->name ?? 'System',
-                    'created_date' => date('Y-m-d')
-                ]);
-                $output .= "<li>Created sub_category: $subCategoryName</li>";
-            } else {
-                if (empty($subCategory->acc_id) && $raw_material_acc_id) {
-                    DB::Connection('mysql2')->table('sub_category')
-                        ->where('id', $subCategory->id)
-                        ->update(['acc_id' => $raw_material_acc_id]);
+            function getRawMaterialSubCategory($description) {
+                // Check for PP Film or PP Tape first (before PP)
+                if (stripos($description, 'PP Film') === 0) {
+                    return 'PP Film';
                 }
-                $subCategoryId = $subCategory->id;
-            }
-
-            // Create subitem if it doesn't exist
-            $existingItem = DB::Connection('mysql2')->table('subitem')
-                ->where('sub_ic', $description)
-                ->where('main_ic_id', $raw_material_category_id)
-                ->where('sub_category_id', $subCategoryId)
-                ->where('status', 1)
-                ->first();
-
-            if (!$existingItem) {
-                $itemCode = strtoupper(str_replace(' ', '_', preg_replace('/[^a-zA-Z0-9\s]/', '', $description)));
-                DB::Connection('mysql2')->table('subitem')->insert([
-                    'sub_ic' => $description,
-                    'item_code' => $itemCode,
-                    'main_ic_id' => $raw_material_category_id,
-                    'sub_category_id' => $subCategoryId,
-                    'acc_id' => $raw_material_acc_id ?? 0,
-                    'status' => 1,
-                    'username' => Auth::user()->name ?? 'System',
-                    'date' => date('Y-m-d'),
-                    'time' => date('H:i:s'),
-                    'action' => 'create'
-                ]);
-                $output .= "<li>Created raw material item: $description (Sub-category: $subCategoryName)</li>";
-            } else {
-                $output .= "<li>Raw material item already exists: $description</li>";
-            }
-        }
-
-        // Finish Goods Data
-        $finish_goods = [
-            ['category' => 'Suffyan Shoppers', 'item' => '7×9', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan Shoppers', 'item' => '8×11', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan Shoppers', 'item' => '10×14', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan Shoppers', 'item' => '12x16', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan Shoppers', 'item' => '14x18', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan Shoppers', 'item' => '17x23', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan Shoppers', 'item' => '18×26', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan Shoppers Blue', 'item' => '7x9 Blue', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan Shoppers Blue', 'item' => '8x11 Blue', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan Shoppers Blue', 'item' => '10x14 Blue', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan Shoppers Blue', 'item' => '12x16 Blue', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan Shoppers Blue', 'item' => '14x18 Blue', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan Shoppers Red', 'item' => '7x9 Red', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan Shoppers Red', 'item' => '8x11 Red', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan Shoppers Red', 'item' => '10x14 Red', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan Shoppers Red', 'item' => '12x16 Red', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan Shoppers Red', 'item' => '14x18 Red', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan shoppers Green', 'item' => '7x9 Green', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan shoppers Green', 'item' => '8x11 Green', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan shoppers Green', 'item' => '10x14 Green', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan shoppers Green', 'item' => '12x16 Green', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan shoppers Green', 'item' => '14x18 Green', 'uom' => '25 KG Per Bag'],
-            ['category' => 'My Karachi', 'item' => '14x18 My Karachi', 'uom' => '25 KG Per Bag'],
-            ['category' => 'My Karachi', 'item' => '17x23 My Karachi', 'uom' => '25 KG Per Bag'],
-            ['category' => 'My Karachi', 'item' => '18x26 My Karachi', 'uom' => '25 KG Per Bag'],
-            ['category' => 'My Karachi', 'item' => '20x30 My Karachi', 'uom' => '10 KG Per Bundle'],
-            ['category' => 'My Karachi', 'item' => '24x My Karachi', 'uom' => '15 KG Per Bundle'],
-            ['category' => 'My Karachi', 'item' => '30x40 My Karachi', 'uom' => '20 KG Per Bundle'],
-            ['category' => 'My Karachi', 'item' => '30x50 My Karachi', 'uom' => '20 KG Per Bundle'],
-            ['category' => 'Thank You Shoppers', 'item' => '10×14 Thank You', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Thank You Shoppers', 'item' => '12×16 Thank You', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Thank You Shoppers', 'item' => '14×18 Thank You', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Thank You Shoppers', 'item' => '17×23 Thank You', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '3×4 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '4×5 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '5×6 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '5×7 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '6×7 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '6×8 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '6×9 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '7×9 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '7×10 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '8×10 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '8×12 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '10×12 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '10×14 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '10×16 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '10×18 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '12×16 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '12×18 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '14x18 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '14×20 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '14×22 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '14x28 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '16×22 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '18×24 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '20×30 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '24×36 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '30×40 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'HD', 'item' => '30×50 HD', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '2x3 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '2½x3 special', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '2½×3½ special', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '3x4 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '3x5 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '4x4 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '4x5 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '4x6 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '5x6 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '5x7 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '5x8 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '5x10 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '5x12 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '5x14 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '6x7 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '6x8 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '6x9 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '6x10 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '6x12 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '7x8 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '7x9 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '7x10 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '7x12 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '7x14 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '8x10 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '8x12 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '8x14 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '9x11 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '9x12 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '9x13 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '9x14 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '9x16 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '9x18 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '10x12 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '10x14 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '10x16 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '10x18 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '10x20 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '12x14 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '12x16 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '12x18 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '12x20 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '12x22 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '12x24 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '14x16 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '14x18 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '14x20 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '16x18 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '16x22 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '16x24 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '18x20 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '18x22 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '18x24 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '18x26 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '18x28 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '18x30 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '20x24 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '20x26 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '20x30 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '24x36 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '24x48 special pp', 'uom' => '25 KG Per Bag'],
-            ['category' => 'Suffyan P.P', 'item' => '30x50 special pp', 'uom' => '25 KG Per Bag'],
-        ];
-
-        // Process Finish Goods
-        foreach ($finish_goods as $finishGood) {
-            $categoryName = $finishGood['category'];
-            $itemName = $finishGood['item'];
-            $unitOfMeasurement = $finishGood['uom'];
-
-            // Create or get sub_category for finish good category
-            $subCategory = DB::Connection('mysql2')->table('sub_category')
-                ->where('category_id', $finish_good_category_id)
-                ->where('sub_category_name', $categoryName)
-                ->where('status', 1)
-                ->first();
-
-            if (!$subCategory) {
-                $subCategoryId = DB::Connection('mysql2')->table('sub_category')->insertGetId([
-                    'category_id' => $finish_good_category_id,
-                    'sub_category_name' => $categoryName,
-                    'acc_id' => $finish_good_acc_id ?? 0,
-                    'status' => 1,
-                    'username' => Auth::user()->name ?? 'System',
-                    'created_date' => date('Y-m-d')
-                ]);
-                $output .= "<li>Created sub_category: $categoryName</li>";
-            } else {
-                if (empty($subCategory->acc_id) && $finish_good_acc_id) {
-                    DB::Connection('mysql2')->table('sub_category')
-                        ->where('id', $subCategory->id)
-                        ->update(['acc_id' => $finish_good_acc_id]);
+                if (stripos($description, 'PP Tape') === 0) {
+                    return 'PP Tape';
                 }
-                $subCategoryId = $subCategory->id;
+                // Check for other prefixes
+                if (stripos($description, 'Lottrene') === 0) {
+                    return 'Lottrene';
+                }
+                if (stripos($description, 'LLD') === 0) {
+                    return 'LLD';
+                }
+                if (stripos($description, 'HD') === 0) {
+                    return 'HD';
+                }
+                if (stripos($description, 'Calpet') === 0) {
+                    return 'Calpet';
+                }
+                // Default: return first word
+                $words = explode(' ', $description);
+                return $words[0];
             }
 
-            // Use just the item name for subitem
-            $itemNameForSubitem = $itemName;
+            // Process Raw Materials
+            foreach ($raw_materials as $rawMaterial) {
+                $description = $rawMaterial['description'];
+                $subCategoryName = getRawMaterialSubCategory($description);
 
-            // Create subitem if it doesn't exist
-            $existingItem = DB::Connection('mysql2')->table('subitem')
-                ->where('sub_ic', $itemNameForSubitem)
-                ->where('main_ic_id', $finish_good_category_id)
-                ->where('sub_category_id', $subCategoryId)
-                ->where('status', 1)
-                ->first();
+                // Create or get sub_category for raw material group
+                $subCategory = DB::Connection('mysql2')->table('sub_category')
+                    ->where('category_id', $raw_material_category_id)
+                    ->where('sub_category_name', $subCategoryName)
+                    ->where('status', 1)
+                    ->first();
 
-            if (!$existingItem) {
-                $itemCode = strtoupper(str_replace(' ', '_', preg_replace('/[^a-zA-Z0-9\s]/', '', $itemNameForSubitem)));
-                DB::Connection('mysql2')->table('subitem')->insert([
-                    'sub_ic' => $itemNameForSubitem,
-                    'item_code' => $itemCode,
-                    'main_ic_id' => $finish_good_category_id,
-                    'sub_category_id' => $subCategoryId,
-                    'acc_id' => $finish_good_acc_id ?? 0,
-                    'status' => 1,
-                    'username' => Auth::user()->name ?? 'System',
-                    'date' => date('Y-m-d'),
-                    'time' => date('H:i:s'),
-                    'action' => 'create'
-                ]);
-                $output .= "<li>Created finish good item: $itemNameForSubitem (Sub-category: $categoryName)</li>";
-            } else {
-                $output .= "<li>Finish good item already exists: $itemNameForSubitem</li>";
+                if (!$subCategory) {
+                    $subCategoryId = DB::Connection('mysql2')->table('sub_category')->insertGetId([
+                        'category_id' => $raw_material_category_id,
+                        'sub_category_name' => $subCategoryName,
+                        'acc_id' => $raw_material_acc_id ?? 0,
+                        'status' => 1,
+                        'username' => Auth::user()->name ?? 'System',
+                        'created_date' => date('Y-m-d')
+                    ]);
+                    $output .= "<li>Created sub_category: $subCategoryName</li>";
+                }
+                else {
+                    if (empty($subCategory->acc_id) && $raw_material_acc_id) {
+                        DB::Connection('mysql2')->table('sub_category')
+                            ->where('id', $subCategory->id)
+                            ->update(['acc_id' => $raw_material_acc_id]);
+                    }
+                    $subCategoryId = $subCategory->id;
+                }
+
+                // Create subitem if it doesn't exist
+                $existingItem = DB::Connection('mysql2')->table('subitem')
+                    ->where('sub_ic', $description)
+                    ->where('main_ic_id', $raw_material_category_id)
+                    ->where('sub_category_id', $subCategoryId)
+                    ->where('status', 1)
+                    ->first();
+
+                if (!$existingItem) {
+                    $itemCode = strtoupper(str_replace(' ', '_', preg_replace('/[^a-zA-Z0-9\s]/', '', $description)));
+                    DB::Connection('mysql2')->table('subitem')->insert([
+                        'sub_ic' => $description,
+                        'item_code' => $itemCode,
+                        'main_ic_id' => $raw_material_category_id,
+                        'sub_category_id' => $subCategoryId,
+                        'acc_id' => $raw_material_acc_id ?? 0,
+                        'status' => 1,
+                        'username' => Auth::user()->name ?? 'System',
+                        'date' => date('Y-m-d'),
+                        'time' => date('H:i:s'),
+                        'action' => 'create'
+                    ]);
+                    $output .= "<li>Created raw material item: $description (Sub-category: $subCategoryName)</li>";
+                }
+                else {
+                    $output .= "<li>Raw material item already exists: $description</li>";
+                }
             }
+
+            // Finish Goods Data
+            $finish_goods = [
+                ['category' => 'Suffyan Shoppers', 'item' => '7×9', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan Shoppers', 'item' => '8×11', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan Shoppers', 'item' => '10×14', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan Shoppers', 'item' => '12x16', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan Shoppers', 'item' => '14x18', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan Shoppers', 'item' => '17x23', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan Shoppers', 'item' => '18×26', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan Shoppers Blue', 'item' => '7x9 Blue', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan Shoppers Blue', 'item' => '8x11 Blue', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan Shoppers Blue', 'item' => '10x14 Blue', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan Shoppers Blue', 'item' => '12x16 Blue', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan Shoppers Blue', 'item' => '14x18 Blue', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan Shoppers Red', 'item' => '7x9 Red', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan Shoppers Red', 'item' => '8x11 Red', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan Shoppers Red', 'item' => '10x14 Red', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan Shoppers Red', 'item' => '12x16 Red', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan Shoppers Red', 'item' => '14x18 Red', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan shoppers Green', 'item' => '7x9 Green', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan shoppers Green', 'item' => '8x11 Green', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan shoppers Green', 'item' => '10x14 Green', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan shoppers Green', 'item' => '12x16 Green', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan shoppers Green', 'item' => '14x18 Green', 'uom' => '25 KG Per Bag'],
+                ['category' => 'My Karachi', 'item' => '14x18 My Karachi', 'uom' => '25 KG Per Bag'],
+                ['category' => 'My Karachi', 'item' => '17x23 My Karachi', 'uom' => '25 KG Per Bag'],
+                ['category' => 'My Karachi', 'item' => '18x26 My Karachi', 'uom' => '25 KG Per Bag'],
+                ['category' => 'My Karachi', 'item' => '20x30 My Karachi', 'uom' => '10 KG Per Bundle'],
+                ['category' => 'My Karachi', 'item' => '24x My Karachi', 'uom' => '15 KG Per Bundle'],
+                ['category' => 'My Karachi', 'item' => '30x40 My Karachi', 'uom' => '20 KG Per Bundle'],
+                ['category' => 'My Karachi', 'item' => '30x50 My Karachi', 'uom' => '20 KG Per Bundle'],
+                ['category' => 'Thank You Shoppers', 'item' => '10×14 Thank You', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Thank You Shoppers', 'item' => '12×16 Thank You', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Thank You Shoppers', 'item' => '14×18 Thank You', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Thank You Shoppers', 'item' => '17×23 Thank You', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '3×4 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '4×5 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '5×6 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '5×7 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '6×7 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '6×8 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '6×9 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '7×9 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '7×10 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '8×10 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '8×12 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '10×12 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '10×14 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '10×16 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '10×18 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '12×16 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '12×18 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '14x18 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '14×20 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '14×22 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '14x28 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '16×22 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '18×24 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '20×30 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '24×36 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '30×40 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'HD', 'item' => '30×50 HD', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '2x3 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '2½x3 special', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '2½×3½ special', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '3x4 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '3x5 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '4x4 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '4x5 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '4x6 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '5x6 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '5x7 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '5x8 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '5x10 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '5x12 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '5x14 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '6x7 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '6x8 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '6x9 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '6x10 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '6x12 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '7x8 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '7x9 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '7x10 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '7x12 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '7x14 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '8x10 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '8x12 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '8x14 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '9x11 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '9x12 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '9x13 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '9x14 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '9x16 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '9x18 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '10x12 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '10x14 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '10x16 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '10x18 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '10x20 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '12x14 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '12x16 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '12x18 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '12x20 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '12x22 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '12x24 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '14x16 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '14x18 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '14x20 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '16x18 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '16x22 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '16x24 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '18x20 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '18x22 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '18x24 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '18x26 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '18x28 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '18x30 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '20x24 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '20x26 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '20x30 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '24x36 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '24x48 special pp', 'uom' => '25 KG Per Bag'],
+                ['category' => 'Suffyan P.P', 'item' => '30x50 special pp', 'uom' => '25 KG Per Bag'],
+            ];
+
+            // Process Finish Goods
+            foreach ($finish_goods as $finishGood) {
+                $categoryName = $finishGood['category'];
+                $itemName = $finishGood['item'];
+                $unitOfMeasurement = $finishGood['uom'];
+
+                // Create or get sub_category for finish good category
+                $subCategory = DB::Connection('mysql2')->table('sub_category')
+                    ->where('category_id', $finish_good_category_id)
+                    ->where('sub_category_name', $categoryName)
+                    ->where('status', 1)
+                    ->first();
+
+                if (!$subCategory) {
+                    $subCategoryId = DB::Connection('mysql2')->table('sub_category')->insertGetId([
+                        'category_id' => $finish_good_category_id,
+                        'sub_category_name' => $categoryName,
+                        'acc_id' => $finish_good_acc_id ?? 0,
+                        'status' => 1,
+                        'username' => Auth::user()->name ?? 'System',
+                        'created_date' => date('Y-m-d')
+                    ]);
+                    $output .= "<li>Created sub_category: $categoryName</li>";
+                }
+                else {
+                    if (empty($subCategory->acc_id) && $finish_good_acc_id) {
+                        DB::Connection('mysql2')->table('sub_category')
+                            ->where('id', $subCategory->id)
+                            ->update(['acc_id' => $finish_good_acc_id]);
+                    }
+                    $subCategoryId = $subCategory->id;
+                }
+
+                // Use just the item name for subitem
+                $itemNameForSubitem = $itemName;
+
+                // Create subitem if it doesn't exist
+                $existingItem = DB::Connection('mysql2')->table('subitem')
+                    ->where('sub_ic', $itemNameForSubitem)
+                    ->where('main_ic_id', $finish_good_category_id)
+                    ->where('sub_category_id', $subCategoryId)
+                    ->where('status', 1)
+                    ->first();
+
+                if (!$existingItem) {
+                    $itemCode = strtoupper(str_replace(' ', '_', preg_replace('/[^a-zA-Z0-9\s]/', '', $itemNameForSubitem)));
+                    DB::Connection('mysql2')->table('subitem')->insert([
+                        'sub_ic' => $itemNameForSubitem,
+                        'item_code' => $itemCode,
+                        'main_ic_id' => $finish_good_category_id,
+                        'sub_category_id' => $subCategoryId,
+                        'acc_id' => $finish_good_acc_id ?? 0,
+                        'status' => 1,
+                        'username' => Auth::user()->name ?? 'System',
+                        'date' => date('Y-m-d'),
+                        'time' => date('H:i:s'),
+                        'action' => 'create'
+                    ]);
+                    $output .= "<li>Created finish good item: $itemNameForSubitem (Sub-category: $categoryName)</li>";
+                }
+                else {
+                    $output .= "<li>Finish good item already exists: $itemNameForSubitem</li>";
+                }
+            }
+
+            DB::Connection('mysql2')->commit();
+            $output .= "</ul><h3>All items stored successfully!</h3>";
+            return $output;
+
         }
-
-        DB::Connection('mysql2')->commit();
-        $output .= "</ul><h3>All items stored successfully!</h3>";
-        return $output;
-
-    } catch (\Exception $e) {
-        DB::Connection('mysql2')->rollBack();
-        return "<h2>Error</h2><p>Error storing items: " . $e->getMessage() . "</p>";
-    }
-});
+        catch (\Exception $e) {
+            DB::Connection('mysql2')->rollBack();
+            return "<h2>Error</h2><p>Error storing items: " . $e->getMessage() . "</p>";
+        }    });
 
 require('Production/Production.php');
 require('InventoryMaster/InventoryMaster.php');

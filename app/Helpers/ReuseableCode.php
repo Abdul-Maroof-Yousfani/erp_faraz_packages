@@ -1248,7 +1248,7 @@ class ReuseableCode
         $bacth_code = intval($bacth_code) + 1;
         return $bacth_code = sprintf("%'03d", $bacth_code);
     }
-    public static function postStock($main_id, $main_sub_id, $voucher_no, $date, $voucher_type, $amount, $item_id, $sub_item_name, $qty)
+    public static function postStock($main_id, $main_sub_id, $voucher_no, $date, $voucher_type, $amount, $item_id, $sub_item_name, $qty, $desc)
     {
         $stock = array(
             'main_id' => $main_id,
@@ -1269,9 +1269,8 @@ class ReuseableCode
 
             'status' => 1,
             'warehouse_id' => 11,
-            'description' => $sub_item_name,
+            'description' => $sub_item_name .'-'. $desc,
             'username' => Auth::user()->username,
-            'created_date' => date('Y-m-d'),
             'created_date' => date('Y-m-d'),
             'opening' => 0,
         );

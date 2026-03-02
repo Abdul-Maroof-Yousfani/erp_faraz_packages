@@ -130,7 +130,8 @@ class FarazProductionController extends Controller
             if ($mold != "") {
                 $mold = implode(',', $mold);
                 $InsertDetail['mold_id'] = $mold;
-            } else {
+            }
+            else {
                 $InsertDetail['mold_id'] = "";
             }
 
@@ -139,7 +140,8 @@ class FarazProductionController extends Controller
             if ($die != "") {
                 $die = implode(',', $die);
                 $InsertDetail['dai_id'] = $die;
-            } else {
+            }
+            else {
                 $InsertDetail['dai_id'] = "";
             }
 
@@ -189,7 +191,8 @@ class FarazProductionController extends Controller
             if ($mold != "") {
                 $mold = implode(',', $mold);
                 $InsertDetail['mold_id'] = $mold;
-            } else {
+            }
+            else {
                 $InsertDetail['mold_id'] = "";
             }
 
@@ -198,7 +201,8 @@ class FarazProductionController extends Controller
             if ($die != "") {
                 $die = implode(',', $die);
                 $InsertDetail['dai_id'] = $die;
-            } else {
+            }
+            else {
                 $InsertDetail['dai_id'] = "";
             }
 
@@ -425,12 +429,13 @@ class FarazProductionController extends Controller
 
         // Totals
         $out_source_productions_item = DB::connection('mysql2')
-            ->table('production_mixture_data')
+            ->table('production_mixture')
             ->select(
-                DB::raw('SUM(qty) as total_qty'),
-                DB::raw('SUM(used_qty) as total_used_qty')
-            )
-            ->where('production_mixture_id', $request->id)
+            DB::raw('SUM(qty) as total_qty'),
+            DB::raw('SUM(used_qty) as total_used_qty'),
+            'produced_item_id'
+        )
+            ->where('id', $request->id)
             ->first();
 
         // Detail items
@@ -534,12 +539,12 @@ class FarazProductionController extends Controller
         $out_source_productions_item = DB::connection('mysql2')
             ->table('production_rolling')
             ->select(
-                DB::raw('SUM(roll_qty) as total_qty'),
-                DB::raw('SUM(printed_roll_qty) as total_used_qty'),
-                'date',
-                'item_id',
-                'id'
-            )
+            DB::raw('SUM(roll_qty) as total_qty'),
+            DB::raw('SUM(printed_roll_qty) as total_used_qty'),
+            'date',
+            'item_id',
+            'id'
+        )
             ->where('id', $request->id)
             ->first();
 
@@ -589,6 +594,99 @@ class FarazProductionController extends Controller
         return view('FarazPackagesProduction.ProductionMixture.ProcessedRollPrinting', compact('out_source_productions_item', 'out_source_productions_details', 'sub_item', 'machines', 'operators', 'shifts', 'brands', 'colors', 'm'));
     }
 
+    public function bulkRollPrinting(Request $request)
+    {
+        $m = $request->m;
+        $id = $request->id;
+
+        $production_order = DB::connection('mysql2')
+            ->table('production_request')->where('status', 1)->get();
+
+        // Totals
+        if ($id) {
+            $out_source_productions_item = DB::connection('mysql2')
+                ->table('production_rolling')
+                ->select('roll_qty as total_qty',
+                'printed_roll_qty as total_used_qty',
+                'date',
+                'item_id',
+                'id'
+            )
+                ->where('roll_qty', '>', 0)
+                ->where('production_order_id', $id)
+                ->get();
+        }
+        else {
+            $out_source_productions_item = collect([]);
+        }
+
+
+
+        $categories_id = explode(',', Auth::user()->categories_id);
+
+        $sub_item = DB::Connection('mysql2')->table('category as c')
+            ->join('sub_category as sc', 'c.id', '=', 'sc.category_id')
+            ->join('subitem as s', 'sc.id', '=', 's.sub_category_id')
+            ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
+            ->where('sc.status', '=', 1)
+            ->where('c.status', '=', 1)
+            ->where('s.status', '=', 1)
+            ->where('u.status', '=', 1)
+            // ->where('s.main_ic_id', '=', 8)
+            ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id')
+            // ->whereIn('c.id', $categories_id)
+            ->groupBy('s.item_code')
+            ->orderBy('s.id')
+            ->get();
+
+        $machines = DB::Connection('mysql2')->table('machine')
+            ->select('id', 'name')
+            ->where('status', '=', 1)->get();
+
+        $operators = DB::Connection('mysql2')->table('operators')
+            ->select('id', 'name')
+            ->where('status', '=', 1)->get();
+
+        $shifts = DB::Connection('mysql')->table('shift_type')
+            ->select('id', 'shift_type_name')
+            ->where('status', '=', 1)->get();
+
+        $brands = DB::Connection('mysql2')->table('brands')
+            ->select('id', 'name')
+            ->where('status', '=', 1)->get();
+
+        $colors = DB::Connection('mysql2')->table('colors')
+            ->select('id', 'name')
+            ->where('status', '=', 1)->get();        // dd($out_source_productions_item);
+        return view('FarazPackagesProduction.ProductionMixture.ProcessedBulkRollPrinting', compact('id', 'out_source_productions_item', 'sub_item', 'machines', 'operators', 'shifts', 'brands', 'colors', 'production_order', 'm'));
+    }
+
+    public function getRollingItemsForBulkPrinting(Request $request)
+    {
+        $m = $request->m;
+        $production_order_id = $request->production_order_id;
+
+        $items = DB::connection('mysql2')
+            ->table('production_rolling as pr')
+            ->join('subitem as s', 'pr.item_id', '=', 's.id')
+            ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
+            ->select(
+            'pr.id',
+            'pr.item_id',
+            'pr.roll_qty as total_qty',
+            'pr.printed_roll_qty as total_used_qty',
+            'pr.date',
+            's.item_code',
+            's.sub_ic',
+            'u.uom_name'
+        )
+            ->where('pr.production_order_id', $production_order_id)
+            ->where('roll_qty', '>', 0)
+            ->get();
+
+        return response()->json(['items' => $items]);
+    }
+
     public function cuttingAndSealing(Request $request)
     {
         $m = $request->m;
@@ -599,12 +697,12 @@ class FarazProductionController extends Controller
         $out_source_productions_item = DB::connection('mysql2')
             ->table('production_roll_printing')
             ->select(
-                DB::raw('SUM(no_of_roll) as total_qty'),
-                DB::raw('SUM(used_no_of_roll) as total_used_qty'),
-                'date',
-                'item_id',
-                'id'
-            )
+            DB::raw('SUM(no_of_roll) as total_qty'),
+            DB::raw('SUM(used_no_of_roll) as total_used_qty'),
+            'date',
+            'item_id',
+            'id'
+        )
             ->where('id', $request->id)
             ->first();
 
@@ -656,12 +754,12 @@ class FarazProductionController extends Controller
         $out_source_productions_item = DB::connection('mysql2')
             ->table('production_cutting_and_sealing')
             ->select(
-                DB::raw('SUM(qty) as total_qty'),
-                DB::raw('SUM(used_qty) as total_used_qty'),
-                'date',
-                'item_id',
-                'id'
-            )
+            DB::raw('SUM(qty) as total_qty'),
+            DB::raw('SUM(used_qty) as total_used_qty'),
+            'date',
+            'item_id',
+            'id'
+        )
             ->where('id', $request->id)
             ->first();
 
@@ -703,7 +801,7 @@ class FarazProductionController extends Controller
             ->orderBy('s.id')
             ->get();
 
-            
+
 
         $machines = DB::Connection('mysql2')->table('machine')
             ->select('id', 'name')
@@ -729,12 +827,12 @@ class FarazProductionController extends Controller
             $out_source_productions_item = DB::connection('mysql2')
                 ->table('production_cutting_and_sealing')
                 ->select(
-                    DB::raw('SUM(qty) as total_qty'),
-                    DB::raw('SUM(used_qty) as total_used_qty'),
-                    'date',
-                    'item_id',
-                    'id'
-                )
+                DB::raw('SUM(qty) as total_qty'),
+                DB::raw('SUM(used_qty) as total_used_qty'),
+                'date',
+                'item_id',
+                'id'
+            )
                 ->where('id', $request->id)
                 ->first();
 
@@ -743,16 +841,17 @@ class FarazProductionController extends Controller
                 ->table('production_cutting_and_sealing')
                 ->where('id', $request->id)
                 ->get();
-        } else {
+        }
+        else {
             $out_source_productions_item = DB::connection('mysql2')
                 ->table('production_gala_cutting')
                 ->select(
-                    DB::raw('SUM(gala_qty) as total_qty'),
-                    DB::raw('SUM(used_qty) as total_used_qty'),
-                    'date',
-                    'item_id',
-                    'id'
-                )
+                DB::raw('SUM(gala_qty) as total_qty'),
+                DB::raw('SUM(used_qty) as total_used_qty'),
+                'date',
+                'item_id',
+                'id'
+            )
                 ->where('id', $request->id)
                 ->first();
 

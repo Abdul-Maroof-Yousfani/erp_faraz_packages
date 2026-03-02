@@ -65,7 +65,7 @@ $this->m = Session::get('run_company');
                                                             <td> {{$Fil->qty}} </td>
                                                             <td> {{$Fil->printed_roll_qty}} </td>
                                                             <td> {{$Fil->date}} </td>
-                                                            <td>{{ optional($Fil->printedRoll->productionRoll->productionOrder)->pr_no }} </td>
+                                                            <td>-</td>
                                                             <td>
                                                                 @if($Fil->status == 1)
                                                                     Active

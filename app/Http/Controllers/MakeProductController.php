@@ -51,7 +51,7 @@ class MakeProductController extends Controller
             $makeProductId = MakeProduct::insertGetId($makeProduct);
 
 
-            ReuseableCode::postStock($makeProductId, 0, $mp_no, date('Y-m-d'), 1, $request->totalrateInput, $recipeItemDetail->id, $recipeItemDetail->sub_ic, $request->quantity);
+            ReuseableCode::postStock($makeProductId, 0, $mp_no, date('Y-m-d'), 1, $request->totalrateInput, $recipeItemDetail->id, $recipeItemDetail->sub_ic, $request->quantity,null);
 
             foreach ($request->item_id as $key => $item_id) {
 
@@ -67,7 +67,7 @@ class MakeProductController extends Controller
                 $makeProductData['created_by']        = Auth::user()->name;
                 $makeProductDataId = MakeProductData::insertGetId($makeProductData);
 
-                ReuseableCode::postStock($item_id, $makeProductDataId, $mp_no, date('Y-m-d'), 5, $request->total_rate[$key], $recipeDataItemDetail->id, $recipeDataItemDetail->sub_ic, $request->total_qty[$key]);
+                ReuseableCode::postStock($item_id, $makeProductDataId, $mp_no, date('Y-m-d'), 5, $request->total_rate[$key], $recipeDataItemDetail->id, $recipeDataItemDetail->sub_ic, $request->total_qty[$key], null);
             }
             DB::commit();
             return redirect('makeProduct/productlist');

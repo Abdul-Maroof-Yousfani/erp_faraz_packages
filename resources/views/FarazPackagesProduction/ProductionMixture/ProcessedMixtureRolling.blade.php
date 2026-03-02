@@ -144,7 +144,6 @@ $global_avg_amt=0;
             </td>
 
             <td>{{ $rate }}
-            <input type="hidden" name="raw_item_id[]" value="{{ $detail->item_id }}">
             </td>
             <td>{{ number_format($detail->qty * $rate, 2) }}</td>
         </tr>
@@ -159,6 +158,8 @@ $global_avg_amt=0;
 @endphp
 </tbody>
         </table>
+            <input type="hidden" name="raw_item_id" value="{{ $out_source_productions_item->produced_item_id }}">
+
                                                     <div class="row">
                                                         {{-- <div class="col-md-3">
                                                             <label for="">Issued Item</label>

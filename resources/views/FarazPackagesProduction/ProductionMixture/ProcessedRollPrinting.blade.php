@@ -65,7 +65,8 @@ $Operator   = [];
                                                             <input 
                                                                 type="date"
                                                                 readonly
-                                                                id="date"
+                                                                id="raw_date"
+                                                                name="raw_date"
                                                                 class="form-control date"
                                                                 value="{{ $out_source_productions_item->date }}" 
                                                             >
