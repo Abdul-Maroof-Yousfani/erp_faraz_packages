@@ -90,7 +90,7 @@ $Operator   = [];
                                                                 class="form-control initial_qty"
                                                                 value="{{ CommonHelper::get_item_name($out_source_productions_item->item_id) }}"
                                                             >
-                                                            <input type="hidden" name="roll_id" value="{{ $out_source_productions_item->id }}">
+                                                            <input type="hidden" name="roll_id[]" value="{{ $out_source_productions_item->id }}">
                                                             <input type="hidden" name="cutting_type" value="gala cutting">
 
                                                         </div>

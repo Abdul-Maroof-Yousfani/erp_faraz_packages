@@ -2223,10 +2223,14 @@ Route::group(['prefix' => 'far_production', 'middleware' => 'mysql2', 'before' =
     Route::get('/rollPrinting', 'FarazProductionController@rollPrinting');
     Route::get('/bulkRollPrinting', 'FarazProductionController@bulkRollPrinting');
     Route::get('/getRollingItemsForBulkPrinting', 'FarazProductionController@getRollingItemsForBulkPrinting')->name('FarProduction.getRollingItems');
+    Route::get('/getGalaItemsForBulkPrinting', 'FarazProductionController@getGalaItemsForBulkPrinting')->name('FarProduction.getGalaItems');
+    Route::get('/getCuttingAndSealingItemsForBulkPrinting', 'FarazProductionController@getCuttingAndSealingItemsForBulkPrinting')->name('FarProduction.getCuttingAndSealingItems');
 
     Route::get('/cuttingAndSealing', 'FarazProductionController@cuttingAndSealing');
 
     Route::get('/galaCutting', 'FarazProductionController@galaCutting');
+    Route::get('/bulkgalaCutting', 'FarazProductionController@bulkgalaCutting');
+    Route::get('/bulkCuttingAndSealing', 'FarazProductionController@bulkCuttingAndSealing');
 
     Route::get('/packing', 'FarazProductionController@packing');
 

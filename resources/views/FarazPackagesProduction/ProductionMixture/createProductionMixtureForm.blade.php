@@ -181,7 +181,7 @@ if ($accType == 'client') {
                                                             <input type="text"
                                                                 class="form-control requiredField required_qty"
                                                                 name="required_qty[]" id="required_qty1"
-                                                                onkeyup="calculateTotalQuantity()">
+                                                                onkeyup="validateRowQuantity(1); calculateTotalQuantity()">
                                                         </td>
                                                         {{-- <td class="text-center">
 
@@ -241,7 +241,19 @@ if ($accType == 'client') {
             var _token = $("input[name='_token']").val();
             for (val of formSection) {
                 jqueryValidationCustom();
-                if (validate == 0) {
+
+                // Validate that required qty is not greater than stock for any row
+                let isValidQty = true;
+                $('.required_qty').each(function () {
+                    var id = $(this).attr('id'); // e.g. required_qty3
+                    var num = id.replace('required_qty', '');
+                    if (!validateRowQuantity(num)) {
+                        isValidQty = false;
+                        return false; // break loop
+                    }
+                });
+
+                if (validate == 0 && isValidQty) {
                     $('#saveMixing').submit();
                 } else {
                     return false;
@@ -276,7 +288,7 @@ if ($accType == 'client') {
                                           <input readonly   class="form-control instock"  type="text" name="instock[]" id="instock${Counter}"/>
                                         </td>
                                         <td class="text-center">
-                                          <input type="text" class="form-control requiredField required_qty" name="required_qty[]" id="required_qty${Counter}" onkeyup="calculateTotalQuantity()">
+                                          <input type="text" class="form-control requiredField required_qty" name="required_qty[]" id="required_qty${Counter}" onkeyup="validateRowQuantity(${Counter}); calculateTotalQuantity()">
                                         </td>
 
                                         <td class="text-center">
@@ -324,18 +336,84 @@ if ($accType == 'client') {
 
                     data = data.split('/');
 
-                    $('#instock' + number).val(data[0]);
+                    var stock = parseFloat(data[0]) || 0;
+                    $('#instock' + number).val(stock);
 
-                    if (data[0] == 0) {
+                    if (stock <= 0) {
                         $("#" + item).css("background-color", "red");
+
+                        // Show SweetAlert if stock is not available
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Stock not available',
+                                text: 'Selected item has 0 quantity in stock.',
+                            });
+                        } else {
+                            alert('Selected item has 0 quantity in stock.');
+                        }
+
+                        // Clear any entered required quantity for this row
+                        $('#required_qty' + number).val('');
                     }
                     else {
                         $("#" + item).css("background-color", "");
                     }
 
+                    // Re-validate row quantity after stock update
+                    validateRowQuantity(number);
                 }
             });
 
+        }
+
+        function validateRowQuantity(number) {
+            // Skip validation if no item is selected in this row
+            var itemSelected = $('#item_id' + number).val();
+            if (!itemSelected) {
+                return true;
+            }
+
+            var instock = parseFloat($('#instock' + number).val()) || 0;
+            var qtyField = $('#required_qty' + number);
+            var entered = parseFloat(qtyField.val()) || 0;
+
+            // If no quantity entered, nothing to validate
+            if (!entered) {
+                return true;
+            }
+
+            // If stock is zero and user entered qty
+            if (instock === 0 && entered > 0) {
+                qtyField.val('');
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Stock not available',
+                        text: 'You cannot consume quantity because stock is 0.',
+                    });
+                } else {
+                    alert('You cannot consume quantity because stock is 0.');
+                }
+                return false;
+            }
+
+            // If entered quantity is greater than available stock
+            if (entered > instock) {
+                qtyField.val(instock ? instock : '');
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid quantity',
+                        text: 'Required quantity cannot be greater than available stock (' + instock + ').',
+                    });
+                } else {
+                    alert('Required quantity cannot be greater than available stock (' + instock + ').');
+                }
+                return false;
+            }
+
+            return true;
         }
 
         function calculateTotalQuantity() {
