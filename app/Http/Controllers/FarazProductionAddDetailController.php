@@ -1341,6 +1341,7 @@ class FarazProductionAddDetailController extends Controller
 
     public function addProductionGalaCuttingDetail(Request $request)
     {
+        // dd($request->all());
         $request->validate([
             'item_id' => 'required|array',
             'machine_id' => 'required|array',
@@ -1359,7 +1360,7 @@ class FarazProductionAddDetailController extends Controller
                 // CHECK STOCK (CUT/SEALED ITEM)
                 // ========================
                 $availableQty = ReuseableCode::get_stock(
-                    $request->raw_item_id[0],
+                    $request->raw_item_id[$key],
                     0,
                     $csQty,
                     0
@@ -1368,14 +1369,14 @@ class FarazProductionAddDetailController extends Controller
                 if ($availableQty < 0) {
                     DB::connection('mysql2')->rollBack();
                     return "Insufficient stock for item " .
-                        CommonHelper::get_item_name($request->raw_item_id[0]);
+                        CommonHelper::get_item_name($request->raw_item_id[$key]);
                 }
 
                 // ========================
                 // INSERT GALA CUTTING
                 // ========================
                 $data2 = [
-                    'cutting_sealing_id' => $request->roll_id,
+                    'cutting_sealing_id' => $request->roll_id[$key],
                     'item_id' => $itemId,
                     'machine_id' => $request->machine_id[$key],
                     'operator_id' => $request->operator_id[$key] ?? null,
@@ -1399,11 +1400,11 @@ class FarazProductionAddDetailController extends Controller
                 ReuseableCode::postStock(
                     $galaId,
                     0,
-                    $request->roll_id,
+                    $request->roll_id[$key],
                     $request->date[$key] ?? now(),
                     9,
                     $rawDetail->rate ?? 0,
-                    $request->raw_item_id[0],
+                    $request->raw_item_id[$key],
                     $rawDetail->sub_ic ?? '',
                     $csQty,
                     null
@@ -1417,7 +1418,7 @@ class FarazProductionAddDetailController extends Controller
                 ReuseableCode::postStock(
                     $galaId,
                     0,
-                    $request->roll_id,
+                    $request->roll_id[$key],
                     $request->date[$key] ?? now(),
                     11,
                     $finishDetail->rate ?? 0,
@@ -1426,15 +1427,17 @@ class FarazProductionAddDetailController extends Controller
                     $galaQty,
                     null
                 );
-            }
 
-            // update used qty in cutting & sealing
-            DB::connection('mysql2')
+                DB::connection('mysql2')
                 ->table('production_cutting_and_sealing')
-                ->where('id', $request->roll_id)
+                ->where('id', $request->roll_id[$key])
                 ->update([
                     'used_qty' => $request->used_qty_total,
                 ]);
+            }
+
+            // update used qty in cutting & sealing
+            
 
             DB::connection('mysql2')->commit();
 

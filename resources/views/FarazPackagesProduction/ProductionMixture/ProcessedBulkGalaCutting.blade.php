@@ -280,11 +280,11 @@
                             <div class="row mb-3">
                                 <div class="col-md-4">
                                     <label>C&S Qty <span class="text-danger">*</span></label>
-                                    <input type="number" step="any" name="qty[]" class="form-control roll-qty-input requiredField" oninput="validateRollQty(this)" required>
+                                    <input type="number" step="any" name="qty[]" class="form-control qty-input requiredField" oninput="validateRollQty(this)" required>
                                 </div>
                                 <div class="col-md-4">
                                     <label>Qty (KG)<span class="text-danger">*</span></label>
-                                    <input type="number" step="any" name="gala_qty[]" class="form-control printed-roll-qty-input requiredField" required>
+                                    <input type="number" step="any" name="gala_qty[]" class="form-control gala-qty-input requiredField" required>
                                 </div>
                             </div>
                         </div>
@@ -399,11 +399,11 @@
                             <div class="row mb-3">
                                 <div class="col-md-4">
                                     <label>Roll Qty <span class="text-danger">*</span></label>
-                                    <input type="number" step="any" name="roll_qty[]" id="roll_qty_${count}" class="form-control roll-qty-input requiredField" oninput="validateRollQty(this)" required>
+                                    <input type="number" step="any" name="qty[]" id="qty_${count}" class="form-control qty-input requiredField" oninput="validateRollQty(this)" required>
                                 </div>
                                 <div class="col-md-4">
                                     <label>Printed Roll Qty <span class="text-danger">*</span></label>
-                                    <input type="number" step="any" name="printed_roll_qty[]" id="printed_roll_qty_${count}" class="form-control printed-roll-qty-input requiredField" readonly required>
+                                    <input type="number" step="any" name="gala_qty[]" id="gala_qty_${count}" class="form-control gala-qty-input requiredField" readonly required>
                                 </div>
                             </div>
                         </div>
@@ -453,8 +453,8 @@
             let parsedVal = parseFloat($(inputElement).val()) || 0;
 
             // Auto-fill the Printed Roll Qty exactly
-            let cardBody = $(inputElement).closest('.card-body');
-            cardBody.find('.printed-roll-qty-input').val($(inputElement).val());
+           // let cardBody = $(inputElement).closest('.card-body');
+          //  cardBody.find('.gala-qty-input').val($(inputElement).val());
 
             let itemId = cardBody.find('.real-item-id').val();
             if (!itemId) return; // Wait until an item is selected
@@ -470,7 +470,7 @@
             let sum = 0;
             $('.real-item-id').each(function () {
                 if ($(this).val() == itemId) {
-                    let rowQty = parseFloat($(this).closest('.card-body').find('.roll-qty-input').val()) || 0;
+                    let rowQty = parseFloat($(this).closest('.card-body').find('.qty-input').val()) || 0;
                     sum += rowQty;
                 }
             });
@@ -486,13 +486,13 @@
                 alert('Error: You have exceeded the available quantity for this item. Maximum allowed remaining is ' + maxAllowed.toFixed(2));
 
                 // Limit this input
-                $(inputElement).val(maxAllowed > 0 ? maxAllowed : '');
-                cardBody.find('.printed-roll-qty-input').val($(inputElement).val());
+              //  $(inputElement).val(maxAllowed > 0 ? maxAllowed : '');
+              //  cardBody.find('.gala-qty-input').val($(inputElement).val());
             }
         }
 
         function validateAllQty() {
-            $('.roll-qty-input').each(function () {
+            $('.qty-input').each(function () {
                 validateRollQty(this);
             });
         }
@@ -512,7 +512,7 @@
 
                         let sum = 0;
                         $('.real-item-id').filter(function () { return $(this).val() == itemId; }).each(function () {
-                            sum += parseFloat($(this).closest('.card-body').find('.roll-qty-input').val()) || 0;
+                            sum += parseFloat($(this).closest('.card-body').find('.qty-input').val()) || 0;
                         });
 
                         if (sum > available) {
@@ -560,9 +560,9 @@
             $('#remaining_qty').val(issued_qty - used_qty_total);
             $('#issued_rate').val(raw_avg_amt / used_qty_total);
 
-            // Get all roll_qty fields
-            let roll_qty_inputs = $("input[name='roll_qty[]']");
-            let printed_roll_qty_inputs = $("input[name='printed_roll_qty[]']");
+            // Get all qty fields
+            let roll_qty_inputs = $("input[name='qty[]']");
+            let printed_roll_qty_inputs = $("input[name='gala_qty[]']");
             let count = roll_qty_inputs.length;
 
             // ---- CASE 1: Auto distribute when Used Qty changes ----
@@ -576,7 +576,7 @@
                 });
             }
 
-            // ---- CASE 2: Validate manual roll_qty edits ----
+            // ---- CASE 2: Validate manual qty edits ----
             let sum_roll_qty = 0;
             roll_qty_inputs.each(function () {
                 sum_roll_qty += parseFloat($(this).val()) || 0;
@@ -589,10 +589,10 @@
 
 
             // ---- CASE 3: Calculate Finish Amount = Qty * Rate ----
-            $("[id^='roll_qty_']").each(function (index) {
+            $("[id^='qty_']").each(function (index) {
                 let row = index + 1;
 
-                let qty = parseFloat($(`#roll_qty_${row}`).val()) || 0;
+                let qty = parseFloat($(`#qty_${row}`).val()) || 0;
                 let rate = parseFloat($(`#finish_rate_${row}`).val()) || 0;
 
                 let amount = qty * rate;
