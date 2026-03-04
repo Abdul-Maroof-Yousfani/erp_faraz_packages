@@ -90,7 +90,7 @@
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <h1 style="display: inline-block;">Printed Roll Item Detail</h1>
+                                                            <h1 style="display: inline-block;">Gala Item Detail</h1>
 
                                                             <div class="col-md-12 padt pos-r"
                                                                 id="out_source_production_data_to_finish_received">
