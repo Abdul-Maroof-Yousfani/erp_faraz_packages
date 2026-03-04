@@ -1432,7 +1432,7 @@ class FarazProductionAddDetailController extends Controller
                 ->table('production_cutting_and_sealing')
                 ->where('id', $request->roll_id[$key])
                 ->update([
-                    'used_qty' => $request->used_qty_total,
+                    'used_qty' => $request->qty[$key],
                 ]);
             }
 
@@ -1476,7 +1476,7 @@ class FarazProductionAddDetailController extends Controller
                 // CHECK STOCK (CUT/SEALED ITEM)
                 // ========================
                 $availableQty = ReuseableCode::get_stock(
-                    $request->raw_item_id[0],
+                    $request->raw_item_id[$key],
                     0,
                     $request->qty[$key],
                     0
@@ -1485,13 +1485,13 @@ class FarazProductionAddDetailController extends Controller
                 if ($availableQty < 0) {
                     DB::connection('mysql2')->rollBack();
                     return "Insufficient stock for item " .
-                        CommonHelper::get_item_name($request->raw_item_id[0]);
+                        CommonHelper::get_item_name($request->raw_item_id[$key]);
                 }
 
 
                 $rollField = ($request->cutting_type == 'cutting and sealing')
-                    ? ['cutting_sealing_id' => $request->roll_id]
-                    : ['gala_cutting_id' => $request->roll_id];
+                    ? ['cutting_sealing_id' => $request->roll_id[$key]]
+                    : ['gala_cutting_id' => $request->roll_id[$key]];
 
                 $data2 = array_merge($rollField, [
                     'item_id' => $itemId,
@@ -1515,11 +1515,11 @@ class FarazProductionAddDetailController extends Controller
                 ReuseableCode::postStock(
                     $packingId,
                     0,
-                    $request->roll_id,
+                    $request->roll_id[$key],
                     $request->date[$key] ?? now(),
                     9,
                     $rawDetail->rate ?? 0,
-                    $request->raw_item_id[0],
+                    $request->raw_item_id[$key],
                     $rawDetail->sub_ic ?? '',
                     $request->qty[$key],
                     null
@@ -1531,7 +1531,7 @@ class FarazProductionAddDetailController extends Controller
                 ReuseableCode::postStock(
                     $packingId,
                     0,
-                    $request->roll_id,
+                    $request->roll_id[$key],
                     $request->date[$key] ?? now(),
                     11, // IN
                     $finishDetail->rate ?? 0,
@@ -1540,26 +1540,28 @@ class FarazProductionAddDetailController extends Controller
                     $request->bags_qty[$key],
                     null
                 );
-            }
 
-            // update used qty
-            if ($request->cutting_type == 'cutting and sealing') {
+                 if ($request->cutting_type == 'cutting and sealing') {
                 DB::connection('mysql2')
                     ->table('production_cutting_and_sealing')
-                    ->where('id', $request->roll_id)
-                    ->where('item_id', $request->raw_item_id[0])
+                    ->where('id', $request->roll_id[])
+                    ->where('item_id', $request->raw_item_id[$key])
                     ->update([
-                        'used_qty' => $request->used_qty_total,
+                        'used_qty' => $request->qty[$key],
                     ]);
             } else {
                 DB::connection('mysql2')
                     ->table('production_gala_cutting')
-                    ->where('id', $request->roll_id)
-                    ->where('item_id', $request->raw_item_id[0])
+                    ->where('id', $request->roll_id[$key])
+                    ->where('item_id', $request->raw_item_id[$key])
                     ->update([
-                        'used_qty' => $request->used_qty_total,
+                        'used_qty' => $request->qty[$key],
                     ]);
             }
+            }
+
+            // update used qty
+           
 
             DB::connection('mysql2')->commit();
 

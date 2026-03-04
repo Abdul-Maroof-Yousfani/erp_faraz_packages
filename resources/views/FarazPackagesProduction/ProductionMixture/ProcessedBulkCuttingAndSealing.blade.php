@@ -16,7 +16,7 @@
                     <h1>Production</h1>
                 </li>
                 <li>
-                    <h3><span class="glyphicon glyphicon-chevron-right"></span> &nbsp;Create Production Bulk GALA Cutting
+                    <h3><span class="glyphicon glyphicon-chevron-right"></span> &nbsp;Create Production Bulk Packing
                     </h3>
                 </li>
             </ul>
@@ -41,7 +41,7 @@
                         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                             <div class="panel">
                                 <div class="panel-body">
-                                    <form action="{{route('FarProduction.GalaCutting')}}" method="post">
+                                    <form action="{{route('FarProduction.Packing')}}" method="post">
                                         <input type="hidden" name="_token" value="{{ csrf_token() }}">
                                         <input type="hidden" id="for_disabled_btn">
 
@@ -51,7 +51,7 @@
                                                 <div class="row qout-h" style="padding: 10px">
                                                     <div class="col-md-12 bor-bo">
                                                         <div class="pips_create">
-                                                            <h1 style="display: inline-block;">Gala Cutting</h1>
+                                                            <h1 style="display: inline-block;">Packing</h1>
                                                         </div>
 
                                                     </div>
@@ -93,7 +93,7 @@
                                                         </div>
 
                                                         <div class="row">
-                                                            <div class="col-md-12">
+                                                            {{-- <div class="col-md-12">
                                                                 <hr>
                                                                 <div class="row">
                                                                     <div class="col-md-12 text-right mr-4">
@@ -101,8 +101,8 @@
                                                                             class="btn btn-primary mr-1">Add More</a>
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                            <h1 style="display: inline-block;">Printed Roll Item Detail</h1>
+                                                            </div> --}}
+                                                            <h1 style="display: inline-block;">Packaging Item Detail</h1>
 
                                                             <div class="col-md-12 padt pos-r"
                                                                 id="out_source_production_data_to_finish_received">
@@ -469,8 +469,8 @@
             let parsedVal = parseFloat($(inputElement).val()) || 0;
 
             // Auto-fill the Printed Roll Qty exactly
-            let cardBody = $(inputElement).closest('.card-body');
-            cardBody.find('.printed-roll-qty-input').val($(inputElement).val());
+            //let cardBody = $(inputElement).closest('.card-body');
+            //cardBody.find('.printed-roll-qty-input').val($(inputElement).val());
 
             let itemId = cardBody.find('.real-item-id').val();
             if (!itemId) return; // Wait until an item is selected
@@ -502,8 +502,8 @@
                 alert('Error: You have exceeded the available quantity for this item. Maximum allowed remaining is ' + maxAllowed.toFixed(2));
 
                 // Limit this input
-                $(inputElement).val(maxAllowed > 0 ? maxAllowed : '');
-                cardBody.find('.printed-roll-qty-input').val($(inputElement).val());
+                // $(inputElement).val(maxAllowed > 0 ? maxAllowed : '');
+                // cardBody.find('.printed-roll-qty-input').val($(inputElement).val());
             }
         }
 

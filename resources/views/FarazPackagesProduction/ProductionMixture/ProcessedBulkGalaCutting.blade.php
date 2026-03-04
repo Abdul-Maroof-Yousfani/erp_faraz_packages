@@ -81,7 +81,7 @@
                                                         </div>
 
                                                         <div class="row">
-                                                            <div class="col-md-12">
+                                                            {{-- <div class="col-md-12">
                                                                 <hr>
                                                                 <div class="row">
                                                                     <div class="col-md-12 text-right mr-4">
@@ -89,7 +89,7 @@
                                                                             class="btn btn-primary mr-1">Add More</a>
                                                                     </div>
                                                                 </div>
-                                                            </div>
+                                                            </div> --}}
                                                             <h1 style="display: inline-block;">Gala Item Detail</h1>
 
                                                             <div class="col-md-12 padt pos-r"
