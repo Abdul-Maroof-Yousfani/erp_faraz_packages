@@ -2230,7 +2230,7 @@ Route::group(['prefix' => 'far_production', 'middleware' => 'mysql2', 'before' =
 
     Route::get('/galaCutting', 'FarazProductionController@galaCutting');
     Route::get('/bulkgalaCutting', 'FarazProductionController@bulkgalaCutting');
-    Route::get('/bulkCuttingAndSealing', 'FarazProductionController@bulkCuttingAndSealing');
+    Route::get('/bulkPacking', 'FarazProductionController@bulkCuttingAndSealing');
 
     Route::get('/packing', 'FarazProductionController@packing');
 

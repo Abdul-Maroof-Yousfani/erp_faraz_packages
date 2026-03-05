@@ -292,7 +292,7 @@
 
                             <div class="row mb-3">
                                 <div class="col-md-4">
-                                    <label>C&S Qty <span class="text-danger">*</span></label>
+                                    <label>Cutting Qty <span class="text-danger">*</span></label>
                                     <input type="number" step="any" name="qty[]" class="form-control roll-qty-input requiredField" oninput="validateRollQty(this)" required>
                                 </div>
                                 <div class="col-md-4">
