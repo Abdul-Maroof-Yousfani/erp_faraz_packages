@@ -200,7 +200,7 @@
                         if (response.items.length === 0) {
                             $('#out_source_production_data_to_finish_received').append(`
                                 <div class="col-12 text-center text-muted py-4" id="empty-state">
-                                    No printed roll items found for this production order.
+                                    No items found for this production order.
                                 </div>
                             `);
                         } else {
