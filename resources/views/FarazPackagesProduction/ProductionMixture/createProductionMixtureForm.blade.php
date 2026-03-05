@@ -375,7 +375,8 @@ if ($accType == 'client') {
             }
 
             var instockinbag = parseFloat($('#instock' + number).val()) || 0;
-            var instock = instockinbag + 25;
+            var bagsize = 25;
+            var instock = instockinbag * bagsize;
             var qtyField = $('#required_qty' + number);
             var entered = parseFloat(qtyField.val()) || 0;
 
