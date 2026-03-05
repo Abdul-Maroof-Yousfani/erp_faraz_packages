@@ -1007,7 +1007,7 @@ class FarazProductionAddDetailController extends Controller
                     'production_order_id' => $production_mixture->production_order_id,
                     'production_mixture_id' => $production_mixture->id,
                     'item_id' => $itemId,
-                    'machine_id' => $request->machine_id[$key],
+                    'machine_id' => $request->machine_id[$key] ?? null,
                     'operator_id' => $request->operator_id[$key] ?? null,
                     'shift_id' => $request->shift_id[$key] ?? null,
                     'mixture_qty' => $mixtureQty,
