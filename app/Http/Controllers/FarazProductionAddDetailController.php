@@ -938,7 +938,7 @@ class FarazProductionAddDetailController extends Controller
 
                 $itemRate = $itemDetail->rate ?? 0;
                 $itemName = $itemDetail->sub_ic ?? '';
-
+                $requiredQtyInBags = $requiredQty / 25;
                 ReuseableCode::postStock(
                     $master_id,
                     0,
@@ -948,7 +948,7 @@ class FarazProductionAddDetailController extends Controller
                     $itemRate,
                     $itemId,
                     $itemName,
-                    $requiredQty,
+                    $requiredQtyInBags,
                     null
                 );
             }
