@@ -947,7 +947,7 @@ endif;
 
             var total_qty = (bags_qty * pack_qty).toFixed(2);
             $('#actual_qty' + counter).val(total_qty);
-            $('#qty_lbs' + counter).val(total_qty * 2.20462);
+            $('#qty_lbs' + counter).val(total_qty * 2.2);
 
         }
 
@@ -1058,7 +1058,7 @@ endif;
             $('#uom_id' + index).val(uom[1]);
             $('#item_code' + index).val(uom[2]);
             $('#actual_qty' + index).val(uom[3]);
-            $('#qty_lbs' + index).val(uom[3] * 2.20462);
+            $('#qty_lbs' + index).val(uom[3] * 2.2);
             $('#pack_qty').val(uom[3]);
 
             if (!$('#bags_qty' + index).val()) {

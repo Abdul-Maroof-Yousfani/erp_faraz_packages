@@ -809,7 +809,7 @@ use App\Helpers\ReuseableCode;
 
 				$('#pack_qty').val(pack_qty);
 				$('#actual_qty' + index).val(pack_qty);
-				$('#qty_lbs' + index).val(pack_qty * 2.20462);
+				$('#qty_lbs' + index).val(pack_qty * 2.2);
 
 				bag_qq(index);
 			});
@@ -819,7 +819,7 @@ use App\Helpers\ReuseableCode;
 				var pack_qty = parseFloat($('#pack_qty').val()) || 0;
 				var total_qty = (bags_qty * pack_qty).toFixed(2);
 				$('#actual_qty' + counter).val(total_qty);
-				$('#qty_lbs' + counter).val(total_qty * 2.20462);
+				$('#qty_lbs' + counter).val(total_qty * 2.2);
 			}
 		</script>
 		<script>
@@ -969,7 +969,7 @@ use App\Helpers\ReuseableCode;
 			function claculation(number) {
 				var qty = $('#actual_qty' + number).val();
 				var rate = $('#rate' + number).val();
-				var qty_lbs = parseFloat(qty) * 2.20462 || 0;
+				var qty_lbs = parseFloat(qty) * 2.2 || 0;
 
 				var total = parseFloat(qty * rate).toFixed(2);
 				$('#amount' + number).val(total);

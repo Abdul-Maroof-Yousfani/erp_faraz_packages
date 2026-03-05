@@ -417,7 +417,7 @@ $count = 1;
             $('#item_code' + index).val(uom[2]);
             $('#qty' + index).val(uom[3]);
             $('#pack_qty').val(uom[3]);
-            $('#qty_lbs' + index).val(uom[3]*2.20462);
+            $('#qty_lbs' + index).val(uom[3]*2.2);
             $('#color' + index).val(uom[5]);
             $('#pack_size' + index).val(1);
             console.log(index);
@@ -449,7 +449,7 @@ $count = 1;
             var pack_qty = parseFloat($('#pack_qty').val()) || 0;
             var total_qty = (bags_qty * pack_qty).toFixed(2);
             $('#qty' + counter).val(total_qty);
-            $('#qty_lbs' + counter).val(total_qty*2.20462);
+            $('#qty_lbs' + counter).val(total_qty*2.2);
         }
 
 
@@ -544,7 +544,7 @@ function calculation_amount(index) {
                 var rate = actual_rate ? actual_rate : 0;
                 var qty = actual_qty ? actual_qty : 0;
 
-                var qty_lbs = parseFloat(qty) * 2.20462 || 0;
+                var qty_lbs = parseFloat(qty) * 2.2 || 0;
                 row.find('[name="qty_lbs[]"]').val(qty_lbs.toFixed(2));
 
                 var total = parseFloat(qty_lbs) * parseFloat(rate);
