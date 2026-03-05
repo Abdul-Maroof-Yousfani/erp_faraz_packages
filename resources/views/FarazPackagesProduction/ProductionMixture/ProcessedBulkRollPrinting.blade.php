@@ -284,8 +284,8 @@
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <label>Color <span class="text-danger">*</span></label>
-                                    <select style="width: 100% !important;" name="color[]" id="color_${index}_a" class="form-control requiredField select2">
+                                    <label>Color</label>
+                                    <select style="width: 100% !important;" name="color[]" id="color_${index}_a" class="form-control select2">
                                         <option value="">Select</option>
                                         ${colorsHtml}
                                     </select>
@@ -401,8 +401,8 @@
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <label>Color <span class="text-danger">*</span></label>
-                                    <select style="width: 100% !important;" name="color[]" id="color${count}" class="form-control requiredField select2">
+                                    <label>Color</label>
+                                    <select style="width: 100% !important;" name="color[]" id="color${count}" class="form-control select2">
                                         <option value="">Select</option>
                                         @foreach($colors as $val)
                                             <option value="{{$val->id}}">{{ $val->name }}</option>
