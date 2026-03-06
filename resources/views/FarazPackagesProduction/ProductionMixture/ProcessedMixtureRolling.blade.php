@@ -1,6 +1,131 @@
 @extends('layouts.default')
 @section('content')
 @include('select2')
+<style>
+/* Rolling Item Detail - fluid & percentage-based layout */
+
+.rolling-detail-wrapper * {
+    font-size: 12px !important;
+    box-sizing: border-box;
+}
+
+.rolling-detail-wrapper label {
+    text-transform: capitalize;
+}
+
+/* Main row - flexible container */
+.rolling-detail-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;                /* slightly more breathing room */
+    align-items: flex-start;
+    margin-bottom: 10px;
+    width: 100%;
+    overflow-x: auto;        /* ← important: allows horizontal scroll on very small screens */
+    padding-bottom: 4px;     /* space for scrollbar if appears */
+}
+
+/* Base field styling - use percentages + min/max */
+.rolling-detail-row .rolling-field,
+.rolling-detail-row .rolling-field-input,
+.rolling-detail-row .rolling-field-item {
+    flex: 1 1 auto;          /* grow & shrink, but respect min-width */
+    min-width: 110px;        /* prevents fields from becoming too tiny */
+    max-width: 24%;          /* ← key change: cap each field ~1/4 of container */
+}
+
+/* Make item field wider (usually needs more space for names) */
+.rolling-detail-row .rolling-field-item {
+    flex: 1.6 1 auto;        /* ~1.6× wider than others */
+    max-width: 32%;
+    min-width: 180px;
+}
+
+/* Narrow fields (UoM, quantities, etc.) */
+.rolling-detail-row .rolling-field-input {
+    flex: 0.9 1 auto;
+    max-width: 14%;
+    min-width: 90px;
+}
+
+/* Labels */
+.rolling-detail-row .rolling-field label,
+.rolling-detail-row .rolling-field-input label,
+.rolling-detail-row .rolling-field-item label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Form controls */
+.rolling-detail-row input.form-control,
+.rolling-detail-row select.form-control {
+    width: 100% !important;
+    font-size: 11px;
+    padding: 4px 8px;
+    height: 30px;
+    line-height: 1.3;
+}
+
+/* Select2 adjustments */
+.rolling-detail-row .select2-container {
+    width: 100% !important;
+}
+
+.rolling-detail-row .select2-container .select2-selection--single {
+    height: 30px !important;
+}
+
+.rolling-detail-row .select2-selection__rendered {
+    line-height: 28px !important;
+    font-size: 11px !important;
+    padding-left: 8px !important;
+}
+
+.rolling-detail-row .select2-selection__arrow {
+    height: 28px !important;
+}
+
+/* Optional - better mobile/small screen experience */
+@media (max-width: 1024px) {
+    .rolling-detail-row {
+        gap: 6px;
+    }
+    .rolling-detail-row .rolling-field,
+    .rolling-detail-row .rolling-field-input,
+    .rolling-detail-row .rolling-field-item {
+        min-width: 100px;
+        max-width: 28%;
+    }
+    .rolling-detail-row .rolling-field-item {
+        max-width: 35%;
+        min-width: 160px;
+    }
+}
+
+@media (max-width: 768px) {
+    .rolling-detail-row {
+        flex-wrap: wrap;           /* allow wrapping on very small screens */
+        gap: 10px;
+    }
+    
+    .rolling-detail-row .rolling-field,
+    .rolling-detail-row .rolling-field-input,
+    .rolling-detail-row .rolling-field-item {
+        flex: 1 1 45%;            /* 2 columns layout */
+        max-width: 48%;
+        min-width: 45%;
+    }
+    
+    .rolling-detail-row .rolling-field-item {
+        flex: 1 1 100%;           /* item name takes full width */
+        max-width: 100%;
+    }
+}
+</style>
 
 <?php
 use App\Helpers\CommonHelper;
@@ -254,13 +379,12 @@ $global_avg_amt=0;
 
                                                 <h1 style="display: inline-block;">Rolling Item Detail</h1>
 
-                                                <div class="col-md-12 padt pos-r" id="out_source_production_data_to_finish_received" >
+                                                <div class="col-md-12 padt pos-r rolling-detail-wrapper" id="out_source_production_data_to_finish_received" >
 
-                                                    <div class="row">
-                                                        <div class="col-md-1">
+                                                    <div class="rolling-detail-row"  id="row_1">
+                                                        <div class="rolling-field">
                                                             <label for="">Category</label>
-                                                             <select style="width: 100% !important;"
-                                                                onchange="get_sub_item('category_id1');handleCategoryChange(this, 1)" name="category[]"
+                                                            <select onchange="get_sub_item('category_id1');handleCategoryChange(this, 1)" name="category[]"
                                                                 id="category_id1"
                                                                 class="form-control category select2 requiredField">
                                                                 <option value="">Select</option>
@@ -271,159 +395,76 @@ $global_avg_amt=0;
                                                                 @endforeach
                                                             </select>
                                                         </div>
-                                                        <div class="col-md-2">
+                                                        <div class="rolling-field-item">
                                                             <label for="">Item</label>
-                                                              <select style="width: 100% !important;"
-                                                                onchange="get_uom_name_by_item_id(this.value, 1)"
+                                                            <select onchange="get_uom_name_by_item_id(this.value, 1)"
                                                                 name="item_id[]" id="item_id1"
                                                                 class="form-control requiredField select2">
                                                                 <option>Select</option>
                                                             </select>
                                                         </div>
-                                                        
-                                                         <div class="col-md-1">
+                                                        <div class="rolling-field-input">
                                                             <label for="">Uom</label>
-                                                             <input type="text" class="form-control" name="uom[]" id="uom1"
-                                                                readonly>
+                                                            <input type="text" class="form-control" name="uom[]" id="uom1" readonly>
                                                         </div>
-                                                        
-                                                        <div class="col-md-1">
+                                                        <div class="rolling-field">
                                                             <label for="">Operator</label>
-                                                             <select style="width: 100% !important;"
-                                                                name="operator_id[]"
-                                                                id="operator_id1"
+                                                            <select name="operator_id[]" id="operator_id1"
                                                                 class="form-control requiredField select2">
                                                                 <option value="">Select</option>
                                                                 @foreach($operators as $val)
-                                                                    <option
-                                                                        value="{{$val->id}}">
-                                                                        {{ $val->name }}
-                                                                    </option>
+                                                                    <option value="{{$val->id}}">{{ $val->name }}</option>
                                                                 @endforeach
                                                             </select>
                                                         </div>
-                                                        <div class="col-md-1">
+                                                        <div class="rolling-field">
                                                             <label for="">Machine</label>
-                                                             <select style="width: 100% !important;"
-                                                                name="machine_id[]"
-                                                                id="machine_id1"
+                                                            <select name="machine_id[]" id="machine_id1"
                                                                 class="form-control requiredField select2">
                                                                 <option value="">Select</option>
                                                                 @foreach($machines as $val)
-                                                                    <option
-                                                                        value="{{$val->id}}">
-                                                                        {{ $val->name }}
-                                                                    </option>
+                                                                    <option value="{{$val->id}}">{{ $val->name }}</option>
                                                                 @endforeach
                                                             </select>
                                                         </div>
-                                                        <div class="col-md-1">
+                                                        <div class="rolling-field">
                                                             <label for="">Shift</label>
-                                                             <select style="width: 100% !important;"
-                                                                name="shift_id[]"
-                                                                id="shift_id1"
+                                                            <select name="shift_id[]" id="shift_id1"
                                                                 class="form-control requiredField select2">
                                                                 <option value="">Select</option>
                                                                 @foreach($shifts as $val)
-                                                                    <option
-                                                                        value="{{$val->id}}">
-                                                                        {{ $val->shift_type_name }}
-                                                                    </option>
+                                                                    <option value="{{$val->id}}">{{ $val->shift_type_name }}</option>
                                                                 @endforeach
                                                             </select>
                                                         </div>
-                                                       
-                                                        <div class="col-md-1">
+                                                        <div class="rolling-field">
                                                             <label for="">Date</label>
-                                                            <input 
-                                                                type="date"
-                                                                name="date[]"
-                                                                id="date_1"
+                                                            <input type="date" name="date[]" id="date_1"
                                                                 class="form-control move-next date"
-                                                                value="{{ date('Y-m-d') }}"
-                                                                required 
-                                                            >
-                                                            
+                                                                value="{{ date('Y-m-d') }}" required>
                                                         </div>
-
-                                                        {{-- <div class="col-md-1">
-                                                            <label for="">Mixture Qty.</label> --}}
-                                                            <input 
-                                                                type="hidden" 
-                                                                name="mixture_qty[]"
-                                                                id="mixture_qty_1"
-                                                                class="form-control move-next mixture_qty_1 requiredField"
-                                                                onkeyup="cal_amt()"
-                                                                required 
-
-                                                            >
-                                                        {{-- </div> --}}
-
-
-                                                        <div class="col-md-1">
+                                                        <input type="hidden" name="mixture_qty[]" id="mixture_qty_1"
+                                                            class="form-control move-next mixture_qty_1 requiredField"
+                                                            onkeyup="cal_amt()" required>
+                                                        <div class="rolling-field-input">
                                                             <label for="" id="roll_qty_label_1">Rolls Qty (Kg)</label>
-                                                            <input 
-                                                                type="text" 
-                                                                name="roll_qty_kg[]"
-                                                                id="roll_qty_kg_1"
+                                                            <input type="text" name="roll_qty_kg[]" id="roll_qty_kg_1"
                                                                 class="form-control move-next roll_qty_kg_1 requiredField"
-                                                                onkeyup="cal_amt()"
-                                                                required 
-
-                                                            >
+                                                                onkeyup="cal_amt()" required>
                                                         </div>
-
-                                                        <div class="col-md-1">
+                                                        <div class="rolling-field-input">
                                                             <label for="">No. of Rolls</label>
-                                                            <input 
-                                                                type="text" 
-                                                                name="roll_qty[]"
-                                                                id="roll_qty_1"
+                                                            <input type="text" name="roll_qty[]" id="roll_qty_1"
                                                                 class="form-control move-next roll_qty_1 requiredField"
-                                                                onkeyup="cal_amt()"
-                                                                required 
-
-                                                            >
+                                                                onkeyup="cal_amt()" required>
                                                         </div>
-
-                                                        {{-- <div class="col-md-1">
-                                                            <label for="">Rate</label>
-                                                            <input 
-                                                                type="text"
-                                                                id="finish_rate_1"
-                                                                name="finish_rate[]"
-                                                                class="form-control move-next finish_rate_1"
-                                                                onkeyup="cal_amt()"
-                                                                required
-                                                            >
+                                                       <div class="rolling-field-input" style="min-width:50px; flex:0 0 auto;">
+                                                            <label>&nbsp;</label>
+                                                            <button type="button" class="btn btn-danger btn-sm"
+                                                                    onclick="removeDiv('row_1')">
+                                                                -
+                                                            </button>
                                                         </div>
-
-                                                        <div class="col-md-1">
-                                                            <label for="">Amount</label>
-                                                            <input 
-                                                                type="number"
-                                                                readonly
-                                                                id="finish_amount_1"
-                                                                name="finish_amount[]"
-                                                                class="form-control finish_amount_1"
-                                                                value="0" 
-                                                                required
-                                                            >
-                                                        </div> --}}
-
-                                                        {{-- <div class="col-md-1">
-                                                            <label for="">End Amount</label>
-                                                            <input 
-                                                                type="number"
-                                                                readonly
-                                                                id="finish_end_amount_1"
-                                                                name="finish_end_amount[]"
-                                                                class="form-control finish_end_amount_1"
-                                                                value="0" 
-                                                                required
-                                                            >
-                                                        </div> --}}
-                                                    
                                                     </div>
                                                     
                                                 </div>
@@ -459,17 +500,16 @@ $global_avg_amt=0;
     </div>
 <script>
 
-    $('.select2').select2()
+    $('.select2').select2({ width: '100%' })
 
     let count = 2;
     function addRawMaterial() 
     {
         let html = `
-                    <div class="row" id="row_${count}">
-                        <div class="col-md-1">
+                    <div class="rolling-detail-row" id="row_${count}">
+                        <div class="rolling-field">
                             <label for="">Category</label>
-                                <select style="width: 100% !important;"
-                                onchange="get_sub_item('category_id${count}');handleCategoryChange(this, ${count})" name="category[]"
+                            <select onchange="get_sub_item('category_id${count}');handleCategoryChange(this, ${count})" name="category[]"
                                 id="category_id${count}"
                                 class="form-control category select2 requiredField">
                                 <option value="">Select</option>
@@ -480,168 +520,83 @@ $global_avg_amt=0;
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-2">
+                        <div class="rolling-field-item">
                             <label for="">Item</label>
-                                <select style="width: 100% !important;"
-                                onchange="get_uom_name_by_item_id(this.value, ${count})"
+                            <select onchange="get_uom_name_by_item_id(this.value, ${count})"
                                 name="item_id[]" id="item_id${count}"
                                 class="form-control requiredField select2">
                                 <option>Select</option>
                             </select>
                         </div>
-                        
-                        
-                        <div class="col-md-1">
+                        <div class="rolling-field-input">
                             <label for="">Uom</label>
-                                <input type="text" class="form-control" name="uom[]" id="uom${count}"
-                                readonly>
+                            <input type="text" class="form-control" name="uom[]" id="uom${count}" readonly>
                         </div>
-                        <div class="col-md-1">
+                        <div class="rolling-field">
                             <label for="">Operator</label>
-                                <select style="width: 100% !important;"
-                                name="operator_id[]"
-                                id="operator_id${count}"
+                            <select name="operator_id[]" id="operator_id${count}"
                                 class="form-control requiredField select2">
                                 <option value="">Select</option>
                                 @foreach($operators as $val)
-                                    <option
-                                        value="{{$val->id}}">
-                                        {{ $val->name }}
-                                    </option>
+                                    <option value="{{$val->id}}">{{ $val->name }}</option>
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-1">
+                        <div class="rolling-field">
                             <label for="">Machine</label>
-                                <select style="width: 100% !important;"
-                                name="machine_id[]"
-                                id="machine_id${count}"
+                            <select name="machine_id[]" id="machine_id${count}"
                                 class="form-control requiredField select2">
                                 <option value="">Select</option>
                                 @foreach($machines as $val)
-                                    <option
-                                        value="{{$val->id}}">
-                                        {{ $val->name }}
-                                    </option>
+                                    <option value="{{$val->id}}">{{ $val->name }}</option>
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-1">
+                        <div class="rolling-field">
                             <label for="">Shift</label>
-                                <select style="width: 100% !important;"
-                                name="shift_id[]"
-                                id="shift_id${count}"
+                            <select name="shift_id[]" id="shift_id${count}"
                                 class="form-control requiredField select2">
                                 <option value="">Select</option>
                                 @foreach($shifts as $val)
-                                    <option
-                                        value="{{$val->id}}">
-                                        {{ $val->shift_type_name }}
-                                    </option>
+                                    <option value="{{$val->id}}">{{ $val->shift_type_name }}</option>
                                 @endforeach
                             </select>
                         </div>
-                        
-                        <div class="col-md-1">
+                        <div class="rolling-field">
                             <label for="">Date</label>
-                            <input 
-                                type="date"
-                                name="date[]"
-                                id="date_${count}"
+                            <input type="date" name="date[]" id="date_${count}"
                                 class="form-control move-next date"
-                                value="{{ date('Y-m-d') }}" 
-                                required 
-
-                            >
-                            
+                                value="{{ date('Y-m-d') }}" required>
                         </div>
-{{-- 
-                        <div class="col-md-1">
-                            <label for="">Mixture Qty.</label> --}}
-                            <input 
-                                type="hidden" 
-                                name="mixture_qty[]"
-                                id="mixture_qty_${count}"
-                                class="form-control move-next mixture_qty_${count} requiredField"
-                                onkeyup="cal_amt()"
-                                required 
-
-                            >
-                        {{-- </div> --}}
-
-                        <div class="col-md-1">
+                        <input type="hidden" name="mixture_qty[]" id="mixture_qty_${count}"
+                            class="form-control move-next mixture_qty_${count} requiredField"
+                            onkeyup="cal_amt()" required>
+                        <div class="rolling-field-input">
                             <label for="" id="roll_qty_label_${count}">Rolls Qty (Kg)</label>
-                            <input 
-                                type="text" 
-                                name="roll_qty_kg[]"
-                                id="roll_qty_kg_${count}"
+                            <input type="text" name="roll_qty_kg[]" id="roll_qty_kg_${count}"
                                 class="form-control move-next roll_qty_kg_${count} requiredField"
-                                onkeyup="cal_amt()"
-                                required 
-
-                            >
+                                onkeyup="cal_amt()" required>
                         </div>
-                        <div class="col-md-1">
+                        <div class="rolling-field-input">
                             <label for="">No. of Rolls</label>
-                            <input 
-                                type="text" 
-                                name="roll_qty[]"
-                                id="roll_qty_${count}"
+                            <input type="text" name="roll_qty[]" id="roll_qty_${count}"
                                 class="form-control move-next roll_qty_${count} requiredField"
-                                onkeyup="cal_amt()"
-                                required 
-
-                            >
+                                onkeyup="cal_amt()" required>
                         </div>
-                        {{-- <div class="col-md-1">
-                            <label for="">rate</label>
-                            <input 
-                                type="text"
-                                id="finish_rate_${count}"
-                                name="finish_rate[]"
-                                class="form-control move-next finish_rate_${count} requiredField"
-                                onkeyup="cal_amt()" 
-                                required
-                            >
+                        <div class="rolling-field-input" style="min-width:50px; flex:0 0 auto;">
+                            <label>&nbsp;</label>
+                            <button type="button" class="btn btn-danger btn-sm"
+                                    onclick="removeDiv('row_${count}')">
+                                -
+                            </button>
                         </div>
-
-                        <div class="col-md-1">
-                            <label for="">Amount</label>
-                            <input 
-                                type="number"
-                                readonly
-                                id="finish_amount_${count}"
-                                name="finish_amount[]"
-                                class="form-control move-next finish_amount_${count} requiredField"
-                                value="0" 
-                                required
-                            >
-                        </div> --}}
-
-
-                        {{-- <div class="col-md-1">
-                            <label for="">End Amount</label>
-                            <input 
-                                type="number"
-                                readonly
-                                id="finish_end_amount_${count}"
-                                name="finish_end_amount[]"
-                                class="form-control move-next finish_end_amount_${count} requiredField"
-                                value="0" 
-                                required
-                            >
-                        </div> --}}
-                    
-                        <div class="col-md-1" style="padding-top: 41px;">
-                            <a class="btn btn-danger mr-1" style="" onclick="removeDiv('row_${count}')">-</a>
-                        </div>
-                    
                     </div>
                     `;
 
-            $('#out_source_production_data_to_finish_received').append(html)        
-
-        count++
+            $('#out_source_production_data_to_finish_received').append(html);
+            // Initialize select2 on newly added row
+            $('#row_' + count + ' .select2').select2({ width: '100%' });
+            count++;
     }
 
 function validateUsedQty(input) {
@@ -785,11 +740,17 @@ $("[id^='roll_qty_']").each(function (index) {
 
 
 
+function removeDiv(divId) {
+    const $row = $('#' + divId);
+    if ($row.length === 0) return;
 
-    function removeDiv(div) {
-        $('#'+div).remove()
+    if ($('.rolling-detail-row').length <= 1) {
+        alert("Cannot remove the last row!");
+        return;
     }
 
+    $row.remove();
+}
     
     
     $(document).on("keydown", ".move-next", function(e) {
