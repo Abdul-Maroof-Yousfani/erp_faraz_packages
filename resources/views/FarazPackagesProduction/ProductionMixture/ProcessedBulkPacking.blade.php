@@ -179,7 +179,7 @@
                 }
 
                 $.ajax({
-                    url: "{{ route('FarProduction.getCuttingAndSealingItems') }}",
+                    url: "{{ route('FarProduction.getGalaOrCuttingAndSealingItems') }}",
                     type: "GET",
                     data: {
                         production_order_id: productionOrderId,

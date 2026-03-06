@@ -1012,7 +1012,7 @@ class FarazProductionAddDetailController extends Controller
                     'shift_id' => $request->shift_id[$key] ?? null,
                     'mixture_qty' => $mixtureQty,
                     'roll_qty' => $rollQty,
-                    'per_roll_qty_kg' => $request->roll_qty_kg[$key] ?? 0,
+                    'rolls_qty_kg' => $request->roll_qty_kg[$key] ?? 0,
                     'date' => $request->date[$key] ?? now(),
                     'status' => 1,
                     'username' => Auth::user()->name,
@@ -1193,19 +1193,12 @@ class FarazProductionAddDetailController extends Controller
 
             // Now update each production_rolling record with **its own** total printed qty
             foreach ($rollUpdates as $rollId => $qtyForThisRoll) {
-                // DB::connection('mysql2')
-                //     ->table('production_rolling')
-                //     ->where('id', $rollId)
-                //     ->update([
-                //         'printed_roll_qty' => $qtyForThisRoll,
-                //         // Optionally: 'updated_at' => now(), etc.
-                //     ]);
-
                 DB::connection('mysql2')
                     ->table('production_rolling')
                     ->where('id', $rollId)
-                    ->increment('printed_roll_qty', $qtyForThisRoll);
-
+                    ->update([
+                        'printed_rolls_qty_kg' => DB::raw("COALESCE(printed_rolls_qty_kg,0) + $qtyForThisRoll")
+                    ]);
             }
 
             DB::connection('mysql2')->commit();

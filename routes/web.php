@@ -2198,7 +2198,8 @@ Route::get('/pv_acount_head_po_pi_chunk', 'AllInOnePaymentVoucherController@pv_a
 
 
 Route::group(['prefix' => 'far_production', 'middleware' => 'mysql2', 'before' => 'csrf'], function () {
-    // production order
+
+    // step 1: production order
     Route::get('/createProductionOrderForm', 'FarazProductionController@createProductionOrderForm');
     Route::get('/viewProductionOrderList', 'FarazProductionController@viewProductionOrderList');
     Route::get('/viewProductionOrderListDetail', 'FarazProductionController@viewProductionOrderListDetail');
@@ -2206,33 +2207,38 @@ Route::group(['prefix' => 'far_production', 'middleware' => 'mysql2', 'before' =
     Route::get('/viewProductionOrderDetailTrack', 'FarazProductionController@viewProductionOrderDetailTrack');
     Route::get('/editProductionOrderForm/{id}', 'FarazProductionController@editProductionOrderForm');
 
-    // production mixture
+    // step 2: roduction mixture module
     Route::get('/addProductionMixture', 'FarazProductionController@addProductionMixture');
     Route::get('/viewProductionMixingList', 'FarazProductionController@viewProductionMixingList');
     Route::get('/viewMixingInfo', 'FarazProductionController@viewMixingInfo');
     Route::get('/mixtureEdit', 'FarazProductionController@mixtureEdit');
 
+    // step 3: production rolling module
     Route::get('/mixtureRolling', 'FarazProductionController@mixtureRolling');
     Route::get('/viewProductionRollingList', 'FarazProductionController@viewProductionRollingList');
-    Route::get('/viewProductionRollPrintingList', 'FarazProductionController@viewProductionRollPrintingList');
-    Route::get('/viewProductionCuttingAndSealingList', 'FarazProductionController@viewProductionCuttingAndSealingList');
-    Route::get('/viewProductionGalaCuttingList', 'FarazProductionController@viewProductionGalaCuttingList');
-    Route::get('/viewProductionPackingList', 'FarazProductionController@viewProductionPackingList');
 
-
+    // step 4: production roll printing module
     Route::get('/rollPrinting', 'FarazProductionController@rollPrinting');
     Route::get('/bulkRollPrinting', 'FarazProductionController@bulkRollPrinting');
     Route::get('/getRollingItemsForBulkPrinting', 'FarazProductionController@getRollingItemsForBulkPrinting')->name('FarProduction.getRollingItems');
-    Route::get('/getGalaItemsForBulkPrinting', 'FarazProductionController@getGalaItemsForBulkPrinting')->name('FarProduction.getGalaItems');
-    Route::get('/getCuttingAndSealingItemsForBulkPrinting', 'FarazProductionController@getCuttingAndSealingItemsForBulkPrinting')->name('FarProduction.getCuttingAndSealingItems');
-
+    Route::get('/viewProductionRollPrintingList', 'FarazProductionController@viewProductionRollPrintingList');
+    
+    // step 5: production cutting and sealing module
     Route::get('/cuttingAndSealing', 'FarazProductionController@cuttingAndSealing');
+    Route::get('/viewProductionCuttingAndSealingList', 'FarazProductionController@viewProductionCuttingAndSealingList');
 
+    // step 6: production gala cutting module (if item's category type is gala cutting  other wise that step goes skiped and goes directly to packing)
     Route::get('/galaCutting', 'FarazProductionController@galaCutting');
     Route::get('/bulkgalaCutting', 'FarazProductionController@bulkgalaCutting');
-    Route::get('/bulkPacking', 'FarazProductionController@bulkCuttingAndSealing');
+    Route::get('/getSealingItemForBulkGalaCutting', 'FarazProductionController@getSealingItemForBulkGalaCutting')->name('FarProduction.getSealingItems');
+    Route::get('/viewProductionGalaCuttingList', 'FarazProductionController@viewProductionGalaCuttingList');
 
+    // step 6 or step 7: production packing module
     Route::get('/packing', 'FarazProductionController@packing');
+    Route::get('/bulkPacking', 'FarazProductionController@bulkPacking');
+    Route::get('/getGalaOrCuttingAndSealingItemsForBulkPacking', 'FarazProductionController@getGalaOrCuttingAndSealingItemsForBulkPacking')->name('FarProduction.getGalaOrCuttingAndSealingItems');
+    Route::get('/viewProductionPackingList', 'FarazProductionController@viewProductionPackingList');
+
 
     Route::resource('mixture_machines', 'MixtureMachineController');
 

@@ -535,8 +535,8 @@ class FarazProductionController extends Controller
         $out_source_productions_item = DB::connection('mysql2')
             ->table('production_rolling')
             ->select(
-                DB::raw('SUM(roll_qty) as total_qty'),
-                DB::raw('SUM(printed_roll_qty) as total_used_qty'),
+                DB::raw('SUM(rolls_qty_kg) as total_qty'),
+                DB::raw('SUM(printed_rolls_qty_kg) as total_used_qty'),
                 'date',
                 'item_id',
                 'id'
@@ -604,7 +604,7 @@ class FarazProductionController extends Controller
                 ->table('production_rolling')
                 ->select(
                     'roll_qty as total_qty',
-                    'printed_roll_qty as total_used_qty',
+                    'printed_rolls_qty_kg as total_used_qty',
                     'date',
                     'item_id',
                     'id'
@@ -669,8 +669,8 @@ class FarazProductionController extends Controller
             ->select(
                 'pr.id',
                 'pr.item_id',
-                'pr.roll_qty as total_qty',
-                'pr.printed_roll_qty as total_used_qty',
+                'pr.rolls_qty_kg as total_qty',
+                'pr.printed_rolls_qty_kg as total_used_qty',
                 'pr.date',
                 's.item_code',
                 's.sub_ic',
@@ -683,7 +683,7 @@ class FarazProductionController extends Controller
         return response()->json(['items' => $items]);
     }
 
-    public function getGalaItemsForBulkPrinting(Request $request)
+    public function getSealingItemForBulkGalaCutting(Request $request)
     {
         $m = $request->m;
         $production_order_id = $request->production_order_id;
@@ -711,7 +711,7 @@ class FarazProductionController extends Controller
         return response()->json(['items' => $items]);
     }
 
-    public function getCuttingAndSealingItemsForBulkPrinting(Request $request)
+    public function getCuttingAndSealingItemsForBulkPacking(Request $request)
     {
         $m = $request->m;
         $production_order_id = $request->production_order_id;
@@ -979,7 +979,7 @@ class FarazProductionController extends Controller
         return view('FarazPackagesProduction.ProductionMixture.ProcessedBulkGalaCutting', compact('id', 'out_source_productions_item', 'sub_item', 'sub_item_wastage', 'machines', 'operators', 'shifts', 'brands', 'colors', 'production_order', 'm'));
     }
 
-    public function bulkCuttingAndSealing(Request $request)
+    public function bulkPacking(Request $request)
     {
         $m = $request->m;
         $id = $request->id;
@@ -1043,7 +1043,7 @@ class FarazProductionController extends Controller
         $colors = DB::Connection('mysql2')->table('colors')
             ->select('id', 'name')
             ->where('status', '=', 1)->get();        // dd($out_source_productions_item);
-        return view('FarazPackagesProduction.ProductionMixture.ProcessedBulkCuttingAndSealing', compact('id', 'out_source_productions_item', 'sub_item', 'machines', 'operators', 'shifts', 'brands', 'colors', 'production_order', 'm'));
+        return view('FarazPackagesProduction.ProductionMixture.ProcessedBulkPacking', compact('id', 'out_source_productions_item', 'sub_item', 'machines', 'operators', 'shifts', 'brands', 'colors', 'production_order', 'm'));
     }
     public function packing(Request $request)
     {
