@@ -2222,9 +2222,11 @@ Route::group(['prefix' => 'far_production', 'middleware' => 'mysql2', 'before' =
     Route::get('/bulkRollPrinting', 'FarazProductionController@bulkRollPrinting');
     Route::get('/getRollingItemsForBulkPrinting', 'FarazProductionController@getRollingItemsForBulkPrinting')->name('FarProduction.getRollingItems');
     Route::get('/viewProductionRollPrintingList', 'FarazProductionController@viewProductionRollPrintingList');
-    
+
     // step 5: production cutting and sealing module
     Route::get('/cuttingAndSealing', 'FarazProductionController@cuttingAndSealing');
+    Route::get('/bulkCuttingAndSealing', 'FarazProductionController@bulkCuttingAndSealing');
+    Route::get('/getPrintedRollItemsForBulkCuttingAndSealing', 'FarazProductionController@getPrintedRollItemsForBulkCuttingAndSealing')->name('FarProduction.getPrintedRollItems');
     Route::get('/viewProductionCuttingAndSealingList', 'FarazProductionController@viewProductionCuttingAndSealingList');
 
     // step 6: production gala cutting module (if item's category type is gala cutting  other wise that step goes skiped and goes directly to packing)
@@ -2262,6 +2264,7 @@ Route::group(['prefix' => 'far_prod', 'middleware' => 'mysql2', 'before' => 'csr
 
     // production cutting and packing ajax
     Route::post('/addProductionCuttingAndSealingDetail', 'FarazProductionAddDetailController@addProductionCuttingAndSealingDetail')->name('FarProduction.CuttingAndSealing');
+    Route::post('/addBulkProductionCuttingAndSealingDetail', 'FarazProductionAddDetailController@addBulkProductionCuttingAndSealingDetail')->name('FarProduction.BulkCuttingAndSealing');
 
     // production gala cutting ajax
     Route::post('/addProductionGalaCuttingDetail', 'FarazProductionAddDetailController@addProductionGalaCuttingDetail')->name('FarProduction.GalaCutting');
@@ -2616,7 +2619,8 @@ Route::get('store-items-data', function () {
         catch (\Exception $e) {
             DB::Connection('mysql2')->rollBack();
             return "<h2>Error</h2><p>Error storing items: " . $e->getMessage() . "</p>";
-        }    });
+        }
+    });
 
 require('Production/Production.php');
 require('InventoryMaster/InventoryMaster.php');
