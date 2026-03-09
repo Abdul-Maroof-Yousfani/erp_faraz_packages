@@ -49,6 +49,7 @@ $this->m = Session::get('run_company');
                                                     <th class="text-center">S.No</th>
                                                     <th class="text-center">Item</th>
                                                     <th class="text-center">Bags Qty</th>
+                                                    <th class="text-center">Bags Qty (KG)</th>
                                                     <th class="text-center">Cutting Qty</th>
                                                     <th class="text-center">Date</th>
                                                     <th class="text-center">Prod. Order No.</th>
@@ -63,6 +64,7 @@ $this->m = Session::get('run_company');
                                                             <td>{{++$count}}</td>
                                                             <td>{{CommonHelper::get_item_name($Fil->item_id)}}</td>
                                                             <td> {{$Fil->packing_bags_qty}} </td>
+                                                            <td> {{$Fil->packing_bags_qty*25}} </td>
                                                             <td> {{$Fil->cutting_qty}} </td>
                                                             <td> {{$Fil->date}} </td>
                                                             <td>
