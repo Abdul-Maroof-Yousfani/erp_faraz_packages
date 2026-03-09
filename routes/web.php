@@ -2238,7 +2238,7 @@ Route::group(['prefix' => 'far_production', 'middleware' => 'mysql2', 'before' =
     // step 6 or step 7: production packing module
     Route::get('/packing', 'FarazProductionController@packing');
     Route::get('/bulkPacking', 'FarazProductionController@bulkPacking');
-    Route::get('/getGalaOrCuttingAndSealingItemsForBulkPacking', 'FarazProductionController@getGalaOrCuttingAndSealingItemsForBulkPacking')->name('FarProduction.getGalaOrCuttingAndSealingItems');
+    Route::get('/getGalaOrCuttingAndSealingItemsForBulkPacking', 'FarazProductionController@getCuttingAndSealingItemsForBulkPacking')->name('FarProduction.getGalaOrCuttingAndSealingItems');
     Route::get('/viewProductionPackingList', 'FarazProductionController@viewProductionPackingList');
 
 

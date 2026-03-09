@@ -95,6 +95,20 @@ $Operator   = [];
 
                                                         </div>
 
+                                                        <div class="col-md-3">
+                                                            <label>Wastage Item</label>
+                                                            <select name="wastage_item_id" class="form-control select2">
+                                                                <option value="">Select</option>
+                                                                @foreach($sub_item_wastage ?? [] as $val)
+                                                                    <option value="{{ $val->id }}">{{ $val->item_code }} -- {{ $val->sub_ic }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <label>Wastage Qty (KG)</label>
+                                                            <input type="number" step="any" name="wastage_qty" class="form-control">
+                                                        </div>
+
                                                        
                                                     </div>
                                                     <?php

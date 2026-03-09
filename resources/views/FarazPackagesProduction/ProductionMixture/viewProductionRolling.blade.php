@@ -51,6 +51,7 @@ $this->m = Session::get('run_company');
                                                     <th class="text-center">Qty</th>
                                                     <th class="text-center">Mixture used</th>
                                                     <th class="text-center">Prod. Order No.</th>
+                                                    <th class="text-center">Used In Printing</th>
                                                     <th class="text-center">Status</th>
                                                     <th class="text-center">Action</th>
                                                 </thead>
@@ -63,6 +64,12 @@ $this->m = Session::get('run_company');
                                                             <td> {{$Fil->roll_qty}} </td>
                                                             <td> {{$Fil->mixture_qty}} </td>
                                                             <td>{{ optional($Fil->productionOrder)->pr_no }} </td>
+                                                            <td class="text-center">
+                                                                @php
+                                                                    $usedQty = $Fil->printed_rolls_qty_kg ?? 0;
+                                                                @endphp
+                                                                {{ $usedQty > 0 ? 'Used(' . $usedQty . ')' : 'Not Used(' . $usedQty . ')' }}
+                                                            </td>
                                                             <td>
                                                                 @if($Fil->status == 1)
                                                                     Active

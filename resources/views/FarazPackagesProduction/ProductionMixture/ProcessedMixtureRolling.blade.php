@@ -203,10 +203,10 @@ $Operator   = [];
                                                             <label for="">Date</label>
                                                             <input 
                                                                 type="date"
-                                                                readonly
                                                                 id="date"
                                                                 class="form-control date"
                                                                 value="{{ $production_mixture->date }}" 
+                                                                min="{{ $production_mixture->date }}"
                                                             >
                                                         </div>
 <div class="col-md-2">
@@ -441,7 +441,7 @@ $global_avg_amt=0;
                                                             <label for="">Date</label>
                                                             <input type="date" name="date[]" id="date_1"
                                                                 class="form-control move-next date"
-                                                                value="{{ date('Y-m-d') }}" required>
+                                                                value="{{ $production_mixture->date }}" min="{{ $production_mixture->date }}" required>
                                                         </div>
                                                         <input type="hidden" name="mixture_qty[]" id="mixture_qty_1"
                                                             class="form-control move-next mixture_qty_1 requiredField"
@@ -566,7 +566,7 @@ $global_avg_amt=0;
                             <label for="">Date</label>
                             <input type="date" name="date[]" id="date_${count}"
                                 class="form-control move-next date"
-                                value="{{ date('Y-m-d') }}" required>
+                                value="{{$production_mixture->date}}" min="{{ $production_mixture->date }}" required>
                         </div>
                         <input type="hidden" name="mixture_qty[]" id="mixture_qty_${count}"
                             class="form-control move-next mixture_qty_${count} requiredField"

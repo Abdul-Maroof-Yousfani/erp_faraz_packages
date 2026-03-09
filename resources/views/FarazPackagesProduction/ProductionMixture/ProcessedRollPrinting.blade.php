@@ -64,10 +64,10 @@ $Operator   = [];
                                                             <label for="">Date</label>
                                                             <input 
                                                                 type="date"
-                                                                readonly
                                                                 id="raw_date"
                                                                 name="raw_date"
                                                                 class="form-control date"
+                                                                min="{{ $out_source_productions_item->date }}" 
                                                                 value="{{ $out_source_productions_item->date }}" 
                                                             >
                                                         </div>
@@ -378,7 +378,8 @@ $global_avg_amt=0;
                                                                 name="date[]"
                                                                 id="date_1"
                                                                 class="form-control move-next date"
-                                                                value="{{ date('Y-m-d') }}"
+                                                                value="{{ $out_source_productions_item->date }}"
+                                                                min="{{ $out_source_productions_item->date }}"
                                                                 required 
                                                             >
                                                             
@@ -594,7 +595,9 @@ $global_avg_amt=0;
                                 name="date[]"
                                 id="date_${count}"
                                 class="form-control move-next date"
-                                value="{{ date('Y-m-d') }}" 
+                                value="{{ $out_source_productions_item->date }}"
+                                min="{{ $out_source_productions_item->date }}"
+
                                 required 
 
                             >

@@ -50,6 +50,7 @@ $this->m = Session::get('run_company');
                                                     <th class="text-center">Produced Mixture</th>
                                                     <th class="text-center">Mixing No</th>
                                                     <th class="text-center">Prod. Order No.</th>
+                                                    <th class="text-center">Used In Next Step</th>
                                                     <th class="text-center">Status</th>
                                                     <th class="text-center">Action</th>
                                                 </thead>
@@ -61,6 +62,13 @@ $this->m = Session::get('run_company');
                                                             <td>{{CommonHelper::get_item_name($Fil->produced_item_id)}}</td>
                                                             <td> {{$Fil->pm_no}} </td>
                                                             <td>{{ optional($Fil->productionOrder)->pr_no }} </td>
+                                                            <td class="text-center">
+                                                                @if(($Fil->usage_count ?? 0) > 0)
+                                                                    Used
+                                                                @else
+                                                                    Not Used
+                                                                @endif
+                                                            </td>
                                                             <td>
                                                                 @if($Fil->status == 1)
                                                                     Active

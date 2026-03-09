@@ -21,7 +21,7 @@ $this->m = Session::get('run_company');
                         <div class="row align-items-center">
                             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                                 <div class="headquid">
-                                    <h2 class="subHeadingLabelClass">Production Cutting & Sealing List</h2>
+                                    <h2 class="subHeadingLabelClass">Production Gala Cutting List</h2>
                                 </div>
                             </div>
                             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 text-right">
@@ -53,6 +53,7 @@ $this->m = Session::get('run_company');
                                                     <th class="text-center">C&S Qty</th>
                                                     <th class="text-center">Date</th>
                                                     <th class="text-center">Prod. Order No.</th>
+                                                    <th class="text-center">Used In Packing</th>
                                                     <th class="text-center">Status</th>
                                                     <th class="text-center">Action</th>
                                                 </thead>
@@ -66,6 +67,12 @@ $this->m = Session::get('run_company');
                                                             <td> {{$Fil->cs_qty}} </td>
                                                             <td> {{$Fil->date}} </td>
                                                             <td>{{ optional($Fil->cuttingAndSealing->printedRoll->productionRoll->productionOrder)->pr_no }}
+                                                            </td>
+                                                            <td class="text-center">
+                                                                @php
+                                                                    $usedQty = $Fil->used_qty ?? 0;
+                                                                @endphp
+                                                                {{ $usedQty > 0 ? 'Used(' . $usedQty . ')' : 'Not Used(' . $usedQty . ')' }}
                                                             </td>
                                                             <td>
                                                                 @if($Fil->status == 1)

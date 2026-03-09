@@ -53,6 +53,7 @@ $this->m = Session::get('run_company');
                                                     <th class="text-center">Rolls Used</th>
                                                     <th class="text-center">Date</th>
                                                     <th class="text-center">Prod. Order No.</th>
+                                                    <th class="text-center">Used In Gala/Packing</th>
                                                     <th class="text-center">Status</th>
                                                     <th class="text-center">Action</th>
                                                 </thead>
@@ -65,7 +66,15 @@ $this->m = Session::get('run_company');
                                                             <td> {{$Fil->qty}} </td>
                                                             <td> {{$Fil->printed_roll_qty}} </td>
                                                             <td> {{$Fil->date}} </td>
-                                                            <td>-</td>
+                                                            <td>
+                                                                {{ optional(optional(optional($Fil->printedRoll)->productionRoll)->productionOrder)->pr_no ?? '-' }}
+                                                            </td>
+                                                            @php
+                                                                $usedQty = $Fil->used_qty ?? 0;
+                                                            @endphp
+                                                            <td class="text-center">
+                                                                {{ $usedQty > 0 ? 'Used(' . $usedQty . ')' : 'Not Used(' . $usedQty . ')' }}
+                                                            </td>
                                                             <td>
                                                                 @if($Fil->status == 1)
                                                                     Active

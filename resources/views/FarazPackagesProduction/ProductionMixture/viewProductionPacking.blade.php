@@ -52,6 +52,7 @@ $this->m = Session::get('run_company');
                                                     <th class="text-center">Cutting Qty</th>
                                                     <th class="text-center">Date</th>
                                                     <th class="text-center">Prod. Order No.</th>
+                                                    <th class="text-center">Usage</th>
                                                     <th class="text-center">Status</th>
                                                     <th class="text-center">Action</th>
                                                 </thead>
@@ -65,13 +66,15 @@ $this->m = Session::get('run_company');
                                                             <td> {{$Fil->cutting_qty}} </td>
                                                             <td> {{$Fil->date}} </td>
                                                             <td>
-                                                            -
-                                                                {{-- @if($Fil->galaCutting->cuttingAndSealing->printedRoll->productionRoll)
-                                                                    {{ $Fil->galaCutting->cuttingAndSealing->printedRoll->productionRoll->productionOrder->pr_no ?? 'N/A' }}
+                                                                @if($Fil->galaCutting && $Fil->galaCutting->cuttingAndSealing && $Fil->galaCutting->cuttingAndSealing->printedRoll && $Fil->galaCutting->cuttingAndSealing->printedRoll->productionRoll)
+                                                                    {{ optional($Fil->galaCutting->cuttingAndSealing->printedRoll->productionRoll->productionOrder)->pr_no ?? 'N/A' }}
+                                                                @elseif($Fil->cuttingAndSealing && $Fil->cuttingAndSealing->printedRoll && $Fil->cuttingAndSealing->printedRoll->productionRoll)
+                                                                    {{ optional($Fil->cuttingAndSealing->printedRoll->productionRoll->productionOrder)->pr_no ?? 'N/A' }}
                                                                 @else
-                                                                    {{ $Fil->cuttingAndSealing->printedRoll->productionRoll->productionOrder->pr_no ?? 'N/A' }}
-                                                                @endif --}}
+                                                                    N/A
+                                                                @endif
                                                             </td>
+                                                            <td class="text-center">Final Step</td>
 
                                                             </td>
                                                             <td>

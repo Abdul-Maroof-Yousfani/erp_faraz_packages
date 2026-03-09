@@ -55,6 +55,7 @@ $this->m = Session::get('run_company');
                                                     <th class="text-center">Date</th>
                                                     <th class="text-center">Remarks</th>
                                                     <th class="text-center">Prod. Order No.</th>
+                                                    <th class="text-center">Used In C&S</th>
                                                     <th class="text-center">Status</th>
                                                     <th class="text-center">Action</th>
                                                 </thead>
@@ -71,6 +72,12 @@ $this->m = Session::get('run_company');
                                                             <td> {{$Fil->date }} </td>
                                                             <td> {{$Fil->remarks}} </td>
                                                             <td>{{ optional($Fil->productionRoll->productionOrder)->pr_no }} </td>
+                                                            <td class="text-center">
+                                                                @php
+                                                                    $usedRolls = $Fil->used_no_of_roll ?? 0;
+                                                                @endphp
+                                                                {{ $usedRolls > 0 ? 'Used(' . $usedRolls . ')' : 'Not Used(' . $usedRolls . ')' }}
+                                                            </td>
                                                             <td>
                                                                 @if($Fil->status == 1)
                                                                     Active

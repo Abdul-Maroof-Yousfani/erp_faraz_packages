@@ -25,4 +25,9 @@ class ProductionMixture extends Model
     {
         return $this->belongsTo(ProductionOrder::class, 'production_order_id');
     }
+
+    public function productionRollings()
+    {
+        return $this->hasMany(ProductionRolling::class, 'production_mixture_id');
+    }
 }

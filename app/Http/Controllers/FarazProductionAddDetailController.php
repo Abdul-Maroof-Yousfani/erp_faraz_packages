@@ -1223,7 +1223,7 @@ class FarazProductionAddDetailController extends Controller
 
     public function addProductionCuttingAndSealingDetail(Request $request)
     {
-        dd($request->all());
+        // dd($request->all());
         $request->validate([
             'item_id' => 'required|array',
             'machine_id' => 'required|array',
@@ -1232,7 +1232,8 @@ class FarazProductionAddDetailController extends Controller
         DB::connection('mysql2')->beginTransaction();
 
         try {
-
+            $wastageItemId = $request->wastage_item_id;
+            $wastageQty = (float) $request->wastage_qty;
             foreach ($request->item_id as $key => $itemId) {
 
                 $qty = $request->qty[$key] ?? 0;
@@ -1318,6 +1319,41 @@ class FarazProductionAddDetailController extends Controller
                 ->update([
                     'used_no_of_roll' => $request->used_qty_total,
                 ]);
+
+            // wastage section
+            $wastageItemId = $request->wastage_item_id;
+            $wastageQty = (float) $request->wastage_qty;
+
+            if ($wastageItemId && $wastageQty > 0) {
+
+
+                // Record wastage centrally (adjust table/columns as per your wastage schema)
+                DB::connection('mysql2')->table('production_wastage')->insert([
+                    'module' => 'cutting_and_sealing', // or 'gala_cutting', 'packing'
+                    'reference_id' => $csId ?? null,         // or $galaId / $packingId or 0 for bulk
+                    'item_id' => $wastageItemId,
+                    'qty' => $wastageQty,
+                    'date' => now()->format('Y-m-d'),
+                    'username' => Auth::user()->name,
+                    'status' => 1,
+                ]);
+
+                // Stock OUT for wastage
+                $wDetail = CommonHelper::get_subitem_detail2($wastageItemId);
+
+                ReuseableCode::postStock(
+                    $csId ?? null,
+                    0,
+                    $request->roll_id[0] ?? $request->roll_id ?? '',
+                    $request->date[0] ?? $request->date ?? now(),
+                    11,                          // IN
+                    $wDetail->rate ?? 0,
+                    $wastageItemId,
+                    $wDetail->sub_ic ?? '',
+                    $wastageQty,
+                    null
+                );
+            }
 
             DB::connection('mysql2')->commit();
 
@@ -1440,7 +1476,40 @@ class FarazProductionAddDetailController extends Controller
             }
             // dd("ok");
 
-            // update used qty in printing
+            // wastage section
+            $wastageItemId = $request->wastage_item_id;
+            $wastageQty = (float) $request->wastage_qty;
+
+            if ($wastageItemId && $wastageQty > 0) {
+
+
+                // Record wastage centrally (adjust table/columns as per your wastage schema)
+                DB::connection('mysql2')->table('production_wastage')->insert([
+                    'module' => 'cutting_and_sealing', // or 'gala_cutting', 'packing'
+                    'reference_id' => 0,         // or $galaId / $packingId or 0 for bulk
+                    'item_id' => $wastageItemId,
+                    'qty' => $wastageQty,
+                    'date' => now()->format('Y-m-d'),
+                    'username' => Auth::user()->name,
+                    'status' => 1,
+                ]);
+
+                // Stock OUT for wastage
+                $wDetail = CommonHelper::get_subitem_detail2($wastageItemId);
+
+                ReuseableCode::postStock(
+                    0,
+                    0,
+                    $request->roll_id[0] ?? $request->roll_id ?? '',
+                    $request->date[0] ?? $request->date ?? now(),
+                    11,                          // IN
+                    $wDetail->rate ?? 0,
+                    $wastageItemId,
+                    $wDetail->sub_ic ?? '',
+                    $wastageQty,
+                    null
+                );
+            }
 
 
             DB::connection('mysql2')->commit();
@@ -1557,7 +1626,40 @@ class FarazProductionAddDetailController extends Controller
 
             }
 
-            // update used qty in cutting & sealing
+            // wastage section
+            $wastageItemId = $request->wastage_item_id;
+            $wastageQty = (float) $request->wastage_qty;
+
+            if ($wastageItemId && $wastageQty > 0) {
+
+
+                // Record wastage centrally (adjust table/columns as per your wastage schema)
+                DB::connection('mysql2')->table('production_wastage')->insert([
+                    'module' => 'gala_cutting', // or 'gala_cutting', 'packing'
+                    'reference_id' => 0,         // or $galaId / $packingId or 0 for bulk
+                    'item_id' => $wastageItemId,
+                    'qty' => $wastageQty,
+                    'date' => now()->format('Y-m-d'),
+                    'username' => Auth::user()->name,
+                    'status' => 1,
+                ]);
+
+                // Stock OUT for wastage
+                $wDetail = CommonHelper::get_subitem_detail2($wastageItemId);
+
+                ReuseableCode::postStock(
+                    0,
+                    0,
+                    $request->roll_id[0] ?? $request->roll_id ?? '',
+                    $request->date[0] ?? $request->date ?? now(),
+                    11,                          // IN
+                    $wDetail->rate ?? 0,
+                    $wastageItemId,
+                    $wDetail->sub_ic ?? '',
+                    $wastageQty,
+                    null
+                );
+            }
 
 
             DB::connection('mysql2')->commit();
@@ -1694,6 +1796,41 @@ class FarazProductionAddDetailController extends Controller
             }
 
             // update used qty
+
+            // wastage section
+            $wastageItemId = $request->wastage_item_id;
+            $wastageQty = (float) $request->wastage_qty;
+
+            if ($wastageItemId && $wastageQty > 0) {
+
+
+                // Record wastage centrally (adjust table/columns as per your wastage schema)
+                DB::connection('mysql2')->table('production_wastage')->insert([
+                    'module' => 'packing', // or 'gala_cutting', 'packing'
+                    'reference_id' => 0,         // or $galaId / $packingId or 0 for bulk
+                    'item_id' => $wastageItemId,
+                    'qty' => $wastageQty,
+                    'date' => now()->format('Y-m-d'),
+                    'username' => Auth::user()->name,
+                    'status' => 1,
+                ]);
+
+                // Stock OUT for wastage
+                $wDetail = CommonHelper::get_subitem_detail2($wastageItemId);
+
+                ReuseableCode::postStock(
+                    0,
+                    0,
+                    $request->roll_id[0] ?? $request->roll_id ?? '',
+                    $request->date[0] ?? $request->date ?? now(),
+                    11,                          // IN
+                    $wDetail->rate ?? 0,
+                    $wastageItemId,
+                    $wDetail->sub_ic ?? '',
+                    $wastageQty,
+                    null
+                );
+            }
 
 
             DB::connection('mysql2')->commit();

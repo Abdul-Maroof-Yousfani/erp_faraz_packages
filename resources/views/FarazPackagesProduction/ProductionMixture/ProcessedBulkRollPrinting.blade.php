@@ -8,7 +8,7 @@
     $Sales_Order = [];
     $Machine = [];
     $Operator = [];
-        ?>
+            ?>
     <div class="row well_N align-items-center">
         <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
             <ul class="cus-ul">
@@ -23,10 +23,10 @@
         </div>
         <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12 text-right">
             <!-- <ul class="cus-ul2">
-                        <li>
-                            <a href="{{ url()->previous() }}" class="btn-a">Back</a>
-                        </li>
-                    </ul>  -->
+                            <li>
+                                <a href="{{ url()->previous() }}" class="btn-a">Back</a>
+                            </li>
+                        </ul>  -->
         </div>
     </div>
     <div class="row">
@@ -146,16 +146,16 @@
                         $subInfo = $sub_item->where('id', $item->item_id)->first();
                     @endphp
                     @if($subInfo)
-                                            {
+                                                        {
                         item_id: '{{ $item->item_id }}',
                         item_code: '{{ $subInfo->item_code }}',
                         sub_ic: '{{ $subInfo->sub_ic }}',
                         total_qty: {{ $item->total_qty ?? 0 }},
                         total_used_qty: {{ $item->total_used_qty ?? 0 }}
-                                            },
+                                                        },
                     @endif
                 @endforeach
-                        ];
+                                ];
         @endif
 
             function fetchRollingItems() {
@@ -185,10 +185,10 @@
 
                         if (response.items.length === 0) {
                             $('#out_source_production_data_to_finish_received').append(`
-                                <div class="col-12 text-center text-muted py-4" id="empty-state">
-                                    No printed roll items found for this production order.
-                                </div>
-                            `);
+                                    <div class="col-12 text-center text-muted py-4" id="empty-state">
+                                        No printed roll items found for this production order.
+                                    </div>
+                                `);
                         } else {
                             $('#out_source_production_data_to_finish_received').empty();
 
@@ -209,7 +209,7 @@
             let shiftsHtml = `@foreach($shifts as $val)<option value="{{$val->id}}">{{ $val->shift_type_name }}</option>@endforeach`;
             let brandsHtml = `@foreach($brands as $val)<option value="{{$val->id}}">{{ $val->name }}</option>@endforeach`;
             let colorsHtml = `@foreach($colors as $val)<option value="{{$val->id}}">{{ $val->name }}</option>@endforeach`;
-            let dateValue = "{{ date('Y-m-d') }}";
+            let dateValue = item.date || "{{ date('Y-m-d') }}";
 
             let selectedOption = `<option value="${item.item_id}" selected>${item.item_code} -- ${item.sub_ic}</option>`;
 
@@ -218,101 +218,101 @@
             let remaining = totalQty - totalUsedQty;
 
             return `
-                    <div class="card mb-3 shadow-sm border-0" id="row_${index}_a" style="background-color: #fcfcfc;">
-                        <div class="card-body">
+                        <div class="card mb-3 shadow-sm border-0" id="row_${index}_a" style="background-color: #fcfcfc;">
+                            <div class="card-body">
 
-                         <div class="d-flex justify-content-between border-bottom pb-2 mb-3">
-                                <button type="button" class="btn btn-sm btn-danger" onclick="removeDiv('row_${index}_a')"><i class="fa fa-trash"></i> Remove</button>
-                            </div>
-
-                            <div class="row mb-3 align-items-end">
-                                <div class="col-md-5">
-                                    <label class="font-weight-bold">Item <span class="text-danger">*</span></label>
-                                    <select style="width: 100% !important;" class="form-control item-select select2" disabled>
-                                        ${selectedOption}
-                                    </select>
-                                    <input type="hidden" name="item_id[]" class="real-item-id" value="${item.item_id}">
-                                    <input type="hidden" name="roll_id[]" value="${item.id}">
+                             <div class="d-flex justify-content-between border-bottom pb-2 mb-3">
+                                    <button type="button" class="btn btn-sm btn-danger" onclick="removeDiv('row_${index}_a')"><i class="fa fa-trash"></i> Remove</button>
                                 </div>
-                                <div class="col-md-7">
-                                    <div class="d-flex justify-content-start align-items-center h-100 pb-2">
-                                        <span class="badge badge-info mr-2 p-2" style="font-size: 0.9em;">Total Qty: ${totalQty}</span>
-                                        <span class="badge badge-secondary mr-2 p-2" style="font-size: 0.9em;">Used: ${totalUsedQty}</span>
-                                        <span class="badge badge-success p-2" style="font-size: 0.9em;">Remaining: <span class="remaining-display">${remaining}</span></span>
+
+                                <div class="row mb-3 align-items-end">
+                                    <div class="col-md-5">
+                                        <label class="font-weight-bold">Item <span class="text-danger">*</span></label>
+                                        <select style="width: 100% !important;" class="form-control item-select select2" disabled>
+                                            ${selectedOption}
+                                        </select>
+                                        <input type="hidden" name="item_id[]" class="real-item-id" value="${item.item_id}">
+                                        <input type="hidden" name="roll_id[]" value="${item.id}">
+                                    </div>
+                                    <div class="col-md-7">
+                                        <div class="d-flex justify-content-start align-items-center h-100 pb-2">
+                                            <span class="badge badge-info mr-2 p-2" style="font-size: 0.9em;">Total Qty: ${totalQty}</span>
+                                            <span class="badge badge-secondary mr-2 p-2" style="font-size: 0.9em;">Used: ${totalUsedQty}</span>
+                                            <span class="badge badge-success p-2" style="font-size: 0.9em;">Remaining: <span class="remaining-display">${remaining}</span></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        <label>Operator <span class="text-danger">*</span></label>
+                                        <select style="width: 100% !important;" name="operator_id[]" id="operator_id_${index}_a" class="form-control requiredField select2">
+                                            <option value="">Select</option>
+                                            ${operatorsHtml}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>Machine <span class="text-danger">*</span></label>
+                                        <select style="width: 100% !important;" name="machine_id[]" id="machine_id_${index}_a" class="form-control requiredField select2">
+                                            <option value="">Select</option>
+                                            ${machinesHtml}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>Shift <span class="text-danger">*</span></label>
+                                        <select style="width: 100% !important;" name="shift_id[]" id="shift_id_${index}_a" class="form-control requiredField select2">
+                                            <option value="">Select</option>
+                                            ${shiftsHtml}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>Type <span class="text-danger">*</span></label>
+                                        <select style="width: 100% !important;" name="type_id[]" id="type_id_${index}_a" class="form-control requiredField select2">
+                                            <option value="">Select</option>
+                                            <option value="Printed">Printed</option>
+                                            <option value="Non-Printed">Non-Printed</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        <label>Brand <span class="text-danger">*</span></label>
+                                        <select style="width: 100% !important;" name="brand[]" id="brand_${index}_a" class="form-control requiredField select2">
+                                            <option value="">Select</option>
+                                            ${brandsHtml}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>Color</label>
+                                        <select style="width: 100% !important;" name="color[]" id="color_${index}_a" class="form-control select2">
+                                            <option value="">Select</option>
+                                            ${colorsHtml}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label>Remarks</label>
+                                        <input type="text" name="remarks[]" class="form-control move-next">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label>Date <span class="text-danger">*</span></label>
+                                        <input type="date" name="date[]" class="form-control move-next date" value="${dateValue}" min="${item.date || dateValue}" required>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label>Roll Qty <span class="text-danger">*</span></label>
+                                        <input type="number" step="any" name="roll_qty[]" class="form-control roll-qty-input requiredField" oninput="validateRollQty(this)" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label>Printed Roll Qty <span class="text-danger">*</span></label>
+                                        <input type="number" step="any" name="printed_roll_qty[]" class="form-control printed-roll-qty-input requiredField" readonly required>
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="row mb-3">
-                                <div class="col-md-3">
-                                    <label>Operator <span class="text-danger">*</span></label>
-                                    <select style="width: 100% !important;" name="operator_id[]" id="operator_id_${index}_a" class="form-control requiredField select2">
-                                        <option value="">Select</option>
-                                        ${operatorsHtml}
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label>Machine <span class="text-danger">*</span></label>
-                                    <select style="width: 100% !important;" name="machine_id[]" id="machine_id_${index}_a" class="form-control requiredField select2">
-                                        <option value="">Select</option>
-                                        ${machinesHtml}
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label>Shift <span class="text-danger">*</span></label>
-                                    <select style="width: 100% !important;" name="shift_id[]" id="shift_id_${index}_a" class="form-control requiredField select2">
-                                        <option value="">Select</option>
-                                        ${shiftsHtml}
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label>Type <span class="text-danger">*</span></label>
-                                    <select style="width: 100% !important;" name="type_id[]" id="type_id_${index}_a" class="form-control requiredField select2">
-                                        <option value="">Select</option>
-                                        <option value="Printed">Printed</option>
-                                        <option value="Non-Printed">Non-Printed</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="row mb-3">
-                                <div class="col-md-3">
-                                    <label>Brand <span class="text-danger">*</span></label>
-                                    <select style="width: 100% !important;" name="brand[]" id="brand_${index}_a" class="form-control requiredField select2">
-                                        <option value="">Select</option>
-                                        ${brandsHtml}
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label>Color</label>
-                                    <select style="width: 100% !important;" name="color[]" id="color_${index}_a" class="form-control select2">
-                                        <option value="">Select</option>
-                                        ${colorsHtml}
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label>Remarks</label>
-                                    <input type="text" name="remarks[]" class="form-control move-next">
-                                </div>
-                                <div class="col-md-2">
-                                    <label>Date <span class="text-danger">*</span></label>
-                                    <input type="date" name="date[]" class="form-control move-next date" value="${dateValue}" required>
-                                </div>
-                            </div>
-
-                            <div class="row mb-3">
-                                <div class="col-md-4">
-                                    <label>Roll Qty <span class="text-danger">*</span></label>
-                                    <input type="number" step="any" name="roll_qty[]" class="form-control roll-qty-input requiredField" oninput="validateRollQty(this)" required>
-                                </div>
-                                <div class="col-md-4">
-                                    <label>Printed Roll Qty <span class="text-danger">*</span></label>
-                                    <input type="number" step="any" name="printed_roll_qty[]" class="form-control printed-roll-qty-input requiredField" readonly required>
-                                </div>
-                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
         }
 
         let count = 2000;
@@ -325,113 +325,113 @@
             });
 
             let html = `
-                    <div class="card mb-3 shadow-sm border-0" id="row_${count}" style="background-color: #fcfcfc;">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between border-bottom pb-2 mb-3">
-                                <button type="button" class="btn btn-sm btn-danger" onclick="removeDiv('row_${count}')"><i class="fa fa-trash"></i> Remove</button>
-                            </div>
-
-                            <div class="row mb-3 align-items-end">
-                                <div class="col-md-5">
-                                    <label class="font-weight-bold">Item <span class="text-danger">*</span></label>
-                                    <select style="width: 100% !important;"
-                                        name="item_id[]"
-                                        id="item_id${count}"
-                                        class="form-control requiredField item-select real-item-id select2"
-                                        onchange="itemSelected(this)">
-                                        ${itemOptions}
-                                    </select>
-                                    <input type="hidden" name="roll_id[]" value="">
+                        <div class="card mb-3 shadow-sm border-0" id="row_${count}" style="background-color: #fcfcfc;">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between border-bottom pb-2 mb-3">
+                                    <button type="button" class="btn btn-sm btn-danger" onclick="removeDiv('row_${count}')"><i class="fa fa-trash"></i> Remove</button>
                                 </div>
-                                <div class="col-md-7">
-                                    <div class="d-flex justify-content-start align-items-center h-100 pb-2 item-stats-container" style="display: none !important;">
-                                        <span class="badge badge-info mr-2 p-2" style="font-size: 0.9em;">Total Qty: <span class="stat-total">0</span></span>
-                                        <span class="badge badge-secondary mr-2 p-2" style="font-size: 0.9em;">Used: <span class="stat-used">0</span></span>
-                                        <span class="badge badge-success p-2" style="font-size: 0.9em;">Remaining: <span class="remaining-display">0</span></span>
+
+                                <div class="row mb-3 align-items-end">
+                                    <div class="col-md-5">
+                                        <label class="font-weight-bold">Item <span class="text-danger">*</span></label>
+                                        <select style="width: 100% !important;"
+                                            name="item_id[]"
+                                            id="item_id${count}"
+                                            class="form-control requiredField item-select real-item-id select2"
+                                            onchange="itemSelected(this)">
+                                            ${itemOptions}
+                                        </select>
+                                        <input type="hidden" name="roll_id[]" value="">
+                                    </div>
+                                    <div class="col-md-7">
+                                        <div class="d-flex justify-content-start align-items-center h-100 pb-2 item-stats-container" style="display: none !important;">
+                                            <span class="badge badge-info mr-2 p-2" style="font-size: 0.9em;">Total Qty: <span class="stat-total">0</span></span>
+                                            <span class="badge badge-secondary mr-2 p-2" style="font-size: 0.9em;">Used: <span class="stat-used">0</span></span>
+                                            <span class="badge badge-success p-2" style="font-size: 0.9em;">Remaining: <span class="remaining-display">0</span></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        <label>Operator <span class="text-danger">*</span></label>
+                                        <select style="width: 100% !important;" name="operator_id[]" id="operator_id${count}" class="form-control requiredField select2">
+                                            <option value="">Select</option>
+                                            @foreach($operators as $val)
+                                                <option value="{{$val->id}}">{{ $val->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>Machine <span class="text-danger">*</span></label>
+                                        <select style="width: 100% !important;" name="machine_id[]" id="machine_id${count}" class="form-control requiredField select2">
+                                            <option value="">Select</option>
+                                            @foreach($machines as $val)
+                                                <option value="{{$val->id}}">{{ $val->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>Shift <span class="text-danger">*</span></label>
+                                        <select style="width: 100% !important;" name="shift_id[]" id="shift_id${count}" class="form-control requiredField select2">
+                                            <option value="">Select</option>
+                                            @foreach($shifts as $val)
+                                                <option value="{{$val->id}}">{{ $val->shift_type_name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>Type <span class="text-danger">*</span></label>
+                                        <select style="width: 100% !important;" name="type_id[]" id="type_id${count}" class="form-control requiredField select2">
+                                            <option value="">Select</option>
+                                            <option value="Printed">Printed</option>
+                                            <option value="Non-Printed">Non-Printed</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        <label>Brand <span class="text-danger">*</span></label>
+                                        <select style="width: 100% !important;" name="brand[]" id="brand${count}" class="form-control requiredField select2">
+                                            <option value="">Select</option>
+                                            @foreach($brands as $val)
+                                                <option value="{{$val->id}}">{{ $val->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>Color</label>
+                                        <select style="width: 100% !important;" name="color[]" id="color${count}" class="form-control select2">
+                                            <option value="">Select</option>
+                                            @foreach($colors as $val)
+                                                <option value="{{$val->id}}">{{ $val->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label>Remarks</label>
+                                        <input type="text" name="remarks[]" id="remarks_${count}" class="form-control move-next">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label>Date <span class="text-danger">*</span></label>
+                                        <input type="date" name="date[]" id="date_${count}" class="form-control move-next date" value="{{ date('Y-m-d') }}" required>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label>Roll Qty <span class="text-danger">*</span></label>
+                                        <input type="number" step="any" name="roll_qty[]" id="roll_qty_${count}" class="form-control roll-qty-input requiredField" oninput="validateRollQty(this)" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label>Printed Roll Qty <span class="text-danger">*</span></label>
+                                        <input type="number" step="any" name="printed_roll_qty[]" id="printed_roll_qty_${count}" class="form-control printed-roll-qty-input requiredField" readonly required>
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="row mb-3">
-                                <div class="col-md-3">
-                                    <label>Operator <span class="text-danger">*</span></label>
-                                    <select style="width: 100% !important;" name="operator_id[]" id="operator_id${count}" class="form-control requiredField select2">
-                                        <option value="">Select</option>
-                                        @foreach($operators as $val)
-                                            <option value="{{$val->id}}">{{ $val->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label>Machine <span class="text-danger">*</span></label>
-                                    <select style="width: 100% !important;" name="machine_id[]" id="machine_id${count}" class="form-control requiredField select2">
-                                        <option value="">Select</option>
-                                        @foreach($machines as $val)
-                                            <option value="{{$val->id}}">{{ $val->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label>Shift <span class="text-danger">*</span></label>
-                                    <select style="width: 100% !important;" name="shift_id[]" id="shift_id${count}" class="form-control requiredField select2">
-                                        <option value="">Select</option>
-                                        @foreach($shifts as $val)
-                                            <option value="{{$val->id}}">{{ $val->shift_type_name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label>Type <span class="text-danger">*</span></label>
-                                    <select style="width: 100% !important;" name="type_id[]" id="type_id${count}" class="form-control requiredField select2">
-                                        <option value="">Select</option>
-                                        <option value="Printed">Printed</option>
-                                        <option value="Non-Printed">Non-Printed</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="row mb-3">
-                                <div class="col-md-3">
-                                    <label>Brand <span class="text-danger">*</span></label>
-                                    <select style="width: 100% !important;" name="brand[]" id="brand${count}" class="form-control requiredField select2">
-                                        <option value="">Select</option>
-                                        @foreach($brands as $val)
-                                            <option value="{{$val->id}}">{{ $val->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label>Color</label>
-                                    <select style="width: 100% !important;" name="color[]" id="color${count}" class="form-control select2">
-                                        <option value="">Select</option>
-                                        @foreach($colors as $val)
-                                            <option value="{{$val->id}}">{{ $val->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label>Remarks</label>
-                                    <input type="text" name="remarks[]" id="remarks_${count}" class="form-control move-next">
-                                </div>
-                                <div class="col-md-2">
-                                    <label>Date <span class="text-danger">*</span></label>
-                                    <input type="date" name="date[]" id="date_${count}" class="form-control move-next date" value="{{ date('Y-m-d') }}" required>
-                                </div>
-                            </div>
-
-                            <div class="row mb-3">
-                                <div class="col-md-4">
-                                    <label>Roll Qty <span class="text-danger">*</span></label>
-                                    <input type="number" step="any" name="roll_qty[]" id="roll_qty_${count}" class="form-control roll-qty-input requiredField" oninput="validateRollQty(this)" required>
-                                </div>
-                                <div class="col-md-4">
-                                    <label>Printed Roll Qty <span class="text-danger">*</span></label>
-                                    <input type="number" step="any" name="printed_roll_qty[]" id="printed_roll_qty_${count}" class="form-control printed-roll-qty-input requiredField" readonly required>
-                                </div>
-                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
 
             $('#out_source_production_data_to_finish_received').append(html);
             $('.select2').select2();
@@ -443,7 +443,7 @@
             let itemId = $(selectElement).val();
             let statsContainer = $(selectElement).closest('.card-body').find('.item-stats-container');
             let card = $(selectElement).closest('.card');
-            
+
             card.find('input[name="roll_id[]"]').val('');
 
             if (!itemId) {
@@ -462,9 +462,27 @@
 
                 statsContainer.attr('style', 'display: flex !important;');
 
-                if (itemData.id) {       
+                if (itemData.id) {
                     card.find('input[name="roll_id[]"]').val(itemData.id);
                 }
+
+               
+                let dateInput = card.find('input[type="date"][name="date[]"]');
+
+                if (itemData.date) {
+                    dateInput.val(itemData.date);
+                }
+                else {
+                    dateInput.val(new Date().toISOString().split('T')[0]);
+                }
+
+                
+                if (itemData.date) {
+                    dateInput.attr('min', itemData.date);
+                } else {
+                    dateInput.attr('min', new Date().toISOString().split('T')[0]);
+                }
+
                 console.log("haziq", itemData.id);
             }
 

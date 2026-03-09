@@ -64,10 +64,10 @@ $Operator   = [];
                                                             <label for="">Date</label>
                                                             <input 
                                                                 type="date"
-                                                                readonly
                                                                 id="date"
                                                                 class="form-control date"
                                                                 value="{{ $out_source_productions_item->date }}" 
+                                                                min="{{ $out_source_productions_item->date }}"
                                                             >
                                                         </div>
                                                         <div class="col-md-2">
@@ -95,7 +95,19 @@ $Operator   = [];
 
                                                         </div>
 
-                                                       
+                                                        <div class="col-md-3">
+                                                            <label>Wastage Item</label>
+                                                            <select name="wastage_item_id" class="form-control select2">
+                                                                <option value="">Select</option>
+                                                                @foreach($sub_item_wastage ?? [] as $val)
+                                                                    <option value="{{ $val->id }}">{{ $val->item_code }} -- {{ $val->sub_ic }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <label>Wastage Qty (KG)</label>
+                                                            <input type="number" step="any" name="wastage_qty" class="form-control">
+                                                        </div>
                                                     </div>
                                                     <?php
 $global_avg_rate=0;
@@ -337,7 +349,8 @@ $global_avg_amt=0;
                                                                 name="date[]"
                                                                 id="date_1"
                                                                 class="form-control move-next date"
-                                                                value="{{ date('Y-m-d') }}"
+                                                                value="{{ $out_source_productions_item->date }}"
+                                                                min="{{ $out_source_productions_item->date }}"
                                                                 required 
                                                             >
                                                             
@@ -533,7 +546,8 @@ $global_avg_amt=0;
                                 name="date[]"
                                 id="date_${count}"
                                 class="form-control move-next date"
-                                value="{{ date('Y-m-d') }}" 
+                                value="{{ $out_source_productions_item->date }}"
+                                min="{{ $out_source_productions_item->date }}"
                                 required 
 
                             >

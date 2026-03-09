@@ -364,6 +364,7 @@ class FarazProductionController extends Controller
     public function viewProductionMixingList()
     {
         $mixingList = ProductionMixture::with('productionOrder')
+            ->withCount('productionRollings as usage_count')
             ->where('status', '=', 1)->get();
         $m = $this->m;
         return view('FarazPackagesProduction.ProductionMixture.viewProductionMixing', compact('mixingList', 'm'));
@@ -475,6 +476,7 @@ class FarazProductionController extends Controller
     public function viewProductionRollingList()
     {
         $rollingList = ProductionRolling::with('productionOrder')
+            ->withCount('printings as usage_count')
             ->where('status', '=', 1)
             ->where('roll_qty', '!=', 0)
             ->get();
@@ -489,6 +491,7 @@ class FarazProductionController extends Controller
             'brand',
             'color'
         )
+            ->withCount('cuttingAndSealings as usage_count')
             ->where('status', '=', 1)->get();
         $m = $this->m;
         return view('FarazPackagesProduction.ProductionMixture.viewProductionRollPrinting', compact('rollPricingList', 'm'));
@@ -497,7 +500,9 @@ class FarazProductionController extends Controller
     public function viewProductionCuttingAndSealingList()
     {
         $cuttingAndSealingList = ProductionCuttingAndSealing::with(
-            'printedRoll.productionRoll.productionOrder'
+            'printedRoll.productionRoll.productionOrder',
+            'galaCutting',
+            'packing'
         )
             ->where('status', '=', 1)->get();
         $m = $this->m;
@@ -518,7 +523,8 @@ class FarazProductionController extends Controller
     public function viewProductionGalaCuttingList()
     {
         $galaCuttingList = ProductionGalaCutting::with(
-            'cuttingAndSealing.printedRoll.productionRoll.productionOrder'
+            'cuttingAndSealing.printedRoll.productionRoll.productionOrder',
+            'packing'
         )
             ->where('status', '=', 1)->get();
         $m = $this->m;
@@ -766,7 +772,7 @@ class FarazProductionController extends Controller
                 ->get();
 
             return response()->json(['items' => $items]);
-        } else {
+        } elseif ($cutting_type == 'gala cutting') {
 
             $items = DB::connection('mysql2')
                 ->table('production_rolling as pr')
@@ -790,6 +796,58 @@ class FarazProductionController extends Controller
                 ->get();
 
             return response()->json(['items' => $items]);
+        } else {
+
+            // ── Common base ───────────────────────────────────────
+            $baseQuery = DB::connection('mysql2')
+                ->table('production_rolling as pr')
+                ->join('production_roll_printing as prp', 'pr.id', '=', 'prp.production_rolling_id')
+                ->join('production_cutting_and_sealing as pcs', 'prp.id', '=', 'pcs.printed_rolling_id')
+                ->join('subitem as s', 'pcs.item_id', '=', 's.id')
+                ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
+                ->where('pr.production_order_id', $production_order_id);
+
+            // ── Simple cut & seal items ───────────────────────────
+            $simpleItems = (clone $baseQuery)
+                ->where('pcs.qty', '>', 0)
+                ->select(
+                    'pcs.id',
+                    'pcs.item_id',
+                    'pcs.qty as total_qty',
+                    'pcs.used_qty as total_used_qty',
+                    'pcs.date',
+                    's.item_code',
+                    's.sub_ic',
+                    'u.uom_name',
+                    DB::raw("'simple' as cutting_type")   // ← helps frontend distinguish
+                )
+                ->get();
+
+            // ── Gala cutting items ────────────────────────────────
+            $galaItems = (clone $baseQuery)
+                ->join('production_gala_cutting as pgs', 'pcs.id', '=', 'pgs.cutting_sealing_id')
+                ->where('pgs.gala_qty', '>', 0)
+                ->select(
+                    'pgs.id',
+                    'pgs.item_id',
+                    'pgs.gala_qty as total_qty',
+                    'pgs.used_qty as total_used_qty',
+                    'pgs.date',
+                    's.item_code',
+                    's.sub_ic',
+                    'u.uom_name',
+                    DB::raw("'gala' as cutting_type")     // ← helps frontend distinguish
+                )
+                ->get();
+
+            // Combine both collections
+            $allItems = $simpleItems->merge($galaItems);
+
+            return response()->json([
+                'items' => $allItems,
+                'simple_count' => $simpleItems->count(),
+                'gala_count' => $galaItems->count(),
+            ]);
         }
     }
 
@@ -834,7 +892,20 @@ class FarazProductionController extends Controller
             ->groupBy('s.item_code')
             ->orderBy('s.id')
             ->get();
-
+        $sub_item_wastage = DB::Connection('mysql2')->table('category as c')
+            ->join('sub_category as sc', 'c.id', '=', 'sc.category_id')
+            ->join('subitem as s', 'sc.id', '=', 's.sub_category_id')
+            ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
+            ->where('sc.status', '=', 1)
+            ->where('c.status', '=', 1)
+            ->where('s.status', '=', 1)
+            ->where('u.status', '=', 1)
+            ->where('s.main_ic_id', '=', 15)
+            ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id')
+            // ->whereIn('c.id', $categories_id)
+            ->groupBy('s.item_code')
+            ->orderBy('s.id')
+            ->get();
         $machines = DB::Connection('mysql2')->table('machine')
             ->select('id', 'name')
             ->where('status', '=', 1)->get();
@@ -847,7 +918,7 @@ class FarazProductionController extends Controller
             ->select('id', 'shift_type_name')
             ->where('status', '=', 1)->get();
 
-        return view('FarazPackagesProduction.ProductionMixture.ProcessedCuttingAndSealing', compact('out_source_productions_item', 'out_source_productions_details', 'sub_item', 'machines', 'operators', 'shifts', 'm'));
+        return view('FarazPackagesProduction.ProductionMixture.ProcessedCuttingAndSealing', compact('out_source_productions_item', 'out_source_productions_details', 'sub_item', 'sub_item_wastage', 'machines', 'operators', 'shifts', 'm'));
     }
 
     public function bulkCuttingAndSealing(Request $request)
@@ -896,7 +967,20 @@ class FarazProductionController extends Controller
             ->groupBy('s.item_code')
             ->orderBy('s.id')
             ->get();
-
+        $sub_item_wastage = DB::Connection('mysql2')->table('category as c')
+            ->join('sub_category as sc', 'c.id', '=', 'sc.category_id')
+            ->join('subitem as s', 'sc.id', '=', 's.sub_category_id')
+            ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
+            ->where('sc.status', '=', 1)
+            ->where('c.status', '=', 1)
+            ->where('s.status', '=', 1)
+            ->where('u.status', '=', 1)
+            ->where('s.main_ic_id', '=', 15)
+            ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id')
+            // ->whereIn('c.id', $categories_id)
+            ->groupBy('s.item_code')
+            ->orderBy('s.id')
+            ->get();
         $machines = DB::Connection('mysql2')->table('machine')
             ->select('id', 'name')
             ->where('status', '=', 1)->get();
@@ -917,7 +1001,7 @@ class FarazProductionController extends Controller
             ->select('id', 'shift_type_name')
             ->where('status', '=', 1)->get();
 
-        return view('FarazPackagesProduction.ProductionMixture.ProcessedBulkCuttingAndSealing', compact('id', 'out_source_productions_item', 'sub_item', 'machines', 'brands', 'colors', 'operators', 'shifts', 'production_order', 'm'));
+        return view('FarazPackagesProduction.ProductionMixture.ProcessedBulkCuttingAndSealing', compact('id', 'out_source_productions_item', 'sub_item', 'sub_item_wastage', 'machines', 'brands', 'colors', 'operators', 'shifts', 'production_order', 'm'));
     }
 
     public function galaCutting(Request $request)
@@ -1105,6 +1189,20 @@ class FarazProductionController extends Controller
 
 
         $categories_id = explode(',', Auth::user()->categories_id);
+        $sub_item_wastage = DB::Connection('mysql2')->table('category as c')
+            ->join('sub_category as sc', 'c.id', '=', 'sc.category_id')
+            ->join('subitem as s', 'sc.id', '=', 's.sub_category_id')
+            ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
+            ->where('sc.status', '=', 1)
+            ->where('c.status', '=', 1)
+            ->where('s.status', '=', 1)
+            ->where('u.status', '=', 1)
+            ->where('s.main_ic_id', '=', 15)
+            ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id')
+            // ->whereIn('c.id', $categories_id)
+            ->groupBy('s.item_code')
+            ->orderBy('s.id')
+            ->get();
 
         $sub_item = DB::Connection('mysql2')->table('category as c')
             ->join('sub_category as sc', 'c.id', '=', 'sc.category_id')
@@ -1140,7 +1238,7 @@ class FarazProductionController extends Controller
         $colors = DB::Connection('mysql2')->table('colors')
             ->select('id', 'name')
             ->where('status', '=', 1)->get(); // dd($out_source_productions_item);
-        return view('FarazPackagesProduction.ProductionMixture.ProcessedBulkPacking', compact('id', 'out_source_productions_item', 'sub_item', 'machines', 'operators', 'shifts', 'brands', 'colors', 'production_order', 'm'));
+        return view('FarazPackagesProduction.ProductionMixture.ProcessedBulkPacking', compact('id', 'out_source_productions_item', 'sub_item', 'sub_item_wastage', 'machines', 'operators', 'shifts', 'brands', 'colors', 'production_order', 'm'));
     }
     public function packing(Request $request)
     {
@@ -1186,7 +1284,20 @@ class FarazProductionController extends Controller
         }
 
         $categories_id = explode(',', Auth::user()->categories_id);
-
+        $sub_item_wastage = DB::Connection('mysql2')->table('category as c')
+            ->join('sub_category as sc', 'c.id', '=', 'sc.category_id')
+            ->join('subitem as s', 'sc.id', '=', 's.sub_category_id')
+            ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
+            ->where('sc.status', '=', 1)
+            ->where('c.status', '=', 1)
+            ->where('s.status', '=', 1)
+            ->where('u.status', '=', 1)
+            ->where('s.main_ic_id', '=', 15)
+            ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id')
+            // ->whereIn('c.id', $categories_id)
+            ->groupBy('s.item_code')
+            ->orderBy('s.id')
+            ->get();
         $sub_item = DB::Connection('mysql2')->table('category as c')
             ->join('sub_category as sc', 'c.id', '=', 'sc.category_id')
             ->join('subitem as s', 'sc.id', '=', 's.sub_category_id')
@@ -1215,6 +1326,6 @@ class FarazProductionController extends Controller
             ->where('status', '=', 1)->get();
 
         $cutting_type = $request->cutting_type;
-        return view('FarazPackagesProduction.ProductionMixture.ProcessedPacking', compact('out_source_productions_item', 'out_source_productions_details', 'sub_item', 'machines', 'operators', 'shifts', 'cutting_type', 'm'));
+        return view('FarazPackagesProduction.ProductionMixture.ProcessedPacking', compact('out_source_productions_item', 'out_source_productions_details', 'sub_item', 'sub_item_wastage', 'machines', 'operators', 'shifts', 'cutting_type', 'm'));
     }
 }
