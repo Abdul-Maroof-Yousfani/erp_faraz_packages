@@ -78,8 +78,8 @@
                                                             </div>
                                                             <div class="col-md-2">
                                                                 <label for="">Cutting Type</label>
-                                                                <span class="rflabelsteric"><strong>*</strong></span>
-                                                                <select required class="form-control select2 requiredField"
+                                                                {{-- <span class="rflabelsteric"><strong>*</strong></span> --}}
+                                                                <select class="form-control select2"
                                                                     name="cutting_type" id="cutting_type"
                                                                     onchange="fetchRollingItems()">
                                                                     <option value="">Select Cutting Type</option>
