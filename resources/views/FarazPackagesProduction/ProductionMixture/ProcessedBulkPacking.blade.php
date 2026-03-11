@@ -253,7 +253,7 @@
 
                             <div class="row mb-3 align-items-end">
                                 <div class="col-md-5">
-                                    <label class="font-weight-bold">Item <span class="text-danger">*</span></label>
+                                    <label class="font-weight-bold">Item (${item.cutting_type})<span class="text-danger">*</span></label>
                                     <select style="width: 100% !important;" class="form-control item-select select2" disabled>
                                         ${selectedOption}
                                     </select>

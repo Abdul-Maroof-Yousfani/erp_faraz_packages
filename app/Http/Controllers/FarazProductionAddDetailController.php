@@ -913,7 +913,6 @@ class FarazProductionAddDetailController extends Controller
 
                 $requiredQty = $request->required_qty[$key];
                 // $machine_id = $request->machine_id[$key];
-
                 $data2 = [
                     'production_mixture_id' => $master_id,
                     'item_id' => $itemId,
@@ -939,6 +938,8 @@ class FarazProductionAddDetailController extends Controller
                 $itemRate = $itemDetail->rate ?? 0;
                 $itemName = $itemDetail->sub_ic ?? '';
                 $requiredQtyInBags = $requiredQty / 25;
+// dd($requiredQtyInBags);
+
                 ReuseableCode::postStock(
                     $master_id,
                     0,
@@ -1035,7 +1036,7 @@ class FarazProductionAddDetailController extends Controller
                     $finishDetail->rate ?? 0,
                     $itemId,
                     $finishDetail->sub_ic ?? '',
-                    ($rollQty > 0) ? $rollQty : ($request->roll_qty_kg[$key] ?? 0),
+                    $request->roll_qty_kg[$key] ?? 0,
                     null
                 );
             }
@@ -1435,7 +1436,6 @@ class FarazProductionAddDetailController extends Controller
             foreach ($rollIdsUnique as $key => $rollId) {
 
                 $qty = $request->printed_roll_qty_sum[$key] ?? 0;
-
                 // CHECK STOCK
                 $availableQty = ReuseableCode::get_stock(
                     $request->raw_item_id[$key],
@@ -1451,6 +1451,7 @@ class FarazProductionAddDetailController extends Controller
                 }
 
                 $rawDetail = CommonHelper::get_subitem_detail2($request->raw_item_id[$key]);
+// dd($rawDetail);
 
                 // STOCK OUT
                 ReuseableCode::postStock(

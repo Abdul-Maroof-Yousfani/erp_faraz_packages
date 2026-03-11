@@ -726,6 +726,7 @@ class FarazProductionController extends Controller
             ->join('production_roll_printing as prp', 'pr.id', '=', 'prp.production_rolling_id')
             ->join('production_cutting_and_sealing as pcs', 'prp.id', '=', 'pcs.printed_rolling_id')
             ->join('subitem as s', 'pcs.item_id', '=', 's.id')
+            ->join('sub_category as sc', 's.sub_category_id', '=', 'sc.id')
             ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
             ->select(
                 'pcs.id',
@@ -739,6 +740,7 @@ class FarazProductionController extends Controller
             )
             ->where('pr.production_order_id', $production_order_id)
             ->where('pcs.qty', '>', 0)
+            ->where('sc.type', '=', 'Gala Cutting')
             ->get();
 
         return response()->json(['items' => $items]);
@@ -757,6 +759,8 @@ class FarazProductionController extends Controller
                 ->join('production_cutting_and_sealing as pcs', 'prp.id', '=', 'pcs.printed_rolling_id')
                 ->join('subitem as s', 'pcs.item_id', '=', 's.id')
                 ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
+                ->join('sub_category as sc', 's.sub_category_id', '=', 'sc.id')
+
                 ->select(
                     'pcs.id',
                     'pcs.item_id',
@@ -765,10 +769,12 @@ class FarazProductionController extends Controller
                     'pcs.date',
                     's.item_code',
                     's.sub_ic',
-                    'u.uom_name'
+                    'u.uom_name',
+                    DB::raw("'' as cutting_type") 
                 )
                 ->where('pr.production_order_id', $production_order_id)
                 ->where('pcs.qty', '>', 0)
+                ->whereNull('sc.type')
                 ->get();
 
             return response()->json(['items' => $items]);
@@ -789,7 +795,8 @@ class FarazProductionController extends Controller
                     'pgs.date',
                     's.item_code',
                     's.sub_ic',
-                    'u.uom_name'
+                    'u.uom_name',
+                    DB::raw("'' as cutting_type") 
                 )
                 ->where('pr.production_order_id', $production_order_id)
                 ->where('pgs.gala_qty', '>', 0)
@@ -809,7 +816,11 @@ class FarazProductionController extends Controller
 
             // ── Simple cut & seal items ───────────────────────────
             $simpleItems = (clone $baseQuery)
+            ->join('sub_category as sc', 's.sub_category_id', '=', 'sc.id')
+
                 ->where('pcs.qty', '>', 0)
+            ->whereNull('sc.type')
+
                 ->select(
                     'pcs.id',
                     'pcs.item_id',
@@ -819,7 +830,7 @@ class FarazProductionController extends Controller
                     's.item_code',
                     's.sub_ic',
                     'u.uom_name',
-                    DB::raw("'simple' as cutting_type")   // ← helps frontend distinguish
+                    DB::raw("'' as cutting_type")   // ← helps frontend distinguish
                 )
                 ->get();
 
