@@ -938,7 +938,7 @@ class FarazProductionAddDetailController extends Controller
                 $itemRate = $itemDetail->rate ?? 0;
                 $itemName = $itemDetail->sub_ic ?? '';
                 $requiredQtyInBags = $requiredQty / 25;
-// dd($requiredQtyInBags);
+                // dd($requiredQtyInBags);
 
                 ReuseableCode::postStock(
                     $master_id,
@@ -1451,7 +1451,7 @@ class FarazProductionAddDetailController extends Controller
                 }
 
                 $rawDetail = CommonHelper::get_subitem_detail2($request->raw_item_id[$key]);
-// dd($rawDetail);
+                // dd($rawDetail);
 
                 // STOCK OUT
                 ReuseableCode::postStock(
@@ -1713,9 +1713,20 @@ class FarazProductionAddDetailController extends Controller
                 }
 
 
-                $rollField = ($request->cutting_type == 'cutting and sealing')
-                    ? ['cutting_sealing_id' => $request->roll_id[$key]]
-                    : ['gala_cutting_id' => $request->roll_id[$key]];
+                if (!empty($request->cutting_type)) {
+
+                    $rollField = ($request->cutting_type == 'cutting and sealing')
+                        ? ['cutting_sealing_id' => $request->roll_id[$key]]
+                        : ['gala_cutting_id' => $request->roll_id[$key]];
+
+                } else {
+
+                    $type = $request->secondary_cutting_type[$key] ?? null;
+
+                    $rollField = ($type === 'gala')
+                        ? ['gala_cutting_id' => $request->roll_id[$key]]
+                        : ['cutting_sealing_id' => $request->roll_id[$key]];
+                }
 
                 $data2 = array_merge($rollField, [
                     'item_id' => $itemId,

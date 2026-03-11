@@ -70,8 +70,8 @@ $this->m = Session::get('run_company');
                                                             <td>
                                                                 @if($Fil->galaCutting && $Fil->galaCutting->cuttingAndSealing && $Fil->galaCutting->cuttingAndSealing->printedRoll && $Fil->galaCutting->cuttingAndSealing->printedRoll->productionRoll)
                                                                     {{ optional($Fil->galaCutting->cuttingAndSealing->printedRoll->productionRoll->productionOrder)->pr_no ?? 'N/A' }}
-                                                                @elseif($Fil->cuttingAndSealing && $Fil->cuttingAndSealing->printedRoll && $Fil->cuttingAndSealing->printedRoll->productionRoll)
-                                                                    {{ optional($Fil->cuttingAndSealing->printedRoll->productionRoll->productionOrder)->pr_no ?? 'N/A' }}
+                                                                @elseif($Fil->cuttingAndSealing)
+                                                                    {{ optional($Fil->cuttingAndSealing->printedRoll->productionRoll->productionOrder)->pr_no ?? 'N/Aa' }}
                                                                 @else
                                                                     N/A
                                                                 @endif
