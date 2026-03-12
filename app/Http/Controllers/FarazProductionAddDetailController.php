@@ -1776,34 +1776,49 @@ class FarazProductionAddDetailController extends Controller
                     null
                 );
 
-                if ($request->cutting_type == 'cutting and sealing') {
+                $type = $request->cutting_type ?? ($request->secondary_cutting_type[$key] ?? null);
+                // dd($request->secondary_cutting_type[1]);
+                $qty = $request->qty[$key];
+                if ($type == 'cutting and sealing') {
+                    DB::connection('mysql2')
+                        ->table('production_cutting_and_sealing')
+                        ->where('id', $request->roll_id[$key])
+                        ->update([
+                            'used_qty' => DB::raw("COALESCE(used_qty,0) + $qty")
+                        ]);
+
                     // DB::connection('mysql2')
                     //     ->table('production_cutting_and_sealing')
                     //     ->where('id', $request->roll_id[$key])
                     //     ->where('item_id', $request->raw_item_id[$key])
-                    //     ->update([
-                    //         'used_qty' => $request->qty[$key],
-                    //     ]);
+                    //     ->increment('used_qty', $request->qty[$key]);
 
+                } elseif ($type == 'gala') {
                     DB::connection('mysql2')
-                        ->table('production_cutting_and_sealing')
+                        ->table('production_gala_cutting')
                         ->where('id', $request->roll_id[$key])
-                        ->where('item_id', $request->raw_item_id[$key])
-                        ->increment('used_qty', $request->qty[$key]);
-                } else {
+                        ->update([
+                            'used_qty' => DB::raw("COALESCE(used_qty,0) + $qty")
+                        ]);
                     // DB::connection('mysql2')
                     //     ->table('production_gala_cutting')
                     //     ->where('id', $request->roll_id[$key])
                     //     ->where('item_id', $request->raw_item_id[$key])
-                    //     ->update([
-                    //         'used_qty' => $request->qty[$key],
-                    //     ]);
+                    //     ->increment('used_qty', $request->qty[$key]);
 
+                } else {
                     DB::connection('mysql2')
-                        ->table('production_gala_cutting')
+                        ->table('production_cutting_and_sealing')
                         ->where('id', $request->roll_id[$key])
-                        ->where('item_id', $request->raw_item_id[$key])
-                        ->increment('used_qty', $request->qty[$key]);
+                        ->update([
+                            'used_qty' => DB::raw("COALESCE(used_qty,0) + $qty")
+                        ]);
+                    // fallback if null
+                    // DB::connection('mysql2')
+                    //     ->table('production_cutting_and_sealing')
+                    //     ->where('id', $request->roll_id[$key])
+                    //     ->where('item_id', $request->raw_item_id[$key])
+                    //     ->increment('used_qty', $request->qty[$key]);
                 }
             }
 
