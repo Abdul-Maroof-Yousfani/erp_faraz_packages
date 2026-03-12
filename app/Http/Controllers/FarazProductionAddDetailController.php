@@ -1619,12 +1619,20 @@ class FarazProductionAddDetailController extends Controller
                     $galaQty,
                     null
                 );
+                $qty = $request->qty[$key];
+                $RollId = $request->roll_id[$key];
+
+                // DB::connection('mysql2')
+                //     ->table('production_cutting_and_sealing')
+                //     ->where('id', $request->roll_id[$key])
+                //     ->increment('used_qty', $request->qty[$key]);
 
                 DB::connection('mysql2')
                     ->table('production_cutting_and_sealing')
-                    ->where('id', $request->roll_id[$key])
-                    ->increment('used_qty', $request->qty[$key]);
-
+                    ->where('id', $RollId)
+                    ->update([
+                        'used_qty' => DB::raw("COALESCE(used_qty,0) + $qty")
+                    ]);
             }
 
             // wastage section
