@@ -70,7 +70,7 @@ class MachineController extends Controller
             $data = Machine::create(
                 [
                     'name' => $request->name, 
-                    'asset_id' => $request->asset_id, 
+                    'asset_id' => 0, 
                     'status' => 1, 
                     'username' => Auth()->user()->name,
                 ]
@@ -138,7 +138,7 @@ class MachineController extends Controller
 
             $Machine->update([
                 'name' => $request->name,
-                'asset_id' => $request->asset_id, 
+                'asset_id' => 0, 
                 'status' => 1,
                 'username' => Auth()->user()->name,
             ]);
