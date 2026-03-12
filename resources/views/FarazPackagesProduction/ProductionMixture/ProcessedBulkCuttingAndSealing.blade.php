@@ -145,6 +145,8 @@
         });
         // Global variable to hold items fetched via AJAX
         let out_source_productions_items_js = [];
+        // Store selected date per Printed Roll (roll_id => 'YYYY-MM-DD')
+        let rollDateById = {};
 
         @if(isset($id) && $out_source_productions_item->count() > 0)
             // If loaded initially, we need to populate out_source_productions_items_js for the Add More button
@@ -225,6 +227,10 @@
             let machinesHtml = `@foreach($machines as $val)<option value="{{$val->id}}">{{ $val->name }}</option>@endforeach`;
             let shiftsHtml = `@foreach($shifts as $val)<option value="{{$val->id}}">{{ $val->shift_type_name }}</option>@endforeach`;
             let dateValue = item.date || "{{ date('Y-m-d') }}";
+            // Persist the roll date so addRawMaterial can use it
+            if (item && item.id) {
+                rollDateById[item.id] = dateValue;
+            }
 
 
             let totalQty = item.total_qty || 0;
@@ -308,7 +314,7 @@
 
                                                 <div class="col-md-1">
                                                     <label>Date <span class="text-danger">*</span></label>
-                                                    <input type="date" name="date[]" class="form-control move-next date" value="${dateValue}" min="${dateValue}" required>
+                                                    <input type="date" name="date[]" class="form-control move-next date roll-date" data-roll-id="${item.id}" value="${dateValue}" min="${dateValue}" required>
                                                 </div>
 
                                                 <div class="col-md-2">
@@ -335,6 +341,7 @@
         function addRawMaterial(button, rollId) {
             $('#empty-state').remove();
 
+            let minDate = rollDateById[rollId] || "{{ date('Y-m-d') }}";
             let html = `
                                     <div class="card mb-3 shadow-sm border-0" id="row_${count}" style="background-color: #fcfcfc;">
                                         <div class="card-body">
@@ -389,7 +396,7 @@
 
                                                 <div class="col-md-1">
                                                     <label>Date <span class="text-danger">*</span></label>
-                                                    <input type="date" name="date[]" id="date_${count}" class="form-control move-next date" value="{{ date('Y-m-d') }}" required>
+                                                    <input type="date" name="date[]" id="date_${count}" class="form-control move-next date" value="${minDate}" min="${minDate}" required>
                                                 </div>
 
                                                 <div class="col-md-2">
@@ -419,6 +426,21 @@
 
             count++
         }
+
+        // Keep rollDateById in sync with the Printed Roll (main row) date input
+        $(document).on('change', '.roll-date', function () {
+            let rollId = $(this).data('roll-id');
+            let val = $(this).val();
+            if (!rollId || !val) return;
+            rollDateById[rollId] = val;
+
+            // Also update min on any already-added rows under the same Printed Roll card
+            let cardBody = $(this).closest('.card-body');
+            cardBody.find('input[type="date"][name="date[]"]').each(function () {
+                $(this).attr('min', val);
+                if (!$(this).val()) $(this).val(val);
+            });
+        });
 
         function itemSelected(selectElement) {
             let itemId = $(selectElement).val();
