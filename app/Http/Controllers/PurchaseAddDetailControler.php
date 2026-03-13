@@ -4027,13 +4027,23 @@ class PurchaseAddDetailControler extends Controller
 
     public function uploadSubItems()
     {
+//         dd(
+//     $_FILES['file']['name'],
+//     $_FILES['file']['type'],
+//     $_FILES['file']['size'],
+//     $_FILES['file']['error']
+// );
         try {
-            $fileMimes = array(
-                'application/x-csv',
-                'text/x-csv',
-                'text/csv',
-                'application/csv',
-            );
+           $fileMimes = [
+    'text/csv',
+    'application/csv',
+    'text/x-csv',
+    'application/x-csv',
+    'text/plain',
+    'application/octet-stream',              // common fallback
+    'application/vnd.ms-excel',              // old Excel CSV
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'  // ← .xlsx !
+];
 
             if (!empty($_FILES['file']['name']) && in_array($_FILES['file']['type'], $fileMimes)) {
 
@@ -4140,7 +4150,6 @@ class PurchaseAddDetailControler extends Controller
                             Stock::create([
                                 'voucher_type' => 1,
                                 'sub_item_id' => $sub_item->id,
-                                'batch_code' => 0,
                                 'qty' => $getData[15] ?? 0,
                                 'rate' => $getData[10] ?? 0,
                                 'amount' => $getData[16] ?? 0,
@@ -4148,7 +4157,7 @@ class PurchaseAddDetailControler extends Controller
                                 'warehouse_id' => 1,
                                 'opening' => 1,
                                 'created_date' => date('Y-m-d'),
-                                'username' => 'Amir Murshad',
+                                'username' => 'Faraz Packages',
                                 'status' => 1
                             ]);
                         }
@@ -4160,7 +4169,7 @@ class PurchaseAddDetailControler extends Controller
                 Session::flash('dataInsert', 'Successfully Saved.');
 
             } else {
-                Session::flash('dataDelete', 'Please upload csv file');
+                Session::flash('dataDelete', 'Please upload csv file.');
             }
             DB::Connection('mysql2')->commit();
         } catch (Exception $ex) {

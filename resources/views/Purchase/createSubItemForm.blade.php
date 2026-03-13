@@ -261,7 +261,10 @@ $m = Session::get('run_company');
                             <div class="col-sm-6 col-md-6">
                                 <button type="submit" class="btn btn-primary btn-sm btn-block submitCsv">Submit</button>
                             </div>
-                            <div class="col-sm-6 col-md-6"><a class="btn btn-sm btn-primary" href="{{ url('/') }}/app-assets/images/sample files/items sample file.csv">Download Sample / Format </a></div>
+                            <div class="col-sm-6 col-md-6">
+                            <button onclick="download_csv_file()" target="_self" class="btn btn-info btn-sm btn-block">Download example</button>
+                            {{-- <a class="btn btn-sm btn-primary" href="{{ url('/') }}/app-assets/images/sample files/items sample file.csv">Download Sample / Format </a> --}}
+                            </div>
                     
                         </div>
                     </form>
@@ -302,7 +305,7 @@ $m = Session::get('run_company');
                                 <th><span class="badge badge-outline-success">Field is optional</span></th>
                             </tr>
                             <tr>
-                                <td>SSecondary pack size</td>
+                                <td>Secondary pack size</td>
                                 <th><span class="badge badge-outline-success">Field is optional</span></th>
                             </tr>
                             <tr>
@@ -397,7 +400,20 @@ $m = Session::get('run_company');
             }
 
         }
+function download_csv_file() {
+    var csv = [
+        '"Category","Sub Category","Item code","Item Name","Primary UOM","Primary pack size","Primary pack type","Secondary UOM","Secondary pack size","Secondary pack type","Rate","Color","HS code","SKU code","Remarks","Qty","Amount","Batch code"',
+        '"FINISH GOOD","Suffyan Shoppers","10x12","10x12","Bags","25","Bag","","","","","","","","","","",""',
+        '"FINISH GOOD","Suffyan Shoppers","18x14","18x14","Bags","25","Bag","","","","","","","","","","",""',
+        ',,,,,,,,,,,,,,,,,'  // empty row like your sample
+    ].join('\n');
 
+    var hiddenElement = document.createElement('a');
+    hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    hiddenElement.target = '_blank';
+    hiddenElement.download = 'items_sample.csv';
+    hiddenElement.click();
+}
         function get_sub_item_code()
         {
             var category= $('#CategoryId').val();
