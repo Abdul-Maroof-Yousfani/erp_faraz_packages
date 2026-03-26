@@ -937,7 +937,13 @@ class FarazProductionAddDetailController extends Controller
 
                 $itemRate = $itemDetail->rate ?? 0;
                 $itemName = $itemDetail->sub_ic ?? '';
-                $requiredQtyInBags = $requiredQty / 25;
+                $packSize = (float) ($itemDetail->pack_size ?? 0);
+                // Convert KG -> bags using the item's pack_size (subitem.pack_size)
+                if ($packSize <= 0) {
+                    DB::connection('mysql2')->rollBack();
+                    return 'Pack size (subitem.pack_size) is missing/invalid for item ' . CommonHelper::get_item_name($itemId);
+                }
+                $requiredQtyInBags = (float) $requiredQty / $packSize;
                 // dd($requiredQtyInBags);
 
                 ReuseableCode::postStock(
@@ -981,21 +987,31 @@ class FarazProductionAddDetailController extends Controller
             'machine_id' => 'required|array',
             'mixture_qty' => 'required|array',
             'roll_qty' => 'required|array',
+            'production_mixture_ids' => 'required|array',
+            'raw_item_id' => 'required',
+            'used_qty_total' => 'required',
         ]);
 
         DB::connection('mysql2')->beginTransaction();
 
         try {
 
-            $production_mixture = DB::connection('mysql2')
+            $productionMixtureIds = array_values(array_filter((array) $request->production_mixture_ids));
+            $productionMixtureRows = DB::connection('mysql2')
                 ->table('production_mixture')
-                ->where('pm_no', $request->code)
-                ->first();
+                ->whereIn('id', $productionMixtureIds)
+                ->orderBy('date')
+                ->orderBy('id')
+                ->get();
 
-            if (!$production_mixture) {
+            if ($productionMixtureRows->isEmpty()) {
                 throw new \Exception('Production mixture not found');
             }
 
+            // for rolling header linkage (same production order restriction already exists on selection)
+            $productionOrderId = $productionMixtureRows->first()->production_order_id ?? null;
+
+            $rollingIds = [];
             foreach ($request->item_id as $key => $itemId) {
                 $mixtureQty = $request->mixture_qty[$key] ?? 0;
 
@@ -1005,8 +1021,9 @@ class FarazProductionAddDetailController extends Controller
                 // INSERT ROLLING RECORD
                 // ========================
                 $data2 = [
-                    'production_order_id' => $production_mixture->production_order_id,
-                    'production_mixture_id' => $production_mixture->id,
+                    'production_order_id' => $productionOrderId,
+                    // keep reference to first mixture id (detail consumption is distributed below)
+                    'production_mixture_id' => $productionMixtureRows->first()->id,
                     'item_id' => $itemId,
                     'machine_id' => $request->machine_id[$key] ?? null,
                     'operator_id' => $request->operator_id[$key] ?? null,
@@ -1022,6 +1039,7 @@ class FarazProductionAddDetailController extends Controller
                 $rollingId = DB::connection('mysql2')
                     ->table('production_rolling')
                     ->insertGetId($data2);
+                $rollingIds[] = $rollingId;
 
 
 
@@ -1042,11 +1060,9 @@ class FarazProductionAddDetailController extends Controller
             }
 
 
-            $rawItemId = is_array($request->raw_item_id)
-                ? $request->raw_item_id[0]
-                : $request->raw_item_id;
+            $rawItemId = $request->raw_item_id;
 
-            $rawQty = $request->used_qty_total;
+            $rawQty = (float) $request->used_qty_total;
 
 
             $availableQty = ReuseableCode::get_stock_with_pack_size(
@@ -1062,19 +1078,43 @@ class FarazProductionAddDetailController extends Controller
                     CommonHelper::get_item_name($rawItemId);
             }
 
+            // Distribute consumed mixture qty across selected mixture rows (FIFO by date,id)
+            $remainingToConsume = $rawQty;
+            foreach ($productionMixtureRows as $pmRow) {
+                if ($remainingToConsume <= 0) {
+                    break;
+                }
 
-            DB::connection('mysql2')
-                ->table('production_mixture')
-                ->where('id', $production_mixture->id)
-                ->update([
-                    'used_qty' => $rawQty,
-                ]);
+                $rowQty = (float) ($pmRow->qty ?? 0);
+                $rowUsed = (float) ($pmRow->used_qty ?? 0);
+                $rowRemaining = $rowQty - $rowUsed;
+
+                if ($rowRemaining <= 0) {
+                    continue;
+                }
+
+                $consumeFromThis = min($rowRemaining, $remainingToConsume);
+
+                DB::connection('mysql2')
+                    ->table('production_mixture')
+                    ->where('id', $pmRow->id)
+                    ->update([
+                        'used_qty' => DB::raw('COALESCE(used_qty,0) + ' . $consumeFromThis),
+                    ]);
+
+                $remainingToConsume -= $consumeFromThis;
+            }
+
+            if ($remainingToConsume > 0.000001) {
+                DB::connection('mysql2')->rollBack();
+                return "Consumed mixture qty exceeds available mixture balance for code " . $request->code;
+            }
 
 
             $rawDetail = CommonHelper::get_subitem_detail2($rawItemId);
 
             ReuseableCode::postStock(
-                $rollingId,
+                ($rollingIds[0] ?? 0),
                 0,
                 $request->code,
                 now()->format('Y-m-d'),

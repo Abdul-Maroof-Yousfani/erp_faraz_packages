@@ -142,7 +142,7 @@ if ($accType == 'client') {
                                                                 onchange="get_stock_qty(this.value,'1');get_uom_name_by_item_id(this.value, 1)">
                                                                 <option value="">Select Raw Material</option>
                                                                 @foreach ($raw_material as $key => $value)
-                                                                    <option value="{{ $value->id }}">
+                                                                    <option value="{{ $value->id }}" data-pack_size="{{ $value->pack_size ?? 1 }}">
                                                                         {{ $value->item_code . ' - ' . $value->sub_ic }}
                                                                     </option>
                                                                 @endforeach
@@ -275,7 +275,7 @@ if ($accType == 'client') {
                                                 onchange="get_stock_qty(this.value,${Counter});get_uom_name_by_item_id(this.value, ${Counter})">
                                                 <option value="">Select Raw Material</option>
                                                 @foreach ($raw_material as $key => $value)
-                                                    <option value="{{ $value->id }}">
+                                                        <option value="{{ $value->id }}" data-pack_size="{{ $value->pack_size ?? 1 }}">
                                                         {{ $value->item_code . ' - ' . $value->sub_ic }}
                                                     </option>
                                                 @endforeach
@@ -375,10 +375,30 @@ if ($accType == 'client') {
             }
 
             var instockinbag = parseFloat($('#instock' + number).val()) || 0;
-            var bagsize = 25;
-            var instock = instockinbag * bagsize;
+            var bagsize = parseFloat(
+                $('#item_id' + number).find(':selected').data('pack_size')
+            ) || 0;
             var qtyField = $('#required_qty' + number);
             var entered = parseFloat(qtyField.val()) || 0;
+
+            if (bagsize <= 0) {
+                if (entered > 0) {
+                    qtyField.val('');
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Pack size missing',
+                            text: 'Pack size (subitem.pack_size) is not configured for the selected raw material.'
+                        });
+                    } else {
+                        alert('Pack size (subitem.pack_size) is not configured for the selected raw material.');
+                    }
+                    return false;
+                }
+                return true;
+            }
+
+            var instock = instockinbag * bagsize;
 
             // If no quantity entered, nothing to validate
             if (!entered) {

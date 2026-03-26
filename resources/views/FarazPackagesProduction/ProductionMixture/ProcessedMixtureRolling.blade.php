@@ -168,6 +168,13 @@ $Operator   = [];
                                <form action="{{route('FarProduction.Rolling')}}" method="post">
                                     <input type="hidden" name="_token" value="{{ csrf_token() }}">
                                     <input type="hidden" id="for_disabled_btn">
+                                    @php
+                                        $production_mixture_ids = $production_mixture_ids ?? [($production_mixture->id ?? null)];
+                                        $production_mixture_ids = array_values(array_filter($production_mixture_ids));
+                                    @endphp
+                                    @foreach($production_mixture_ids as $pmId)
+                                        <input type="hidden" name="production_mixture_ids[]" value="{{ $pmId }}">
+                                    @endforeach
 
                                     <div class="row">
                                         <div class="col-lg-12 cus-tab">

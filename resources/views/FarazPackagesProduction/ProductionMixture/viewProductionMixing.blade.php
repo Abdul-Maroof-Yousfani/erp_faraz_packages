@@ -32,6 +32,10 @@ $this->m = Session::get('run_company');
                                     <button type="button" class="btn btn-warning" onclick="ExportToExcel('xlsx')"><i
                                             class="fa fa-external-link" aria-hidden="true"></i> Export </button>
                                     <?php endif; ?>
+
+                                            <button type="button" class="btn btn-primary btn-sm" onclick="initiateRollingForSelected()">
+                                                Initiate Rolling
+                                            </button>
                                 </div>
                             </div>
                         </div>
@@ -47,6 +51,7 @@ $this->m = Session::get('run_company');
                                                 id="EmpExitInterviewList">
                                                 <thead>
                                                     <th class="text-center">S.No</th>
+                                                    <th class="text-center">Select</th>
                                                     <th class="text-center">Produced Mixture</th>
                                                     <th class="text-center">Mixing No</th>
                                                     <th class="text-center">Prod. Order No.</th>
@@ -59,12 +64,20 @@ $this->m = Session::get('run_company');
                                                     @foreach ($mixingList as $Fil)
                                                         <tr id="remove<?php    echo $Fil['id'] ?>">
                                                             <td>{{++$count}}</td>
+                                                        <td class="text-center">
+                                                            <input type="checkbox"
+                                                                class="mixture-select"
+                                                                value="{{ $Fil->id }}"
+                                                                data-production-order-id="{{ optional($Fil->productionOrder)->id }}"
+                                                                data-production-order-pr-no="{{ optional($Fil->productionOrder)->pr_no }}"
+                                                            />
+                                                        </td>
                                                             <td>{{CommonHelper::get_item_name($Fil->produced_item_id)}}</td>
                                                             <td> {{$Fil->pm_no}} </td>
                                                             <td>{{ optional($Fil->productionOrder)->pr_no }} </td>
                                                             <td class="text-center">
-                                                                @if(($Fil->usage_count ?? 0) > 0)
-                                                                    Used
+                                                                @if(($Fil->used_qty ?? 0) > 0)
+                                                                    Used ({{ $Fil->used_qty }})
                                                                 @else
                                                                     Not Used
                                                                 @endif
@@ -86,7 +99,6 @@ $this->m = Session::get('run_company');
                                                                             <a onclick="showDetailModelOneParamerter('far_production/viewMixingInfo','{{$Fil->id}}','View Mixture Detail')"
                                                                                 type="button" class="">
                                                                                 View</a>
-                                                                                 <a href="mixtureRolling?id=<?php    echo $Fil['id'] ?>&&m=<?php    echo $this->m?>">Initiate Rolling
                                                                             </a>
                                                                             <a href="mixtureEdit?id=<?php    echo $Fil['id'] ?>&&m=<?php    echo $this->m?>">
                                                                             </a>
@@ -161,6 +173,60 @@ $this->m = Session::get('run_company');
                     location.reload();
                 }
             });
+        }
+
+        // Allow multi-select only for mixtures belonging to the same production order
+        var selectedProductionOrderId = null;
+
+        function applyMixtureSelectionRestriction() {
+            $('.mixture-select').each(function () {
+                var productionId = $(this).data('production-order-id');
+                var shouldDisable = selectedProductionOrderId !== null && productionId != selectedProductionOrderId;
+                $(this).prop('disabled', shouldDisable);
+            });
+        }
+
+        $(document).on('change', '.mixture-select', function () {
+            var productionId = $(this).data('production-order-id');
+
+            if ($(this).is(':checked')) {
+                if (selectedProductionOrderId === null) {
+                    selectedProductionOrderId = productionId;
+                }
+
+                if (productionId != selectedProductionOrderId) {
+                    alert('You can select multiple mixtures only from the same production order.');
+                    $(this).prop('checked', false);
+                    return;
+                }
+            } else {
+                // Reset if nothing selected
+                if ($('.mixture-select:checked').length === 0) {
+                    selectedProductionOrderId = null;
+                } else {
+                    selectedProductionOrderId = $('.mixture-select:checked').first().data('production-order-id');
+                }
+            }
+
+            applyMixtureSelectionRestriction();
+        });
+
+        function initiateRollingForSelected() {
+            var ids = $('.mixture-select:checked').map(function () {
+                return $(this).val();
+            }).get();
+
+            if (ids.length === 0) {
+                alert('Please select at least one mixture.');
+                return;
+            }
+
+            // Convert array to comma-separated string for URL
+            var idsString = ids.join(',');
+
+            var url = '{{ url('/') }}/far_production/multiMixtureRolling?ids=' + idsString + '&m=' + '{{ $this->m }}';
+
+            window.open(url, '_blank');
         }
     </script>
 

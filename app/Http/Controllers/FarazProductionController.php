@@ -346,7 +346,7 @@ class FarazProductionController extends Controller
             ->get();
 
         $raw_material = DB::Connection('mysql2')->table('subitem')
-            ->select('id', 'sub_ic', 'uom', 'item_code')
+            ->select('id', 'sub_ic', 'uom', 'item_code', 'pack_size')
             ->where('status', '=', 1)->where('main_ic_id', '=', 7)->get();
 
         $production_order = DB::Connection('mysql2')->table('production_request')
@@ -399,12 +399,114 @@ class FarazProductionController extends Controller
             ->get();
 
         $raw_material = DB::Connection('mysql2')->table('subitem')
-            ->select('id', 'sub_ic', 'uom', 'item_code')
+            ->select('id', 'sub_ic', 'uom', 'item_code', 'pack_size')
             ->where('status', '=', 1)->where('main_ic_id', '=', 7)->get();
 
 
         return view('FarazPackagesProduction.ProductionMixture.editMixture', compact('mixture', 'mixtureData', 'sub_item', 'raw_material', 'm'));
     }
+
+    public function multiMixtureRolling(Request $request)
+    {
+        $m = $request->query('m');
+
+        // Handle multiple IDs properly (comma-separated string from URL)
+        $ids = $request->query('ids');
+
+        if (empty($ids)) {
+            return redirect()->back()->with('error', 'No mixture IDs provided.');
+        }
+
+        // Convert comma-separated string to array
+        $idArray = array_map('trim', explode(',', $ids));
+        $production_mixture_ids = $idArray;
+
+        // Get first mixture for master data (you can change logic if needed)
+        $production_mixture = DB::connection('mysql2')
+            ->table('production_mixture')
+            ->whereIn('id', $idArray)
+            ->first();
+
+        if (!$production_mixture) {
+            return redirect()->back()->with('error', 'Production mixture not found.');
+        }
+
+        // Master record
+        $out_source_productions = DB::connection('mysql2')
+            ->table('production_request')
+            ->where('id', $production_mixture->production_order_id)
+            ->first();
+
+        if (!$out_source_productions) {
+            return redirect()->back()->with('error', 'Out Source Production not found.');
+        }
+
+        // Totals for all selected mixtures
+        $out_source_productions_item = DB::connection('mysql2')
+            ->table('production_mixture')
+            ->select(
+                DB::raw('SUM(qty) as total_qty'),
+                DB::raw('SUM(used_qty) as total_used_qty'),
+                'produced_item_id'
+            )
+            ->whereIn('id', $idArray)
+            ->first();
+
+        // Detail items for all selected mixtures
+        $out_source_productions_details = DB::connection('mysql2')
+            ->table('production_mixture_data')
+            ->whereIn('production_mixture_id', $idArray)
+            ->get();
+
+        $categories_id = explode(',', Auth::user()->categories_id ?? '');
+
+        $sub_item = DB::connection('mysql2')->table('category as c')
+            ->join('sub_category as sc', 'c.id', '=', 'sc.category_id')
+            ->join('subitem as s', 'sc.id', '=', 's.sub_category_id')
+            ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
+            ->where('sc.status', '=', 1)
+            ->where('c.status', '=', 1)
+            ->where('s.status', '=', 1)
+            ->where('u.status', '=', 1)
+            ->where('s.main_ic_id', '=', 8)
+            ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id')
+            // ->whereIn('c.id', $categories_id)  // Uncomment if needed
+            ->groupBy('s.item_code')
+            ->orderBy('s.id')
+            ->get();
+
+        $machines = DB::connection('mysql2')->table('machine')
+            ->select('id', 'name')
+            ->where('status', '=', 1)
+            ->get();
+
+        $operators = DB::connection('mysql2')->table('operators')
+            ->select('id', 'name')
+            ->where('status', '=', 1)
+            ->get();
+
+        $shifts = DB::connection('mysql')->table('shift_type')
+            ->select('id', 'shift_type_name')
+            ->where('status', '=', 1)
+            ->get();
+
+        return view(
+            'FarazPackagesProduction.ProductionMixture.ProcessedMixtureRolling',
+            compact(
+                'production_mixture',
+                'production_mixture_ids',
+                'out_source_productions',
+                'out_source_productions_item',
+                'out_source_productions_details',
+                'sub_item',
+                'machines',
+                'operators',
+                'shifts',
+                'm'
+            )
+        );
+    }
+
 
     public function mixtureRolling(Request $request)
     {
@@ -414,6 +516,8 @@ class FarazProductionController extends Controller
             ->table('production_mixture')
             ->where('id', $request->id)
             ->first();
+
+        $production_mixture_ids = [$request->id];
         // Master record
         $out_source_productions = DB::connection('mysql2')
             ->table('production_request')
@@ -470,7 +574,7 @@ class FarazProductionController extends Controller
             ->select('id', 'shift_type_name')
             ->where('status', '=', 1)->get();
 
-        return view('FarazPackagesProduction.ProductionMixture.ProcessedMixtureRolling', compact('production_mixture', 'out_source_productions', 'out_source_productions_item', 'out_source_productions_details', 'sub_item', 'machines', 'operators', 'shifts', 'm'));
+        return view('FarazPackagesProduction.ProductionMixture.ProcessedMixtureRolling', compact('production_mixture', 'production_mixture_ids', 'out_source_productions', 'out_source_productions_item', 'out_source_productions_details', 'sub_item', 'machines', 'operators', 'shifts', 'm'));
     }
 
     public function viewProductionRollingList()
@@ -770,7 +874,7 @@ class FarazProductionController extends Controller
                     's.item_code',
                     's.sub_ic',
                     'u.uom_name',
-                    DB::raw("'' as cutting_type") 
+                    DB::raw("'' as cutting_type")
                 )
                 ->where('pr.production_order_id', $production_order_id)
                 ->where('pcs.qty', '>', 0)
@@ -796,7 +900,7 @@ class FarazProductionController extends Controller
                     's.item_code',
                     's.sub_ic',
                     'u.uom_name',
-                    DB::raw("'' as cutting_type") 
+                    DB::raw("'' as cutting_type")
                 )
                 ->where('pr.production_order_id', $production_order_id)
                 ->where('pgs.gala_qty', '>', 0)
@@ -816,10 +920,10 @@ class FarazProductionController extends Controller
 
             // ── Simple cut & seal items ───────────────────────────
             $simpleItems = (clone $baseQuery)
-            ->join('sub_category as sc', 's.sub_category_id', '=', 'sc.id')
+                ->join('sub_category as sc', 's.sub_category_id', '=', 'sc.id')
 
                 ->where('pcs.qty', '>', 0)
-            ->whereNull('sc.type')
+                ->whereNull('sc.type')
 
                 ->select(
                     'pcs.id',
