@@ -975,12 +975,12 @@ class FinanceDataCallController extends Controller
                     $stock->voucher_date=$purchase_date;
                     $stock->voucher_type=1;
                     $stock->sub_item_id=$value->sub_item;
-                    $stock->qty=$value->qty;
+                    $stock->qty=$value->bag_qty;
                     $stock->rate=$value->rate;
                     $stock->amount_before_discount=$value->amount;
                     $stock->discount_percent=0;
                     $stock->discount_amount=$value->discount_amount ;
-                    $stock->amount=$value->net_amount;
+                    $stock->amount=$value->bag_qty * $value->rate;
                     $stock->warehouse_id=$value->warehouse_id;
                     $stock->description=$description;
                     $stock->batch_code=0;

@@ -2812,8 +2812,8 @@ class PurchaseAddDetailControler extends Controller
                 $detail->rate_cal_by = $rate_cal_by;
                 $detail->rate = $rate;
                 $detail->warehouse_id = $warehouse_id[$index];
-                $detail->amount = floatval($amounts[$index]);
-                $detail->net_amount = $amount;
+                $detail->amount =  CommonHelper::check_str_replace($amounts[$index]);
+                $detail->net_amount = CommonHelper::check_str_replace($net_amounts[$index]);
                 $detail->discount_amount = floatval($request->input('discount_amount')[$index] ?? 0);
 
                 $detail->staus = 1;
