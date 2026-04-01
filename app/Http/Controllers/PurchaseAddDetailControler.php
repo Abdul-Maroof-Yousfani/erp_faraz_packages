@@ -2845,7 +2845,7 @@ class PurchaseAddDetailControler extends Controller
                     ]);
                 }
             }
-
+            
             // ───────────────────────────────────────────────
             //  Optional: additional expenses / charges
             // ───────────────────────────────────────────────

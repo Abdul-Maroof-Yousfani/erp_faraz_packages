@@ -984,7 +984,7 @@ class FinanceDataCallController extends Controller
                     $stock->warehouse_id=$value->warehouse_id;
                     $stock->description=$description;
                     $stock->batch_code=0;
-                    $stock->status=$status;
+                    $stock->status=1;
                     $stock->created_date=date('Y-m-d');
                     $stock->username=Auth::user()->name;
                     $stock->save();
