@@ -186,6 +186,16 @@ endif;
                                                 <input style="text-transform: capitalize;" type="text" class="form-control"
                                                     placeholder="" name="destination" id="destination" value="" />
                                             </div>
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                <label class="sf-label">DO No</label>
+                                                <input type="text" class="form-control" placeholder="DO No"
+                                                    name="do_no" id="do_no" value="" />
+                                            </div>
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                <label class="sf-label">Godown No</label>
+                                                <input type="text" class="form-control" placeholder="Godown No"
+                                                    name="godown_no" id="godown_no" value="" />
+                                            </div>
 
                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                 <label class="sf-label"> <a href="#"

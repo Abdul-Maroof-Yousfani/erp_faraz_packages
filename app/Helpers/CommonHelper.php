@@ -1591,6 +1591,14 @@ class CommonHelper
         return DB::Connection('mysql2')->table('sub_category')->where('status', 1);
     }
 
+     public static function get_subitem_name($id)
+    {
+        $sub_iteme = new Subitem();
+        $sub_iteme = $sub_iteme->SetConnection('mysql2');
+        $sub_iteme = $sub_iteme->where('id', $id)->select('uom', 'pack_size', 'rate', 'description', 'sub_ic', 'main_ic_id', 'item_code')->first();
+        return $sub_iteme->sub_ic;
+    }
+
     public static function get_sub_category_by_main_category_id($categories_id)
     {
         $categories_id = explode(',', $categories_id);

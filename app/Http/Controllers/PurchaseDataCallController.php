@@ -2915,7 +2915,7 @@ echo "aa"; die;
     {
         $sub_category_id = $_GET['sub_category']; //$request->category;
         $data = DB::Connection('mysql2')->table('subitem as a')
-            ->join(env('DB_DATABASE') . '.uom as b', 'a.uom', '=', 'b.id')
+            ->join('uom as b', 'a.uom', '=', 'b.id')
             ->where('a.sub_category_id', $sub_category_id)
             ->where('a.status', 1)
             ->select('a.id', 'a.sub_ic', 'a.item_code', 'b.uom_name', 'a.sub_ic')
@@ -2927,7 +2927,7 @@ echo "aa"; die;
     {
         $category_id = $_GET['category']; //$request->category;
         $data=DB::Connection('mysql2')->table('subitem as a')
-        ->join(env('DB_DATABASE').'.uom as b','a.uom','=','b.id')
+        ->join('uom as b','a.uom','=','b.id')
         ->where('a.main_ic_id',$category_id)
         ->where('a.status',1)
         ->select('a.id','a.sub_ic','a.item_code','b.uom_name','a.sub_ic', 'a.pack_size')
@@ -2939,8 +2939,8 @@ echo "aa"; die;
     {
         $category_id = $_GET['category']; //$request->category;
         $data=DB::Connection('mysql2')->table('subitem as a')
-        ->join(env('DB_DATABASE').'.uom as b','a.uom','=','b.id')
-        ->leftJoin(env('DB_DATABASE').'.uom as c','a.uom2','=','c.id')
+        ->join('uom as b','a.uom','=','b.id')
+        ->leftJoin('uom as c','a.uom2','=','c.id')
         ->where('a.main_ic_id',$category_id)
         ->where('a.status',1)
         ->select('a.id','a.sub_ic','a.item_code','b.uom_name','c.uom_name as uom_name2','a.sub_ic', 'a.pack_size', 'a.secondary_pack_size')

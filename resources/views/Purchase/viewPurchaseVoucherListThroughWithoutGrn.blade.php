@@ -165,7 +165,7 @@ $export=ReuseableCode::check_rights(236);
                                                                         @if($row->grn_no == '0')
                                                                             <a  href="{{ URL::asset('finance/editDirectPurchaseVoucherForm/'.$row->id.'?m='.$m) }}" class="{{ $row->id }}"><i class="fa-solid fa-pencil"></i> Edit </a>
                                                                         @else
-                                                                            <a  href="{{ URL::asset('finance/editPurchaseVoucherFormNew/'.$row->id.'?m='.$m) }}" class=" {{ $row->id }}"><i class="fa-solid fa-pencil"></i> Edit </a>
+                                                                            <a  href="{{ URL::asset('finance/editDirectPurchaseVoucherForm/'.$row->id.'?m='.$m) }}" class=" {{ $row->id }}"><i class="fa-solid fa-pencil"></i> Edit </a>
                                                                         @endif
                                                                     @endif
                                                                     <?php endif;?>

@@ -2752,6 +2752,9 @@ class PurchaseAddDetailControler extends Controller
             $NewPurchaseVoucher->sales_tax_amount = $sales_tax_amount;
 
             $NewPurchaseVoucher->description = $request->input('Remarks');
+            $NewPurchaseVoucher->slip_no = $request->input('slip_no');
+            $NewPurchaseVoucher->do_no = $request->input('do_no');
+            $NewPurchaseVoucher->godown_no = $request->input('godown_no');
             $NewPurchaseVoucher->username = Auth::user()->name;
             $NewPurchaseVoucher->status = 1;
             $NewPurchaseVoucher->pv_status = 1;                    // adjust as per your logic
@@ -3851,12 +3854,14 @@ class PurchaseAddDetailControler extends Controller
             $NewPurchaseVoucher->grn_no = 0;
             $NewPurchaseVoucher->grn_id = 0;
             $NewPurchaseVoucher->slip_no = $request->input('slip_no');
+            $NewPurchaseVoucher->do_no = $request->input('do_no');
+            $NewPurchaseVoucher->godown_no = $request->input('godown_no');
             $NewPurchaseVoucher->bill_date = $request->input('bill_date');
             $NewPurchaseVoucher->due_date = $request->input('due_date');
             $NewPurchaseVoucher->purchase_type = 0;
             // $NewPurchaseVoucher->po_no_date  = 0;
             $NewPurchaseVoucher->supplier = $supplier_id;
-            $NewPurchaseVoucher->warehouse = $request->warehouse_id;
+            $NewPurchaseVoucher->warehouse = $this->scalarWarehouseIdFromRequest($request);
             $NewPurchaseVoucher->sub_department_id = $request->sub_department_id ?? 0;
             $bolen = false;
             $salesTaxx = explode('@', $request->input('sales_taxx'));
@@ -3961,12 +3966,16 @@ class PurchaseAddDetailControler extends Controller
             $NewPurchaseVoucher->grn_no = 0;
             $NewPurchaseVoucher->grn_id = 0;
             $NewPurchaseVoucher->slip_no = $request->input('slip_no');
+            $NewPurchaseVoucher->do_no = $request->input('do_no');
+            $NewPurchaseVoucher->godown_no = $request->input('godown_no');
+            $NewPurchaseVoucher->term_of_del = $request->input('term_of_del');
+            $NewPurchaseVoucher->destination = $request->input('destination');
             $NewPurchaseVoucher->bill_date = $request->input('bill_date');
             $NewPurchaseVoucher->due_date = $request->input('due_date');
-            $NewPurchaseVoucher->purchase_type = 0;
+            $NewPurchaseVoucher->purchase_type = $request->input('po_type', 1);
             // $NewPurchaseVoucher->po_no_date  = 0;
             $NewPurchaseVoucher->supplier = $supplier_id;
-            $NewPurchaseVoucher->warehouse = $request->warehouse_id;
+            $NewPurchaseVoucher->warehouse = $this->scalarWarehouseIdFromRequest($request);
             $NewPurchaseVoucher->sub_department_id = $sub_department_id;
             $bolen = false;
             if (!empty($request->input('sales_taxx'))) {
@@ -3986,26 +3995,36 @@ class PurchaseAddDetailControler extends Controller
             $NewPurchaseVoucher->status = 1;
             $NewPurchaseVoucher->pv_status = 1;
             $NewPurchaseVoucher->date = date('Y-m-d');
+            $NewPurchaseVoucher->currency = explode(',', $request->input('curren'))[0] ?? null;
             $NewPurchaseVoucher->save();
             $master_id = $NewPurchaseVoucher->id;
 
             $TotAmount = 0;
             foreach ($request->item_id as $key => $row):
+                if (empty($row)) continue;
+
+                $rowParts = explode('@', $row);
+                $subItemId = $rowParts[0] ?? $row;
+
                 $NewPurchaseVoucherData = new NewPurchaseVoucherData();
                 $NewPurchaseVoucherData = $NewPurchaseVoucherData->SetConnection('mysql2');
                 $NewPurchaseVoucherData->master_id = $master_id;
                 $NewPurchaseVoucherData->pv_no = $pv_no;
                 $NewPurchaseVoucherData->grn_data_id = 0;
-                $NewPurchaseVoucherData->category_id = 0;
-                $NewPurchaseVoucherData->sub_item = $row;
-                $NewPurchaseVoucherData->uom = $request->input('uom_id')[$key];
-                $NewPurchaseVoucherData->qty = $request->input('actual_qty')[$key];
-                $NewPurchaseVoucherData->rate = $request->input('rate')[$key];
-                $NewPurchaseVoucherData->amount = $request->input('amount')[$key];
-                $NewPurchaseVoucherData->discount_amount = $request->input('discount_amount')[$key];
-                $NewPurchaseVoucherData->net_amount = $request->input('after_dis_amount')[$key];
+                $NewPurchaseVoucherData->category_id = $request->input('category')[$key] ?? 0;
+                $NewPurchaseVoucherData->sub_item = $subItemId;
+                $NewPurchaseVoucherData->uom = $request->input('uom_id')[$key] ?? null;
+                $NewPurchaseVoucherData->bag_qty = $request->input('bags_qty')[$key] ?? 0;
+                $NewPurchaseVoucherData->qty = $request->input('actual_qty')[$key] ?? 0;
+                $NewPurchaseVoucherData->lbs_qty = $request->input('qty_lbs')[$key] ?? 0;
+                $NewPurchaseVoucherData->rate_cal_by = $request->input('rate_cal_by')[$key] ?? 1;
+                $NewPurchaseVoucherData->rate = $request->input('rate')[$key] ?? 0;
+                $NewPurchaseVoucherData->warehouse_id = $request->input('warehouse_id')[$key] ?? 0;
+                $NewPurchaseVoucherData->amount = CommonHelper::check_str_replace($request->input('amount')[$key] ?? 0);
+                $NewPurchaseVoucherData->discount_amount = $request->input('discount_amount')[$key] ?? 0;
+                $NewPurchaseVoucherData->net_amount = CommonHelper::check_str_replace($request->input('after_dis_amount')[$key] ?? 0);
                 $NewPurchaseVoucherData->sub_department_id = $sub_department_id;
-                $TotAmount += $request->input('after_dis_amount')[$key];
+                $TotAmount += (float) ($request->input('after_dis_amount')[$key] ?? 0);
                 $NewPurchaseVoucherData->staus = 1;
                 $NewPurchaseVoucherData->pv_status = 2;
                 $NewPurchaseVoucherData->username = Auth::user()->name;
@@ -4179,5 +4198,27 @@ class PurchaseAddDetailControler extends Controller
 
         return Redirect::to('/purchase/viewSubItemList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . Input::get('m'));
 
+    }
+
+    /**
+     * Header field uses name="warehouse_id" while detail rows use name="warehouse_id[]".
+     * PHP merges these into a single request key, often as an array — normalize for DB string/int columns.
+     */
+    private function scalarWarehouseIdFromRequest(Request $request)
+    {
+        $w = $request->input('master_warehouse_id');
+        if ($w !== null && $w !== '' && $w !== false) {
+            return $w;
+        }
+
+        $w = $request->input('warehouse_id');
+        if (is_array($w)) {
+            $w = count($w) ? reset($w) : null;
+        }
+        if ($w === null || $w === '' || $w === false) {
+            return 0;
+        }
+
+        return $w;
     }
 }

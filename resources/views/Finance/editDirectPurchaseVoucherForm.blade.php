@@ -38,6 +38,49 @@ endif;
     @include('modal')
     @include('number_formate')
 
+    <style>
+        .table-compact {
+            font-size: 0.92rem;
+            line-height: 1.15;
+        }
+
+        .table-compact th,
+        .table-compact td {
+            padding: 5px 6px !important;
+            vertical-align: middle;
+        }
+
+        .table-compact input.form-control,
+        .table-compact select.form-control {
+            font-size: 0.88rem;
+            padding: 4px 6px;
+            height: 28px;
+        }
+
+        .table-compact .btn-sm {
+            padding: 3px 8px;
+            font-size: 0.82rem;
+        }
+
+        .table-compact th {
+            white-space: nowrap;
+            font-weight: 600;
+        }
+
+        .col-narrow {
+            width: 95px !important;
+            min-width: 95px !important;
+        }
+
+        .col-very-narrow {
+            width: 70px !important;
+            min-width: 70px !important;
+        }
+
+        .nowrap {
+            white-space: nowrap;
+        }
+    </style>
     <script>
         var counter = 1;
     </script>
@@ -89,10 +132,33 @@ endif;
                                                     max="{{ date('Y-m-d') }}" name="pv_date" id="pv_date"
                                                     value="{{ $NewPurchaseVoucher->pv_date ?? '' }}" />
                                             </div> 
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                <label class="sf-label">Mode of delivery</label>
+                                                <input type="text" class="form-control" placeholder="Terms Of Delivery"
+                                                    name="term_of_del" id="term_of_del" value="{{ $NewPurchaseVoucher->term_of_del ?? '' }}" />
+                                            </div>
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                <label class="sf-label">PV Type</label>
+                                                <select onchange="get_po(this.id)" name="po_type" id="po_type" class="form-control">
+                                                    <option value="1" {{ (isset($NewPurchaseVoucher->purchase_type) && $NewPurchaseVoucher->purchase_type == 1) ? 'selected' : '' }}>Purchase Local</option>
+                                                    <option value="2" {{ (isset($NewPurchaseVoucher->purchase_type) && $NewPurchaseVoucher->purchase_type == 2) ? 'selected' : '' }}>Internal Use</option>
+                                                    <option value="3" {{ (isset($NewPurchaseVoucher->purchase_type) && $NewPurchaseVoucher->purchase_type == 3) ? 'selected' : '' }}>International</option>
+                                                </select>
+                                            </div>
                                             <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
                                                 <label class="sf-label">Ref / Bill No. <span class="rflabelsteric"><strong>*</strong></span></label>
                                                 <input type="text" class="form-control" placeholder="Ref / Bill No" name="slip_no" id="slip_no"
                                                        value="{{ $NewPurchaseVoucher->slip_no ?? '' }}"/>
+                                            </div>
+                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+                                                <label class="sf-label">DO No.</label>
+                                                <input type="text" class="form-control" placeholder="DO No" name="do_no" id="do_no"
+                                                       value="{{ $NewPurchaseVoucher->do_no ?? '' }}"/>
+                                            </div>
+                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+                                                <label class="sf-label">Godown No.</label>
+                                                <input type="text" class="form-control" placeholder="Godown No" name="godown_no" id="godown_no"
+                                                       value="{{ $NewPurchaseVoucher->godown_no ?? '' }}"/>
                                             </div>
                                             <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
                                                 <label class="sf-label">Bill Date.</label>
@@ -107,6 +173,11 @@ endif;
 
 
                                         <div class="row">
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                <label class="sf-label">Destination</label>
+                                                <input style="text-transform: capitalize;" type="text" class="form-control"
+                                                    placeholder="" name="destination" id="destination" value="{{ $NewPurchaseVoucher->destination ?? '' }}" />
+                                            </div>
                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                 <label class="sf-label"> <a href="#"
                                                         onclick="showDetailModelOneParamerter('pdc/createSupplierFormAjax');"
@@ -124,6 +195,27 @@ endif;
                                                 </select>
                                             </div>
                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                <label class="sf-label"> <a href="#"
+                                                        onclick="showDetailModelOneParamerter('pdc/createCurrencyTypeForm')"
+                                                        class="">Currency</a></label>
+                                                <span class="rflabelsteric"></span>
+                                                <select onchange="get_rate()" name="curren" id="curren"
+                                                    class="form-control select2 requiredField">
+                                                    <option value=""> Select Currency</option>
+                                                    @foreach(CommonHelper::get_all_currency_with_current_rate() as $row)
+                                                        <option value="{{$row->id . ',' . $row->rate}}" {{ (isset($NewPurchaseVoucher->currency) && $NewPurchaseVoucher->currency == $row->id) ? 'selected' : '' }}>
+                                                            {{$row->name}}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                <label class="sf-label">Currency Rate</label>
+                                                <span class="rflabelsteric"></span>
+                                                <input class="form-control" type="text" name="currency_rate" id="currency_rate" value="1" />
+                                                <input type="hidden" name="curren_rate" id="curren_rate" value="1" />
+                                            </div>
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                 <label class="sf-label">Mode/ Terms Of Payment <span
                                                         class="rflabelsteric"><strong>*</strong></span></label>
                                                 <input onkeyup="calculate_due_date()" type="number"
@@ -131,11 +223,17 @@ endif;
                                                     name="model_terms_of_payment" id="model_terms_of_payment"
                                                     value="{{ $model_terms_of_payment }}" />
                                             </div>
+                                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                                <label class="sf-label">Supplier's Address</label>
+                                                <input style="text-transform: capitalize;" readonly type="text"
+                                                    class="form-control" placeholder="" name="address" id="addresss"
+                                                    value="" />
+                                            </div>
 
                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 hide">
                                                 <label class="sf-label">Warehouse / Region <span
                                                         class="rflabelsteric"><strong>*</strong></span></label>
-                                                        <select onchange="get_address()" name="warehouse_id" id="warehouse_id"
+                                                        <select onchange="get_address()" name="master_warehouse_id" id="master_warehouse_id"
                                                         class="form-control select2">
                                                         <option value="">Select</option>
                                                         @foreach (CommonHelper::get_all_warehouse() as $row1)
@@ -162,6 +260,15 @@ endif;
                                                 </select>
                                             </div>
                                         </div>
+
+                                        <div class="lineHeight">&nbsp;</div>
+                                        <div class="row">
+                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+                                                <label class="sf-label">Supplier's NTN</label>
+                                                <input readonly type="text" class="form-control" placeholder="Ntn"
+                                                    name="ntn" id="ntn_id" value="" />
+                                            </div>
+                                        </div>
                                         <div class="lineHeight">&nbsp;</div>
                                     </div>
                                     <div class="col-lg-12  col-md-12 col-sm-12 col-xs-12">
@@ -175,126 +282,113 @@ endif;
                                 <div class="row">
                                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                         <div class="table-responsive">
-                                            <table class="table table-bordered">
+                                            <table class="table table-bordered table-compact">
                                                 <thead>
                                                     <tr class="text-center">
-                                                        <th colspan="6" class="text-center">Purchase Order Detail</th>
-                                                        <th colspan="2" class="text-center">
-                                                            <input type="button" class="btn btn-sm btn-primary"
-                                                                onclick="AddMoreDetails()" value="Add More Rows" />
-                                                        </th>
+                                                        <th colspan="12" class="text-center">Purchase Invoice Detail</th>
                                                         <th class="text-center">
-                                                            <span class="badge badge-success" id="span">1</span>
+                                                            <span class="badge badge-success" id="span">{{ $totalItemRows }}</span>
                                                         </th>
                                                     </tr>
                                                     <tr>
-                                                        <th class="text-center" style="width: 35%;">Item</th>
-                                                        <th class="text-center hide">Uom<span
-                                                                class="rflabelsteric"><strong>*</strong></span></th>
-                                                        <th class="text-center hide"> QTY<span
-                                                                class="rflabelsteric"><strong>*</strong></span></th>
-                                                        <th class="text-center hide">Rate<span
-                                                                class="rflabelsteric"><strong>*</strong></span></th>
-                                                        <th class="text-center">Amount<span
-                                                                class="rflabelsteric"><strong>*</strong></span></th>
-                                                        <th class="text-center hide">Discount %<span
-                                                                class="rflabelsteric"><strong>*</strong></span></th>
-                                                        <th class="text-center hide">Discount Amount<span
-                                                                class="rflabelsteric"><strong>*</strong></span></th>
-                                                        <th class="text-center hide">Net Amount<span
-                                                                class="rflabelsteric"><strong>*</strong></span></th>
-                                                        <th class="text-center" colspan="7">Delete<span
-                                                                class="rflabelsteric"><strong>*</strong></span></th>
+                                                        <th class="text-center nowrap" style="width: 9%; font-size:0.9rem;">Category</th>
+                                                        <th class="text-center nowrap" style="width: 13%; font-size:0.9rem;">Item</th>
+                                                        <th class="text-center nowrap col-very-narrow" style="font-size:0.9rem;">UoM<span class="rflabelsteric"><strong>*</strong></span></th>
+                                                        <th class="text-center nowrap col-narrow" style="font-size:0.9rem;">Bags Qty<span class="rflabelsteric"><strong>*</strong></span></th>
+                                                        <th class="text-center nowrap col-narrow" style="font-size:0.9rem;">Qty (KG)<span class="rflabelsteric"><strong>*</strong></span></th>
+                                                        <th class="text-center nowrap col-narrow" style="font-size:0.9rem;">Qty (lbs)<span class="rflabelsteric"><strong>*</strong></span></th>
+                                                        <th class="text-center nowrap col-narrow" style="font-size:0.9rem;">Rate Cal. By<span class="rflabelsteric"><strong>*</strong></span></th>
+                                                        <th class="text-center nowrap col-narrow" style="font-size:0.9rem;">Rate<span class="rflabelsteric"><strong>*</strong></span></th>
+                                                        <th class="text-center nowrap col-narrow" style="font-size:0.9rem;">Amount<span class="rflabelsteric"><strong>*</strong></span></th>
+                                                        <th class="text-center nowrap col-narrow" style="font-size:0.9rem;">Amount (PKR)<span class="rflabelsteric"><strong>*</strong></span></th>
+                                                        <th class="text-center nowrap col-narrow" style="font-size:0.9rem;">Net Amount (PKR)<span class="rflabelsteric"><strong>*</strong></span></th>
+                                                        <th class="text-center nowrap" style="width: 11%; font-size:0.9rem;">Location<span class="rflabelsteric"><strong>*</strong></span></th>
+                                                        <th class="text-center" style="width: 50px; font-size:0.9rem;">Action</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="AppnedHtml">
                                                     @foreach ($NewPurchaseVoucherData as $key => $DFil)
-                                                        
-                                                    
-                                                    <tr id="RemoveRows{{ $key+1 }}" title="{{ $key+1 }}" class="AutoNo">
-                                                        <td>
-                                                            <select name="item_id[]" id="sub_1" onchange="itemChange({{ $key+1 }})"
-                                                                class="form-control select2">                                                                
-                                                                
-                                                                @foreach(CommonHelper::get_all_account_operat() as $key1 => $y)
-                                                                    <option @if($DFil->sub_item == $y->id) selected @endif value="{{ $y->id}}">{{ $y->code .' ---- '. $y->name}}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </td>
-
-                                                        <td   class="hide">
-                                                            <input readonly type="text" class="form-control"
-                                                                name="uom_id[]" id="uom_id{{ $key+1 }}" value="{{ $DFil->uom }}">
-                                                        </td>
-                                                        <td  class="hide">
-                                                            <input type="text" onkeyup="claculation({{ $key+1 }})" onblur="claculation({{ $key+1 }})"
-                                                                class="form-control  ActualQty"
-                                                                name="actual_qty[]" id="actual_qty{{ $key+1 }}"
-                                                                placeholder="ACTUAL QTY" min="1" value="{{ $DFil->qty }}">
-                                                        </td>
-                                                        <td   class="hide">
-                                                            <input type="text" onkeyup="claculation({{ $key+1 }})" onblur="claculation({{ $key+1 }})"
-                                                                class="form-control  ActualRate"
-                                                                name="rate[]" id="rate{{ $key+1 }}" placeholder="RATE"
-                                                                min="1" value="{{ $DFil->rate }}">
-                                                        </td>
-                                                        <td>
-                                                            <input type="text" class="form-control requiredField" name="amount[]"
-                                                                id="amount{{ $key+1 }}" placeholder="AMOUNT" min="1"
-                                                                value="{{ $DFil->amount }}" onkeyup="amount_calculation({{ $key+1 }})" >
-                                                        </td>
-                                                        <td   class="hide">
-                                                            @php
-                                                                if($DFil->discount_amount != 0){
-                                                                    $total_value = (int)$DFil->discount_amount + (int)$DFil->net_amount;
-                                                                    $discount_percent = (int)$DFil->discount_amount / $total_value;
-                                                                }else {
-                                                                    $discount_percent = 0;
-                                                                }
-                                                                
-                                                            @endphp
-                                                            <input type="text" onkeyup="discount_percent(this.id)"
-                                                                class="form-control"
-                                                                name="discount_percent[]" id="discount_percent{{ $key+1 }}"
-                                                                placeholder="DISCOUNT" min="1" value="{{ $discount_percent * 100 }}">
-                                                        </td>
-                                                        <td   class="hide">
-                                                            <input type="text" onkeyup="discount_amount(this.id)"
-                                                                class="form-control"
-                                                                name="discount_amount[]" id="discount_amount{{ $key+1 }}"
-                                                                placeholder="DISCOUNT" min="1" value="{{ $DFil->discount_amount }}">
-                                                        </td>
-                                                        <td   class="hide">
-                                                            <input type="text" class="form-control requiredField net_amount_dis"
-                                                                name="after_dis_amount[]" id="after_dis_amount{{ $key+1 }}"
-                                                                placeholder="NET AMOUNT" min="1" value="{{ $DFil->net_amount }}"
-                                                                readonly>
-                                                        </td>
-                                                        @if($key > 0)
-
-                                                            <td style="background-color: #ccc" colspan="7">
-                                                                <!-- <input onclick="view_history({{ $key+1 }})" type="checkbox"
-                                                                    id="view_history{{ $key+1 }}"> -->
-                                                                <button type="button" class="btn btn-sm btn-danger" id="BtnRemove{{ $key+1 }}" onclick="RemoveSection({{ $key+1 }})"> - </button>
+                                                        <tr id="RemoveRows{{ $key+1 }}" title="{{ $key+1 }}" class="AutoNo">
+                                                            <td>
+                                                                <select style="width: 100% !important;" onchange="get_sub_item('category_id{{ $key+1 }}')" name="category[]"
+                                                                    id="category_id{{ $key+1 }}" class="form-control category select2 requiredField">
+                                                                    <option value="">Select</option>
+                                                                    @foreach (CommonHelper::get_all_category() as $category)
+                                                                        <option value="{{ $category->id }}" {{ ($DFil->category_id == $category->id) ? 'selected' : '' }}>
+                                                                            {{ $category->main_ic }}
+                                                                        </option>
+                                                                    @endforeach
+                                                                </select>
                                                             </td>
-                                                        @endif    
-                                                    </tr>
+                                                            <td>
+                                                                <select style="width: 100% !important;" onchange="get_item_name({{ $key+1 }})" name="item_id[]" id="item_id{{ $key+1 }}"
+                                                                    class="form-control requiredField select2 item_id_select" data-selected="{{ $DFil->sub_item }}">
+                                                                    <option value="">Select</option>
+                                                                </select>
+                                                            </td>
+                                                            <td>
+                                                                <input readonly type="text" class="form-control" name="uom_id[]" id="uom_id{{ $key+1 }}" value="{{ $DFil->uom }}">
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control requiredField BagsQty" name="bags_qty[]" id="bags_qty{{ $key+1 }}" value="{{ $DFil->bag_qty ?? 1 }}" min="1"
+                                                                    oninput="bag_qq({{ $key+1 }})">
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" onchange="claculation('{{ $key+1 }}')" class="form-control requiredField ActualQty" name="actual_qty[]" id="actual_qty{{ $key+1 }}"
+                                                                    placeholder="ACTUAL QTY" min="1" value="{{ $DFil->qty ?? '' }}" readonly>
+                                                                <input type="hidden" class="PackQty" name="pack_qty[]" id="pack_qty">
+                                                            </td>
+                                                            <td>
+                                                                <input class="form-control requiredField" type="number" id="qty_lbs{{ $key+1 }}" name="qty_lbs[]" step="any" value="{{ $DFil->lbs_qty ?? '' }}" readonly />
+                                                            </td>
+                                                            <td>
+                                                                <select required class="form-control select2" name="rate_cal_by[]" id="rate_cal_by_{{ $key+1 }}" onchange="calculateLineAmount(this)">
+                                                                    <option value="1" {{ ($DFil->rate_cal_by == 1) ? 'selected' : '' }}>By BAGS</option>
+                                                                    <option value="2" {{ ($DFil->rate_cal_by == 2) ? 'selected' : '' }}>By KGS</option>
+                                                                    <option value="3" {{ ($DFil->rate_cal_by == 3) ? 'selected' : '' }}>By LBS</option>
+                                                                </select>
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" onkeyup="claculation('{{ $key+1 }}')" class="form-control requiredField ActualRate" name="rate[]" id="rate{{ $key+1 }}" placeholder="RATE" min="1" value="{{ $DFil->rate ?? '' }}">
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control number_format" name="amount[]" id="amount{{ $key+1 }}" placeholder="AMOUNT" min="1" value="{{ $DFil->amount ?? '' }}" readonly>
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control actual_amount number_format" name="actual_amount[]" id="actual_amount{{ $key+1 }}" placeholder="AMOUNT" min="1" value="{{ $DFil->amount ?? '' }}" readonly>
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control net_amount_dis number_format" name="after_dis_amount[]" id="after_dis_amount{{ $key+1 }}" placeholder="NET AMOUNT" min="1" value="{{ $DFil->net_amount ?? '' }}" readonly>
+                                                            </td>
+                                                            <td>
+                                                                <select required class="form-control select2" name="warehouse_id[]" id="warehouse_{{ $key+1 }}">
+                                                                    <option value="">Select</option>
+                                                                    @foreach(CommonHelper::get_all_warehouse() as $row)
+                                                                        <option value="{{ $row->id }}" {{ ($DFil->warehouse_id == $row->id) ? 'selected' : '' }}>{{ $row->name }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </td>
+                                                            <td style="background-color: #ccc" class="text-center">
+                                                                @if($key == 0)
+                                                                    <input type="button" class="btn btn-sm btn-primary" onclick="AddMoreDetails()" value="+" />
+                                                                @else
+                                                                    <button type="button" class="btn btn-sm btn-danger" id="BtnRemove{{ $key+1 }}" onclick="RemoveSection({{ $key+1 }})"> - </button>
+                                                                @endif
+                                                            </td>
+                                                        </tr>
                                                     @endforeach
                                                 </tbody>
 
                                                 <tbody>
-                                                    <tr
-                                                        style="font-size:large;font-weight: bold">
-                                                        <td class="text-center" colspan="">Total</td>
-                                                        <td id="" class="text-right" colspan=""><input
-                                                                readonly class="form-control" type="text"
-                                                                id="net" /> </td>
-                                                        <td colspan="7"></td>
+                                                    <tr style="font-size:large;font-weight: bold">
+                                                        <td class="text-center" colspan="5">Total</td>
+                                                        <td class="text-right" colspan="1"><input readonly class="form-control number_format" type="text" name="pkr_net" id="pkr_net" /> </td>
+                                                        <td class="text-right" colspan="1"><input readonly class="form-control number_format" type="text" name="actual_net" id="actual_net" /> </td>
+                                                        <td class="text-right" colspan="1"><input readonly class="form-control number_format" type="text" id="net" name="net" /></td>
+                                                        <td colspan="4"></td>
                                                     </tr>
                                                 </tbody>
                                             </table>
-
-
 
                                         </div>
                                     </div>
@@ -378,89 +472,81 @@ endif;
 
         function AddMoreDetails() {
             Counter++;
-            // '<input type="text" class="form-control sam_jass" name="sub_ic_des[]" id="item_' + Counter +
-            // '" placeholder="ITEM">' +
-            // '<input type="hidden" class="requiredField" name="item_id[]" id="sub_' + Counter + '">' +
-            $('#AppnedHtml').append(`
-                    <tr id="RemoveRows${Counter}" class="AutoNo">
-                        <td class="AutoCounter" title="${AutoCount}">
-                            <select name="item_id[]" id="sub_${Counter}" onchange="itemChange(${Counter})" class="form-control select2">
-                                <option value="">Select</option>
-                                <?php foreach(CommonHelper::get_all_account_operat() as $Fil){?>
-                                    <option value=<?php echo $Fil->id?>'><?php echo $Fil->code.'--'.$Fil->name;?></option><?php }?>
-                                </select>
-                            </select>
-                        </td>
-                        <td class="hide">
-                            <input readonly type="text" class="form-control" name="uom_id[]" id="uom_id${Counter}" >
-                        </td>
-                        <td class="hide">
-                            <input type="text" onkeyup="claculation(${Counter})" onblur="claculation(${Counter})"  class="form-control ActualQty" name="actual_qty[]" id="actual_qty${Counter}" placeholder="ACTUAL QTY">
-                        </td>
-                        <td class="hide">
-                            <input type="text" onkeyup="claculation(${Counter})" onblur="claculation(${Counter})" class="form-control ActualRate" name="rate[]" id="rate${Counter}" placeholder="RATE">
-                        </td>
-                        <td>
-                            <input type="text" class="form-control requiredField"  onkeyup="amount_calculation(${Counter})" name="amount[]" id="amount${Counter}" placeholder="AMOUNT">
-                        </td>
-                        <td class="hide">
-                            <input type="text" onkeyup="discount_percent(this.id)" class="form-control " value="0" name="discount_percent[]" id="discount_percent${Counter}" placeholder="DISCOUNT">
-                        </td>
-                        <td class="hide">
-                            <input type="text" onkeyup="discount_amount(this.id)" class="form-control " value="0" name="discount_amount[]" id="discount_amount${Counter}" placeholder="DISCOUNT">
-                        </td>
-                        <td class="hide">
-                            <input readonly type="text" class="form-control net_amount_dis" name="after_dis_amount[]" id="after_dis_amount${Counter}" placeholder="NET AMOUNT">
-                        </td>
-                        <td class="text-center" colspan="7">
-                            <button type="button" class="btn btn-sm btn-danger" id="BtnRemove${Counter}" onclick="RemoveSection(${Counter})"> - </button>
-                            </td>
-                    </tr>
-            `);
+            var category = 'category_id' + Counter;
+
+            $('#AppnedHtml').append(
+                '<tr id="RemoveRows' + Counter + '" class="AutoNo">' +
+                '<td>' +
+                '<select style="width: 100% !important;" onchange="get_sub_item(`' + category + '`)" name="category[]" id="category_id' + Counter + '"  class="form-control category select2 requiredField">' +
+                '<option value="">Select</option>' +
+                '@foreach (CommonHelper::get_all_category() as $category):' +
+                '<option value="{{ $category->id }}"> {{ $category->main_ic }} </option>' +
+                '@endforeach' +
+                '</select>' +
+                '</td>' +
+                '<td>' +
+                '<select style="width: 100% !important;" onchange="get_item_name(' + Counter + ')" name="item_id[]" id="item_id' + Counter + '" class="form-control requiredField select2 item_id_select" data-selected="">' +
+                '<option value="">Select</option>' +
+                '</select>' +
+                '</td>' +
+                '<td>' +
+                '<input readonly type="text" class="form-control" name="uom_id[]" id="uom_id' + Counter + '">' +
+                '</td>' +
+                '<td>' +
+                '<input type="text" class="form-control requiredField BagsQty" name="bags_qty[]" id="bags_qty' + Counter + '" value="1" min="1" oninput="bag_qq(' + Counter + ')">' +
+                '</td>' +
+                '<td>' +
+                '<input type="text" onchange="claculation(' + Counter + ')" class="form-control requiredField ActualQty" name="actual_qty[]" id="actual_qty' + Counter + '" placeholder="ACTUAL QTY" readonly>' +
+                '<input type="hidden" class="PackQty" name="pack_qty[]" id="pack_qty">' +
+                '</td>' +
+                '<td>' +
+                '<input class="form-control requiredField" type="number" id="qty_lbs' + Counter + '" name="qty_lbs[]" step="any" readonly />' +
+                '</td>' +
+                '<td>' +
+                '<select required class="form-control select2" name="rate_cal_by[]" id="rate_cal_by_' + Counter + '" onchange="calculateLineAmount(this)">' +
+                '<option value="1">By BAGS</option>' +
+                '<option value="2">By KGS</option>' +
+                '<option value="3">By LBS</option>' +
+                '</select>' +
+                '</td>' +
+                '<td>' +
+                '<input type="text" onkeyup="claculation(' + Counter + ')" class="form-control requiredField ActualRate" name="rate[]" id="rate' + Counter + '" placeholder="RATE" min="1" value="">' +
+                '</td>' +
+                '<td>' +
+                '<input type="text" class="form-control number_format" name="amount[]" id="amount' + Counter + '" placeholder="AMOUNT" min="1" value="" readonly>' +
+                '</td>' +
+                '<td>' +
+                '<input type="text" class="form-control actual_amount number_format" name="actual_amount[]" id="actual_amount' + Counter + '" placeholder="AMOUNT" min="1" value="" readonly>' +
+                '</td>' +
+                '<td>' +
+                '<input type="text" class="form-control net_amount_dis number_format" name="after_dis_amount[]" id="after_dis_amount' + Counter + '" placeholder="NET AMOUNT" min="1" value="" readonly>' +
+                '</td>' +
+                '<td>' +
+                '<select required class="form-control select2" name="warehouse_id[]" id="warehouse_' + Counter + '">' +
+                '<option value="">Select</option>' +
+                '@foreach(CommonHelper::get_all_warehouse() as $row)' +
+                '<option value="{{ $row->id }}">{{ $row->name }}</option>' +
+                '@endforeach' +
+                '</select>' +
+                '</td>' +
+                '<td style="background-color: #ccc" class="text-center">' +
+                '<button type="button" class="btn btn-sm btn-danger" id="BtnRemove' + Counter + '" onclick="RemoveSection(' + Counter + ')"> - </button>' +
+                '</td>' +
+                '</tr>'
+            );
 
             var AutoNo = $(".AutoNo").length;
             $('#span').text(AutoNo);
             $('.select2').select2();
-
-            var AutoCount = 1;;
-            $(".AutoCounter").each(function() {
-                AutoCount++;
-                $(this).prop('title', AutoCount);
-
-            });
-            $('.sam_jass').bind("enterKey", function(e) {
-
-
-                $('#items').modal('show');
-
-
-            });
-            $('.sam_jass').keyup(function(e) {
-                if (e.keyCode == 13) {
-                    selected_id = this.id;
-                    $(this).trigger("enterKey");
-
-
-                }
-
-            });
-
-
+            $('.number_format').number(true, 2);
         }
 
         function RemoveSection(Row) {
-            //            alert(Row);
             $('#RemoveRows' + Row).remove();
-            //   $(".AutoCounter").html('');
-            var AutoCount = 1;
-            var AutoCount = 1;;
-            $(".AutoCounter").each(function() {
-                AutoCount++;
-                $(this).prop('title', AutoCount);
-            });
             var AutoNo = $(".AutoNo").length;
             $('#span').text(AutoNo);
-            amount_calculation(1);
+            net_amount();
+            sales_tax('sales_taxx');
         }
 
         function get_po(id) {
@@ -603,6 +689,14 @@ endif;
 
         $(document).ready(function() {
             amount_calculation(1);
+            // Fill currency rate and supplier address/ntn on load (edit screen)
+            if ($('#curren').val()) {
+                get_rate();
+            }
+            if ($('#supplier_id').val()) {
+                get_address();
+            }
+            init_edit_rows();
             for (i = 1; i <= counter; i++) {
                 $('#amount_' + i).number(true, 2);
                 //   $('#rate_'+i).number(true,2);
@@ -814,7 +908,101 @@ endif;
         function get_rate() {
             var currency_id = $('#curren').val();
             currency_id = currency_id.split(',');
+            $('#currency_rate').val(currency_id[1]);
             $('#curren_rate').val(currency_id[1]);
+        }
+
+        // ===== Create-form compatible helpers (needed for UOM + qty/amount calc) =====
+        function get_item_name(index) {
+            var item = $('#item_id' + index).val();
+            if (!item) return;
+            var uom = item.split('@');
+            $('#uom_id' + index).val(uom[1] || '');
+            $('#actual_qty' + index).val(uom[3] || 0);
+            $('#qty_lbs' + index).val((parseFloat(uom[3] || 0) * 2.2).toFixed(2));
+            $('#pack_qty').val(uom[3] || 0);
+            if (!$('#bags_qty' + index).val()) {
+                $('#bags_qty' + index).val(1);
+            }
+            bag_qq(index);
+        }
+
+        function bag_qq(counter) {
+            var bags_qty = parseFloat($('#bags_qty' + counter).val()) || 1;
+            var pack_qty = parseFloat($('#pack_qty').val()) || 0;
+            var total_qty = (bags_qty * pack_qty).toFixed(2);
+            $('#actual_qty' + counter).val(total_qty);
+            $('#qty_lbs' + counter).val((total_qty * 2.2).toFixed(2));
+            claculation(counter);
+        }
+
+        function claculation(number) {
+            var rate_cal_by = $('#rate_cal_by_' + number).val() || "0";
+            var bags_qty = parseFloat($('#bags_qty' + number).val()) || 0;
+            var qty_kg = parseFloat($('#actual_qty' + number).val()) || 0;
+            var qty_lbs = parseFloat($('#qty_lbs' + number).val()) || 0;
+            var rate = parseFloat($('#rate' + number).val()) || 0;
+
+            var currency = $('#currency_rate').val() || 1;
+            if (currency === '') currency = 1;
+            currency = parseFloat(currency);
+
+            var multiplier = 0;
+            if (rate_cal_by === "1") multiplier = bags_qty;
+            else if (rate_cal_by === "2") multiplier = qty_kg;
+            else if (rate_cal_by === "3") multiplier = qty_lbs;
+
+            var total = (multiplier * rate * currency).toFixed(2);
+            $('#amount' + number).val(total);
+            $('#actual_amount' + number).val(total);
+            $('#after_dis_amount' + number).val(total);
+
+            net_amount();
+            sales_tax('sales_taxx');
+        }
+
+        function calculateLineAmount(element) {
+            var rowCounter = element.id.replace('rate_cal_by_', '');
+            claculation(rowCounter);
+        }
+
+        // Load existing row item dropdowns and select saved items (edit screen)
+        function init_edit_rows() {
+            $('.item_id_select').each(function () {
+                var $sel = $(this);
+                var row = $sel.attr('id').replace('item_id', '');
+                var categoryId = $('#category_id' + row).val();
+                var selectedSubItem = $sel.data('selected'); // numeric id saved in db
+
+                if (categoryId) {
+                    get_sub_item('category_id' + row);
+                }
+
+                // wait until get_sub_item ajax fills options, then select the saved item
+                var tries = 0;
+                var t = setInterval(function () {
+                    tries++;
+                    var $itemSel = $('#item_id' + row);
+                    if ($itemSel.find('option').length > 1) {
+                        // options are like: "ID@UOM@NAME@PACK"
+                        var matched = false;
+                        $itemSel.find('option').each(function () {
+                            var v = $(this).val();
+                            if (!v) return;
+                            if ((v + '').startsWith(selectedSubItem + '@') || v == selectedSubItem) {
+                                $itemSel.val(v).trigger('change');
+                                matched = true;
+                                return false;
+                            }
+                        });
+                        if (!matched) {
+                            // keep as-is
+                        }
+                        clearInterval(t);
+                    }
+                    if (tries > 20) clearInterval(t);
+                }, 150);
+            });
         }
     </script>
     <script>

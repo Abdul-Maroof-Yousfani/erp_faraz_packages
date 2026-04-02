@@ -30,6 +30,14 @@ $exp_amount= DB::Connection('mysql2')->table('new_purchase_voucher_data')->where
 $item_amount= DB::Connection('mysql2')->table('new_purchase_voucher_data')->where('master_id','=',$id)->where('additional_exp',0)->sum('net_amount');
 
 $Supplier = CommonHelper::get_single_row('supplier','id',$row->supplier);
+$payment_terms_days = 0;
+if (!empty($row->bill_date) && !empty($row->due_date)) {
+    try {
+        $payment_terms_days = (new DateTime($row->bill_date))->diff(new DateTime($row->due_date))->days;
+    } catch (\Exception $e) {
+        $payment_terms_days = 0;
+    }
+}
 ?>
 <div class="row headquid">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-right">
@@ -69,85 +77,66 @@ $Supplier = CommonHelper::get_single_row('supplier','id',$row->supplier);
                     </div>
                     <div class="row">
                         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                            <h3 style="text-align: center;">Payable Voucher</h3>
+                            <h3 style="text-align: center; font-weight:700;">PURCHASE ORDER</h3>
                         </div>
                     </div>
                     <div style="line-height:5px;">&nbsp;</div>
                     <div class="row">
-                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                            <div style="width:30%; float:left;">
-                                <table  class="table table-bordered table-striped table-condensed tableMargin">
-                                    <tbody>
-
-                                    <tr>
-                                        <td style="width:40%;">Vendor</td>
-                                        <td style="width:60%;"><?php echo $Supplier->name;?></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="width:40%;">Address</td>
-                                        <td style="width:60%;"><?php echo $Supplier->address;?></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="width:40%;">NTN</td>
-                                        <td style="width:60%;"><?php echo $Supplier->ntn;?></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="width:40%;">PV No.</td>
-                                        <td style="width:60%;"><?php echo $row->pv_no;?></td>
-                                    </tr>
-
-                                    @if ($row->grn_no!=0)
-                                    <tr>
-                                        <td style="width:40%;">GRN No.</td>
-                                        <td style="width:60%;"><?php echo $row->grn_no;?></td>
-                                    </tr>
-                                    @endif
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div style="width:30%; float:right;">
-                                <table  class="table table-bordered table-striped table-condensed tableMargin">
-                                    <tbody>
-                                        <tr>
-                                            <td>PV Date</td>
-                                            <td><?php echo FinanceHelper::changeDateFormat($row->pv_date);?></td>
-                                        </tr>
-                                        <tr>
-                                            <td style="width:40%;">Ref / Bill No.</td>
-                                            <td style="width:60%;"><?php echo $row->slip_no;?></td>
-                                        </tr>
-                                        <tr>
-                                            <td style="width:40%;">Bill Date</td>
-                                            <td style="width:60%;"><?php  echo FinanceHelper::changeDateFormat($row->bill_date);?></td>
-                                        </tr>
-                                        <tr>
-                                            <td style="width:40%;">Due Date</td>
-                                            <td style="width:60%;"><?php  echo FinanceHelper::changeDateFormat($row->due_date);?></td>
-                                        </tr>
-
-                                    </tbody>
-                                </table>
+                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                            <div style="border:1px solid #ccc; padding:8px;">
+                                <div style="font-weight:700; margin-bottom:6px;">VENDOR</div>
+                                <div><b><?php echo $Supplier->name ?? ''; ?></b></div>
+                                <div><?php echo $Supplier->address ?? ''; ?></div>
+                                <div><?php echo $Supplier->city ?? ''; ?></div>
                             </div>
                         </div>
+                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                            <div style="border:1px solid #ccc; padding:8px;">
+                                <div style="font-weight:700; margin-bottom:6px;">SHIP TO</div>
+                                <div><b>FARAZ PACKAGES</b></div>
+                                <div>F-98 S.I.T.E KARACHI.</div>
+                                <div>Phone: 0321-2254444</div>
+                                <div>Email: Farazpackages@gmail.com</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="line-height:8px;">&nbsp;</div>
+
+                    <div class="row">
                         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <table class="table table-bordered table-condensed tableMargin" style="margin-bottom:8px;">
+                                <tbody>
+                                <tr>
+                                    <td style="width:20%; font-weight:700;">Date #</td>
+                                    <td style="width:30%;"><?php echo FinanceHelper::changeDateFormat($row->pv_date); ?></td>
+                                    <td style="width:20%; font-weight:700;">PO #</td>
+                                    <td style="width:30%;"><?php echo $row->pv_no; ?></td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:700;">PI #</td>
+                                    <td><?php echo $row->slip_no ?? ''; ?></td>
+                                    <td style="font-weight:700;">Payment Terms</td>
+                                    <td><?php echo $payment_terms_days; ?> Days</td>
+                                </tr>
+                               
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                             <div class="table-responsive">
                                 <table style=""  class="table table-bordered table-striped table-condensed tableMargin">
                                     <thead>
                                         <tr>
-                                            <th class="text-center" style="width:50px;">S.No</th>
-
-                                            <th class="text-center">Account</th>
-                                            <th class="text-center">Uom</th>
-                                            <th class="text-center">No. of Bags</th>
-                                            <th class="text-center">Qty (KG)</th>
-                                            <th class="text-center">Qty (Pound)</th>
-                                            <th class="text-center">Rate</th>
-                                            <th class="text-center" colspan="8">Amount</th>
-                                            <th class="text-center">EXP%</th>
-                                            <th class="text-center">Additional Expenses</th>
-                                            <th class="text-center">Discount Amount</th>
-                                            <th class="text-center" colspan="7">Net Amount</th>
+                                            <th class="text-center" style="width:35%;">DESCRIPTION</th>
+                                            <th class="text-center">PER POUND</th>
+                                            <th class="text-center">BAGS</th>
+                                            <th class="text-center">U.PRICE</th>
+                                            <th class="text-center">PAYMENT TERMS</th>
+                                            <th class="text-center">AMOUNT</th>
+                                            <th class="text-center">DUE DATE</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -183,61 +172,43 @@ $Supplier = CommonHelper::get_single_row('supplier','id',$row->supplier);
 
                                     ?>
                                     <tr class="text-center">
-                                        <td class="text-center"><?php echo $counter++;?></td>
-
-                                        <td title="{{$row2->sub_item}}">{{ CommonHelper::get_name_of_account_operat_by_id($row2->sub_item) }} </td>
-                                        <td>
-                                            <?php echo CommonHelper::get_uom($row2->sub_item);?>
+                                        <td class="text-left" style="text-align:left;">
+                                            <?php echo CommonHelper::get_subitem_name($row2->sub_item); ?>
+                                            <?php if (!empty($row->do_no) || !empty($row->godown_no)) { ?>
+                                                <div style="font-size:11px; color:#444;">
+                                                    <?php if (!empty($row->do_no)) { ?>DO No: <?php echo $row->do_no; ?><?php } ?>
+                                                    <?php if (!empty($row->godown_no)) { ?> &nbsp; Godown: <?php echo $row->godown_no; ?><?php } ?>
+                                                </div>
+                                            <?php } ?>
                                         </td>
-                                        <td><?php  echo $row2->bag_qty?></td>
-                                        <td><?php  echo $row2->qty?></td>
-                                        <td><?php  echo $row2->lbs_qty?></td>
-                                        <td><?php  echo $row2->rate?></td>
-                                        <td colspan="8"><?php  echo $row2->amount; ?></td>
-                                        <td><?php  echo number_format($item_amount_percent,3); ?></td>
-                                        <td>{{  number_format($exp_amount_apply,2) }}</td>
-                                        <td><?php  echo $row2->discount_amount; ?></td>
-                                        <td ><?php  echo number_format($row2->net_amount+$exp_amount_apply,2); $TotalAmount +=$row2->net_amount+$exp_amount_apply;?></td>
-
-<?php
-$TotalBagQty +=$row2->bag_qty;
-$TotalQty +=$row2->qty;
-$TotalLbsQty +=$row2->lbs_qty;
-?>
-
-
+                                        <td><?php echo number_format((float) $row2->lbs_qty, 0); ?></td>
+                                        <td><?php echo number_format((float) $row2->bag_qty, 0); ?></td>
+                                        <td><?php echo number_format((float) $row2->rate, 2); ?></td>
+                                        <td><?php echo $payment_terms_days; ?> Days</td>
+                                        <td><?php echo number_format((float) $row2->net_amount + (float) $exp_amount_apply, 2); $TotalAmount += $row2->net_amount + $exp_amount_apply; ?></td>
+                                        <td><?php echo FinanceHelper::changeDateFormat($row->due_date); ?></td>
                                     </tr>
                                     <?php
                                     }
                                     ?>
                                     <tr class="sf-table-total">
-                                        <td colspan="3" class="text-center">
-                                            <label for="field-1" class="sf-label"><b>Total</b></label>
-                                        </td>
-                                        <td class="text-center"><b><?php echo number_format($TotalBagQty,2)?></b></td>
-                                        <td class="text-center"><b><?php echo number_format($TotalQty,2)?></b></td>
-                                        <td class="text-center"><b><?php echo number_format($TotalLbsQty,2)?></b></td>
-                                        <td class="text-center"></td>
+                                        <td colspan="5" class="text-right"><b>TOTAL:</b></td>
                                         <td class="text-center"><b><?php echo number_format($TotalAmount,2)?></b></td>
+                                        <td></td>
                                         <input type="hidden" id="Total" value="<?php echo $TotalAmount?>">
-                                    </tr>
-                                    <tr class="sf-table-total">
-                                        <td colspan="7" class="text-center">
-                                            <label for="field-1" class="sf-label"><b>Total Payable</b></label>
-                                        </td>
-                                        <td class="text-center"><b id=""></b></td>
                                     </tr>
                                     <?php if($row->sales_tax_amount > 0):
                                     $Accounts = CommonHelper::get_single_row('accounts','id',$row->sales_tax_acc_id);
                                     ?>
                                     <tr class="sf-table-total">
-                                        <td colspan="6" class="text-right">Sales Tax :</td>
-                                        <td  class="text-right"><b><?php echo optional($Accounts)->name?></b></td>
+                                        <td colspan="5" class="text-right">Sales Tax :</td>
                                         <td class="text-center"><b><?php echo number_format($row->sales_tax_amount,2)?></b></td>
+                                        <td></td>
                                     </tr>
                                     <tr>
-                                        <td colspan="7" class="text-center"><b>Total After Sales Tax<b></td>
+                                        <td colspan="5" class="text-right"><b>Total After Sales Tax</b></td>
                                         <td class="text-center"><b><?php echo number_format($row->sales_tax_amount+$TotalAmount,2)?></b></td>
+                                        <td></td>
                                     </tr>
                                     <?php endif;?>
                                     </tbody>

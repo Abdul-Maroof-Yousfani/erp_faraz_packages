@@ -104,7 +104,7 @@ $delete=ReuseableCode::check_rights(38);
                                     <a href="{{ URL::asset('finance/editDirectPurchaseVoucherForm/'.$row->id.'?m='.($m ?? '')) }}" 
                                        class="dropdown-item_sale_order_list dropdown-item">Edit</a>
                                 @else
-                                    <a href="{{ URL::asset('finance/editPurchaseVoucherFormNew/'.$row->id.'?m='.($m ?? '')) }}" 
+                                    <a href="{{ URL::asset('finance/editDirectPurchaseVoucherForm/'.$row->id.'?m='.($m ?? '')) }}" 
                                        class="dropdown-item_sale_order_list dropdown-item">Edit</a>
                                 @endif
                             @endif

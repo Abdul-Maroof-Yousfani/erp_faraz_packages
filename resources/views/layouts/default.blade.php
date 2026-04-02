@@ -2179,12 +2179,19 @@ if (!empty($_GET['pageType'])) {
 			$.ajax({
 				url: '{{ url("/pdc/get_sub_category") }}',
 				type: 'Get',
+				dataType: 'json',
 				data: { category: category },
 				success: function (response) {
 					$('#item_id' + index_val).append(new Option('Select', ''))
 					$.each(response, function (index, element) {
 						$('#item_id' + index_val).append(new Option(element['item_code'] + ' -- '+ element['sub_ic'], element['id'] + '@' + element['uom_name'] + '@' + element['sub_ic'] + '@' + element['pack_size']))
 					});
+					$('#item_id' + index_val).trigger('change.select2');
+				}
+				,
+				error: function (xhr) {
+					console.error('get_sub_item failed', xhr.status, xhr.responseText);
+					$('#item_id' + index_val).append(new Option('Select', ''));
 				}
 			});
 		}
