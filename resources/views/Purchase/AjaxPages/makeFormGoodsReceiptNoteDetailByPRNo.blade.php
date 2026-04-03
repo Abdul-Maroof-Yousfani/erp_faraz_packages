@@ -164,6 +164,8 @@ $grn_no = 'grn' . ($str + 1) . date('my');
                         <th class="ShowHideDiscountAmount" style="width: 110px;"> Discount Amount</th>
                         <th class="ShowHideNetAmount" style="width: 110px;"> Net Amount</th>
                         <th style="width: 100px" class="text-center">BAL. QTY. Receivable</th>
+                        <th style="width: 110px" class="text-center">DO No.</th>
+                        <th style="width: 110px" class="text-center">Godown No.</th>
                         <th style="width: 130px" class="text-center">Location</th>
                     </tr>
                 </thead>
@@ -268,6 +270,14 @@ $grn_no = 'grn' . ($str + 1) . date('my');
                                         value="<?php        echo $amount - $discount_amount?>" readonly></td>
                                 <td><input style="width: 130px !important;" readonly name="balqty_<?php        echo $row->id; ?>"
                                         id="balqty_<?php        echo $row->id; ?>" class="form-control " type="text" value="0" /> </td>
+                                <td>
+                                    <input style="width: 130px !important;" type="text" class="form-control" name="do_no<?php        echo $row->id; ?>"
+                                        id="do_no<?php        echo $row->id; ?>" value="{{ $row->do_no ?? '' }}" placeholder="DO No." />
+                                </td>
+                                <td>
+                                    <input style="width: 130px !important;" type="text" class="form-control" name="godown_no<?php        echo $row->id; ?>"
+                                        id="godown_no<?php        echo $row->id; ?>" value="{{ $row->godown_no ?? '' }}" placeholder="Godown No." />
+                                </td>
                                 <td>
                                     <select required style="width: 130px !important;" class="form-control requiredField ClsAll"
                                         name="warehouse_id_<?php        echo $row->id; ?>" id="warehouse_id_<?php        echo $row->id; ?>"

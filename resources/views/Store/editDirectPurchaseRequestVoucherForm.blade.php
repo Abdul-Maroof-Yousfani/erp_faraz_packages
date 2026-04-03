@@ -219,7 +219,7 @@ A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRB WITHHOLDING RULES-2014</tex
                                     <table class="table table-bordered">
                                         <thead>
                                         <tr class="text-center">
-                                            <th colspan="6" class="text-center">Purchase Request Detail</th>
+                                            <th colspan="8" class="text-center">Purchase Request Detail</th>
                                             <th colspan="2" class="text-center">
                                                 <input type="button" class="btn btn-sm btn-primary" onclick="AddMoreDetails()" value="Add More Rows" />
                                             </th>
@@ -236,6 +236,8 @@ A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRB WITHHOLDING RULES-2014</tex
                                             <th class="text-center">Discount %<span class="rflabelsteric"><strong>*</strong></span></th>
                                             <th class="text-center">Discount Amount<span class="rflabelsteric"><strong>*</strong></span></th>
                                             <th class="text-center">Net Amount<span class="rflabelsteric"><strong>*</strong></span></th>
+                                            <th class="text-center">DO No.</th>
+                                            <th class="text-center">Godown No.</th>
                                             <th class="text-center">Delete<span class="rflabelsteric"><strong>*</strong></span></th>
                                         </tr>
                                         </thead>
@@ -286,6 +288,12 @@ A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRB WITHHOLDING RULES-2014</tex
                                             <td>
                                                 <input type="text" class="form-control net_amount_dis" name="after_dis_amount[]" id="after_dis_amount<?php echo $Counter?>" placeholder="NET AMOUNT" min="1" value="<?php echo $Fil->net_amount;?>" readonly>
                                             </td>
+                                            <td>
+                                                <input type="text" class="form-control" name="do_no[]" id="do_no<?php echo $Counter?>" placeholder="DO No." value="<?php echo htmlspecialchars($Fil->do_no ?? ''); ?>" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control" name="godown_no[]" id="godown_no<?php echo $Counter?>" placeholder="Godown No." value="<?php echo htmlspecialchars($Fil->godown_no ?? ''); ?>" />
+                                            </td>
                                             <td style="background-color: #ccc"><input onclick="view_history(<?php echo $Counter?>)" type="checkbox" id="view_history<?php echo $Counter?>"> &nbsp;&nbsp; @if($Counter>1) <button type="button" class="btn btn-sm btn-danger" id="BtnRemove{{$Counter}}" onclick="RemoveSection('{{$Counter}}')"> - </button> @endif</td>
                                         </tr>
 
@@ -295,9 +303,9 @@ A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRB WITHHOLDING RULES-2014</tex
                                         </tbody>
                                         <tbody>
                                         <tr  style="font-size:large;font-weight: bold">
-                                            <td class="text-center" colspan="7">Total</td>
+                                            <td class="text-center" colspan="9">Total</td>
                                             <td id="" class="text-right" colspan="1"><input readonly value="{{$total_amount}}" class="form-control" type="text" id="net" name="net"/> </td>
-                                            <td></td>
+                                            <td colspan="2"></td>
                                         </tr>
                                         </tbody>
                                     </table>
@@ -445,6 +453,12 @@ A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRB WITHHOLDING RULES-2014</tex
                     '</td>' +
                     '<td>' +
                     '<input readonly type="text" class="form-control net_amount_dis" name="after_dis_amount[]" id="after_dis_amount'+Counter+'" placeholder="NET AMOUNT">' +
+                    '</td>' +
+                    '<td>' +
+                    '<input type="text" class="form-control" name="do_no[]" id="do_no'+Counter+'" placeholder="DO No." />' +
+                    '</td>' +
+                    '<td>' +
+                    '<input type="text" class="form-control" name="godown_no[]" id="godown_no'+Counter+'" placeholder="Godown No." />' +
                     '</td>' +
                     '<td class="text-center">' +
                     '<input onclick="view_history('+Counter+')" type="checkbox" id="view_history'+Counter+'">&nbsp;&nbsp;'+

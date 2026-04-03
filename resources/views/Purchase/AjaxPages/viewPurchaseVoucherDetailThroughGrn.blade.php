@@ -157,6 +157,8 @@ use App\Helpers\PurchaseHelper;
                                     <th class="text-center">Account Name</th>
                                     <th class="text-center">Item Name</th>
                                     <th class="text-center">UOM</th>
+                                    <th class="text-center">DO No.</th>
+                                    <th class="text-center">Godown No.</th>
                                     <th  class="text-center" style="width:100px;">Qty.</th>
                                     <th class="text-center" style="width:100px;">Rate.</th>
                                     <th  class="text-center">Amount</th>
@@ -185,6 +187,8 @@ use App\Helpers\PurchaseHelper;
                                     <td><?php echo CommonHelper::get_account_name($row->category_id);?> </td>
                                     <td> <?php echo CommonHelper::get_item_name($row->sub_item);?></td>
                                     <td> <?php echo CommonHelper::get_uom_name($row->uom);?></td>
+                                    <td class="text-center"><?php echo $row->do_no ?? '';?></td>
+                                    <td class="text-center"><?php echo $row->godown_no ?? '';?></td>
                                     <td class="text-center"><?php echo $row->qty; $total_qty+=$row->qty;?></td>
                                     <td class="text-center"><?php echo number_format($row->rate,2);$total_rate+=$row->rate; ?></td>
                                     <td class="text-right"><?php echo number_format($row->amount,2);$total_amount+=$row->amount; ?></td>

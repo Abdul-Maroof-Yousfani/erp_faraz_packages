@@ -1050,8 +1050,8 @@ class PurchaseEditDetailControler extends Controller
                 $data2['warehouse_id'] = $warehouse_id;
                 $data2['description'] = Input::get('des' . $row1 . '');
                 $data2['expiry_date'] = Input::get('expiry_date' . $row1 . '');
-
-
+                $data2['do_no'] = Input::get('do_no' . $row1 . '');
+                $data2['godown_no'] = Input::get('godown_no' . $row1 . '');
 
                 $data2['date'] = date("Y-m-d");
                 $data2['time'] = date("H:i:s");

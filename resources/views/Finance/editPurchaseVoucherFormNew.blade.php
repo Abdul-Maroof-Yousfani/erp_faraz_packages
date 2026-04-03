@@ -156,8 +156,10 @@ $WithOutItem = '';
                                                             <!-- <th  class="text-center hidden-print"><a tabindex="-1"  href="#" onclick="showDetailModelOneParamerter('fdc/createAccountFormAjax/category_id_1_1')" class="">Acc. Head</a>
                                                                 <strong>*</strong></span>
                                                             </th> -->
-                                                            <th  class="text-center hidden-print ShowHide"><a tabindex="-1"  href="#" onclick="showDetailModelOneParamerter('pdc/createSubItemFormAjax')" class="">Sub Item</a>
+                                                            <th  class="text-center hidden-print ShowHide"><a tabindex="-1"  href="#" onclick="showDetailModelOneParamerter('pdc/createSubItemFormAjax')" class="">Sub Item</a></th>
                                                             <th  class="text-center ShowHide">UOM <span class="rflabelsteric"><strong>*</strong></span></th>
+                                                            <th  class="text-center ShowHide">DO No.</th>
+                                                            <th  class="text-center ShowHide">Godown No.</th>
                                                             <th  class="text-center ShowHide">Qty. <span class="rflabelsteric"><strong>*</strong></span></th>
                                                             <th  class="text-center ShowHide">Return Qty. <span class="rflabelsteric"><strong>*</strong></span></th>
                                                             <th  class="text-center ShowHide">Rate. <span class="rflabelsteric"><strong>*</strong></span></th>
@@ -228,6 +230,12 @@ $WithOutItem = '';
                                                                     <input type="text" readonly name="uom_1_<?php echo $Counter?>" id="uom_1_<?php echo $Counter?>" class="form-control" value="<?php echo CommonHelper::get_uom_name($DFil->uom)?>" />
                                                                     <input type="hidden" name="uom_id_1_<?php echo $Counter?>" id="uom_id_1_<?php echo $Counter?>" class="form-control" value="<?php echo $DFil->uom?>" />
                                                                 </td>
+                                                                <td class="ShowHide">
+                                                                    <input type="text" class="form-control" name="do_no_pv_<?php echo $Counter ?>" id="do_no_pv_<?php echo $Counter ?>" value="{{ $DFil->do_no ?? '' }}" placeholder="DO No." />
+                                                                </td>
+                                                                <td class="ShowHide">
+                                                                    <input type="text" class="form-control" name="godown_no_pv_<?php echo $Counter ?>" id="godown_no_pv_<?php echo $Counter ?>" value="{{ $DFil->godown_no ?? '' }}" placeholder="Godown No." />
+                                                                </td>
 
                                                                 <td class="ShowHide">
                                                                     <input    @if ($NewPurchaseVoucher->grn_no!='') readonly @endif onkeyup="calculation_amount(this.id,'<?php echo $Counter?>')"  type="number" step="0.01" name="qty_1_<?php echo $Counter?>" id="qty_1_<?php echo $Counter?>" class="form-control qty" value="<?php echo $DFil->qty?>" />
@@ -251,7 +259,7 @@ $WithOutItem = '';
                                                          </tbody>
                                                         <tr>
 
-                                                            <td class="text-center" colspan="4"></td>
+                                                            <td class="text-center" colspan="6"></td>
                                                             <td class="text-center" colspan="1">Total</td>
                                                             <td  class=""  ><input tabindex="-1" type="text" maxlength="15" class="form-control text-right" name="total_net_amounttd" value="<?php echo $TotalAmount?>" id="net_amounttd" readonly=""></td>
                                                             <input type="hidden" name="total_net_amount" id="net_amount" value=""/>
@@ -261,7 +269,7 @@ $WithOutItem = '';
                                                         
                                                             @if($NewPurchaseVoucher->grn_no !="")
                                                                 <tr>
-                                                                    <td class="text-center" colspan="1"></td>
+                                                                    <td class="text-center" colspan="3"></td>
                                                                     <td colspan="1">Sales Taxes</td>
                                                                     <td colspan="3">
                                                                         <select name="SalesTaxesAccId" class="form-control" id="SalesTaxesAccId" onchange="sales_tax_calc()">
@@ -275,7 +283,7 @@ $WithOutItem = '';
                                                                 </tr>
 
                                                                 <tr>
-                                                                    <td id="rupees" class="text-center" colspan="4"></td>
+                                                                    <td id="rupees" class="text-center" colspan="6"></td>
                                                                     <td class="text-center" colspan="1">Net Total</td>
                                                                     <td colspan="2"><input tabindex="-1" type="text" maxlength="15" class="form-control text-right" name="total_net_amounttd" value="<?php echo $TotalAmount+$NewPurchaseVoucher->sales_tax_amount?>" id="TotalAfterSalesTaxAmount" readonly=""></td>
                                                                     <input type="hidden" name="total_net_amount" id="net_amount" value=""/>

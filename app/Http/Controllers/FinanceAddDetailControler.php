@@ -2854,6 +2854,8 @@ class FinanceAddDetailControler extends Controller
 				//$NewPurchaseVoucherData->sales_tax_per = $request->input('accounts_1_' . $Counter);
 				//$NewPurchaseVoucherData->sales_tax_amount = $request->input('sales_tax_amount_1_' . $Counter);
 				$NewPurchaseVoucherData->net_amount = $request->input('net_amount' . $Counter);
+				$NewPurchaseVoucherData->do_no = $request->input('do_no_pv_' . $Counter);
+				$NewPurchaseVoucherData->godown_no = $request->input('godown_no_pv_' . $Counter);
 				//$NewPurchaseVoucherData->txt_nature = $request->input('txt_nature_1_' . $Counter);
 				//$NewPurchaseVoucherData->income_txt_nature = $request->input('income_txt_nature_1_' . $Counter);
 

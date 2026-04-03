@@ -808,6 +808,8 @@ class StoreAddDetailControler extends Controller
                 $purch_request_data->status=1;
                 $purch_request_data->date=date('Y-m-d');
                 $purch_request_data->username=Auth::user()->name;
+                $purch_request_data->do_no = $request->input('do_no')[$key] ?? null;
+                $purch_request_data->godown_no = $request->input('godown_no')[$key] ?? null;
                 $purch_request_data->save();
                  endforeach;
 

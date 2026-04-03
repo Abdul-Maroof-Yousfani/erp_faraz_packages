@@ -185,6 +185,8 @@ $delivery_detail=$good_receipt_note->delivery_detail;
                                                                 <th class="ShowHideDiscountAmount" style="width: 110px;" > Discount Amount</th>
                                                                 <th class="ShowHideNetAmount" style="width: 110px;" > Net Amount</th>
                                                                 <th style="width: 100px" class="text-center">BAL. QTY. Receivable</th>
+                                                                <th style="width: 110px" class="text-center">DO No.</th>
+                                                                <th style="width: 110px" class="text-center">Godown No.</th>
                                                                 <th style="width: 130px" class="text-center">Location</th>
                                                             </tr>
                                                             </thead>
@@ -196,6 +198,16 @@ $delivery_detail=$good_receipt_note->delivery_detail;
                                                             foreach ($detail_data as $row){
 
                                                             $net_amount += $row->net_amount;
+
+                                                            $do_grn = $row->do_no ?? '';
+                                                            $godown_grn = $row->godown_no ?? '';
+                                                            if (($do_grn === '' || $do_grn === null) && ($godown_grn === '' || $godown_grn === null) && !empty($row->po_data_id)) {
+                                                                $poLine = DB::Connection('mysql2')->table('purchase_request_data')->where('id', $row->po_data_id)->first();
+                                                                if ($poLine) {
+                                                                    $do_grn = $poLine->do_no ?? '';
+                                                                    $godown_grn = $poLine->godown_no ?? '';
+                                                                }
+                                                            }
 
 
                                                             $grn_data = DB::Connection('mysql2')->table('grn_data')->select(DB::raw('SUM(purchase_recived_qty) as purchase_recived_qty'))->
@@ -263,6 +275,12 @@ $delivery_detail=$good_receipt_note->delivery_detail;
                                                                 <td class="ShowHideDiscountAmount"><input type="text" class="form-control" name="discount_amount<?php echo $row->id?>" id="discount_amount<?php echo $row->id?>" value="<?php echo $row->discount_amount?>" readonly></td>
                                                                 <td class="ShowHideNetAmount"><input type="text" class="form-control net_amount_dis" name="after_discount_amount<?php echo $row->id?>" id="after_dis_amountt_<?php echo $row->id?>" value="<?php echo $row->net_amount?>" readonly></td>
                                                                 <td><input readonly name="balqty_<?php echo $row->id; ?>" id="balqty_<?php echo $row->id; ?>" class="form-control " type="text" value="<?php echo $purchase_approve_qty- $row->purchase_recived_qty-   $purchase_recived_qty?>"/> </td>
+                                                                <td>
+                                                                    <input type="text" class="form-control" name="do_no<?php echo $row->id;?>" value="<?php echo htmlspecialchars($do_grn); ?>" placeholder="DO No." />
+                                                                </td>
+                                                                <td>
+                                                                    <input type="text" class="form-control" name="godown_no<?php echo $row->id;?>" value="<?php echo htmlspecialchars($godown_grn); ?>" placeholder="Godown No." />
+                                                                </td>
                                                                 <td>
                                                                     <select class="form-control requiredField" name="warehouse_id_<?php echo $row->id; ?>" id="warehouse_id_<?php echo $row->id; ?>">
                                                                         <option value="">Select</option>

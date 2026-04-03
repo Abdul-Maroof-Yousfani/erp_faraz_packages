@@ -156,8 +156,10 @@ use App\Helpers\ReuseableCode;
                                                     <table  id="" class="table table-bordered">
                                                         <thead>
                                                         <tr>
-                                                            <th style="width: 150px;" class="text-center hidden-print"><a tabindex="-1"  href="#" onclick="showDetailModelOneParamerter('pdc/createSubItemFormAjax')" class="">Sub Item</a>
+                                                            <th style="width: 150px;" class="text-center hidden-print"><a tabindex="-1"  href="#" onclick="showDetailModelOneParamerter('pdc/createSubItemFormAjax')" class="">Sub Item</a></th>
                                                             <th style="width: 100px" class="text-center">UOM <span class="rflabelsteric"><strong>*</strong></span></th>
+                                                            <th style="width: 100px;" class="text-center">DO No.</th>
+                                                            <th style="width: 100px;" class="text-center">Godown No.</th>
                                                             <th style="width: 200px;" class="text-center">Qty. <span class="rflabelsteric"><strong>*</strong></span></th>
                                                             <th style="width: 200px;" class="text-center">Return Qty. <span class="rflabelsteric"><strong>*</strong></span></th>
                                                             <th style="width: 200px;" class="text-center">Rate. <span class="rflabelsteric"><strong>*</strong></span></th>
@@ -205,6 +207,12 @@ use App\Helpers\ReuseableCode;
                                                                     <input readonly type="text" value="{{CommonHelper::get_uom_name($sub_ic_detail[0])}}" name="uom_1_1" id="uom_1_1" class="form-control" />
                                                                     <input type="hidden" name="uom_id_1_<?php echo $count ?>" id="uom_id_1_<?php echo $count ?>" value="{{$sub_ic_detail[0]}}" />
                                                                 </td>
+                                                                <td>
+                                                                    <input type="text" class="form-control" name="do_no_pv_<?php echo $count ?>" id="do_no_pv_<?php echo $count ?>" value="{{ $row1->do_no ?? '' }}" placeholder="DO No." />
+                                                                </td>
+                                                                <td>
+                                                                    <input type="text" class="form-control" name="godown_no_pv_<?php echo $count ?>" id="godown_no_pv_<?php echo $count ?>" value="{{ $row1->godown_no ?? '' }}" placeholder="Godown No." />
+                                                                </td>
 
                                                                 <td>
                                                                     <input readonly value="{{$qty}}"  type="number" step="0.01" name="qty_1_<?php echo $count ?>" id="qty_1_<?php echo $count ?>" class="form-control qty" />
@@ -233,17 +241,17 @@ use App\Helpers\ReuseableCode;
                                                                 </td>
                                                                 <td class="hide"><input readonly class="form-control" type="text" id="discount_amount{{$count}}" name="discount_amount{{$count}}" value="{{$discount_amount}}"></td>
 
-                                                                <td><input readonly class="form-control" id="net_amoun{{ $count }}"text" name="net_amount{{$count}}" value="{{$amount-$discount_amount}}"></td>
+                                                                <td><input readonly class="form-control" type="text" id="net_amount{{ $count }}" name="net_amount{{$count}}" value="{{$amount-$discount_amount}}"></td>
                                                             </tr>
                                                             <?php  $count++; ?>
                                                         @endforeach
                                                         <tr class="text-center">
-                                                            <td class="text-center" colspan="4"></td>
+                                                            <td class="text-center" colspan="8"></td>
                                                             <td class="text-center" colspan="1">Total</td>
                                                             <td ><input type="text" maxlength="15" class="form-control text-right" name="Totalamount" value="<?php echo $TotAmt?>" id="Totalamount<?php echo $row1->grn_no?>" readonly="" ></td>
                                                         </tr>
                                                         <tr class="text-center" style="background: gainsboro">
-                                                            <td class="text-center" colspan="1"></td>
+                                                            <td class="text-center" colspan="3"></td>
                                                             <?php
                                                             $SalesTaxId = 0;
                                                             $SalesTaxAmount = 0;
@@ -275,7 +283,7 @@ use App\Helpers\ReuseableCode;
                                                             <td><input type="text" name="SalesTaxAmount<?php echo $sales_tax_count?>" id="SalesTaxAmount<?php echo $good_recipt_note->grn_no?>" class="form-control text-right" value="<?php echo $sales_tax_amount?>" onkeyup="sales_tax_calc('<?php echo $good_recipt_note->grn_no?>')" readonly></td>
                                                         </tr>
                                                         <tr>
-                                                            <td id="rupees{{$main_count}}" class="text-center" colspan="4"></td>
+                                                            <td id="rupees{{$main_count}}" class="text-center" colspan="6"></td>
                                                             <td class="text-center" colspan="1">Net Total</td>
                                                             <td colspan="2"><input type="text" name="NetTotal" id="NetTotal<?php echo $main_count?>" class="form-control number_form" readonly value="<?php echo $NetTot?>"></td>
                                                         </tr>

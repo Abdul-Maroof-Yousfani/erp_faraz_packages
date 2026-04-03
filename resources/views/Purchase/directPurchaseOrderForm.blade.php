@@ -299,7 +299,7 @@ endif;
                                             <table class="table table-bordered">
                                                 <thead>
                                                     <tr class="text-center">
-                                                        <th colspan="7" class="text-center">Purchase Order Detail</th>
+                                                        <th colspan="9" class="text-center">Purchase Order Detail</th>
                                                         <th colspan="2" class="text-center">
                                                             <input type="button" class="btn btn-sm btn-primary"
                                                                 onclick="AddMoreDetails()" value="Add More Rows" />
@@ -330,6 +330,8 @@ endif;
                                                                 class="rflabelsteric"><strong>*</strong></span></th> --}}
                                                         <th class="text-center">Net Amount(PKR)<span
                                                                 class="rflabelsteric"><strong>*</strong></span></th>
+                                                        <th class="text-center">DO No.</th>
+                                                        <th class="text-center">Godown No.</th>
                                                         <th class="text-center">Delete<span
                                                                 class="rflabelsteric"><strong>*</strong></span></th>
                                                     </tr>
@@ -404,6 +406,12 @@ endif;
                                                                 name="after_dis_amount[]" id="after_dis_amount1"
                                                                 placeholder="NET AMOUNT" min="1" value="0.00" readonly>
                                                         </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" name="do_no[]" id="do_no1" placeholder="DO No." />
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" name="godown_no[]" id="godown_no1" placeholder="Godown No." />
+                                                        </td>
                                                         <td style="background-color: #ccc">
                                                             <input onclick="view_history(1)" type="checkbox"
                                                                 id="view_history1">
@@ -413,7 +421,7 @@ endif;
 
                                                 <tbody>
                                                     <tr style="font-size:large;font-weight: bold">
-                                                        <td class="text-center" colspan="5">Total</td>
+                                                        <td class="text-center" colspan="7">Total</td>
                                                         <td class="text-right" colspan="1"><input readonly
                                                                 class="form-control number_format" type="text" name="pkr_net"
                                                                 id="pkr_net" /> </td>
@@ -423,7 +431,7 @@ endif;
                                                         <td class="text-right" colspan="1"><input readonly
                                                                 class="form-control number_format" type="text" id="net" name="net"/>
                                                         </td>
-                                                        <td></td>
+                                                        <td colspan="2"></td>
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -555,6 +563,12 @@ endif;
 
                 '<td>' +
                 '<input readonly type="text" class="form-control net_amount_dis number_format" name="after_dis_amount[]" id="after_dis_amount' + Counter + '" placeholder="NET AMOUNT">' +
+                '</td>' +
+                '<td>' +
+                '<input type="text" class="form-control" name="do_no[]" id="do_no' + Counter + '" placeholder="DO No." />' +
+                '</td>' +
+                '<td>' +
+                '<input type="text" class="form-control" name="godown_no[]" id="godown_no' + Counter + '" placeholder="Godown No." />' +
                 '</td>' +
                 '<td class="text-center">' +
                 '<input onclick="view_history(' + Counter + ')" type="checkbox" id="view_history' + Counter + '">&nbsp;' +

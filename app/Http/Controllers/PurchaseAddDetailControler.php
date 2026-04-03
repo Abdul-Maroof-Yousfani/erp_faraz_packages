@@ -1318,7 +1318,8 @@ class PurchaseAddDetailControler extends Controller
                 $data2['warehouse_id'] = $warehouse_id;
                 $data2['description'] = Input::get('des' . $row1 . '');
                 $data2['expiry_date'] = Input::get('expiry_date' . $row1 . '');
-
+                $data2['do_no'] = Input::get('do_no' . $row1 . '');
+                $data2['godown_no'] = Input::get('godown_no' . $row1 . '');
 
                 $data2['date'] = date("Y-m-d");
                 $data2['time'] = date("H:i:s");
@@ -2642,6 +2643,8 @@ class PurchaseAddDetailControler extends Controller
                     $NewPurchaseVoucherData->amount = $request->input('amount' . $row);
                     $NewPurchaseVoucherData->discount_amount = $request->input('discount_amount' . $row);
                     $NewPurchaseVoucherData->net_amount = $request->input('net_amount' . $row);
+                    $NewPurchaseVoucherData->do_no = $request->input('do_no_pv_' . $row);
+                    $NewPurchaseVoucherData->godown_no = $request->input('godown_no_pv_' . $row);
                     $TotAmount += $request->input('net_amount' . $row);
                     $NewPurchaseVoucherData->staus = 1;
                     $NewPurchaseVoucherData->pv_status = 2;
