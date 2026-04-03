@@ -151,16 +151,6 @@ endif;
                                                        value="{{ $NewPurchaseVoucher->slip_no ?? '' }}"/>
                                             </div>
                                             <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-                                                <label class="sf-label">DO No.</label>
-                                                <input type="text" class="form-control" placeholder="DO No" name="do_no" id="do_no"
-                                                       value="{{ $NewPurchaseVoucher->do_no ?? '' }}"/>
-                                            </div>
-                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-                                                <label class="sf-label">Godown No.</label>
-                                                <input type="text" class="form-control" placeholder="Godown No" name="godown_no" id="godown_no"
-                                                       value="{{ $NewPurchaseVoucher->godown_no ?? '' }}"/>
-                                            </div>
-                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
                                                 <label class="sf-label">Bill Date.</label>
                                                 <span class="rflabelsteric"><strong>*</strong></span>
                                                 <input type="date" class="form-control"  name="bill_date" id="bill_date" value="{{ $NewPurchaseVoucher->bill_date ?? '' }}" />
@@ -285,7 +275,7 @@ endif;
                                             <table class="table table-bordered table-compact">
                                                 <thead>
                                                     <tr class="text-center">
-                                                        <th colspan="12" class="text-center">Purchase Invoice Detail</th>
+                                                        <th colspan="14" class="text-center">Purchase Invoice Detail</th>
                                                         <th class="text-center">
                                                             <span class="badge badge-success" id="span">{{ $totalItemRows }}</span>
                                                         </th>
@@ -302,6 +292,8 @@ endif;
                                                         <th class="text-center nowrap col-narrow" style="font-size:0.9rem;">Amount<span class="rflabelsteric"><strong>*</strong></span></th>
                                                         <th class="text-center nowrap col-narrow" style="font-size:0.9rem;">Amount (PKR)<span class="rflabelsteric"><strong>*</strong></span></th>
                                                         <th class="text-center nowrap col-narrow" style="font-size:0.9rem;">Net Amount (PKR)<span class="rflabelsteric"><strong>*</strong></span></th>
+                                                        <th class="text-center nowrap col-narrow" style="font-size:0.85rem;">DO No.</th>
+                                                        <th class="text-center nowrap col-narrow" style="font-size:0.85rem;">Godown No.</th>
                                                         <th class="text-center nowrap" style="width: 11%; font-size:0.9rem;">Location<span class="rflabelsteric"><strong>*</strong></span></th>
                                                         <th class="text-center" style="width: 50px; font-size:0.9rem;">Action</th>
                                                     </tr>
@@ -361,6 +353,12 @@ endif;
                                                                 <input type="text" class="form-control net_amount_dis number_format" name="after_dis_amount[]" id="after_dis_amount{{ $key+1 }}" placeholder="NET AMOUNT" min="1" value="{{ $DFil->net_amount ?? '' }}" readonly>
                                                             </td>
                                                             <td>
+                                                                <input type="text" class="form-control" name="do_no[]" id="do_no_{{ $key+1 }}" placeholder="DO No." value="{{ $DFil->do_no ?? '' }}" />
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control" name="godown_no[]" id="godown_no_{{ $key+1 }}" placeholder="Godown No." value="{{ $DFil->godown_no ?? '' }}" />
+                                                            </td>
+                                                            <td>
                                                                 <select required class="form-control select2" name="warehouse_id[]" id="warehouse_{{ $key+1 }}">
                                                                     <option value="">Select</option>
                                                                     @foreach(CommonHelper::get_all_warehouse() as $row)
@@ -381,11 +379,11 @@ endif;
 
                                                 <tbody>
                                                     <tr style="font-size:large;font-weight: bold">
-                                                        <td class="text-center" colspan="5">Total</td>
+                                                        <td class="text-center" colspan="7">Total</td>
                                                         <td class="text-right" colspan="1"><input readonly class="form-control number_format" type="text" name="pkr_net" id="pkr_net" /> </td>
                                                         <td class="text-right" colspan="1"><input readonly class="form-control number_format" type="text" name="actual_net" id="actual_net" /> </td>
                                                         <td class="text-right" colspan="1"><input readonly class="form-control number_format" type="text" id="net" name="net" /></td>
-                                                        <td colspan="4"></td>
+                                                        <td colspan="5"></td>
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -520,6 +518,12 @@ endif;
                 '</td>' +
                 '<td>' +
                 '<input type="text" class="form-control net_amount_dis number_format" name="after_dis_amount[]" id="after_dis_amount' + Counter + '" placeholder="NET AMOUNT" min="1" value="" readonly>' +
+                '</td>' +
+                '<td>' +
+                '<input type="text" class="form-control" name="do_no[]" id="do_no_' + Counter + '" placeholder="DO No." />' +
+                '</td>' +
+                '<td>' +
+                '<input type="text" class="form-control" name="godown_no[]" id="godown_no_' + Counter + '" placeholder="Godown No." />' +
                 '</td>' +
                 '<td>' +
                 '<select required class="form-control select2" name="warehouse_id[]" id="warehouse_' + Counter + '">' +

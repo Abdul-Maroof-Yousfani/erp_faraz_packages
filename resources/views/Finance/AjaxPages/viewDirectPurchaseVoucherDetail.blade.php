@@ -131,8 +131,9 @@ if (!empty($row->bill_date) && !empty($row->due_date)) {
                                     <thead>
                                         <tr>
                                             <th class="text-center" style="width:35%;">DESCRIPTION</th>
-                                            <th class="text-center">PER POUND</th>
                                             <th class="text-center">BAGS</th>
+                                            <th class="text-center">QTY (KG)</th>
+                                            <th class="text-center">QTY (LBS)</th>
                                             <th class="text-center">U.PRICE</th>
                                             <th class="text-center">PAYMENT TERMS</th>
                                             <th class="text-center">AMOUNT</th>
@@ -170,19 +171,25 @@ if (!empty($row->bill_date) && !empty($row->due_date)) {
                                             $item_amount_percent = ($pi_amount / $item_amount) * 100;
                                             $exp_amount_apply = ($exp_amount /100) * $item_amount_percent;
 
+                                        $lbs = (float) ($row2->lbs_qty ?? 0);
+                                        $kg = (float) ($row2->qty ?? 0);
+                                        if ($kg <= 0 && $lbs > 0) {
+                                            $kg = $lbs / 2.2;
+                                        }
                                     ?>
                                     <tr class="text-center">
                                         <td class="text-left" style="text-align:left;">
                                             <?php echo CommonHelper::get_subitem_name($row2->sub_item); ?>
-                                            <?php if (!empty($row->do_no) || !empty($row->godown_no)) { ?>
+                                            <?php if (!empty($row2->do_no) || !empty($row2->godown_no)) { ?>
                                                 <div style="font-size:11px; color:#444;">
-                                                    <?php if (!empty($row->do_no)) { ?>DO No: <?php echo $row->do_no; ?><?php } ?>
-                                                    <?php if (!empty($row->godown_no)) { ?> &nbsp; Godown: <?php echo $row->godown_no; ?><?php } ?>
+                                                    <?php if (!empty($row2->do_no)) { ?>DO No: <?php echo $row2->do_no; ?><?php } ?>
+                                                    <?php if (!empty($row2->godown_no)) { ?> &nbsp; Godown: <?php echo $row2->godown_no; ?><?php } ?>
                                                 </div>
                                             <?php } ?>
                                         </td>
-                                        <td><?php echo number_format((float) $row2->lbs_qty, 0); ?></td>
                                         <td><?php echo number_format((float) $row2->bag_qty, 0); ?></td>
+                                        <td><?php echo number_format($kg, 2); ?></td>
+                                        <td><?php echo number_format($lbs, 2); ?></td>
                                         <td><?php echo number_format((float) $row2->rate, 2); ?></td>
                                         <td><?php echo $payment_terms_days; ?> Days</td>
                                         <td><?php echo number_format((float) $row2->net_amount + (float) $exp_amount_apply, 2); $TotalAmount += $row2->net_amount + $exp_amount_apply; ?></td>
@@ -192,7 +199,7 @@ if (!empty($row->bill_date) && !empty($row->due_date)) {
                                     }
                                     ?>
                                     <tr class="sf-table-total">
-                                        <td colspan="5" class="text-right"><b>TOTAL:</b></td>
+                                        <td colspan="6" class="text-right"><b>TOTAL:</b></td>
                                         <td class="text-center"><b><?php echo number_format($TotalAmount,2)?></b></td>
                                         <td></td>
                                         <input type="hidden" id="Total" value="<?php echo $TotalAmount?>">
@@ -201,12 +208,12 @@ if (!empty($row->bill_date) && !empty($row->due_date)) {
                                     $Accounts = CommonHelper::get_single_row('accounts','id',$row->sales_tax_acc_id);
                                     ?>
                                     <tr class="sf-table-total">
-                                        <td colspan="5" class="text-right">Sales Tax :</td>
+                                        <td colspan="6" class="text-right">Sales Tax :</td>
                                         <td class="text-center"><b><?php echo number_format($row->sales_tax_amount,2)?></b></td>
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td colspan="5" class="text-right"><b>Total After Sales Tax</b></td>
+                                        <td colspan="6" class="text-right"><b>Total After Sales Tax</b></td>
                                         <td class="text-center"><b><?php echo number_format($row->sales_tax_amount+$TotalAmount,2)?></b></td>
                                         <td></td>
                                     </tr>

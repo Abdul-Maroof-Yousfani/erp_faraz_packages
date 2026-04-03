@@ -2753,8 +2753,6 @@ class PurchaseAddDetailControler extends Controller
 
             $NewPurchaseVoucher->description = $request->input('Remarks');
             $NewPurchaseVoucher->slip_no = $request->input('slip_no');
-            $NewPurchaseVoucher->do_no = $request->input('do_no');
-            $NewPurchaseVoucher->godown_no = $request->input('godown_no');
             $NewPurchaseVoucher->username = Auth::user()->name;
             $NewPurchaseVoucher->status = 1;
             $NewPurchaseVoucher->pv_status = 1;                    // adjust as per your logic
@@ -2785,7 +2783,8 @@ class PurchaseAddDetailControler extends Controller
             $rates = $request->input('rate', []);
 
             $warehouse_id = $request->input('warehouse_id', []);
-
+            $do_nos = $request->input('do_no', []);
+            $godown_nos = $request->input('godown_no', []);
 
             $totalNet = 0;
 
@@ -2815,6 +2814,8 @@ class PurchaseAddDetailControler extends Controller
                 $detail->rate_cal_by = $rate_cal_by;
                 $detail->rate = $rate;
                 $detail->warehouse_id = $warehouse_id[$index];
+                $detail->do_no = $do_nos[$index] ?? null;
+                $detail->godown_no = $godown_nos[$index] ?? null;
                 $detail->amount =  CommonHelper::check_str_replace($amounts[$index]);
                 $detail->net_amount = CommonHelper::check_str_replace($net_amounts[$index]);
                 $detail->discount_amount = floatval($request->input('discount_amount')[$index] ?? 0);
@@ -3854,8 +3855,6 @@ class PurchaseAddDetailControler extends Controller
             $NewPurchaseVoucher->grn_no = 0;
             $NewPurchaseVoucher->grn_id = 0;
             $NewPurchaseVoucher->slip_no = $request->input('slip_no');
-            $NewPurchaseVoucher->do_no = $request->input('do_no');
-            $NewPurchaseVoucher->godown_no = $request->input('godown_no');
             $NewPurchaseVoucher->bill_date = $request->input('bill_date');
             $NewPurchaseVoucher->due_date = $request->input('due_date');
             $NewPurchaseVoucher->purchase_type = 0;
@@ -3889,6 +3888,8 @@ class PurchaseAddDetailControler extends Controller
             $NewPurchaseVoucher->save();
             $master_id = $NewPurchaseVoucher->id;
 
+            $do_nos = $request->input('do_no', []);
+            $godown_nos = $request->input('godown_no', []);
             $TotAmount = 0;
             foreach ($request->item_id as $key => $row):
                 $NewPurchaseVoucherData = new NewPurchaseVoucherData();
@@ -3898,6 +3899,8 @@ class PurchaseAddDetailControler extends Controller
                 $NewPurchaseVoucherData->grn_data_id = 0;
                 $NewPurchaseVoucherData->category_id = 0;
                 $NewPurchaseVoucherData->sub_item = $row;
+                $NewPurchaseVoucherData->do_no = $do_nos[$key] ?? null;
+                $NewPurchaseVoucherData->godown_no = $godown_nos[$key] ?? null;
                 $NewPurchaseVoucherData->uom = $request->input('uom_id')[$key] ?? 0;
                 $NewPurchaseVoucherData->qty = $request->input('actual_qty')[$key];
                 $NewPurchaseVoucherData->rate = $request->input('rate')[$key];
@@ -3966,8 +3969,6 @@ class PurchaseAddDetailControler extends Controller
             $NewPurchaseVoucher->grn_no = 0;
             $NewPurchaseVoucher->grn_id = 0;
             $NewPurchaseVoucher->slip_no = $request->input('slip_no');
-            $NewPurchaseVoucher->do_no = $request->input('do_no');
-            $NewPurchaseVoucher->godown_no = $request->input('godown_no');
             $NewPurchaseVoucher->term_of_del = $request->input('term_of_del');
             $NewPurchaseVoucher->destination = $request->input('destination');
             $NewPurchaseVoucher->bill_date = $request->input('bill_date');
@@ -3999,6 +4000,8 @@ class PurchaseAddDetailControler extends Controller
             $NewPurchaseVoucher->save();
             $master_id = $NewPurchaseVoucher->id;
 
+            $do_nos = $request->input('do_no', []);
+            $godown_nos = $request->input('godown_no', []);
             $TotAmount = 0;
             foreach ($request->item_id as $key => $row):
                 if (empty($row)) continue;
@@ -4020,6 +4023,8 @@ class PurchaseAddDetailControler extends Controller
                 $NewPurchaseVoucherData->rate_cal_by = $request->input('rate_cal_by')[$key] ?? 1;
                 $NewPurchaseVoucherData->rate = $request->input('rate')[$key] ?? 0;
                 $NewPurchaseVoucherData->warehouse_id = $request->input('warehouse_id')[$key] ?? 0;
+                $NewPurchaseVoucherData->do_no = $do_nos[$key] ?? null;
+                $NewPurchaseVoucherData->godown_no = $godown_nos[$key] ?? null;
                 $NewPurchaseVoucherData->amount = CommonHelper::check_str_replace($request->input('amount')[$key] ?? 0);
                 $NewPurchaseVoucherData->discount_amount = $request->input('discount_amount')[$key] ?? 0;
                 $NewPurchaseVoucherData->net_amount = CommonHelper::check_str_replace($request->input('after_dis_amount')[$key] ?? 0);

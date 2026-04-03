@@ -187,17 +187,6 @@ endif;
                                                     placeholder="" name="destination" id="destination" value="" />
                                             </div>
                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                                <label class="sf-label">DO No</label>
-                                                <input type="text" class="form-control" placeholder="DO No"
-                                                    name="do_no" id="do_no" value="" />
-                                            </div>
-                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                                <label class="sf-label">Godown No</label>
-                                                <input type="text" class="form-control" placeholder="Godown No"
-                                                    name="godown_no" id="godown_no" value="" />
-                                            </div>
-
-                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                 <label class="sf-label"> <a href="#"
                                                         onclick="showDetailModelOneParamerter('pdc/createSupplierFormAjax');"
                                                         class="">Vendor</a></label>
@@ -351,7 +340,7 @@ endif;
                                             <table class="table table-bordered table-compact">
                                                 <thead>
                                                     <tr class="text-center">
-                                                        <th colspan="12" class="text-center">Purchase Invoice Detail</th>
+                                                        <th colspan="14" class="text-center">Purchase Invoice Detail</th>
                                                         <th class="text-center">
                                                             <span class="badge badge-success" id="span">1</span>
                                                         </th>
@@ -386,6 +375,8 @@ endif;
                                                         <th class="text-center nowrap col-narrow" style="font-size:0.9rem;">
                                                             Net Amount (PKR)<span
                                                                 class="rflabelsteric"><strong>*</strong></span></th>
+                                                        <th class="text-center nowrap col-narrow" style="font-size:0.85rem;">DO No.</th>
+                                                        <th class="text-center nowrap col-narrow" style="font-size:0.85rem;">Godown No.</th>
                                                         <th class="text-center nowrap"
                                                             style="width: 11%; font-size:0.9rem;">Location<span
                                                                 class="rflabelsteric"><strong>*</strong></span></th>
@@ -497,6 +488,12 @@ endif;
                                                                 placeholder="NET AMOUNT" min="1" value="0.00" readonly>
                                                         </td>
                                                         <td>
+                                                            <input type="text" class="form-control" name="do_no[]" id="do_no_1" placeholder="DO No." />
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" name="godown_no[]" id="godown_no_1" placeholder="Godown No." />
+                                                        </td>
+                                                        <td>
                                                             <select required class="form-control select2"
                                                                 name="warehouse_id[]" id="warehouse_1">
                                                                 <option value="">Select</option>
@@ -519,7 +516,7 @@ endif;
 
                                                 <tbody>
                                                     <tr style="font-size:large;font-weight: bold">
-                                                        <td class="text-center" colspan="5">Total</td>
+                                                        <td class="text-center" colspan="7">Total</td>
                                                         <td class="text-right" colspan="1"><input readonly
                                                                 class="form-control number_format" type="text"
                                                                 name="pkr_net" id="pkr_net" /> </td>
@@ -530,7 +527,7 @@ endif;
                                                                 class="form-control number_format" type="text" id="net"
                                                                 name="net" />
                                                         </td>
-                                                        <td></td>
+                                                        <td colspan="5"></td>
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -690,6 +687,12 @@ endif;
 
                 '<td>' +
                 '<input readonly type="text" class="form-control net_amount_dis number_format" name="after_dis_amount[]" id="after_dis_amount' + Counter + '" placeholder="NET AMOUNT">' +
+                '</td>' +
+                '<td>' +
+                '<input type="text" class="form-control" name="do_no[]" id="do_no_' + Counter + '" placeholder="DO No." />' +
+                '</td>' +
+                '<td>' +
+                '<input type="text" class="form-control" name="godown_no[]" id="godown_no_' + Counter + '" placeholder="Godown No." />' +
                 '</td>' +
                 '<td>' +
                 '<select name="warehouse_id[]" id="warehouse_' + Counter + '"' +
