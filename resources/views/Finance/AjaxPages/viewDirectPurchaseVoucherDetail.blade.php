@@ -345,15 +345,16 @@ if (!empty($row->bill_date) && !empty($row->due_date)) {
                                             <b>   <p><?php echo strtoupper($username);  ?></p></b>
                                         </div>
                                         <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-center">
-                                            <h6 class="signature_bor">Approved By:</h6>
-                                            <b>   <p><?php echo strtoupper($approve_1) ?></p></b>
+                                            <h6 class="signature_bor">Checked By:</h6>
+                                            <b>   <p></p></b>
                                         </div>
                                         <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-center">
-                                            <h6 class="signature_bor">Approved By:</h6>
+                                            <h6 class="signature_bor">Entry By:</h6>
+                                            <b>  <p></p></b>
+                                        </div>
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-center">
+                                            <h6 class="signature_bor">Approved By</h6>
                                             <b>  <p><?php echo strtoupper($approve_2)?></p></b>
-                                        </div>
-                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-center">
-                                            <h6 class="signature_bor">Recieved By</h6>
 
                                         </div>
                                     </div>
