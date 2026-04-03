@@ -380,20 +380,29 @@ class FarazProductionController extends Controller
     {
         $m = $request->m;
         $mixture = ProductionMixture::where('status', 1)->where('id', $request->id)->first();
-        $mixtureData = ProductionMixtureData::where('status', 1)->where('production_mixture_id', $mixture->id)->get();
+        if (!$mixture) {
+            Session::flash('dataEdit', 'Mixture not found.');
+            return redirect()->to('far_production/viewProductionMixingList?m=' . $m);
+        }
+        if ((float) ($mixture->used_qty ?? 0) > 0) {
+            Session::flash('dataEdit', 'This mixture cannot be edited because it is already used in the next production step.');
+            return redirect()->to('far_production/viewProductionMixingList?m=' . $m);
+        }
 
-        $categories_id = explode(',', Auth::user()->categories_id);
+        $mixtureData = ProductionMixtureData::where('production_mixture_id', $mixture->id)
+            ->orderBy('id', 'ASC')
+            ->get();
+
         $sub_item = DB::Connection('mysql2')->table('category as c')
-            ->join('sub_category as sc', 'c.id', '=', 'sc.category_id')
-            ->join('subitem as s', 'sc.id', '=', 's.sub_category_id')
+            ->leftJoin('sub_category as sc', 'c.id', '=', 'sc.category_id')
+            ->join('subitem as s', 'c.id', '=', 's.main_ic_id')
             ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
             ->where('sc.status', '=', 1)
             ->where('c.status', '=', 1)
             ->where('s.status', '=', 1)
             ->where('u.status', '=', 1)
-            ->where('s.main_ic_id', '=', 8)
+            ->where('s.main_ic_id', '=', 14)
             ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id')
-            // ->whereIn('c.id', $categories_id)
             ->groupBy('s.item_code')
             ->orderBy('s.id')
             ->get();
@@ -402,8 +411,23 @@ class FarazProductionController extends Controller
             ->select('id', 'sub_ic', 'uom', 'item_code', 'pack_size')
             ->where('status', '=', 1)->where('main_ic_id', '=', 7)->get();
 
+        $production_order = DB::Connection('mysql2')->table('production_request')
+            ->where('status', '=', 1)
+            ->select('id', 'pr_no')->get();
 
-        return view('FarazPackagesProduction.ProductionMixture.editMixture', compact('mixture', 'mixtureData', 'sub_item', 'raw_material', 'm'));
+        $mixture_machines = DB::Connection('mysql2')->table('mixture_machines')
+            ->select('id', 'name')
+            ->where('status', '=', 1)->get();
+
+        return view('FarazPackagesProduction.ProductionMixture.editMixture', compact(
+            'mixture',
+            'mixtureData',
+            'sub_item',
+            'raw_material',
+            'production_order',
+            'mixture_machines',
+            'm'
+        ));
     }
 
     public function multiMixtureRolling(Request $request)

@@ -1,337 +1,455 @@
 <?php
 
-use App\Helpers\CommonHelper;
-use App\Helpers\StoreHelper;
-use App\Helpers\FinanceHelper;
-use App\Helpers\ReuseableCode;
-
-$accType = Auth::user()->acc_type;
-if ($accType == 'client') { 
-  $m = $_GET['m'];
-} else { 
-  $m = Auth::user()->company_id;
-} 
 $counter = 1;
-$count = 1;
+$accType = Auth::user()->acc_type;
+if ($accType == 'client') {
+    $m = $_GET['m'] ?? $m;
+} else {
+    $m = Auth::user()->company_id;
+}
+$rowCount = max($mixtureData->count(), 1);
 ?>
-@extends('layouts.default') 
+@extends('layouts.default')
 
 @section('content')
-@include('select2')
-@include('modal')
-@include('number_formate')
+    @include('select2')
+    @include('modal')
+    @include('number_formate')
 
-<div class="container-fluid">
-  <div class="row">
-    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-      <div class="well_N">
-        <div class="dp_sdw">
-          <div class="headquid">
-            <h2 class="subHeadingLabelClass">Edit Mixture Form</h2>
-          </div>
-          
-          <div class="lineHeight">&nbsp;</div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class="well_N">
+                    <div class="dp_sdw">
+                        <div class="headquid">
+                            <h2 class="subHeadingLabelClass">Edit Production Mixture</h2>
+                        </div>
+                        <div class="lineHeight">&nbsp;</div>
+                        {{ Form::open(array('url' => 'far_prod/updateProductionMixingDetail?m=' . $m . '', 'id' => 'saveMixing')) }}
+                        <input type="hidden" name="mixture_id" value="{{ $mixture->id }}">
+                        <input type="hidden" name="formSection[]" id="formSection" value="1">
+                        <div class="panel">
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                        <div class="row">
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                <label class="sf-label">Item Produced</label>
+                                                <span class="rflabelsteric"><strong>*</strong></span>
+                                                <select class="form-control select2 requiredField" name="finish_item_id"
+                                                    id="finish_item_id" onchange="get_uom_name_by_item_id(this.value)">
+                                                    <option value="">Select Item Produced</option>
+                                                    @foreach ($sub_item as $key => $value)
+                                                        <option data-item-code="{{ $value->item_code }}"
+                                                            value="{{ $value->id }}"
+                                                            @if ($mixture->produced_item_id == $value->id) selected @endif>
+                                                            {{ $value->item_code . ' - ' . $value->sub_ic }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                <label class="sf-label">uom</label>
+                                                <input class="form-control" type="text" name="uom" id="uom" value=""
+                                                    readonly />
+                                            </div>
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                <label for="">Mixing Number</label>
+                                                <input type="text" class="form-control requiredField" name="mixing_no"
+                                                    id="mixing_no" value="{{ $mixture->pm_no }}" readonly>
+                                            </div>
 
-          <?php echo Form::open(array('url' => 'recipe/UpdateRecipe?m=' . $m . '', 'id' => 'saveExpense')); ?>
-          <input type="hidden" name="formSection[]" id="formSection" value="1">
-            <input type="hidden" name="_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="recordId" value="{{ $recipe->id }}">
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                <label for="">Mixing Date</label>
+                                                <input type="date" class="form-control" name="mixing_date" id="mixing_date"
+                                                    value="{{ $mixture->date }}">
+                                            </div>
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                <label class="sf-label">Quantity</label>
+                                                <span class="rflabelsteric"><strong>*</strong></span>
+                                                <input class="form-control requiredField" type="text" name="qty" id="qty"
+                                                    value="{{ $mixture->qty }}" />
+                                            </div>
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                <label class="sf-label">Production Order</label>
+                                                <span class="rflabelsteric"><strong>*</strong></span>
+                                                <select class="form-control select2 requiredField"
+                                                    name="production_order_id" id="production_order_id">
+                                                    <option value="">Select Production Order</option>
+                                                    @foreach ($production_order as $key => $value)
+                                                        <option value="{{ $value->id }}"
+                                                            @if ($mixture->production_order_id == $value->id) selected @endif>
+                                                            {{ $value->pr_no }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                <label class="sf-label">Mixture Machine</label>
+                                                <span class="rflabelsteric"><strong>*</strong></span>
+                                                <select class="form-control select2 requiredField" name="mixture_machine_id"
+                                                    id="mixture_machine_id">
+                                                    <option value="">Select Mixture Machine</option>
+                                                    @foreach ($mixture_machines as $key => $value)
+                                                        <option value="{{ $value->id }}"
+                                                            @if ($mixture->mixture_machine_id == $value->id) selected @endif>
+                                                            {{ $value->name }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
 
-          <div class="panel">
-            <div class="panel-body">
-              <div class="row">
-                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                  <div class="row">
-                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                      <label class="sf-label">Item Finish Goods</label>
-                      <span class="rflabelsteric"><strong>*</strong></span>
-                      <select
-                        class="form-control select2 requiredField"
-                        name="finish_goods"
-                        id="finish_goods"
-                        onchange="get_uom_name_by_item_id(this.value)"
-                      >
-                        <option>Select Finish Goods</option>
-                        @foreach ($sub_item as $key => $value)
-                        <option @if( $value->id  == $recipe->finish_goods) selected @endif  data-item-code="{{ $value->item_code }}" value="{{ $value->id }}">
-                          {{ $value->item_code.' - '.$value->sub_ic }}
-                        </option>
-                        @endforeach
-                      </select>
-                    </div>
+                                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                                <label class="sf-label">Description</label>
+                                                <span class="rflabelsteric"></span>
+                                                <textarea name="description" id="description" rows="4" cols="50"
+                                                    style="resize: none; font-size: 11px" class="form-control">{{ $mixture->description }}</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="lineHeight">&nbsp;</div>
+                                <div class="text-end my-2" style="float: right; margin-bottom: 10px;">
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="AddMoreDetails()">
+                                        <span class="glyphicon glyphicon-plus-sign"></span> Add More
+                                    </button>
+                                </div>
 
-                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                      <label class="sf-label">uom</label>
-                      <input
-                        class="form-control"
-                        type="text"
-                        name="uom"
-                        id="uom"
-                        value="{{ CommonHelper::get_uom($recipe->finish_goods) }}"
-                        readonly
-                      />
+                                <div class="row">
+                                    <div class="col-lg-12 col-md-12 col-sm-12col-xs-12">
+                                        <div class="table-responsive">
+                                            <table class="userlittab table table-bordered sf-table-list">
+                                                <thead>
+                                                    <th class="text-center col-sm-1">S.No</th>
+                                                    <th class="text-center col-sm-3">Item</th>
+                                                    <th class="text-center col-sm-2">UOM</th>
+                                                    <th class="text-center col-sm-1">In Stock</th>
+                                                    <th class="text-center col-sm-2">QTY (KG)</th>
+                                                    <th class="text-center col-sm-1">Action</th>
+                                                </thead>
+                                                <tbody id="tableData">
+                                                    @forelse ($mixtureData as $md)
+                                                        <tr id="RemoveRows{{ $counter }}">
+                                                            <td class="text-center">{{ $counter }}</td>
+                                                            <td>
+                                                                <select style="width: 100%;"
+                                                                    class="form-control requiredField select2 item_id"
+                                                                    name="item_id[]" id="item_id{{ $counter }}"
+                                                                    onchange="get_stock_qty(this.value,'{{ $counter }}');get_uom_name_by_item_id(this.value, {{ $counter }})">
+                                                                    <option value="">Select Raw Material</option>
+                                                                    @foreach ($raw_material as $key => $value)
+                                                                        <option value="{{ $value->id }}"
+                                                                            data-pack_size="{{ $value->pack_size ?? 1 }}"
+                                                                            @if ($md->item_id == $value->id) selected @endif>
+                                                                            {{ $value->item_code . ' - ' . $value->sub_ic }}
+                                                                        </option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <input type="text" class="form-control" name="uom[]"
+                                                                    id="uom{{ $counter }}" readonly>
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <input readonly class="form-control instock zerovalidate"
+                                                                    name="instock[]" type="text" value=""
+                                                                    id="instock{{ $counter }}" />
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <input type="text"
+                                                                    class="form-control requiredField required_qty"
+                                                                    name="required_qty[]"
+                                                                    id="required_qty{{ $counter }}"
+                                                                    value="{{ $md->qty }}"
+                                                                    onkeyup="validateRowQuantity({{ $counter }}); calculateTotalQuantity()">
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <a href="javascript:;" class="btn btn-sm btn-danger"
+                                                                    onclick="RemoveSection({{ $counter }})"><span
+                                                                        class="glyphicon glyphicon-trash"></span> </a>
+                                                            </td>
+                                                        </tr>
+                                                        @php $counter++ @endphp
+                                                    @empty
+                                                        <tr id="RemoveRows1">
+                                                            <td class="text-center">1</td>
+                                                            <td>
+                                                                <select style="width: 100%;"
+                                                                    class="form-control requiredField select2 item_id"
+                                                                    name="item_id[]" id="item_id1"
+                                                                    onchange="get_stock_qty(this.value,'1');get_uom_name_by_item_id(this.value, 1)">
+                                                                    <option value="">Select Raw Material</option>
+                                                                    @foreach ($raw_material as $key => $value)
+                                                                        <option value="{{ $value->id }}"
+                                                                            data-pack_size="{{ $value->pack_size ?? 1 }}">
+                                                                            {{ $value->item_code . ' - ' . $value->sub_ic }}
+                                                                        </option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <input type="text" class="form-control" name="uom[]"
+                                                                    id="uom1" readonly>
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <input readonly class="form-control instock zerovalidate"
+                                                                    name="instock[]" type="text" value=""
+                                                                    id="instock1" />
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <input type="text"
+                                                                    class="form-control requiredField required_qty"
+                                                                    name="required_qty[]" id="required_qty1"
+                                                                    onkeyup="validateRowQuantity(1); calculateTotalQuantity()">
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <a href="javascript:;" class="btn btn-sm btn-danger"
+                                                                    onclick="RemoveSection(1)"><span
+                                                                        class="glyphicon glyphicon-trash"></span> </a>
+                                                            </td>
+                                                        </tr>
+                                                    @endforelse
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="lineHeight">&nbsp;</div>
+                                <div class="row mb-20">
+                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-right">
+                                        <button type="submit" class="btn btn-success">
+                                            Update
+                                        </button>
+                                        <a href="{{ url('far_production/viewProductionMixingList') }}?m={{ $m }}"
+                                            class="btn btn-primary">Back to list</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                      <label class="sf-label">Color</label>
-                      <span class="rflabelsteric"><strong>*</strong></span>
-                      <select class="form-control select2 requiredField" name="color" id="color" onchange="generateRecipeName()">
-                        <option value="">Select Color</option>
-                        @foreach ($color as $key => $value)
-                          <option @if($recipe->color == $value->color) selected @endif value="{{ $value->color }}"> {{ $value->color }} </option>
-                        @endforeach
-                      </select>
-                    </div>
-                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                      <label class="sf-label">Quantity</label>
-                      <span class="rflabelsteric"><strong>*</strong></span>
-                      <input
-                        class="form-control requiredField"
-                        type="text"
-                        name="qty"
-                        id="qty"
-                        value=" {{ $recipe->qty }}" readonly
-                      />
-                    </div>
-                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                      <label for="">Recipe Name</label>
-                      <input type="text" class="form-control requiredField" name="receipe_name" id="receipe_name" value="{{ $recipe->receipe_name }}">
-                    </div>
-                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                      <label for="">Formulation Number</label>
-                      <input type="text" class="form-control requiredField" name="formulation_no" id="formulation_no" value="{{ $recipe->formulation_no }}" readonly>
-                    </div>
-                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                      <label class="sf-label">Description</label>
-                      <span class="rflabelsteric"><strong>*</strong></span>
-                      <textarea
-                        name="description"
-                        id="description"
-                        rows="4"
-                        cols="50"
-                        style="resize: none; font-size: 11px"
-                        class="form-control requiredField"
-                        value=" {{ $recipe->description }}"
-                      >{{ $recipe->description }}</textarea>
-                    </div>
-                  </div>
+                    {{ Form::close() }}
                 </div>
-              </div>
-              <div class="lineHeight">&nbsp;</div>
-              <div class="row">
-                <div class="col-lg-12 col-md-12 col-sm-12col-xs-12">
-                  <div class="table-responsive">
-                    <table class="userlittab table table-bordered sf-table-list">
-                      <thead>
-                        <th class="text-center col-sm-1">S.No</th>
-                        <th class="text-center col-sm-3">Item</th>
-                        <th class="text-center col-sm-2">UOM</th>
-                        <th class="text-center col-sm-2">Required QTY</th>
-                        <th class="text-center col-sm-1">Action</th>
-                      </thead>
-                      <tbody id="tableData">
-                        @foreach($recipeData as $key => $val)
-                          <tr id="RemoveRows{{ $count }}">
-                            <td class="text-center">{{ $counter++ }}</td>
-                            <td>
-                              <select style="width: 100%;" class="form-control requiredField select2 item_id" name="item_id[]" id="item_id{{$count}}" onchange="get_uom_name_by_item_id(this.value, '{{ $count }}')">
-                                <option value="">Select Raw Material</option>
-                                @foreach ($raw_material as $key => $value)
-                                  <option @if($val->item_id == $value->id) selected @endif value="{{ $value->id }}"> {{ $value->item_code.' - '.$value->sub_ic }} </option>
-                                @endforeach
-                              </select>
-                            </td>
-                            <td class="text-center">
-                              <input type="text" class="form-control" name="uom[]" id="uom{{$count}}" readonly>
-                            </td>
-                            <td class="text-center">
-                              <input type="text" class="form-control requiredField required_qty" name="required_qty[]" id="required_qty{{$count}}" value="{{ $val->category_total_qty }}" onkeyup="calculateTotalQuantity()" />
-                            </td>
-                            <td class="text-center">
-                              @if($count == 1)
-                                <a href="javascript:;" class="btn btn-sm btn-primary" onclick="AddMoreDetails()"><span class="glyphicon glyphicon-plus-sign"></span> </a>
-                              @else
-                              <a href="javascript:;" class="btn btn-sm btn-danger" onclick="RemoveSection('{{ $count }}')"><span class="glyphicon glyphicon-trash"></span> </a>
-                              @endif
-                            </td>
-                          </tr>
-                          @php $count++ @endphp
-                        @endforeach
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-
-              <div class="lineHeight">&nbsp;</div>
-              <div class="row mb-20">
-                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-right">
-
-                    <button type="submit" id="reset" class="btn btn-success">
-                        Submit
-                      </button>
-                  
-                  <button type="reset" id="reset" class="btn btn-primary">
-                    Clear Form
-                  </button>
-                </div>
-              </div>
             </div>
-          </div>
         </div>
-        <?php echo Form::close(); ?>
-      </div>
     </div>
-  </div>
-</div>
-<script>
+    <script>
+        $(".btn-success").click(function(e) {
+            var formSection = new Array();
+            var val;
+            $("input[name='formSection[]']").each(function() {
+                formSection.push($(this).val());
+            });
+            var _token = $("input[name='_token']").val();
+            for (val of formSection) {
+                jqueryValidationCustom();
 
-$(".btn-success").click(function(e){
-      var formSection = new Array();
-      var val;
-      $("input[name='formSection[]']").each(function(){
-        formSection.push($(this).val());
-    });
-      var _token = $("input[name='_token']").val();
-      for (val of formSection) {
-          jqueryValidationCustom();
-          if(validate == 0){
-              $('#saveExpense').submit();
-          }  else {
-              return false;
-          }
-      }
-  });
+                let isValidQty = true;
+                $('.required_qty').each(function() {
+                    var id = $(this).attr('id');
+                    var num = id.replace('required_qty', '');
+                    if (!validateRowQuantity(num)) {
+                        isValidQty = false;
+                        return false;
+                    }
+                });
 
-document.addEventListener("DOMContentLoaded", function() {
-  document.querySelectorAll('.item_id').forEach(function(selectElement) {
-    const selectedValue = selectElement.value;
-    const rowId = selectElement.id.replace('item_id', '');
-
-    if (selectedValue) {
-      get_uom_name_by_item_id(selectedValue, rowId);
-    }
-    
-  });
-});
-
-function generateRecipeName() {
-    var finishGoods = document.getElementById('finish_goods');
-    var color = document.getElementById('color');
-    
-    var finishGoodsSelected = finishGoods.options[finishGoods.selectedIndex];
-    var colorSelected = color.value;
-
-    if (finishGoodsSelected && colorSelected) {
-        var itemCode = finishGoodsSelected.getAttribute('data-item-code');
-        
-        var recipeName = 'F-001 ' + itemCode + ' ' + colorSelected;
-
-        document.getElementById('receipe_name').value = recipeName;
-    }
-}
-
-  var Counter = {{$count}};
-
-  function AddMoreDetails() {
-    Counter++;
-    $("#tableData").append(`
-      <tr id="RemoveRows${Counter}">
-        <td class="text-center">${Counter}</td>
-        <td>
-          <select style="width: 100%;" class="form-control requiredField select2 item_id" name="item_id[]" id="item_id${Counter}" onchange="get_uom_name_by_item_id(this.value, ${Counter})">
-            <option value="">Select Raw Material</option>
-            @foreach ($raw_material as $key => $value)
-              <option value="{{ $value->id }}"> {{ $value->item_code.' - '.$value->sub_ic }} </option>
-            @endforeach
-          </select>
-        </td>
-        <td class="text-center">
-          <input type="text" class="form-control" name="uom[]" id="uom${Counter}" readonly>
-        </td>
-        <td class="text-center">
-          <input type="text" class="form-control requiredField required_qty" name="required_qty[]" id="required_qty${Counter}" onkeyup="calculateTotalQuantity()" />
-        </td>
-        <td class="text-center">
-          <a href="javascript:;" class="btn btn-sm btn-danger" onclick="RemoveSection(${Counter})"><span class="glyphicon glyphicon-trash"></span> </a>
-        </td>
-      </tr>`
-    );
-
-    $('.select2').select2();
-  }
-
-  function RemoveSection(Row) {
-    $("#RemoveRows" + Row).remove();
-    Counter--;
-  }
-
-  function calculateTotalQuantity() {
-    let totalQuantity = 0;
-
-    $('.required_qty').each(function () {
-      const value = parseFloat($(this).val()) || 0;
-      totalQuantity += value;
-    });
-
-    $('#qty').val(totalQuantity.toFixed(2));
-  }
-</script>
-
-
-<script type="text/javascript">
-  $(".select2").select2();
-
-  function  get_sub_item_by_id(instance,num,value)
-	{
-
-    $('#item_id'+num).empty();
-
-		var category= instance.value;
-	
-    $(instance).closest('.main').find('#item_id').empty();
-		$.ajax({
-			url: '{{ url("/getSubItemByCategory") }}',
-			type: 'Get',
-			data: {category: category},
-			success: function (response) {
-                $('#item_id'+num).append(response);
-
-                if(value != 0)
-                {
-                  console.log(value)
-                  setTimeout(() => {
-                    $('#item_id'+num).val(value).select2();
-                  }, 2000);
-
+                if (validate == 0 && isValidQty) {
+                    $('#saveMixing').submit();
+                } else {
+                    return false;
                 }
-			}
-		});
-	}
+            }
+        });
 
-  $(document).ready(function (){
-    $('.category').trigger('change')
-    $('.required_qty').number(true,2);
-  });
+        var Counter = {{ $mixtureData->count() > 0 ? $mixtureData->count() + 1 : 2 }};
 
-  function get_uom_name_by_item_id(ItemId, num=null) {
+        function AddMoreDetails() {
+            Counter++;
+            $("#tableData").append(`
+                                      <tr id="RemoveRows${Counter}">
+                                        <td class="text-center">${Counter}</td>
+                                       <td>
+                                            <select style="width: 100%;"
+                                                class="form-control requiredField select2 item_id"
+                                                name="item_id[]" id="item_id${Counter}"
+                                                onchange="get_stock_qty(this.value,${Counter});get_uom_name_by_item_id(this.value, ${Counter})">
+                                                <option value="">Select Raw Material</option>
+                                                @foreach ($raw_material as $key => $value)
+                                                        <option value="{{ $value->id }}" data-pack_size="{{ $value->pack_size ?? 1 }}">
+                                                        {{ $value->item_code . ' - ' . $value->sub_ic }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td class="text-center">
+                                          <input type="text" class="form-control" name="uom[]" id="uom${Counter}" readonly>
+                                        </td>
+                                        <td class="text-center">
+                                          <input readonly   class="form-control instock"  type="text" name="instock[]" id="instock${Counter}"/>
+                                        </td>
+                                        <td class="text-center">
+                                          <input type="text" class="form-control requiredField required_qty" name="required_qty[]" id="required_qty${Counter}" onkeyup="validateRowQuantity(${Counter}); calculateTotalQuantity()">
+                                        </td>
+                                        <td class="text-center">
+                                          <a href="javascript:;" class="btn btn-sm btn-danger" onclick="RemoveSection(${Counter})"><span class="glyphicon glyphicon-trash"></span> </a>
+                                        </td>
+                                      </tr>`
+            );
 
-$.ajax({
-  url: '{{ url("pdc/get_uom_name_by_item_id") }}',
-  type: 'Get',
-  data: { ItemId: ItemId },
-  success: function (response) {
-    if(num == null) {
-      $('#uom').val(response)
-    } else {
-      $('#uom'+num).val(response)
-    }
+            $('.select2').select2();
+        }
 
-    
-  }
-});
-}
-</script>
+        function RemoveSection(Row) {
+            let totalRows = $("#tableData tr").length;
+            if (totalRows <= 1) {
+                alert("At least 1 row is required.");
+                return;
+            }
+            $("#RemoveRows" + Row).remove();
+        }
 
-<script src="{{ URL::asset('assets/js/select2/js_tabindex.js') }}"></script>
+        function get_stock_qty(warehouse, number) {
+            var warehouse = null;
+            var myArray = $('#item_id' + number).find(":selected").val();
+            var item = myArray.split(",");
+            var batch_code = 0;
+            $.ajax({
+                url: '<?php echo url('/') ?>/pdc/get_stock_location_wise?batch_code=' + batch_code,
+                type: "GET",
+                data: {
+                    warehouse: warehouse,
+                    item: item[0]
+                },
+                success: function(data) {
+                    data = data.split('/');
+                    var stock = parseFloat(data[0]) || 0;
+                    $('#instock' + number).val(stock);
+                    if (stock <= 0) {
+                        $("#" + item).css("background-color", "red");
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Stock not available',
+                                text: 'Selected item has 0 quantity in stock.',
+                            });
+                        } else {
+                            alert('Selected item has 0 quantity in stock.');
+                        }
+                        $('#required_qty' + number).val('');
+                    } else {
+                        $("#" + item).css("background-color", "");
+                    }
+                    validateRowQuantity(number);
+                }
+            });
+        }
+
+        function validateRowQuantity(number) {
+            var itemSelected = $('#item_id' + number).val();
+            if (!itemSelected) {
+                return true;
+            }
+            var instockinbag = parseFloat($('#instock' + number).val()) || 0;
+            var bagsize = parseFloat(
+                $('#item_id' + number).find(':selected').data('pack_size')
+            ) || 0;
+            var qtyField = $('#required_qty' + number);
+            var entered = parseFloat(qtyField.val()) || 0;
+            if (bagsize <= 0) {
+                if (entered > 0) {
+                    qtyField.val('');
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Pack size missing',
+                            text: 'Pack size (subitem.pack_size) is not configured for the selected raw material.'
+                        });
+                    } else {
+                        alert('Pack size (subitem.pack_size) is not configured for the selected raw material.');
+                    }
+                    return false;
+                }
+                return true;
+            }
+            var instock = instockinbag * bagsize;
+            if (!entered) {
+                return true;
+            }
+            if (instock === 0 && entered > 0) {
+                qtyField.val('');
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Stock not available',
+                        text: 'You cannot consume quantity because stock is 0.',
+                    });
+                } else {
+                    alert('You cannot consume quantity because stock is 0.');
+                }
+                return false;
+            }
+            if (entered > instock) {
+                qtyField.val(instock ? instock : '');
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid quantity',
+                        text: 'Required quantity cannot be greater than available stock (' + instock + ').',
+                    });
+                } else {
+                    alert('Required quantity cannot be greater than available stock (' + instock + ').');
+                }
+                return false;
+            }
+            return true;
+        }
+
+        function calculateTotalQuantity() {
+            let totalQuantity = 0;
+            $('.required_qty').each(function() {
+                const value = parseFloat($(this).val()) || 0;
+                totalQuantity += value;
+            });
+            $('#qty').val(totalQuantity.toFixed(2));
+        }
+    </script>
+
+    <script type="text/javascript">
+        $(".select2").select2();
+
+        function get_uom_name_by_item_id(ItemId, num = null) {
+            $.ajax({
+                url: '{{ url('pdc/get_uom_name_by_item_id') }}',
+                type: 'Get',
+                data: {
+                    ItemId: ItemId
+                },
+                success: function(response) {
+                    if (num == null) {
+                        $('#uom').val(response)
+                    } else {
+                        $('#uom' + num).val(response)
+                    }
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            var finishId = $('#finish_item_id').val();
+            if (finishId) {
+                get_uom_name_by_item_id(finishId);
+            }
+            @php $ridx = 1 @endphp
+            @foreach ($mixtureData as $md)
+                @if ($md->item_id)
+                    get_uom_name_by_item_id({{ $md->item_id }}, {{ $ridx }});
+                    get_stock_qty(null, {{ $ridx }});
+                @endif
+                @php $ridx++ @endphp
+            @endforeach
+        });
+    </script>
+
+    <script src="{{ URL::asset('assets/js/select2/js_tabindex.js') }}"></script>
 
 @endsection

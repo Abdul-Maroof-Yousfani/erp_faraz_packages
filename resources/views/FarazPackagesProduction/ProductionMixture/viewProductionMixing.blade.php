@@ -41,6 +41,18 @@ $this->m = Session::get('run_company');
                         </div>
 
                         <div class="lineHeight">&nbsp;</div>
+                        @if (Session::has('dataInsert'))
+                            <div class="alert alert-success alert-dismissible" role="alert">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                {{ Session::get('dataInsert') }}
+                            </div>
+                        @endif
+                        @if (Session::has('dataEdit'))
+                            <div class="alert alert-danger alert-dismissible" role="alert">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                {{ Session::get('dataEdit') }}
+                            </div>
+                        @endif
                         <div class="panel">
                             <div class="panel-body" id="PrintEmpExitInterviewList">
                                 <?php echo CommonHelper::headerPrintSectionInPrintView($m); ?>
@@ -97,12 +109,11 @@ $this->m = Session::get('run_company');
                                                                     <ul class="dropdown-menu">
                                                                         <li>
                                                                             <a onclick="showDetailModelOneParamerter('far_production/viewMixingInfo','{{$Fil->id}}','View Mixture Detail')"
-                                                                                type="button" class="">
-                                                                                View</a>
-                                                                            </a>
-                                                                            <a href="mixtureEdit?id=<?php    echo $Fil['id'] ?>&&m=<?php    echo $this->m?>">
-                                                                            </a>
-                                                                           
+                                                                                type="button" class="">View</a>
+                                                                            </li>
+                                                                        <li>
+                                                                            <a href="{{ url('far_production/mixtureEdit') }}?id={{ $Fil->id }}&m={{ $this->m }}">Edit</a>
+                                                                            </li>
 
                                                                             {{-- @if($Fil->status == 1)
                                                                                 <a
@@ -111,7 +122,6 @@ $this->m = Session::get('run_company');
                                                                                 <a
                                                                                     onclick="changeFormulationStatus('{{$Fil->id}}','1','{{$this->m}}')">Enable</a>
                                                                             @endif --}}
-                                                                        </li>
                                                                     </ul>
                                                                 </div>
                                                             </td>

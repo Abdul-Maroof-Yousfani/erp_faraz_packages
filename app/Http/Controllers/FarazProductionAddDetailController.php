@@ -979,6 +979,154 @@ class FarazProductionAddDetailController extends Controller
         );
     }
 
+    public function updateProductionMixingDetail(Request $request)
+    {
+        DB::connection('mysql2')->beginTransaction();
+
+        try {
+            $m = $request->input('m', $_GET['m'] ?? '');
+            $mixtureId = (int) $request->input('mixture_id');
+
+            $existing = DB::connection('mysql2')
+                ->table('production_mixture')
+                ->where('id', $mixtureId)
+                ->where('status', 1)
+                ->first();
+
+            if (!$existing) {
+                DB::connection('mysql2')->rollBack();
+                Session::flash('dataEdit', 'Mixture not found.');
+                return Redirect::to('far_production/viewProductionMixingList?m=' . $m);
+            }
+
+            if ((float) ($existing->used_qty ?? 0) > 0) {
+                DB::connection('mysql2')->rollBack();
+                Session::flash('dataEdit', 'This mixture cannot be edited because it is already used in the next production step.');
+                return Redirect::to('far_production/viewProductionMixingList?m=' . $m);
+            }
+
+            $pmNo = $existing->pm_no;
+
+            DB::connection('mysql2')->table('stock')
+                ->where('main_id', $mixtureId)
+                ->where('voucher_no', $pmNo)
+                ->whereIn('voucher_type', [9, 11])
+                ->delete();
+
+            DB::connection('mysql2')->table('production_mixture')->where('id', $mixtureId)->update([
+                'produced_item_id' => strip_tags($request->finish_item_id),
+                'production_order_id' => strip_tags($request->production_order_id),
+                'mixture_machine_id' => strip_tags($request->mixture_machine_id),
+                'date' => strip_tags($request->mixing_date),
+                'qty' => strip_tags($request->qty),
+                'description' => strip_tags($request->description ?? ''),
+                'username' => Auth::user()->name,
+            ]);
+
+            DB::connection('mysql2')
+                ->table('production_mixture_data')
+                ->where('production_mixture_id', $mixtureId)
+                ->delete();
+
+            $itemIds = array_values(array_filter((array) $request->input('item_id', []), function ($v) {
+                return $v !== null && $v !== '';
+            }));
+            if (count($itemIds) === 0) {
+                DB::connection('mysql2')->rollBack();
+                Session::flash('dataEdit', 'Add at least one raw material line.');
+                return Redirect::to('far_production/viewProductionMixingList?m=' . $m);
+            }
+
+            $finishItemDetail = CommonHelper::get_subitem_detail2($request->finish_item_id);
+            $finishRate = $finishItemDetail->rate ?? 0;
+            $finishName = $finishItemDetail->sub_ic ?? '';
+
+            ReuseableCode::postStock(
+                $mixtureId,
+                0,
+                $pmNo,
+                $request->mixing_date,
+                11,
+                $finishRate,
+                $request->finish_item_id,
+                $finishName,
+                $request->qty,
+                null
+            );
+
+            foreach ($request->item_id as $key => $itemId) {
+                if ($itemId === '' || $itemId === null) {
+                    continue;
+                }
+                $requiredQty = $request->required_qty[$key];
+
+                $data2 = [
+                    'production_mixture_id' => $mixtureId,
+                    'item_id' => $itemId,
+                    'qty' => $requiredQty,
+                ];
+
+                DB::connection('mysql2')
+                    ->table('production_mixture_data')
+                    ->insert($data2);
+
+                $availableQty = ReuseableCode::get_stock_with_pack_size($itemId, 0, $requiredQty, 0);
+
+                if ($availableQty < 0) {
+                    DB::connection('mysql2')->rollBack();
+                    Session::flash(
+                        'dataEdit',
+                        'This item ' . CommonHelper::get_item_name($itemId) . ' has 0 qty in stock'
+                    );
+                    return Redirect::to('far_production/viewProductionMixingList?m=' . $m);
+                }
+
+                $itemDetail = CommonHelper::get_subitem_detail2($itemId);
+                $itemRate = $itemDetail->rate ?? 0;
+                $itemName = $itemDetail->sub_ic ?? '';
+                $packSize = (float) ($itemDetail->pack_size ?? 0);
+                if ($packSize <= 0) {
+                    DB::connection('mysql2')->rollBack();
+                    Session::flash(
+                        'dataEdit',
+                        'Pack size (subitem.pack_size) is missing/invalid for item ' . CommonHelper::get_item_name($itemId)
+                    );
+                    return Redirect::to('far_production/viewProductionMixingList?m=' . $m);
+                }
+                $requiredQtyInBags = (float) $requiredQty / $packSize;
+
+                ReuseableCode::postStock(
+                    $mixtureId,
+                    0,
+                    $pmNo,
+                    $request->mixing_date,
+                    9,
+                    $itemRate,
+                    $itemId,
+                    $itemName,
+                    $requiredQtyInBags,
+                    null
+                );
+            }
+
+            DB::connection('mysql2')->commit();
+        } catch (\Exception $e) {
+            DB::connection('mysql2')->rollBack();
+            Session::flash('dataEdit', $e->getMessage());
+            return Redirect::to('far_production/viewProductionMixingList?m=' . $request->input('m', $_GET['m'] ?? ''));
+        }
+
+        Session::flash('dataInsert', 'Successfully updated.');
+
+        return Redirect::to(
+            'far_production/viewProductionMixingList?pageType=' .
+            $request->input('pageType', '') .
+            '&&parentCode=' .
+            $request->input('parentCode', '') .
+            '&&m=' . $m
+        );
+    }
+
     public function addProductionRollingDetail(Request $request)
     {
         // dd($request->all());

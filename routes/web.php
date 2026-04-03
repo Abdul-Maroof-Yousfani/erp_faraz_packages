@@ -2256,6 +2256,7 @@ Route::group(['prefix' => 'far_prod', 'middleware' => 'mysql2', 'before' => 'csr
 
     // production mixing ajax
     Route::post('/addProductionMixingDetail', 'FarazProductionAddDetailController@addProductionMixingDetail');
+    Route::post('/updateProductionMixingDetail', 'FarazProductionAddDetailController@updateProductionMixingDetail');
 
     // production rolling ajax
     Route::post('/addProductionRollingDetail', 'FarazProductionAddDetailController@addProductionRollingDetail')->name('FarProduction.Rolling');
