@@ -430,6 +430,296 @@ class FarazProductionController extends Controller
         ));
     }
 
+    public function danaReport(Request $request)
+    {
+        $accType = Auth::user()->acc_type;
+        $m = $accType === 'client' ? ($request->query('m') ?? '') : Auth::user()->company_id;
+
+        $date = $request->query('date') ?: date('Y-m-d');
+        $rawItemId = (int) ($request->query('raw_item_id') ?: 0);
+        $prevDate = date('Y-m-d', strtotime($date . ' -1 day'));
+
+        $qtyExpr = "SUM(CASE WHEN si.pack_size IS NOT NULL AND si.pack_size > 0 THEN s.qty * si.pack_size ELSE s.qty END)";
+
+        $inTypes = [1, 4, 6, 10, 11];
+        $outTypes = [2, 3, 5, 9];
+
+        $rawItems = DB::connection('mysql2')->table('subitem')
+            ->where('status', 1)
+            ->where('main_ic_id', 7)
+            ->orderBy('sub_ic')
+            ->select('id', 'item_code', 'sub_ic')
+            ->get();
+
+        $openingInQuery = DB::connection('mysql2')->table('stock as s')
+            ->join('subitem as si', 'si.id', '=', 's.sub_item_id')
+            ->whereIn('s.status', [1, 3])
+            ->where('si.status', 1)
+            ->where('si.main_ic_id', 7)
+            ->whereIn('s.voucher_type', $inTypes)
+            ->whereDate('s.voucher_date', '<=', $prevDate)
+            ->when($rawItemId > 0, function ($q) use ($rawItemId) {
+                return $q->where('s.sub_item_id', $rawItemId);
+            });
+
+        $openingIn = $openingInQuery
+            ->groupBy('s.sub_item_id', 'si.sub_ic')
+            ->select('s.sub_item_id', 'si.sub_ic', DB::raw("$qtyExpr as qty_in"))
+            ->get()
+            ->keyBy('sub_item_id');
+
+        $openingOutQuery = DB::connection('mysql2')->table('stock as s')
+            ->join('subitem as si', 'si.id', '=', 's.sub_item_id')
+            ->whereIn('s.status', [1, 3])
+            ->where('si.status', 1)
+            ->where('si.main_ic_id', 7)
+            ->whereIn('s.voucher_type', $outTypes)
+            ->whereDate('s.voucher_date', '<=', $prevDate)
+            ->when($rawItemId > 0, function ($q) use ($rawItemId) {
+                return $q->where('s.sub_item_id', $rawItemId);
+            });
+
+        $openingOut = $openingOutQuery
+            ->groupBy('s.sub_item_id', 'si.sub_ic')
+            ->select('s.sub_item_id', 'si.sub_ic', DB::raw("$qtyExpr as qty_out"))
+            ->get()
+            ->keyBy('sub_item_id');
+
+        $purchaseQuery = DB::connection('mysql2')->table('stock as s')
+            ->join('subitem as si', 'si.id', '=', 's.sub_item_id')
+            ->whereIn('s.status', [1, 3])
+            ->where('si.status', 1)
+            ->where('si.main_ic_id', 7)
+            ->whereIn('s.voucher_type', $inTypes)
+            ->whereDate('s.voucher_date', '=', $date)
+            ->when($rawItemId > 0, function ($q) use ($rawItemId) {
+                return $q->where('s.sub_item_id', $rawItemId);
+            });
+
+        $purchase = $purchaseQuery
+            ->groupBy('s.sub_item_id', 'si.sub_ic')
+            ->select('s.sub_item_id', 'si.sub_ic', DB::raw("$qtyExpr as qty_purchase"))
+            ->get()
+            ->keyBy('sub_item_id');
+
+        $consumeQuery = DB::connection('mysql2')->table('stock as s')
+            ->join('subitem as si', 'si.id', '=', 's.sub_item_id')
+            ->whereIn('s.status', [1, 3])
+            ->where('si.status', 1)
+            ->where('si.main_ic_id', 7)
+            ->whereIn('s.voucher_type', $outTypes)
+            ->whereDate('s.voucher_date', '=', $date)
+            ->when($rawItemId > 0, function ($q) use ($rawItemId) {
+                return $q->where('s.sub_item_id', $rawItemId);
+            });
+
+        $consume = $consumeQuery
+            ->groupBy('s.sub_item_id', 'si.sub_ic')
+            ->select('s.sub_item_id', 'si.sub_ic', DB::raw("$qtyExpr as qty_consume"))
+            ->get()
+            ->keyBy('sub_item_id');
+
+        $allIds = collect([])
+            ->merge($openingIn->keys())
+            ->merge($openingOut->keys())
+            ->merge($purchase->keys())
+            ->merge($consume->keys())
+            ->unique()
+            ->values();
+
+        $items = [];
+        $totals = [
+            'opening' => 0,
+            'purchase' => 0,
+            'consume' => 0,
+            'closing' => 0,
+        ];
+
+        foreach ($allIds as $id) {
+            $subIc = $purchase[$id]->sub_ic
+                ?? $consume[$id]->sub_ic
+                ?? $openingIn[$id]->sub_ic
+                ?? $openingOut[$id]->sub_ic
+                ?? '';
+
+            $opIn = (float) ($openingIn[$id]->qty_in ?? 0);
+            $opOut = (float) ($openingOut[$id]->qty_out ?? 0);
+            $opening = $opIn - $opOut;
+
+            $p = (float) ($purchase[$id]->qty_purchase ?? 0);
+            $c = (float) ($consume[$id]->qty_consume ?? 0);
+            $closing = $opening + $p - $c;
+
+            $items[] = (object) [
+                'sub_item_id' => $id,
+                'description' => $subIc,
+                'opening' => $opening,
+                'purchase' => $p,
+                'consume' => $c,
+                'closing' => $closing,
+                'balance' => $closing,
+            ];
+
+            $totals['opening'] += $opening;
+            $totals['purchase'] += $p;
+            $totals['consume'] += $c;
+            $totals['closing'] += $closing;
+        }
+
+        usort($items, function ($a, $b) {
+            return strcmp($a->description, $b->description);
+        });
+
+        return view('FarazPackagesProduction.Reports.danaReport', compact('items', 'totals', 'date', 'm', 'rawItems', 'rawItemId'));
+    }
+
+    public function thekedarDanaDailyReport(Request $request)
+    {
+        $accType = Auth::user()->acc_type;
+        $m = $accType === 'client' ? ($request->query('m') ?? '') : Auth::user()->company_id;
+
+        $from = $request->query('from_date') ?: date('Y-m-d');
+        $to = $request->query('to_date') ?: $from;
+
+        if (strtotime($from) > strtotime($to)) {
+            $tmp = $from;
+            $from = $to;
+            $to = $tmp;
+        }
+
+        // Packing (Cutting qty in KG, Packing bags qty in bags)
+        $packingRows = DB::connection('mysql2')->table('production_packing as pp')
+            ->leftJoin('subitem as si', 'si.id', '=', 'pp.item_id')
+            ->leftJoin('machine as mac', 'mac.id', '=', 'pp.machine_id')
+            ->leftJoin('operators as op', 'op.id', '=', 'pp.operator_id')
+            ->where('pp.status', 1)
+            ->whereBetween('pp.date', [$from, $to])
+            ->orderBy('pp.date')
+            ->orderBy('pp.machine_id')
+            ->orderBy('si.sub_ic')
+            ->select(
+                DB::raw('DATE(pp.date) as report_date'),
+                'pp.machine_id',
+                'op.name as operator_name',
+                'si.sub_ic as size_name',
+                DB::raw('SUM(COALESCE(pp.packing_bags_qty,0)) as bags'),
+                DB::raw('SUM(COALESCE(pp.cutting_qty,0)) as kgs')
+            )
+            ->groupBy(DB::raw('DATE(pp.date)'), 'pp.machine_id', 'op.name', 'si.sub_ic')
+            ->get();
+
+        // Previous balance for packing (before each day)
+        $packingPrev = DB::connection('mysql2')->table('production_packing as pp')
+            ->where('pp.status', 1)
+            ->whereDate('pp.date', '<', $from)
+            ->select(
+                DB::raw('SUM(COALESCE(pp.packing_bags_qty,0)) as bags'),
+                DB::raw('SUM(COALESCE(pp.cutting_qty,0)) as kgs')
+            )
+            ->first();
+
+        // Dana operator (from production_mixture: produced_item_id, qty in KG, machine = mixture_machine_id, name = username)
+        $danaRows = DB::connection('mysql2')->table('production_mixture as pm')
+            ->leftJoin('subitem as si', 'si.id', '=', 'pm.produced_item_id')
+            ->where('pm.status', 1)
+            ->whereBetween('pm.date', [$from, $to])
+            ->orderBy('pm.date')
+            ->orderBy('pm.mixture_machine_id')
+            ->orderBy('si.sub_ic')
+            ->select(
+                DB::raw('DATE(pm.date) as report_date'),
+                'pm.mixture_machine_id as machine_id',
+                'pm.username as operator_name',
+                'si.sub_ic as dana_name',
+                'si.pack_size as pack_size',
+                DB::raw('SUM(COALESCE(pm.qty,0)) as kgs')
+            )
+            ->groupBy(DB::raw('DATE(pm.date)'), 'pm.mixture_machine_id', 'pm.username', 'si.sub_ic', 'si.pack_size')
+            ->get()
+            ->map(function ($r) {
+                $pack = (float) ($r->pack_size ?? 0);
+                $kgs = (float) ($r->kgs ?? 0);
+                $bags = $pack > 0 ? ($kgs / $pack) : 0;
+                $r->bags = $bags;
+                return $r;
+            });
+
+        $danaPrev = DB::connection('mysql2')->table('production_mixture as pm')
+            ->leftJoin('subitem as si', 'si.id', '=', 'pm.produced_item_id')
+            ->where('pm.status', 1)
+            ->whereDate('pm.date', '<', $from)
+            ->select(
+                DB::raw('SUM(COALESCE(pm.qty,0)) as kgs'),
+                // bags based on per-row pack_size; we approximate using weighted average (sum(kgs/pack_size))
+                DB::raw('SUM(CASE WHEN si.pack_size IS NOT NULL AND si.pack_size > 0 THEN (pm.qty / si.pack_size) ELSE 0 END) as bags')
+            )
+            ->first();
+
+        // Printing Operator (from production_roll_printing: no_of_roll; KGS derived from subitem.pack_size if configured)
+        $printingRows = DB::connection('mysql2')->table('production_roll_printing as prp')
+            ->leftJoin('subitem as si', 'si.id', '=', 'prp.item_id')
+            ->leftJoin('operators as op', 'op.id', '=', 'prp.operator_id')
+            ->where('prp.status', 1)
+            ->whereBetween('prp.date', [$from, $to])
+            ->orderBy('prp.date')
+            ->orderBy('prp.machine_id')
+            ->orderBy('si.sub_ic')
+            ->select(
+                DB::raw('DATE(prp.date) as report_date'),
+                'prp.machine_id',
+                'op.name as operator_name',
+                'si.sub_ic as size_name',
+                DB::raw('SUM(COALESCE(prp.no_of_roll,0)) as rolls'),
+                DB::raw('SUM(COALESCE(prp.no_of_roll,0) * COALESCE(si.pack_size,0)) as kgs')
+            )
+            ->groupBy(DB::raw('DATE(prp.date)'), 'prp.machine_id', 'op.name', 'si.sub_ic')
+            ->get();
+
+        $printingPrev = DB::connection('mysql2')->table('production_roll_printing as prp')
+            ->where('prp.status', 1)
+            ->whereDate('prp.date', '<', $from)
+            ->select(
+                DB::raw('SUM(COALESCE(prp.no_of_roll,0)) as rolls'),
+                DB::raw('SUM(COALESCE(prp.no_of_roll,0) * COALESCE((select pack_size from subitem where id = prp.item_id),0)) as kgs')
+            )
+            ->first();
+
+        // Build date list
+        $dates = [];
+        $cursor = $from;
+        while (strtotime($cursor) <= strtotime($to)) {
+            $dates[] = $cursor;
+            $cursor = date('Y-m-d', strtotime($cursor . ' +1 day'));
+        }
+
+        // Group rows by date
+        $packingByDate = [];
+        foreach ($packingRows as $r) {
+            $packingByDate[$r->report_date][] = $r;
+        }
+        $danaByDate = [];
+        foreach ($danaRows as $r) {
+            $danaByDate[$r->report_date][] = $r;
+        }
+        $printingByDateMachine = [];
+        foreach ($printingRows as $r) {
+            $printingByDateMachine[$r->report_date][$r->machine_id][] = $r;
+        }
+
+        return view('FarazPackagesProduction.Reports.thekedarDanaDailyReport', compact(
+            'm',
+            'from',
+            'to',
+            'dates',
+            'packingByDate',
+            'danaByDate',
+            'printingByDateMachine',
+            'packingPrev',
+            'danaPrev',
+            'printingPrev'
+        ));
+    }
+
     public function multiMixtureRolling(Request $request)
     {
         $m = $request->query('m');
