@@ -133,6 +133,10 @@ use App\Helpers\CommonHelper;
 $Sales_Order = [];
 $Machine  = [];
 $Operator   = [];
+$allSubCategories = CommonHelper::get_all_sub_category()
+    ->where('category_id', 13)
+    ->orderBy('sub_category_name')
+    ->get();
 ?>
     <div class="row well_N align-items-center">
         <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
@@ -390,15 +394,13 @@ $global_avg_amt=0;
 
                                                     <div class="rolling-detail-row"  id="row_1">
                                                         <div class="rolling-field">
-                                                            <label for="">Category</label>
-                                                            <select onchange="get_sub_item('category_id1');handleCategoryChange(this, 1)" name="category[]"
-                                                                id="category_id1"
-                                                                class="form-control category select2 requiredField">
+                                                            <label for="">Sub Category</label>
+                                                            <select onchange="get_items_by_sub_category(1)" name="sub_category_id[]"
+                                                                id="sub_category_id1"
+                                                                class="form-control select2 requiredField">
                                                                 <option value="">Select</option>
-                                                                @foreach (CommonHelper::get_all_category() as $category)
-                                                                    <option value="{{ $category->id }}">
-                                                                        {{ $category->main_ic }}
-                                                                    </option>
+                                                                @foreach ($allSubCategories as $sc)
+                                                                    <option value="{{ $sc->id }}">{{ $sc->sub_category_name }}</option>
                                                                 @endforeach
                                                             </select>
                                                         </div>
@@ -515,15 +517,13 @@ $global_avg_amt=0;
         let html = `
                     <div class="rolling-detail-row" id="row_${count}">
                         <div class="rolling-field">
-                            <label for="">Category</label>
-                            <select onchange="get_sub_item('category_id${count}');handleCategoryChange(this, ${count})" name="category[]"
-                                id="category_id${count}"
-                                class="form-control category select2 requiredField">
+                            <label for="">Sub Category</label>
+                            <select onchange="get_items_by_sub_category(${count})" name="sub_category_id[]"
+                                id="sub_category_id${count}"
+                                class="form-control select2 requiredField">
                                 <option value="">Select</option>
-                                @foreach (CommonHelper::get_all_category() as $category)
-                                    <option value="{{ $category->id }}">
-                                        {{ $category->main_ic }}
-                                    </option>
+                                @foreach ($allSubCategories as $sc)
+                                    <option value="{{ $sc->id }}">{{ $sc->sub_category_name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -619,25 +619,26 @@ function validateUsedQty(input) {
     }
 }
 
-function handleCategoryChange(el, row) {
-    let categoryId = $(el).val();
-
-    if (categoryId == 15) {
-
-        // change label to Wastage
-        $("#roll_qty_label_" + row).text("Wastage Qty (Kg)");
-
-        // set No of Rolls = 0 and readonly
-        $("#roll_qty_" + row).val(0).prop("readonly", true);
-
-    } else {
-
-        // restore label
-        $("#roll_qty_label_" + row).text("Rolls Qty (Kg)");
-
-        // make editable again
-        $("#roll_qty_" + row).prop("readonly", false);
+function get_items_by_sub_category(row) {
+    var subCategoryId = $('#sub_category_id' + row).val();
+    $('#item_id' + row).html('<option value=\"\">Select</option>');
+    if (!subCategoryId) {
+        $('#item_id' + row).trigger('change.select2');
+        return;
     }
+    $.ajax({
+        url: '{{ url("/getSubItemByCategory") }}',
+        type: 'GET',
+        data: { category: subCategoryId },
+        success: function (response) {
+            $('#item_id' + row).html(response);
+            $('#item_id' + row).trigger('change.select2');
+        },
+        error: function () {
+            $('#item_id' + row).html('<option value=\"\">Select</option>');
+            $('#item_id' + row).trigger('change.select2');
+        }
+    });
 }
 
  function get_uom_name_by_item_id(ItemId, num = null) {

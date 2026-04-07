@@ -1164,6 +1164,7 @@ class FarazProductionAddDetailController extends Controller
                 $mixtureQty = $request->mixture_qty[$key] ?? 0;
 
                 $rollQty = $request->roll_qty[$key] ?? 0;
+                $subCategoryId = $request->sub_category_id[$key] ?? null;
 
                 // ========================
                 // INSERT ROLLING RECORD
@@ -1173,6 +1174,7 @@ class FarazProductionAddDetailController extends Controller
                     // keep reference to first mixture id (detail consumption is distributed below)
                     'production_mixture_id' => $productionMixtureRows->first()->id,
                     'item_id' => $itemId,
+                    'sub_category_id' => $subCategoryId,
                     'machine_id' => $request->machine_id[$key] ?? null,
                     'operator_id' => $request->operator_id[$key] ?? null,
                     'shift_id' => $request->shift_id[$key] ?? null,
