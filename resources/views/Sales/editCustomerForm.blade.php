@@ -96,8 +96,7 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
                                                                 </div>
                                                                 <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                     <label>Country</label>
-                                                                    <span class="rflabelsteric"><strong>*</strong></span>
-                                                                    <input id="Country" type="text" name="country" class="form-control  requiredField" value="{{ $Cusomter->country }}">
+                                                                    <input id="Country" type="text" name="country" class="form-control" value="{{ $Cusomter->country }}">
                                                                 </div>
                                                                 <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3"></div>
                                                                 <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3"></div>
@@ -161,13 +160,11 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
                                                             <div class="row">
                                                                 <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                     <label>NTN/CNIC</label>
-                                                                    <span class="rflabelsteric"><strong>*</strong></span>
-                                                                    <input id="NTN/CNIC" name="ntn" type="text" class="form-control requiredField" value="{{ $Cusomter->cnic_ntn }}">
+                                                                    <input id="NTN/CNIC" name="ntn" type="text" class="form-control" value="{{ $Cusomter->cnic_ntn }}">
                                                                 </div>
         
                                                                 <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                     <label>ATL Status</label>
-                                                                    <span class="rflabelsteric"><strong>*</strong></span>
                                                                     
                                                                     <div class="radio_select">
                                                                         <input type="radio" name="atl_status" value="1" id="active" @if($Cusomter->atl_status==1) checked @endif><label for="active">Active</label>
@@ -178,12 +175,11 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
         
                                                                 <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                     <label>Sales Tax Status</label>
-                                                                    <span class="rflabelsteric"><strong>*</strong></span>
                                                                     <div class="radio_select">
-                                                                        <input type="radio" name="regd_in_sales_tax" value="1" @if($Cusomter->regd_in_sales_tax == 1) checked @endif class="requiredField" />
+                                                                        <input type="radio" name="regd_in_sales_tax" value="1" @if($Cusomter->regd_in_sales_tax == 1) checked @endif />
                                                                         <label>Registered</label>
 
-                                                                        <input type="radio" name="regd_in_sales_tax" value="2" @if($Cusomter->regd_in_sales_tax == 2) checked @endif class="requiredField" />
+                                                                        <input type="radio" name="regd_in_sales_tax" value="2" @if($Cusomter->regd_in_sales_tax == 2) checked @endif />
                                                                         <label>Unregistered</label>
                                                                     </div>
                                                                 </div>
@@ -192,30 +188,28 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
                                                             <div class="row">
                                                                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
                                                                     <label>Status U/S 236G or H</label>
-                                                                    <span class="rflabelsteric"><strong>*</strong></span>
                                                                     <div class="radio_select">
-                                                                        <input type="radio" name="status_us_236g_h" value="1" @if($Cusomter->status_us_236g_h == 1) checked @endif class="requiredField" />
+                                                                        <input type="radio" name="status_us_236g_h" value="1" @if($Cusomter->status_us_236g_h == 1) checked @endif />
                                                                         <label>Manufacturer</label>
 
-                                                                        <input type="radio" name="status_us_236g_h" value="2" @if($Cusomter->status_us_236g_h == 2) checked @endif class="requiredField" />
+                                                                        <input type="radio" name="status_us_236g_h" value="2" @if($Cusomter->status_us_236g_h == 2) checked @endif />
                                                                         <label>Wholesaler/Distributor</label>
 
-                                                                        <input type="radio" name="status_us_236g_h" value="3" @if($Cusomter->status_us_236g_h == 3) checked @endif class="requiredField" />
+                                                                        <input type="radio" name="status_us_236g_h" value="3" @if($Cusomter->status_us_236g_h == 3) checked @endif />
                                                                         <label>Retailer/Others</label>
                                                                     </div>
                                                                 </div>
         
                                                                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
                                                                     <label>Payment Terms</label>
-                                                                    <span class="rflabelsteric"><strong>*</strong></span>
                                                                     <div class="radio_select">
-                                                                        <input type="radio" name="term" value="1" @if($Cusomter->terms_of_payment == 1) checked @endif class="requiredField" />
+                                                                        <input type="radio" name="term" value="1" @if($Cusomter->terms_of_payment == 1) checked @endif />
                                                                         <label>Advance</label>
 
-                                                                        <input type="radio" name="term" value="2" @if($Cusomter->terms_of_payment == 2) checked @endif class="requiredField" />
+                                                                        <input type="radio" name="term" value="2" @if($Cusomter->terms_of_payment == 2) checked @endif />
                                                                         <label>Against Delivery</label>
 
-                                                                        <input type="radio" name="term" value="3" @if($Cusomter->terms_of_payment == 3) checked @endif class="requiredField" />
+                                                                        <input type="radio" name="term" value="3" @if($Cusomter->terms_of_payment == 3) checked @endif />
                                                                         <label>Credit</label>
                                                                     </div>
                                                                 </div>

@@ -275,11 +275,11 @@ class SalesDataCallController extends Controller
 
             <tr id="<?php echo $row->id?>">
                 <td class="text-center"><?php echo $counter++; ?></td>
-                <td class="text-center"><?php echo $row->customer_code; ?></td>
-                <td class="text-center"><?php echo strtoupper($row->name); ?></td>
-                <td class="text-center"><?php echo $row->address ?></td>
-                <td class="text-center"><?php echo  $row->contact_person ?></td>
-                <td class="text-center"><?php echo  $row->contact ?></td>
+                <td class="text-center"><?php echo $row->customer_code ?: 'N/A'; ?></td>
+                <td class="text-center"><?php echo strtoupper($row->name ?: 'N/A'); ?></td>
+                <td class="text-center"><?php echo $row->address ?: 'N/A' ?></td>
+                <td class="text-center"><?php echo  $row->contact_person ?: 'N/A' ?></td>
+                <td class="text-center"><?php echo  $row->contact ?: 'N/A' ?></td>
                 <td class="text-center hidden-print printListBtn">
                     <div class="dropdown">
                         <button class="drop-bt dropdown-toggle"type="button" data-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-ellipsis-vertical"></i></button>

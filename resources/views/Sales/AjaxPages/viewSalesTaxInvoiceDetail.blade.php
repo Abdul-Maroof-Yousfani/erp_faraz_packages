@@ -120,34 +120,41 @@ $AmountInWordsMain =0;
 
                                 $sales_order= SalesHelper::get_sales_tax_by_sales_order_id($sales_tax_invoice->so_id);
                                 ?>
-                                <tr>
-                                    <th style="border:1px solid black;width: 50%"  class="text-left" style="border: solid 1px;">BUYER'S NAME</th>
-                                    <td style="border:1px solid black; width: 50%" class="text-left"><strong><?php echo ucwords($customer_data->name ?? '')?></strong></td>
-                                </tr>
-
-                                <tr class="hide">
-                                    <th style="border:1px solid black;" class="text-left" style="width:50%; border: solid 1px;">BUYER'S ORDER NO.</th>
-                                    <td style="border:1px solid black;" class="text-left" style="width:50%;"><?php echo strtoupper($sales_tax_invoice->order_no);?></td>
-                                </tr>
-                                <tr>
-                                    <th style="border:1px solid black;" class="text-left" style="width:60%; border: solid 1px;">BUYER'S Order Date</th>
-                                    <td style="border:1px solid black;" class="text-left" style="width:40%;"><?php echo CommonHelper::changeDateFormat($sales_tax_invoice->order_date);?></td>
-                                </tr>
-                                @if($sales_tax_invoice->so_id != 0):
-                                <tr class="hide">
-                                    <th style="border:1px solid black;" class="text-left" style="width:50%;border: solid 1px;">BUYER'S UNIT.</th>
-                                    <td style="border:1px solid black;" class="text-left" style="width:50%;"><?php echo strtoupper($sales_order->buyers_unit);?></td>
-                                </tr>
+                                @php $orderDate = trim($sales_tax_invoice->order_date ?? ''); @endphp
+                                @if(trim($customer_data->name ?? '') != '')
+                                    <tr>
+                                        <th style="border:1px solid black;width: 50%"  class="text-left" style="border: solid 1px;">BUYER'S NAME</th>
+                                        <td style="border:1px solid black; width: 50%" class="text-left"><strong><?php echo ucwords($customer_data->name ?? '')?></strong></td>
+                                    </tr>
                                 @endif
-                                <tr>
-                                    <th style="border:1px solid black;" class="text-left" style="border: solid 1px;">BUYER'S ADDRESS</th>
-                                    <td style="border:1px solid black;" class="text-left" ><?php echo  ucwords($customer_data->address ?? '');?></td>
-                                </tr>
 
-                                <tr>
-                                    <th style="border:1px solid black;" class="text-left" style="border: solid 1px;">BUYER'S NTN</th>
-                                    <td style="border:1px solid black;" class="text-left" ><?php echo  ucwords($customer_data->cnic_ntn ?? '');?></td>
-                                </tr>
+                                @if($orderDate != '' && $orderDate != '0000-00-00' && substr($orderDate,0,4) != '0001')
+                                    <tr>
+                                        <th style="border:1px solid black;" class="text-left" style="width:60%; border: solid 1px;">BUYER'S Order Date</th>
+                                        <td style="border:1px solid black;" class="text-left" style="width:40%;"><?php echo CommonHelper::changeDateFormat($sales_tax_invoice->order_date);?></td>
+                                    </tr>
+                                @endif
+
+                                @if($sales_tax_invoice->so_id != 0)
+                                    <tr class="hide">
+                                        <th style="border:1px solid black;" class="text-left" style="width:50%;border: solid 1px;">BUYER'S UNIT.</th>
+                                        <td style="border:1px solid black;" class="text-left" style="width:50%;"><?php echo strtoupper($sales_order->buyers_unit);?></td>
+                                    </tr>
+                                @endif
+
+                                @if(trim($customer_data->address ?? '') != '')
+                                    <tr>
+                                        <th style="border:1px solid black;" class="text-left" style="border: solid 1px;">BUYER'S ADDRESS</th>
+                                        <td style="border:1px solid black;" class="text-left" ><?php echo  ucwords($customer_data->address ?? '');?></td>
+                                    </tr>
+                                @endif
+
+                                @if(trim($customer_data->cnic_ntn ?? '') != '')
+                                    <tr>
+                                        <th style="border:1px solid black;" class="text-left" style="border: solid 1px;">BUYER'S NTN</th>
+                                        <td style="border:1px solid black;" class="text-left" ><?php echo  ucwords($customer_data->cnic_ntn ?? '');?></td>
+                                    </tr>
+                                @endif
 
                                 </tbody>
                             </table>
@@ -165,40 +172,41 @@ $AmountInWordsMain =0;
                                     <th style="border:1px solid black;" class="text-left" style="border: solid 1px;">SI Date</th>
                                     <td style="border:1px solid black;" class="text-left"><?php echo CommonHelper::changeDateFormat($sales_tax_invoice->gi_date);?></td>
                                 </tr>
-                                <tr>
-                                    <th style="border:1px solid black;" class="text-left" style="width:50%; border: solid 1px;">SO NO.</th>
-                                    <td style="border:1px solid black;" class="text-left" style="width:50%;">
-                                        <?php
-                                        if($sales_tax_invoice->so_id != 0):
-                                        echo strtoupper($sales_tax_invoice->so_no);
-                                        else:
-                                        echo $sales_tax_invoice->other_refrence;
-                                        endif;
+                                @if($sales_tax_invoice->so_id != 0 || trim($sales_tax_invoice->other_refrence ?? '') != '')
+                                    <tr>
+                                        <th style="border:1px solid black;" class="text-left" style="width:50%; border: solid 1px;">SO NO.</th>
+                                        <td style="border:1px solid black;" class="text-left" style="width:50%;">
+                                            <?php
+                                            if($sales_tax_invoice->so_id != 0):
+                                                echo strtoupper($sales_tax_invoice->so_no);
+                                            else:
+                                                echo strtoupper($sales_tax_invoice->other_refrence);
+                                            endif;
+                                            ?>
+                                        </td>
+                                    </tr>
+                                @endif
 
-                                        $currency = '-';
-                                        if ($sales_tax_invoice->currency != 0):
-                                            $currency = $sales_tax_invoice->currencyRelation->curreny;
-                                            $currency_rate = $sales_tax_invoice->currency_rate;
-                                        endif;
-                                        ?>
-                                    </td>
-                                </tr>
-
-
-                                @if($sales_tax_invoice->so_id != 0):
+                                @if($sales_tax_invoice->so_id != 0 && trim($sales_order->other_refrence ?? '') != '')
                                     <tr>
                                         <th style="border:1px solid black;" class="text-left" style="width:50%; border: solid 1px;">OTHER REFRENCE</th>
                                         <td style="border:1px solid black;" class="text-left" style="width:50%;"><?php echo strtoupper($sales_order->other_refrence);?></td>
                                     </tr>
                                 @endif
-                                <tr>
-                                    <th style="border:1px solid black;" class="text-left" style="border: solid 1px;">PLACE OF SUPPLY</th>
-                                    <td style="border:1px solid black;" class="text-left">{!! $sales_tax_invoice->description !!}</td>
-                                </tr>
-                                <tr>
-                                    <th style="border:1px solid black;" class="text-left" style="border: solid 1px;">CURRENCY</th>
-                                    <td style="border:1px solid black;" class="text-left">{!! $currency !!}</td>
-                                </tr>
+
+                                @if(trim($sales_tax_invoice->description ?? '') != '')
+                                    <tr>
+                                        <th style="border:1px solid black;" class="text-left" style="border: solid 1px;">PLACE OF SUPPLY</th>
+                                        <td style="border:1px solid black;" class="text-left">{!! $sales_tax_invoice->description !!}</td>
+                                    </tr>
+                                @endif
+
+                                @if($sales_tax_invoice->currency != 0)
+                                    <tr>
+                                        <th style="border:1px solid black;" class="text-left" style="border: solid 1px;">CURRENCY</th>
+                                        <td style="border:1px solid black;" class="text-left">{!! $currency !!}</td>
+                                    </tr>
+                                @endif
                                 </tbody>
                             </table>
                         </div>
@@ -255,7 +263,7 @@ $AmountInWordsMain =0;
                                             <td style="border:1px solid black;"> {{ $count++ }} </td>
                                             <td style="border:1px solid black;">{{ CommonHelper::get_item_name($row->item_id) }}</td>
                                             <td style="border:1px solid black;">{{ $row->hs_code_id }}</td>
-                                            <td style="border:1px solid black;">{{ $row->qty/$row->final_pack_size }}</td>
+                                            <td style="border:1px solid black;">{{ ($row->final_pack_size > 0) ? number_format($row->qty / $row->final_pack_size,2) : '' }}</td>
                                             {{-- <td style="border:1px solid black;">{{ $row->color }}</td> --}}
                                             <td style="border:1px solid black;">{{ CommonHelper::get_uom_name($row->uom) ??  CommonHelper::get_uom($row->item_id) }}</td>
                                             <td class="text-right" style="border:1px solid black;">{{ $row->qty }}</td>
@@ -455,19 +463,14 @@ $AmountInWordsMain =0;
                         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="margin-top:40px;">
                             <div class="container-fluid">
                                 <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 ">
-                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center">
+                                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 text-center">
                                         <h6 class="signature_bor">Prepared By: </h6>
                                         <b> <p><?php echo strtoupper($sales_tax_invoice->username)?></p></b>
                                     </div>
-                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center">
-                                        <h6 class="signature_bor">Approved By:</h6>
-                                        <b>   <p><?php echo strtoupper($sales_tax_invoice->approve_user_1)  ?></p></b>
+                                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 text-center">
+                                      
+                                          <h6 class="signature_bor">Signature:</h6>
                                     </div>
-                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center">
-                                        <h6 class="signature_bor">Approved By:</h6>
-                                        <b>  <p><?php echo strtoupper($sales_tax_invoice->approve_user_2)  ?></p></b>
-                                    </div>
-
                                 </div>
                             </div>
                         </div>

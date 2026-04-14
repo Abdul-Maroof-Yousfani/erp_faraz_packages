@@ -1500,9 +1500,9 @@ class SalesController extends Controller
             FROM sales_tax_invoice_data a
 
             LEFT JOIN bundles b ON a.bundles_id = b.id
-            JOIN subitem s ON s.id = a.item_id
-            JOIN uom u ON u.id = a.uom
-            JOIN packaging_type pt ON pt.id = s.primary_pack_type
+            LEFT JOIN subitem s ON s.id = a.item_id
+            LEFT JOIN uom u ON u.id = a.uom
+            LEFT JOIN packaging_type pt ON pt.id = s.primary_pack_type
 
             WHERE a.status = 1
             AND a.master_id = "' . $id . '"
@@ -1558,6 +1558,7 @@ class SalesController extends Controller
 
     public function PrintSalesTaxInvoiceDirect()
     {
+
         $id = Input::get('id');
         $sales_tax_invoice = new SalesTaxInvoice();
         $sales_tax_invoice = $sales_tax_invoice->SetConnection('mysql2');
@@ -1568,25 +1569,62 @@ class SalesController extends Controller
 //        $sales_tax_invoice_data=$sales_tax_invoice_data->where('master_id',$id)->get();
 
 
-        $sales_tax_invoice_data = DB::Connection('mysql2')->select('select a.item_id,a.qty,a.rate,a.tax as tax ,a.tax_amount,a.amount,a.gd_no,a.bundles_id,a.so_data_id,
-        a.description,b.rate as bundle_rate, b.amount as bundle_amount , b.discount_percent as b_percent, b.discount_amount as b_dis_amount, b.net_amount as b_net, b.product_name, b.qty as bqty
-        ,b.bundle_unit,a.so_type,a.dn_data_ids, a.sales_tax_further, a.sales_tax_further_per, pt.type, s.pack_size, s.hs_code_id, s.primary_pack_type, s.color
-        from sales_tax_invoice_data  a
-        left join
-        bundles b
-        on
-        a.bundles_id=b.id
-        JOIN subitem AS s ON s.id = a.item_id
-        JOIN packaging_type AS pt ON pt.id = s.primary_pack_type
-        where a.status=1
-        and a.master_id  ="' . $id . '"
-        ');
+        $sales_tax_invoice_data = DB::Connection('mysql2')->select('
+            SELECT 
+                a.item_id,
+                a.uom,
+                a.qty,
+                a.rate,
+                a.tax as tax,
+                a.tax_amount,
+                a.amount,
+                a.gd_no,
+                a.bundles_id,
+                a.so_data_id,
+                a.description,
+                b.rate as bundle_rate,
+                b.amount as bundle_amount,
+                b.discount_percent as b_percent,
+                b.discount_amount as b_dis_amount,
+                b.net_amount as b_net,
+                b.product_name,
+                b.qty as bqty,
+                b.bundle_unit,
+                a.so_type,
+                a.dn_data_ids,
+                a.sales_tax_further,
+                a.sales_tax_further_per,
+                pt.type,
+                s.pack_size,
+                s.secondary_pack_size,
+                s.hs_code_id,
+                s.primary_pack_type,
+                s.color,
+
+                -- dynamic pack size based on UOM match
+                CASE 
+                    WHEN a.uom = s.uom2 AND s.uom2 IS NOT NULL 
+                        THEN s.secondary_pack_size
+                    ELSE s.pack_size
+                END as final_pack_size
+
+            FROM sales_tax_invoice_data a
+
+            LEFT JOIN bundles b ON a.bundles_id = b.id
+            LEFT JOIN subitem s ON s.id = a.item_id
+            LEFT JOIN uom u ON u.id = a.uom
+            LEFT JOIN packaging_type pt ON pt.id = s.primary_pack_type
+
+            WHERE a.status = 1
+            AND a.master_id = "' . $id . '"
+            ');
 
 
 
         $AddionalExpense = DB::Connection('mysql2')->table('addional_expense_sales_tax_invoice')->where('main_id', $id);
         $sales_tax_invoice_data_other = DB::Connection('mysql2')->table('sales_tax_invoice_data')->where('master_id', $id)->get();
 
+        // dd(['sales_tax_invoice_data' => $sales_tax_invoice_data, 'sales_tax_invoice_data_other' => $sales_tax_invoice_data_other]);
         return view('Sales.AjaxPages.PrintSalesTaxInvoiceDirect', compact('sales_tax_invoice', 'sales_tax_invoice_data', 'AddionalExpense', 'id'));
     }
 

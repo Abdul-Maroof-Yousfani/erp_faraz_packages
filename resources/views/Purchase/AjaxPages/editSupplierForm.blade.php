@@ -102,10 +102,8 @@ if ($accType == 'client') {
                                                                     </div>
                                                                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                         <label>Address</label>
-                                                                        <span
-                                                                            class="rflabelsteric"><strong>*</strong></span>
                                                                         <input id="Address" name="address" type="text"
-                                                                            class="form-control requiredField" required
+                                                                            class="form-control"
                                                                             value="{{ $supplier->address }}">
                                                                     </div>
 
@@ -145,28 +143,24 @@ if ($accType == 'client') {
                                                                 <div class="row">
                                                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-3">
                                                                         <label>NTN/CNIC</label>
-                                                                        <span
-                                                                            class="rflabelsteric"><strong>*</strong></span>
                                                                         <input name="ntn" id="NTN/CNIC" type="text"
-                                                                            class="form-control requiredField" required
+                                                                            class="form-control"
                                                                             value="{{ $supplier->ntn }}" onkeyup="validateField('3', 'NTN/CNIC')">
                                                                     </div>
                                                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-3">
                                                                         <label>Sales Tax Status</label>
-                                                                        <span
-                                                                            class="rflabelsteric"><strong>*</strong></span>
                                                                         <div class="radio_select">
                                                                             <input type="radio" name="register_sales_tax"
                                                                                 id="register_sales_tax1" value="1"
                                                                                 @if($supplier->register_sales_tax == 1)
-                                                                                checked @endif class="requiredField" />
+                                                                                checked @endif />
                                                                             <label
                                                                                 for="register_sales_tax1">Registered</label>
 
                                                                             <input type="radio" name="register_sales_tax"
                                                                                 id="register_sales_tax2" value="2"
                                                                                 @if($supplier->register_sales_tax == 2)
-                                                                                checked @endif class="requiredField" />
+                                                                                checked @endif />
                                                                             <label
                                                                                 for="register_sales_tax2">Unregistered</label>
                                                                         </div>
@@ -191,20 +185,18 @@ if ($accType == 'client') {
                                                                 <div class="row">
                                                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-3">
                                                                         <label>Name</label>
-                                                                        <span
-                                                                            class="rflabelsteric"><strong>*</strong></span>
                                                                         <input id="Name" name="contact_person" type="text"
-                                                                            class="form-control requiredField" required
+                                                                            class="form-control"
                                                                             value="{{ $supplier->contact_person }}"
                                                                             onkeyup="validateField('1', 'Name')" />
                                                                     </div>
                                                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-3">
                                                                         <label>Phone Number</label>
                                                                         <span
-                                                                            class="rflabelsteric"><strong>*</strong></span>
+                                                                            class="rflabelsteric"><strong></strong></span>
                                                                         <input id="Phone_Number" name="contact_person_no"
-                                                                            type="text" class="form-control  requiredField"
-                                                                            required
+                                                                            type="text" class="form-control"
+                                                                            
                                                                             value="{{ $supplier->contact_person_no }}"
                                                                             onkeyup="validateField('2', 'Phone_Number')" />
                                                                     </div>
@@ -252,8 +244,6 @@ if ($accType == 'client') {
                                                                 <div class="row">
                                                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-3">
                                                                         <label>Agreed Payment Terms</label>
-                                                                        <span
-                                                                            class="rflabelsteric"><strong>*</strong></span>
                                                                         <!-- <select onchange="" name="Vendor_Type" id="Agreed_Payment_Terms" class="form-control requiredField select2">
                                                                             <option value="">Select Account</option>
                                                                             <option value="">Select Account</option>
@@ -263,18 +253,15 @@ if ($accType == 'client') {
                                                                             <input type="radio"
                                                                                 @if($supplier->terms_of_payment == 1) checked
                                                                                 @endif name="term" value="1"
-                                                                                class="form-control requiredField"
-                                                                                required /><label>Advance</label>
+                                                                                class="form-control" /><label>Advance</label>
                                                                             <input type="radio"
                                                                                 @if($supplier->terms_of_payment == 2) checked
                                                                                 @endif name="term" value="2"
-                                                                                class="form-control requiredField"
-                                                                                required /><label>Against Delivery</label>
+                                                                                class="form-control" /><label>Against Delivery</label>
                                                                             <input type="radio"
                                                                                 @if($supplier->terms_of_payment == 3) checked
                                                                                 @endif name="term" value="3"
-                                                                                class="form-control requiredField"
-                                                                                required /><label>Credit</label>
+                                                                                class="form-control" /><label>Credit</label>
                                                                         </div>
                                                                     </div>
 
@@ -287,21 +274,17 @@ if ($accType == 'client') {
 
                                                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-3">
                                                                         <label>Bank Account Title</label>
-                                                                        <span
-                                                                            class="rflabelsteric"><strong>*</strong></span>
-                                                                        <input id="Bank_Account_Title" name="account_title"
-                                                                            type="text" class="form-control requiredField"
-                                                                            required value="{{ $supplier->account_title }}">
+                                                                        <input name="account_title" id="Bank_Account_Title"
+                                                                            type="text" class="form-control"
+                                                                            value="{{ $supplier->account_title }}">
                                                                     </div>
                                                                 </div>
                                                                 <div class="row">
                                                                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                         <label>Bank Account Number</label>
-                                                                        <span
-                                                                            class="rflabelsteric"><strong>*</strong></span>
                                                                         <input name="account_no" id="Bank_Account_number"
-                                                                            type="text" class="form-control requiredField"
-                                                                            required value="{{ $supplier->account_no }}" onkeyup="validateField('3', 'Bank_Account_number')">
+                                                                            type="text" class="form-control"
+                                                                            value="{{ $supplier->account_no }}" onkeyup="validateField('3', 'Bank_Account_number')">
                                                                     </div>
 
                                                                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
@@ -312,11 +295,9 @@ if ($accType == 'client') {
                                                                     </div>
                                                                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                         <label>Bank Name and Branch</label>
-                                                                        <span
-                                                                            class="rflabelsteric"><strong>*</strong></span>
                                                                         <input name="bank_name" id="Bank_Name_and_Branch"
-                                                                            type="text" class="form-control requiredField"
-                                                                            required value="{{ $supplier->bank_name }}">
+                                                                            type="text" class="form-control"
+                                                                            value="{{ $supplier->bank_name }}">
                                                                     </div>
 
                                                                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">

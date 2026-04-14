@@ -182,9 +182,10 @@ if (!empty($row->bill_date) && !empty($row->due_date)) {
                                             <?php echo CommonHelper::get_subitem_name($row2->sub_item); ?>
                                             <?php if (!empty($row2->do_no) || !empty($row2->godown_no)) { ?>
                                                 <div style="font-size:11px; color:#444;">
-                                                    <?php if (!empty($row2->do_no)) { ?>DO No: <?php echo $row2->do_no; ?><?php } ?>
-                                                    <?php if (!empty($row2->godown_no)) { ?> &nbsp; Godown: <?php echo $row2->godown_no; ?><?php } ?>
+                                                    <?php if (!empty($row2->do_no)) { ?>DO No: <?php echo $row2->do_no; ?><?php } ?> 
+                                                    
                                                 </div>
+                                                <div style="font-size:11px; color:#444;"><?php if (!empty($row2->godown_no)) { ?>Godown No: <?php echo $row2->godown_no; ?><?php } ?></div>
                                             <?php } ?>
                                         </td>
                                         <td><?php echo number_format((float) $row2->bag_qty, 0); ?></td>
@@ -340,22 +341,14 @@ if (!empty($row->bill_date) && !empty($row->due_date)) {
                             <div class="row">
                                 <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-center">
+                                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 text-center">
                                             <h6 class="signature_bor">Prepared By: </h6>
                                             <b>   <p><?php echo strtoupper($username);  ?></p></b>
                                         </div>
-                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-center">
-                                            <h6 class="signature_bor">Checked By:</h6>
-                                            <b>   <p></p></b>
-                                        </div>
-                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-center">
-                                            <h6 class="signature_bor">Entry By:</h6>
-                                            <b>  <p></p></b>
-                                        </div>
-                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-center">
-                                            <h6 class="signature_bor">Approved By</h6>
-                                            <b>  <p><?php echo strtoupper($approve_2)?></p></b>
-
+                                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 text-center">
+                                         
+                                            <p>____________________</p>
+                                               <h6 class="signature_bor">Signature:</h6>
                                         </div>
                                     </div>
                                 </div>

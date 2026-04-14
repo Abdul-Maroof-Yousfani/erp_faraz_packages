@@ -319,6 +319,10 @@ class SalesAddDetailControler extends Controller
 
     public function addCreditCustomerDetail(Request $request)
     {
+        $request->validate([
+            'customer_name' => 'required',
+            'contact_no' => 'required',
+        ]);
 
         CommonHelper::companyDatabaseConnection($_GET['m']);
 
@@ -460,7 +464,10 @@ class SalesAddDetailControler extends Controller
 
     public function updateCreditCustomerDetail(Request $request)
     {
-
+        $request->validate([
+            'customer_name' => 'required',
+            'contact_no' => 'required',
+        ]);
 
         CommonHelper::companyDatabaseConnection($_GET['m']);
 

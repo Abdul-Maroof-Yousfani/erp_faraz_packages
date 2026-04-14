@@ -47,7 +47,7 @@ $delete=ReuseableCode::check_rights(38);
                 <td rowspan="{{ $detail_count }}" class="text-center">{{ $counter++ }}</td>
                 <td rowspan="{{ $detail_count }}" title="{{ $row->id }}" class="text-center">{{ strtoupper($row->pv_no ?? '-') }}</td>
                 <td rowspan="{{ $detail_count }}" class="text-center">{{ CommonHelper::changeDateFormat($row->pv_date ?? null) }}</td>
-                <td rowspan="{{ $detail_count }}" title="{{ $row->id }}" class="text-center">
+                <td rowspan="{{ $detail_count }}" title="{{ $row->id }}" class="text-center hide">
                     {{ strtoupper($row->grn_no ?? '-') }}<br>{{ $grn_date }}
                 </td>
                 <td rowspan="{{ $detail_count }}" class="text-center">{{ $row->slip_no ?? '-' }}</td>
@@ -78,7 +78,6 @@ $delete=ReuseableCode::check_rights(38);
              <td class="text-right">{{ CommonHelper::get_item_name($detail->sub_item ?? null) ?? '-' }}</td>
             <td class="text-right">{{ number_format($detail->rate ?? 0, 2) }}</td>
             <td class="text-right">{{ number_format($detail->qty ?? 0, 2) }}</td>
-            <td class="text-right">{{ number_format($detail->amount ?? 0, 2) }}</td>
             <!-- Action column – shown on every row or only first? (your original shows on every) -->
             @if($index === 0)
 
@@ -128,9 +127,19 @@ $delete=ReuseableCode::check_rights(38);
     @endforelse
 @endforeach
 
+@php 
+$total_qty = $purchase_voucher->sum(function($row) {
+    $connection = DB::connection('mysql2');
+    return $connection->table('new_purchase_voucher_data')
+        ->where('master_id', $row->id)
+        ->sum('qty') ?? 0;
+});
+@endphp 
 <!-- Grand Total Row -->
 <tr class="font-weight-bold">
-    <td colspan="8" class="text-right">Total</td>
+    <td colspan="7" class="text-right">Total</td>
     <td class="text-right">PKR {{ number_format($total, 2) }}</td>
-    <td colspan="4"></td> <!-- adjust colspan to match remaining columns -->
+    <td colspan="2"></td> <!-- adjust colspan to match remaining columns -->
+    <td class="text-right">Qty: {{ number_format($total_qty, 2) }}</td>
+    <td colspan="3"></td> <!-- adjust colspan to match remaining columns -->
 </tr>

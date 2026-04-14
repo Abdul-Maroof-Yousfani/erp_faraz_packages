@@ -115,11 +115,11 @@ class PurchaseDataCallController extends Controller
             ?>
             <tr id="<?php echo $row->s_id ?>">
                 <td class="text-center"><?php echo $counter++; ?></td>
-                <td class="text-center"><?php echo $row->vendor_code; ?></td>
-                <td class="text-center"><?php echo strtoupper($row->name); ?></td>
-                <td class="text-center"><?php echo $row->address ?></td>
-                <td class="text-center"><?php echo  $row->contact_person ?></td>
-                <td class="text-center"><?php echo  $row->mobile_no ?></td>
+                <td class="text-center"><?php echo $row->vendor_code ?: 'N/A'; ?></td>
+                <td class="text-center"><?php echo strtoupper($row->name ?: 'N/A'); ?></td>
+                <td class="text-center"><?php echo $row->address ?: 'N/A' ?></td>
+                <td class="text-center"><?php echo  $row->contact_person ?: 'N/A' ?></td>
+                <td class="text-center"><?php echo  $row->mobile_no ?: 'N/A' ?></td>
                 <td class="text-center">
                     <div class="dropdown">
                         <button class="drop-bt dropdown-toggle"type="button" data-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-ellipsis-vertical"></i></button>

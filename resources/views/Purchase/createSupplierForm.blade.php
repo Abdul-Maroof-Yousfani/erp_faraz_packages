@@ -64,8 +64,7 @@ if ($accType == 'client') {
 
                                                                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                     <label>Account Head :</label>
-                                                                    <span class="rflabelsteric"><strong>*</strong></span>
-                                                                    <select onchange="get_nature_type()" name="account_head" id="account_id" class="form-control requiredField select2" required>
+                                                                    <select onchange="get_nature_type()" name="account_head" id="account_id" class="form-control select2">
                                                                         <option value="">Select Account</option>
                                                                         @foreach($accounts as $key => $y)
                                                                             <option value="{{ $y->code}}">{{ $y->code . ' ---- ' . $y->name}}</option>
@@ -81,8 +80,7 @@ if ($accType == 'client') {
                                                                     </div>
                                                                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                         <label>Address</label>
-                                                                        <span class="rflabelsteric"><strong>*</strong></span>
-                                                                        <input id="Address" type="text" name="address"  class="form-control requiredField" required value="">
+                                                                        <input id="Address" type="text" name="address"  class="form-control" value="">
                                                                     </div>
 
                                                                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
@@ -114,15 +112,13 @@ if ($accType == 'client') {
                                                                 <div class="row">
                                                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-3">
                                                                         <label>NTN/CNIC</label>
-                                                                        <span class="rflabelsteric"><strong>*</strong></span>
-                                                                        <input id="NTN/CNIC" type="text" name="ntn"  class="form-control requiredField" required value="" onkeyup="validateField('3', 'NTN/CNIC')">
+                                                                        <input id="NTN/CNIC" type="text" name="ntn"  class="form-control" value="" onkeyup="validateField('3', 'NTN/CNIC')">
                                                                     </div>
                                                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-3">
                                                                         <label>Sales Tax Status</label>
-                                                                        <span class="rflabelsteric"><strong>*</strong></span>
                                                                         <div class="radio_select">
-                                                                            <input type="radio" value="1" name="register_sales_tax" class="form-control requiredField" required  /><label>Registered</label>
-                                                                            <input type="radio" value="2" name="register_sales_tax" class="form-control requiredField" required  checked /><label>Unregistered</label>
+                                                                            <input type="radio" value="1" name="register_sales_tax" class="form-control"   /><label>Registered</label>
+                                                                            <input type="radio" value="2" name="register_sales_tax" class="form-control"   checked /><label>Unregistered</label>
                                                                         </div>
                                                                     </div>
                                                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-3">
@@ -142,13 +138,11 @@ if ($accType == 'client') {
                                                                 <div class="row">
                                                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-3">
                                                                         <label>Name</label>
-                                                                        <span class="rflabelsteric"><strong>*</strong></span>
-                                                                        <input id="Name" type="text" name="contact_person"  class="form-control requiredField" required value="" onkeyup="validateField('1', 'Name')" />
+                                                                        <input id="Name" type="text" name="contact_person"  class="form-control" value="" onkeyup="validateField('1', 'Name')" />
                                                                     </div>
                                                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-3">
                                                                         <label>Phone Number</label>
-                                                                        <span class="rflabelsteric"><strong>*</strong></span>
-                                                                        <input id="Phone_Number" name="contact_person_no"  type="text" class="form-control  requiredField" required value="" onkeyup="validateField('2', 'Phone_Number')" />
+                                                                        <input id="Phone_Number" name="contact_person_no"  type="text" class="form-control" value="" onkeyup="validateField('2', 'Phone_Number')" />
                                                                     </div>
                                                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-3">
                                                                         <label>Email:</label>
@@ -180,16 +174,15 @@ if ($accType == 'client') {
                                                                 <div class="row">
                                                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-3">
                                                                         <label>Agreed Payment Terms</label>
-                                                                        <span class="rflabelsteric"><strong>*</strong></span>
                                                                         <!-- <select onchange="" name="Vendor_Type" id="Agreed_Payment_Terms" class="form-control requiredField select2">
                                                                             <option value="">Select Account</option>
                                                                             <option value="">Select Account</option>
                                                                             <option value="">Select Account</option>
                                                                         </select> -->
                                                                         <div class="radio_select">
-                                                                            <input type="radio" name="term" value="1" class="form-control requiredField" required  /><label>Advance</label>
-                                                                            <input type="radio" name="term" value="2" class="form-control requiredField" required  checked /><label>Against Delivery</label>
-                                                                            <input type="radio" name="term" value="3" class="form-control requiredField" required  checked /><label>Credit</label>
+                                                                            <input type="radio" name="term" value="1" class="form-control"   /><label>Advance</label>
+                                                                            <input type="radio" name="term" value="2" class="form-control"   checked /><label>Against Delivery</label>
+                                                                            <input type="radio" name="term" value="3" class="form-control"   checked /><label>Credit</label>
                                                                         </div>
                                                                     </div>
 
@@ -200,15 +193,13 @@ if ($accType == 'client') {
 
                                                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-3">
                                                                         <label>Bank Account Title</label>
-                                                                        <span class="rflabelsteric"><strong>*</strong></span>
-                                                                        <input name="account_title"  id="Bank_Account_Title" type="text" class="form-control requiredField" required value="">
+                                                                        <input name="account_title"  id="Bank_Account_Title" type="text" class="form-control" value="">
                                                                     </div>
                                                                 </div>
                                                                 <div class="row">
                                                                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                         <label>Bank Account Number</label>
-                                                                        <span class="rflabelsteric"><strong>*</strong></span>
-                                                                        <input name="account_no"  id="Bank_Account_number" type="text" class="form-control requiredField" required value="" onkeyup="validateField('3','Bank_Account_number')">
+                                                                        <input name="account_no"  id="Bank_Account_number" type="text" class="form-control" value="" onkeyup="validateField('3','Bank_Account_number')">
                                                                     </div>
                                                                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                         <label>IBAN</label>
@@ -216,8 +207,7 @@ if ($accType == 'client') {
                                                                     </div>
                                                                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                             <label>Bank Name and Branch</label>
-                                                                        <span class="rflabelsteric"><strong>*</strong></span>
-                                                                        <input name="bank_name"  id="Bank_Name_and_Branch" type="text" class="form-control requiredField" required value="">
+                                                                        <input name="bank_name"  id="Bank_Name_and_Branch" type="text" class="form-control" value="">
                                                                     </div>
 
                                                                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">

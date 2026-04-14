@@ -64,7 +64,7 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
                                                                 </div>
                                                                 <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                     <label>Address</label>
-                                                                    <p id="">{{ $supplier->address }}</p>
+                                                                    <p id="">{{ $supplier->address ?? 'N/A' }}</p>
                                                                 </div>
         
                                                                 <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">

@@ -57,8 +57,7 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
                                                             <div class="row">    
                                                                 <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                 <label>Account Head :</label>
-                                                                <span class="rflabelsteric"><strong>*</strong></span>
-                                                                <select onchange="get_nature_type()" name="account_head" id="account_id" class="form-control requiredField select2">
+                                                                <select onchange="get_nature_type()" name="account_head" id="account_id" class="form-control select2">
                                                                     <option value="">Select Account</option>
                                                                     @foreach($accounts as $key => $y)
                                                                         <option value="{{ $y->code}}">{{ $y->code .' ---- '. $y->name}}</option>
@@ -124,8 +123,7 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
                                                                 </div>
                                                                 <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                     <label>Country</label>
-                                                                    <span class="rflabelsteric"><strong>*</strong></span>
-                                                                    <input id="Country" type="text" name="country" class="form-control  requiredField" value="">
+                                                                    <input id="Country" type="text" name="country" class="form-control" value="">
                                                                 </div>
                                                                 <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3"></div>
                                                                 <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3"></div>
@@ -163,8 +161,7 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
                                                             <div class="row">
                                                                 <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                     <label>Name</label>
-                                                                    <span class="rflabelsteric"><strong>*</strong></span>
-                                                                    <input id="Name" type="text" name="customer_name" class="form-control" value="" required>
+                                                                    <input id="Name" type="text" name="contact_person" class="form-control" value="">
                                                                 </div>
                                                                 <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                     <label>Cell No</label>
@@ -190,26 +187,23 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
                                                             <div class="row">
                                                                 <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                     <label>NTN/CNIC</label>
-                                                                    <span class="rflabelsteric"><strong>*</strong></span>
-                                                                    <input id="NTN/CNIC" type="text" name="ntn" class="form-control requiredField" value="">
+                                                                    <input id="NTN/CNIC" type="text" name="ntn" class="form-control" value="">
                                                                 </div>
         
                                                                 <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                     <label>ATL Status</label>
-                                                                    <span class="rflabelsteric"><strong>*</strong></span>
                                                                     <div class="radio_select">
-                                                                        <input type="radio" name="atl_status" value="1" class="form-control requiredField"  /><label>Active</label>
-                                                                        <input type="radio" name="atl_status" value="2" class="form-control requiredField"  checked /><label>In Active</label>
+                                                                        <input type="radio" name="atl_status" value="1" class="form-control"  /><label>Active</label>
+                                                                        <input type="radio" name="atl_status" value="2" class="form-control"  checked /><label>In Active</label>
                                                                     </div>
                                                                 </div>
         
         
                                                                 <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                     <label>Sales Tax Status</label>
-                                                                    <span class="rflabelsteric"><strong>*</strong></span>
                                                                     <div class="radio_select">
-                                                                        <input type="radio" name="regd_in_sales_tax" value="1" class="form-control requiredField"  /><label>Registered</label>
-                                                                        <input type="radio" name="regd_in_sales_tax" value="2" class="form-control requiredField"  checked /><label>Unregistered</label>
+                                                                        <input type="radio" name="regd_in_sales_tax" value="1" class="form-control"  /><label>Registered</label>
+                                                                        <input type="radio" name="regd_in_sales_tax" value="2" class="form-control"  checked /><label>Unregistered</label>
                                                                     </div>
                                                                 </div>
                                                                 <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3"></div>
@@ -217,21 +211,19 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
                                                             <div class="row">
                                                                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
                                                                     <label>Status U/S 236G or H</label>
-                                                                    <span class="rflabelsteric"><strong>*</strong></span>
                                                                     <div class="radio_select">
-                                                                        <input type="radio" name="status_us_236g_h" value="1" class="form-control requiredField"  /><label>Manufacturer</label>
-                                                                        <input type="radio" name="status_us_236g_h" value="2" class="form-control requiredField"  checked /><label>Wholesaler/ Distributor</label>
-                                                                        <input type="radio" name="status_us_236g_h" value="3" class="form-control requiredField"  checked /><label>Retailer/ Others</label>
+                                                                        <input type="radio" name="status_us_236g_h" value="1" class="form-control"  /><label>Manufacturer</label>
+                                                                        <input type="radio" name="status_us_236g_h" value="2" class="form-control"  checked /><label>Wholesaler/ Distributor</label>
+                                                                        <input type="radio" name="status_us_236g_h" value="3" class="form-control"  checked /><label>Retailer/ Others</label>
                                                                     </div>
                                                                 </div>
         
                                                                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
                                                                     <label>Payment Terms</label>
-                                                                    <span class="rflabelsteric"><strong>*</strong></span>
                                                                     <div class="radio_select">
-                                                                        <input type="radio" name="term" value="1" class="form-control requiredField"  /><label>Advance</label>
-                                                                        <input type="radio" name="term" value="2" class="form-control requiredField"  checked /><label>Against Delivery</label>
-                                                                        <input type="radio" name="term" value="3" class="form-control requiredField"  checked /><label>Credit</label>
+                                                                        <input type="radio" name="term" value="1" class="form-control"  /><label>Advance</label>
+                                                                        <input type="radio" name="term" value="2" class="form-control"  checked /><label>Against Delivery</label>
+                                                                        <input type="radio" name="term" value="3" class="form-control"  checked /><label>Credit</label>
                                                                     </div>
                                                                 </div>
                                                             </div>

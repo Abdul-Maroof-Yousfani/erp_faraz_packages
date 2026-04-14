@@ -406,8 +406,8 @@ use App\Helpers\PurchaseHelper;
                                         <b>   <p><?php //echo strtoupper($username);  ?></p></b>
                                     </div>
                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center">
-                                        <h6 class="signature_bor">Checked By:</h6>
-                                        <b>   <p><?php  ?></p></b>
+                                        <h6 class="signature_bor">Signature</h6>
+                                        <input type="text" name="signature" class="form-control" placeholder="Signature" style="border:none; border-bottom:1px solid #000; border-radius:0; box-shadow:none; margin-top:10px;">
                                     </div>
                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center">
                                         <h6 class="signature_bor">Approved By:</h6>

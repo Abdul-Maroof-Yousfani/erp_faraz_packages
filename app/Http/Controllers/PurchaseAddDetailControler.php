@@ -426,7 +426,10 @@ class PurchaseAddDetailControler extends Controller
 
     public function addSupplierDetail(Request $request)
     {
-
+        $request->validate([
+            'vendor_name' => 'required',
+            'mobile_no' => 'required',
+        ]);
 
         $vendor_code = PurchaseHelper::generateVendorCode();
         $name = Input::get('vendor_name');
