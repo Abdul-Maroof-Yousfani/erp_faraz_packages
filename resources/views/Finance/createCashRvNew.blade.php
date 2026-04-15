@@ -110,13 +110,13 @@ $crv_no=CommonHelper::uniqe_no_for_rvs(date('y'),date('m'),2);
 														<td>
 															<select  style="width: 100%"  class="form-control requiredField select2" onchange="Datavalidate(this)" name="account_id[]" id="account_id">
 																<option value="">Select Account</option>
-																@foreach(CommonHelper::get_all_account_operat_with_unique_code('1-2') as $key => $y)
+																@foreach(CommonHelper::get_all_account_operat_with_unique_code('1-2-2') as $key => $y)
 																	<option value="{{ $y->id.',1,'.$y->code }}">{{ $y->code .' ---- '. $y->name }}</option>
 																@endforeach
 															</select>
 														</td>
 														<td>
-															<input placeholder="Debit" class="form-control d_amount_1 requiredField number_format" maxlength="15" min="0" type="text" name="c_amount[]" id="d_amount_1_1" onkeyup="sum('1')" value="" required="required"/>
+															<input placeholder="Debit" class="form-control d_amount_1 requiredField number_format" maxlength="15" min="0" type="text" name="c_amount[]" id="d_amount_1_1" onkeyup="sum('1');syncCashRvAmount()" onchange="syncCashRvAmount()" value="" required="required"/>
 														</td>
 													</tr>
 												</tbody>        
@@ -261,9 +261,22 @@ $crv_no=CommonHelper::uniqe_no_for_rvs(date('y'),date('m'),2);
 
 	<script>
 		$(document).ready(function(){
+			syncCashRvAmount();
 			$('.select2').select2();
 			//$('.number_format').number(true,2);
 		});
+
+		function syncCashRvAmount() {
+			var amount = $('#d_amount_1_1').val();
+
+			if ($('#c_amount_1_1').length) {
+				$('#c_amount_1_1').val(amount);
+			}
+
+			if (typeof sum === 'function') {
+				sum('1');
+			}
+		}
 	</script>
 
 	<script>
