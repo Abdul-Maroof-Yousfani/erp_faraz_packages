@@ -42,167 +42,183 @@ class PaymentVoucherDetails extends Controller
         $this->middleware('auth');
     }
 
-    public function insertBankPayment(Request $request)
-    {
-        //echo "<pre>";
-        //print_r($_POST); die;
-        DB::Connection('mysql2')->beginTransaction();
+     public function insertBankPayment(Request $request)
+        {
+            //echo "<pre>";
+            //print_r($_POST); die;
+            // dd($request->all());
+            DB::Connection('mysql2')->beginTransaction();
 
- 
-            $pv_no = CommonHelper::uniqe_no_for_pv(date('y'), date('m'), 1);
-            $payment = new NewPv();
-            $payment = $payment->SetConnection('mysql2');
-            $payment->pv_no = $pv_no;
-            $payment->pv_date = $request->pv_date_1;
-            $payment->bill_no = $request->slip_no_1;
-            $payment->bill_date = $request->bill_date;
-            $payment->cheque_no = $request->cheque_no_1;
-            $payment->cheque_date = $request->cheque_date_1;
-            $payment->payment_type = 1;
-            $payment->description = $request->description_1;
-            $payment->date = date('Y-m-d');
-            $payment->status = 1;
-            $payment->username = Auth::user()->name;
-            $payment->pv_status = 1;
-            $payment->save();
-            $master_id = $payment->id;
+            try {
+                $pv_no = CommonHelper::uniqe_no_for_pv(date('y'), date('m'), 1);
+                $payment = new NewPv();
+                $payment = $payment->SetConnection('mysql2');
+                $payment->pv_no = $pv_no;
+                $payment->pv_date = $request->pv_date_1;
+                $payment->bill_no = $request->slip_no_1;
+                $payment->bill_date = $request->bill_date;
+                $payment->cheque_no = $request->cheque_no_1;
+                $payment->cheque_date = $request->cheque_date_1;
+                $payment->payment_type = 1;
+                $payment->description = $request->description_1;
+                $payment->date = date('Y-m-d');
+                $payment->status = 1;
+                $payment->username = Auth::user()->name;
+                $payment->pv_status = 1;
+                $payment->save();
+                $master_id = $payment->id;
 
-            $account_data = $request->account_id;
-            $index = 0;
-            $total_amount = 0;
-            foreach ($account_data as $row):
+                $account_data = $request->account_id;
+                $index = 0;
+                $crindex = 0;
 
-                $pv_data = new NewPvData();
-                $pv_data = $pv_data->SetConnection('mysql2');
-                $pv_data->master_id = $master_id;
-                $pv_data->pv_no = $pv_no;
-                $pv_data->pv_date = $request->pv_date_1;
+                $total_amount = 0;
+                foreach ($account_data as $row):
 
-                $acc_id = $row;
-                $acc_id = explode(',', $acc_id);
+                    $pv_data = new NewPvData();
+                    $pv_data = $pv_data->SetConnection('mysql2');
+                    $pv_data->master_id = $master_id;
+                    $pv_data->pv_no = $pv_no;
+                    $pv_data->pv_date = $request->pv_date_1;
 
-                // for income tax data
-                $income_tax_id = 0;
-                if ($acc_id[1] == 1):
+                    $acc_id = $row;
+                    $acc_id = explode(',', $acc_id);
 
-
-                    $income_tax = new IncomeTaxDeduction();
-                    $income_tax = $income_tax->SetConnection('mysql2');
-                    $income_tax->pvs_id = $master_id;
-                    $income_tax->pv_data_id = 0;
-                    $income_tax->pv_no = $pv_no;
-                    $income_tax->nature = $acc_id[2];
-                    $income_tax->tax_payment_section = $acc_id[3];
-                    $income_tax->amount = $acc_id[4];
-                    $income_tax->deduct_amount = $acc_id[5];
-                    $income_tax->income_tax_slab_id = $acc_id[6];
-                    $income_tax->supplier_id = $acc_id[7];
-                    $income_tax->save();
-                    $income_tax_id = $income_tax->id;
-                    $pv_data->tax_nature = 1;
-                    $pv_data->slab_id = $acc_id[6];
-                    $pv_data->income_master_id = $income_tax_id;
-                    $pv_data->taxtaion_rate = $acc_id[4];
-                    $pv_data->taxation_amount = $acc_id[5];
-                endif;
-                //end
-
-                $fbr = 0;
-                if ($acc_id[1] == 2):
-
-                    $pv_data->tax_nature = 2;
-                    $pv_data->slab_id = $acc_id[2];
-                    $pv_data->slab_id = $acc_id[2];
-                    $pv_data->taxtaion_rate = $acc_id[3];
-                    $pv_data->taxation_amount = $acc_id[4];
-                endif;
-                //end
+                    // for income tax data
+                    $income_tax_id = 0;
+                    // if ($acc_id[1] == 1):
 
 
-                $srb = 0;
-                if ($acc_id[1] == 3):
-
-                    $pv_data->tax_nature = 3;
-                    $pv_data->slab_id = $acc_id[2];
-                    $pv_data->taxtaion_rate = $acc_id[3];
-                    $pv_data->taxation_amount = $acc_id[4];
-                    $pv_data->percentage = $acc_id[5];
-                    $pv_data->exclusion = $acc_id[6];
-                endif;
-                //end
-
-
-                // pra
-
-                $srb = 0;
-                if ($acc_id[1] == 4):
-
-                    $pv_data->tax_nature = 4;
-                    $pv_data->slab_id = $acc_id[2];
-                    $pv_data->taxtaion_rate = $acc_id[3];
-                    $pv_data->taxation_amount = $acc_id[4];
-                    $pv_data->percentage = $acc_id[5];
-
-                endif;
-                //end
+                    //     $income_tax = new IncomeTaxDeduction();
+                    //     $income_tax = $income_tax->SetConnection('mysql2');
+                    //     $income_tax->pvs_id = $master_id;
+                    //     $income_tax->pv_data_id = 0;
+                    //     $income_tax->pv_no = $pv_no;
+                    //     $income_tax->nature = $acc_id[2];
+                    //     $income_tax->tax_payment_section = $acc_id[3];
+                    //     $income_tax->amount = $acc_id[4];
+                    //     $income_tax->deduct_amount = $acc_id[5];
+                    //     $income_tax->income_tax_slab_id = $acc_id[6];
+                    //     $income_tax->supplier_id = $acc_id[7];
+                    //     $income_tax->save();
+                    //     $income_tax_id = $income_tax->id;
+                    //     $pv_data->tax_nature = 1;
+                    //     $pv_data->slab_id = $acc_id[6];
+                    //     $pv_data->income_master_id = $income_tax_id;
+                    //     $pv_data->taxtaion_rate = $acc_id[4];
+                    //     $pv_data->taxation_amount = $acc_id[5];
+                    // endif;
+                    //end
 
 
-                //$desc = $request->desc;
-                // $sub_department_id = $request->sub_department_id;
-                //$paid_to = $request->paid_to;
-                $debit = $request->d_amount;
-                $credit = $request->c_amount;
+                    $fbr = 0;
+                    if ($acc_id[1] == 2):
 
-                //$desc = (count($desc) > 1) ? $desc[$index] : $desc[0];
-                // $sub_department_id = (count($sub_department_id) > 1) ? $sub_department_id[$index] : $sub_department_id[0];
-
-               if (isset($debit[$index]) && $debit[$index] > 0):
-                    $amount = $debit[$index];
-                    $debit_amount = $amount;
-                    $debit_amount = CommonHelper::check_str_replace($debit_amount);
-                    $total_amount += $debit_amount;
-                    $debit_credit = 1;
-                elseif (isset($credit[$index]) && $credit[$index] > 0):
-                    $amount = $credit[$index];
-                    $debit_credit = 0;
-                endif;
-
-                $pv_data->acc_id = $row;
-                $pv_data->sub_department_id = 0;
-                $pv_data->amount = CommonHelper::check_str_replace($amount);
-                $pv_data->debit_credit = $debit_credit;
-                $pv_data->description = '';
-                //                    $PaidTo = explode(',', $paid_to[$index]);
-//                    $pv_data->paid_to_id = $PaidTo[0];
-//                    $pv_data->paid_to_type = $PaidTo[1];
-                $pv_data->status = 1;
-                $pv_data->pv_status = 1;
+                        $pv_data->tax_nature = 2;
+                        $pv_data->slab_id = $acc_id[2];
+                        $pv_data->slab_id = $acc_id[2];
+                        $pv_data->taxtaion_rate = $acc_id[3];
+                        $pv_data->taxation_amount = $acc_id[4];
+                    endif;
+                    //end
 
 
-                $pv_data->save();
-                $pv_data_id = $pv_data->id;
+                    $srb = 0;
+                    if ($acc_id[1] == 3):
 
-                if ($income_tax_id > 0):
-                    $income_tax = new IncomeTaxDeduction();
-                    $income_tax = $income_tax->SetConnection('mysql2');
-                    $income_tax = $income_tax->find($income_tax_id);
-                    $income_tax->pv_data_id = $pv_data_id;
-                    $income_tax->save();
-                endif;
+                        $pv_data->tax_nature = 3;
+                        $pv_data->slab_id = $acc_id[2];
+                        $pv_data->taxtaion_rate = $acc_id[3];
+                        $pv_data->taxation_amount = $acc_id[4];
+                        $pv_data->percentage = $acc_id[5];
+                        $pv_data->exclusion = $acc_id[6];
+                    endif;
+                    //end
 
-                $index++;
-            endforeach;
 
-            $id = $master_id;
-            $m = Input::get('m');
-            FinanceHelper::audit_trail($pv_no, $request->pv_date_1, $total_amount, 2, 'Insert');
+                    // pra
+
+                    $srb = 0;
+                    if ($acc_id[1] == 4):
+
+                        $pv_data->tax_nature = 4;
+                        $pv_data->slab_id = $acc_id[2];
+                        $pv_data->taxtaion_rate = $acc_id[3];
+                        $pv_data->taxation_amount = $acc_id[4];
+                        $pv_data->percentage = $acc_id[5];
+
+                    endif;
+                    //end
+
+
+                    $desc = $request->desc;
+                    $sub_department_id = $request->sub_department_id;
+                    //$paid_to = $request->paid_to;
+                    $debit = $request->c_amount;
+                    $credit = $request->c_amount;
+
+                    // $desc = (count($desc) > 1) ? $desc[$index] : $desc[0] ;
+                    // $sub_department_id = (count($sub_department_id) > 1) ? $sub_department_id[$index] : $sub_department_id[0] ;
+                    
+                    // $debit = (count($debit) > 1) ? $debit[$index] : $debit[0] ;
+                    // $credit = (count($credit) > 1) ? $credit[$index] : $credit[0] ;
+
+                    if ($acc_id[1] == 1):
+                        $amount = $debit[$index];
+                        $debit_amount = $amount;
+                        $debit_amount = CommonHelper::check_str_replace($debit_amount);
+                        $total_amount += $debit_amount;
+
+                        $debit_credit = 1;
+                        $pv_data->description = $desc[$crindex];
+                        $crindex++;
+                    else:
+                        $amount = $credit[$index];
+                        $debit_credit = 0;
+                        $pv_data->description = $request->description_1;
+                    endif;
+                    $pv_data->acc_id = $acc_id[0];
+                    $pv_data->sub_department_id = 0;
+                    $pv_data->amount = CommonHelper::check_str_replace($amount);
+                    $pv_data->debit_credit = $debit_credit;
+                    
+
+                    $pv_data->status = 1;
+                    $pv_data->pv_status = 1;
+
+
+                    $pv_data->save();
+                    $pv_data_id = $pv_data->id;
+
+                    if ($income_tax_id > 0):
+                        $income_tax = new IncomeTaxDeduction();
+                        $income_tax = $income_tax->SetConnection('mysql2');
+                        $income_tax = $income_tax->find($income_tax_id);
+                        $income_tax->pv_data_id = $pv_data_id;
+                        $income_tax->save();
+                    endif;
+
+                    $index++;
+                endforeach;
+
+            $id=$master_id;
+            $m=Input::get('m');
+            FinanceHelper::audit_trail($pv_no,$request->pv_date_1,$total_amount,2,'Insert');
             $subject = 'New Bank Payment Voucher Created ' . $pv_no;
-            NotificationHelper::send_email('Bank Payment Voucher', 'Create', 26, $pv_no, $subject);
+            NotificationHelper::send_email('Bank Payment Voucher','Create',26,$pv_no,$subject);
             DB::Connection('mysql2')->commit();
-        
+            }
+            catch(\Exception $e)
+            {
+                DB::Connection('mysql2')->rollback();
+                echo "EROOR"; //die();
+                dd($e->getMessage());
 
-        return Redirect::to('finance/viewBankPaymentNewVoucherList?m=' . $m);
-    }
+            }
+
+            return Redirect::to('finance/viewBankPaymentNewVoucherList?m='.$m);
+
+        }
 
 
 
@@ -404,86 +420,105 @@ class PaymentVoucherDetails extends Controller
 
     public function insertCashPayment(Request $request)
     {
+            //        echo "<pre>";
+            //        print_r($_POST); die;
+        // dd($request->all());
         DB::Connection('mysql2')->beginTransaction();
 
         try {
 
-            $pv_no = CommonHelper::uniqe_no_for_pv(date('y'), date('m'), 2);
-            $payment = new NewPv();
-            $payment = $payment->SetConnection('mysql2');
-            $payment->pv_no = $pv_no;
-            $payment->pv_date = $request->pv_date_1;
-            $payment->bill_no = $request->slip_no_1;
-            $payment->bill_date = $request->bill_date;
+            $pv_no=CommonHelper::uniqe_no_for_pv(date('y'),date('m'),2);
+        $payment = new NewPv();
+        $payment=$payment->SetConnection('mysql2');
+        $payment->pv_no=$pv_no;
+        $payment->pv_date=$request->pv_date_1;
+        $payment->bill_no=$request->slip_no_1;
+        $payment->bill_date=$request->bill_date;
+        //        $payment->cheque_no=$request->cheque_no_1;
+        //        $payment->cheque_date=$request->cheque_date_1;
+        $payment->payment_type=2;
+        $payment->description=$request->description_1;
+        $payment->date=date('Y-m-d');
+        $payment->status=1;
+        $payment->username=Auth::user()->name;
+        $payment->pv_status=1;
+        $payment->save();
+        $master_id=$payment->id;
 
-            $payment->payment_type = 2;
-            $payment->description = $request->description_1;
-            $payment->date = date('Y-m-d');
-            $payment->status = 1;
-            $payment->username = Auth::user()->name;
-            $payment->pv_status = 1;
-            $payment->save();
-            $master_id = $payment->id;
+        $account_data=$request->account_id;
 
-            $account_data = $request->account_id;
-            $index = 0;
+        // dd($request->all());
+        $index=0;
+        $crindex=0;
 
-            $total_amount = 0;
-            $debit_credit = 0;
-            foreach ($account_data as $row):
+         $total_amount=0;
+        $debit_credit=0;
+        foreach($account_data as $row):
 
-                $pv_data = new NewPvData();
-                $pv_data = $pv_data->SetConnection('mysql2');
-                $pv_data->master_id = $master_id;
-                $pv_data->pv_no = $pv_no;
-                $pv_data->pv_date = $request->pv_date_1;
+            $pv_data=new NewPvData();
+            $pv_data=$pv_data->SetConnection('mysql2');
+            $pv_data->master_id=$master_id;
+            $pv_data->pv_no=$pv_no;
+            $pv_data->pv_date=$request->pv_date_1;
 
-                $acc_id = $row;
-                $acc_id = explode(',', $acc_id);
+            $acc_id=$row;
+            $acc_id=explode(',',$acc_id);
 
-                $desc = $request->desc;
-                $paid_to = $request->paid_to;
-                $debit = $request->d_amount;
-                $credit = $request->c_amount;
 
-                if ($debit[$index] > 0):
-                    $amount = $debit[$index];
-                    $debit_amount = $amount;
-                    $debit_amount = CommonHelper::check_str_replace($debit_amount);
-                    $total_amount += $debit_amount;
-                    $debit_credit = 1;
-                else:
-                    $amount = $credit[$index];
-                    $debit_credit = 0;
-                endif;
-                $pv_data->acc_id = $row;
-                $pv_data->amount = CommonHelper::check_str_replace($amount);
-                $pv_data->debit_credit = $debit_credit;
+            $desc=$request->desc;
+            $paid_to=$request->paid_to;
+            $debit=$request->c_amount;
+            $credit=$request->c_amount;
 
-                $pv_data->description = $desc[$index];
+            // $desc = (count($desc) > 1) ? $desc[$index] : $desc[0] ;
+            
+            // $debit = (count($debit) > 1) ? $debit[$index] : $debit[0] ;
+            // $credit = (count($credit) > 1) ? $credit[$index] : $credit[0] ;
 
-                $pv_data->status = 1;
-                $pv_data->pv_status = 1;
 
-                $pv_data->save();
-                $pv_data_id = $pv_data->id;
+           if ($acc_id[1] == 1):
+                $amount = $debit[$index];
 
-                $index++;
-            endforeach;
-            $id = $master_id;
-            $m = Input::get('m');
+                $debit_credit = 1;
+                $pv_data->description = $desc[$crindex];
+                $crindex++;
+            else:
+                $amount = $credit[$index];
+                $debit_credit = 0;
+                $pv_data->description = $request->description_1;
+              
+            endif;
+            $pv_data->acc_id=$acc_id[0];
+            $pv_data->amount=CommonHelper::check_str_replace($amount);
+            $pv_data->debit_credit=$debit_credit;
 
-            FinanceHelper::audit_trail($pv_no, $request->pv_date_1, $total_amount, 2, 'Insert');
-            $subject = 'New Cash Payment Voucher Created ' . $pv_no;
-            NotificationHelper::send_email('Cash Payment Voucher', 'Create', 26, $pv_no, $subject);
+
+            $pv_data->status=1;
+            $pv_data->pv_status=1;
+
+            $pv_data->save();
+            $pv_data_id=$pv_data->id;
+
+
+
+            $index++;
+        endforeach;
+        $id=$master_id;
+        $m=Input::get('m');
+
+       FinanceHelper::audit_trail($pv_no,$request->pv_date_1,$total_amount,2,'Insert');
+        $subject = 'New Cash Payment Voucher Created ' . $pv_no;
+        NotificationHelper::send_email('Cash Payment Voucher','Create',26,$pv_no,$subject);
             DB::Connection('mysql2')->commit();
-        } catch (\Exception $e) {
+        }
+        catch(\Exception $e)
+        {
             DB::Connection('mysql2')->rollback();
             echo "EROOR"; //die();
             dd($e->getMessage());
 
         }
-        return Redirect::to('finance/viewCashPaymentVoucherList?m=' . $m);
+     return Redirect::to('finance/viewCashPaymentVoucherList?m='.$m);
 
     }
 
@@ -1710,11 +1745,12 @@ class PaymentVoucherDetails extends Controller
         $Rvs->save();
         $master_id=$Rvs->id;
 
-        $account_data=$request->account_id;
-        $index=0;
+         $account_data = $request->account_id;
+        $index = 0;
+        $crindex = 0;
 
-        $total_amount=0;
-        foreach($account_data as $row):
+        $total_amount = 0;
+        foreach ($account_data as $row):
 
             $RvData=new NewRvdata();
             $RvData=$RvData->SetConnection('mysql2');
@@ -1722,36 +1758,124 @@ class PaymentVoucherDetails extends Controller
             $RvData->rv_no=$brv_no;
             //$JvData->pv_date=$request->pv_date_1;
 
-            $acc_id=$row;
-            $acc_id=explode(',',$acc_id);
+            $acc_id = $row;
+            $acc_id = explode(',', $acc_id);
 
-            $paid_to=$request->paid_to;
-            $desc=$request->desc;
-            $debit=$request->d_amount;
-            $credit=$request->c_amount;
+            // for income tax data
+            $income_tax_id = 0;
+            // if ($acc_id[1] == 1):
 
 
-            if ($debit[$index]>0):
-                $amount=$debit[$index];
-                $debit_amount=$amount;
-                $debit_amount=  CommonHelper::check_str_replace($debit_amount);
-                $total_amount+=$debit_amount;
-                $debit_credit=1;
-            else:
-                $amount=$credit[$index];
-                $debit_credit=0;
+            //     $income_tax = new IncomeTaxDeduction();
+            //     $income_tax = $income_tax->SetConnection('mysql2');
+            //     $income_tax->pvs_id = $master_id;
+            //     $income_tax->pv_data_id = 0;
+            //     $income_tax->pv_no = $pv_no;
+            //     $income_tax->nature = $acc_id[2];
+            //     $income_tax->tax_payment_section = $acc_id[3];
+            //     $income_tax->amount = $acc_id[4];
+            //     $income_tax->deduct_amount = $acc_id[5];
+            //     $income_tax->income_tax_slab_id = $acc_id[6];
+            //     $income_tax->supplier_id = $acc_id[7];
+            //     $income_tax->save();
+            //     $income_tax_id = $income_tax->id;
+            //     $pv_data->tax_nature = 1;
+            //     $pv_data->slab_id = $acc_id[6];
+            //     $pv_data->income_master_id = $income_tax_id;
+            //     $pv_data->taxtaion_rate = $acc_id[4];
+            //     $pv_data->taxation_amount = $acc_id[5];
+            // endif;
+            //end
+
+
+            $fbr = 0;
+            if ($acc_id[1] == 2):
+
+                $RvData->tax_nature = 2;
+                $RvData->slab_id = $acc_id[2];
+                $RvData->slab_id = $acc_id[2];
+                $RvData->taxtaion_rate = $acc_id[3];
+                $RvData->taxation_amount = $acc_id[4];
             endif;
-            $RvData->acc_id=$row;
-            $RvData->amount=CommonHelper::check_str_replace($amount);
-            $RvData->debit_credit=$debit_credit;
-            $PaidTo = explode(',',$paid_to[$index]);
-            $RvData->paid_to_id= $PaidTo[0];
-            $RvData->paid_to_type= $PaidTo[1];
-            $RvData->description=$desc[$index];
-            $RvData->status=1;
-            $RvData->rv_status=1;
+            //end
+
+
+            $srb = 0;
+            if ($acc_id[1] == 3):
+
+                $RvData->tax_nature = 3;
+                $RvData->slab_id = $acc_id[2];
+                $RvData->taxtaion_rate = $acc_id[3];
+                $RvData->taxation_amount = $acc_id[4];
+                $RvData->percentage = $acc_id[5];
+                $RvData->exclusion = $acc_id[6];
+            endif;
+            //end
+
+
+            // pra
+
+            $srb = 0;
+            if ($acc_id[1] == 4):
+
+                $RvData->tax_nature = 4;
+                $RvData->slab_id = $acc_id[2];
+                $RvData->taxtaion_rate = $acc_id[3];
+                $RvData->taxation_amount = $acc_id[4];
+                $RvData->percentage = $acc_id[5];
+
+            endif;
+            //end
+
+
+            $desc = $request->desc;
+            // $sub_department_id = $request->sub_department_id;
+            //$paid_to = $request->paid_to;
+            $debit = $request->c_amount;
+            $credit = $request->c_amount;
+
+            // $desc = (count($desc) > 1) ? $desc[$index] : $desc[0] ;
+            // $sub_department_id = (count($sub_department_id) > 1) ? $sub_department_id[$index] : $sub_department_id[0] ;
+            
+            // $debit = (count($debit) > 1) ? $debit[$index] : $debit[0] ;
+            // $credit = (count($credit) > 1) ? $credit[$index] : $credit[0] ;
+
+            if ($acc_id[1] == 1):
+                $amount = $debit[$index];
+                $debit_amount = $amount;
+                $debit_amount = CommonHelper::check_str_replace($debit_amount);
+                $total_amount += $debit_amount;
+
+                $debit_credit = 1;
+                $RvData->description = $request->description_1;
+            else:
+                $amount = $credit[$index];
+                $debit_credit = 0;
+                $RvData->description = $desc[$crindex];
+                $crindex++;
+               
+            endif;
+            $RvData->acc_id = $acc_id[0];
+            // $RvData->sub_department_id = 0;
+            $RvData->amount = CommonHelper::check_str_replace($amount);
+            $RvData->debit_credit = $debit_credit;
+            
+
+            $RvData->status = 1;
+            $RvData->rv_status = 1;
+
+
             $RvData->save();
-            $pv_data_id=$RvData->id;
+            $RvData_id = $RvData->id;
+
+            if ($income_tax_id > 0):
+                $income_tax = new IncomeTaxDeduction();
+                $income_tax = $income_tax->SetConnection('mysql2');
+                $income_tax = $income_tax->find($income_tax_id);
+                $income_tax->rv_data_id = $RvData_id;
+                $income_tax->save();
+            endif;
+
             $index++;
         endforeach;
         $id=$master_id;
@@ -1786,8 +1910,7 @@ class PaymentVoucherDetails extends Controller
         $Rvs->rv_no=$crv_no;
         $Rvs->rv_date=$request->rv_date_1;
         $Rvs->ref_bill_no=$request->ref_bill_no_1;
-//        $Rvs->cheque_no=$request->cheque_no_1;
-//        $Rvs->cheque_date=$request->cheque_date_1;
+
         $Rvs->description=$request->description_1;
         $Rvs->date=date('Y-m-d');
         $Rvs->status=1;
@@ -1797,11 +1920,12 @@ class PaymentVoucherDetails extends Controller
         $Rvs->save();
         $master_id=$Rvs->id;
 
-        $account_data=$request->account_id;
-        $index=0;
+         $account_data = $request->account_id;
+        $index = 0;
+        $crindex = 0;
 
-        $total_amount=0;
-        foreach($account_data as $row):
+        $total_amount = 0;
+        foreach ($account_data as $row):
 
             $RvData=new NewRvdata();
             $RvData=$RvData->SetConnection('mysql2');
@@ -1809,36 +1933,124 @@ class PaymentVoucherDetails extends Controller
             $RvData->rv_no=$crv_no;
             //$JvData->pv_date=$request->pv_date_1;
 
-            $acc_id=$row;
-            $acc_id=explode(',',$acc_id);
+            $acc_id = $row;
+            $acc_id = explode(',', $acc_id);
 
-            $paid_to=$request->paid_to;
-            $desc=$request->desc;
-            $debit=$request->d_amount;
-            $credit=$request->c_amount;
+            // for income tax data
+            $income_tax_id = 0;
+            // if ($acc_id[1] == 1):
 
 
-            if ($debit[$index]>0):
-                $amount=$debit[$index];
-                $debit_amount=$amount;
-                $debit_amount=  CommonHelper::check_str_replace($debit_amount);
-                $total_amount+=$debit_amount;
-                $debit_credit=1;
-            else:
-                $amount=$credit[$index];
-                $debit_credit=0;
+            //     $income_tax = new IncomeTaxDeduction();
+            //     $income_tax = $income_tax->SetConnection('mysql2');
+            //     $income_tax->pvs_id = $master_id;
+            //     $income_tax->pv_data_id = 0;
+            //     $income_tax->pv_no = $pv_no;
+            //     $income_tax->nature = $acc_id[2];
+            //     $income_tax->tax_payment_section = $acc_id[3];
+            //     $income_tax->amount = $acc_id[4];
+            //     $income_tax->deduct_amount = $acc_id[5];
+            //     $income_tax->income_tax_slab_id = $acc_id[6];
+            //     $income_tax->supplier_id = $acc_id[7];
+            //     $income_tax->save();
+            //     $income_tax_id = $income_tax->id;
+            //     $pv_data->tax_nature = 1;
+            //     $pv_data->slab_id = $acc_id[6];
+            //     $pv_data->income_master_id = $income_tax_id;
+            //     $pv_data->taxtaion_rate = $acc_id[4];
+            //     $pv_data->taxation_amount = $acc_id[5];
+            // endif;
+            //end
+
+
+            $fbr = 0;
+            if ($acc_id[1] == 2):
+
+                $RvData->tax_nature = 2;
+                $RvData->slab_id = $acc_id[2];
+                $RvData->slab_id = $acc_id[2];
+                $RvData->taxtaion_rate = $acc_id[3];
+                $RvData->taxation_amount = $acc_id[4];
             endif;
-            $RvData->acc_id=$row;
-            $RvData->amount=CommonHelper::check_str_replace($amount);
-            $RvData->debit_credit=$debit_credit;
-            $PaidTo = explode(',',$paid_to[$index]);
-            $RvData->paid_to_id= $PaidTo[0];
-            $RvData->paid_to_type= $PaidTo[1];
-            $RvData->description=$desc[$index];
-            $RvData->status=1;
-            $RvData->rv_status=1;
+            //end
+
+
+            $srb = 0;
+            if ($acc_id[1] == 3):
+
+                $RvData->tax_nature = 3;
+                $RvData->slab_id = $acc_id[2];
+                $RvData->taxtaion_rate = $acc_id[3];
+                $RvData->taxation_amount = $acc_id[4];
+                $RvData->percentage = $acc_id[5];
+                $RvData->exclusion = $acc_id[6];
+            endif;
+            //end
+
+
+            // pra
+
+            $srb = 0;
+            if ($acc_id[1] == 4):
+
+                $RvData->tax_nature = 4;
+                $RvData->slab_id = $acc_id[2];
+                $RvData->taxtaion_rate = $acc_id[3];
+                $RvData->taxation_amount = $acc_id[4];
+                $RvData->percentage = $acc_id[5];
+
+            endif;
+            //end
+
+
+            $desc = $request->desc;
+            // $sub_department_id = $request->sub_department_id;
+            //$paid_to = $request->paid_to;
+            $debit = $request->c_amount;
+            $credit = $request->c_amount;
+
+            // $desc = (count($desc) > 1) ? $desc[$index] : $desc[0] ;
+            // $sub_department_id = (count($sub_department_id) > 1) ? $sub_department_id[$index] : $sub_department_id[0] ;
+            
+            // $debit = (count($debit) > 1) ? $debit[$index] : $debit[0] ;
+            // $credit = (count($credit) > 1) ? $credit[$index] : $credit[0] ;
+
+            if ($acc_id[1] == 1):
+                $amount = $debit[$index];
+                $debit_amount = $amount;
+                $debit_amount = CommonHelper::check_str_replace($debit_amount);
+                $total_amount += $debit_amount;
+
+                $debit_credit = 1;
+                $RvData->description = $request->description_1;
+            else:
+                $amount = $credit[$index];
+                $debit_credit = 0;
+                $RvData->description = $desc[$crindex];
+                $crindex++;
+               
+            endif;
+            $RvData->acc_id = $acc_id[0];
+            // $RvData->sub_department_id = 0;
+            $RvData->amount = CommonHelper::check_str_replace($amount);
+            $RvData->debit_credit = $debit_credit;
+            
+
+            $RvData->status = 1;
+            $RvData->rv_status = 1;
+
+
             $RvData->save();
-            $pv_data_id=$RvData->id;
+            $RvData_id = $RvData->id;
+
+            if ($income_tax_id > 0):
+                $income_tax = new IncomeTaxDeduction();
+                $income_tax = $income_tax->SetConnection('mysql2');
+                $income_tax = $income_tax->find($income_tax_id);
+                $income_tax->rv_data_id = $RvData_id;
+                $income_tax->save();
+            endif;
+
             $index++;
         endforeach;
         $id=$master_id;
