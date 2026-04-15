@@ -2753,6 +2753,25 @@ class CommonHelper
         endif;
     }
 
+    public static function get_current_stock_for_production_mix($item)
+    {
+        $in = DB::Connection('mysql2')->table('stock')
+            ->where('status', 1)
+            ->whereIn('voucher_type', [1, 4, 6, 3, 10, 11])
+            ->where('sub_item_id', $item)
+            ->select(DB::raw('COALESCE(SUM(qty), 0) as qty'))
+            ->first();
+
+        $out = DB::Connection('mysql2')->table('stock')
+            ->where('status', 1)
+            ->whereIn('voucher_type', [2, 5, 9, 8])
+            ->where('sub_item_id', $item)
+            ->select(DB::raw('COALESCE(SUM(qty), 0) as qty'))
+            ->first();
+
+        return (float) ($in->qty ?? 0) - (float) ($out->qty ?? 0);
+    }
+
     public static function get_amount_from_stock_batch_wise($voucher_type, $item, $warehouse, $batch_code)
     {
 

@@ -107,7 +107,7 @@ use App\Helpers\ReuseableCode;
             <td><?php echo CommonHelper::getCompanyDatabaseTableValueById($_GET['m'], 'sub_category', 'sub_category_name', $data->sub_category_id); ?></td>
             
     
-            <?php $in_stock=$purchase_amount+$produce_qty-$purchase_return-$stock_tarnsfer-$stock_consumption-$sales_qty+$sales_return_qty-$issuence_against_plan_qty+$return_against_plan_qty; ?>
+            <?php $in_stock=CommonHelper::get_current_stock_for_production_mix($data->sub_item_id); ?>
             <td class="hide"><?php echo $data->item_code; ?></td>
             <td class="text-center">
                 <a class="" href="<?php echo url('/') ?>/store/fullstockReportView?pageType=&&parentCode=97&&m=<?php echo $_GET['m'] ?>&&sub_item_id=<?php echo $data->sub_item_id ?>&&warehouse_id=<?php echo $data->warehouse_id ?>#SFR" target="_blank">
@@ -145,6 +145,10 @@ use App\Helpers\ReuseableCode;
         </tbody>
     </table>
 </div>
+
+<script>
+    
+</script>
 
 <!-- @include('Store.AjaxPages.quarintine_stock') -->
 <script !src="">
