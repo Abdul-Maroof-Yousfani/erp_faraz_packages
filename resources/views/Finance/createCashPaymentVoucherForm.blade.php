@@ -94,7 +94,7 @@ $pv_no=CommonHelper::uniqe_no_for_pv(date('y'),'07',2);
 								<div class="lineHeight">&nbsp;</div>
 
 								<div class="row">
-									<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6"></div>
+									{{-- <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6"></div> --}}
 
 									<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
 										<div class="table-responsive">
@@ -104,7 +104,6 @@ $pv_no=CommonHelper::uniqe_no_for_pv(date('y'),'07',2);
 													<tr>
 														<th>Accounts.</th>
 														<th>Amount </th>
-														<th style="text-align: center;"><span class="float-right btn-primary" onclick="addAmount()">+</span></th>
 													</tr>
 												</thead>
 												<tbody class="addAmountTr" id="addAmountTr">

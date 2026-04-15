@@ -129,7 +129,16 @@ foreach($companydepartments as $key => $y){
                                 </div>
 
                                 <div class="row">
-                                    
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                        <label class="sf-label">Accounts.</label>
+                                        <span style="font-size:17px !important; color:#F5F5F5 !important;"><strong>*</strong></span>
+                                         <select  style="width: 100%"  class="form-control requiredField select2" onchange="Datavalidate(this)" name="account_id[]" id="account_id">
+                                            <option value="">Select Account</option>
+                                            @foreach(CommonHelper::get_all_account_operat_with_unique_code('1-2') as $key => $y)
+                                                <option value="{{ $y->id.',0'.','.$y->code }}">{{ $y->code .' ---- '. $y->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                         <label class="sf-label">Cheque No.</label>
                                         <span style="font-size:17px !important; color:#F5F5F5 !important;"><strong>*</strong></span>
@@ -140,18 +149,22 @@ foreach($companydepartments as $key => $y){
                                         <span style="font-size:17px !important; color:#F5F5F5 !important;"><strong>*</strong></span>
                                         <input  type="date" class="form-control requiredField"  name="cheque_date_1" id="cheque_date_1" value="{{date('Y-m-d')}}" />
                                     </div>
+                                    
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                        <label class="sf-label">Amount.</label>
+                                        <span style="font-size:17px !important; color:#F5F5F5 !important;"><strong>*</strong></span>
+                                                                                                                <input onfocus="" placeholder="Credit" class="form-control c_amount_1 requiredField number_format" maxlength="15" min="0" type="text" name="c_amount[]" id="c_amount_1" onkeyup="sum('1')" value="" required="required"/>
 
-                                    <div class="col-lg-6 col-md-3 col-sm-6 col-xs-12">
+                                    </div>
+
+                                    {{-- <div class="col-lg-6 col-md-3 col-sm-6 col-xs-12">
 
                                         <div class="row">
                                             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                                 <div class="table-responsive">
                                                     <table class="userlittab table sf-table-list">
                                                         <thead>
-                                                            <tr>
-                                                                <th></th>
-                                                                <th style="text-align: center;"><span class="float-right btn-primary" onclick="addAmount()">+</span></th>
-                                                            </tr>
+                                                            
                                                             <tr>
                                                                 <th>Accounts.</th>
                                                                 <th>Amount </th>
@@ -179,7 +192,7 @@ foreach($companydepartments as $key => $y){
 
                                         </div>
 
-                                    </div>
+                                    </div> --}}
 
                                 </div>
                                 <div class="lineHeight">&nbsp;</div>

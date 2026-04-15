@@ -93,7 +93,7 @@ $crv_no=CommonHelper::uniqe_no_for_rvs(date('y'),date('m'),2);
 								<div class="lineHeight">&nbsp;</div>
 
 								<div class="row">
-									<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6"></div>
+									{{-- <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6"></div> --}}
 
 									<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
 										<div class="table-responsive">
@@ -103,7 +103,6 @@ $crv_no=CommonHelper::uniqe_no_for_rvs(date('y'),date('m'),2);
 													<tr>
 														<th>Accounts.</th>
 														<th>Amount </th>
-														<th style="text-align: center;"><span class="float-right btn-primary" onclick="addAmount()">+</span></th>
 													</tr>
 												</thead>
 												<tbody class="addAmountTr" id="addAmountTr">
