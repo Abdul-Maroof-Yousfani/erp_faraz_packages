@@ -1713,7 +1713,6 @@ class SalesController extends Controller
         $credit_note = new CreditNote();
         $credit_note = $credit_note->SetConnection('mysql2');
         $credit_note = $credit_note->find($id);
-        // dd($credit_note->creditNoteData);
         return view('Sales.editCustomerCredit_no', compact('credit_note'));
     }
 

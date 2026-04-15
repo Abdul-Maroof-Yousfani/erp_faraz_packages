@@ -57,11 +57,11 @@ $type = $credit_note->type;
                                                         </div>
 
 
-                                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 panel">
-                                                            <label class="sf-label">Credit Date.</label>
-                                                            <span style="font-size:17px !important; color:#F5F5F5 !important;"><strong>*</strong></span>
-                                                            <input class="form-control" type="date" name="credit_date"  value="{{ $credit_note->cr_date ?? date('Y-m-d') }}" />
-                                                        </div>                                                        
+                                                         <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 panel">
+                                                             <label class="sf-label">Credit Date.</label>
+                                                             <span style="font-size:17px !important; color:#F5F5F5 !important;"><strong>*</strong></span>
+                                                             <input class="form-control" type="date" name="credit_date"  value="{{ $credit_note->cr_date ?? date('Y-m-d') }}" />
+                                                         </div>
 
                                                         <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 panel">
                                                             <label class="sf-label">Buyer's Name</label>
@@ -190,7 +190,7 @@ $type = $credit_note->type;
                                                                                $uom_id=$uom_data[0];
                                                                         ?>
                                                                         <td class="text-center">{{CommonHelper::get_uom_name($uom_id)}}</td>
-                                                                        <td><input onkeyup="calc('<?php echo $counter ?>');check_qty(this.id,'{{$counter}}')"  onblur="calc('<?php echo $counter ?>');check_qty(this.id,'{{$counter}})" type="text" class="form-control number zerovalidate" name="itemQty[]" id="qty{{$counter}}" value="{{ $row->qty }}"/> </td>
+                                                                        <td><input onkeyup="calc('<?php echo $counter ?>');check_qty(this.id,'{{$counter}}')"  onblur="calc('<?php echo $counter ?>');check_qty(this.id,'{{$counter}}')" type="text" class="form-control number zerovalidate" name="itemQty[]" id="qty{{$counter}}" value="{{ $row->qty }}"/> </td>
                                                                         <td><input readonly type="text" class="form-control number" name="rate[]" value="{{$invoice_data->rate}}" id="rate{{$counter}}"/> </td>
                                                                         <td><input readonly type="text" value="{{ $row->amount }}" class="form-control number amount" name="amount[]" id="amount{{$counter}}"/> </td>
 
@@ -206,12 +206,10 @@ $type = $credit_note->type;
                                                                     @endforeach
                                                                     <input type="hidden" name="so_id" value="{{$so_id}}"/>
                                         <?php
-
-                                        $sales_tax=CommonHelper::generic('sales_order',array('id'=>$so_id),'sales_tax')->first();
-                                        $sales_tax=$sales_tax->sales_tax ?? '';
-
+                                        // Removed sales_tax query as the column doesn't exist in sales_order table
+                                        $sales_tax = '';
                                         ?>
-                                                                    <input type="hidden" id="sales_tax_seven" value="{{$sales_tax ?? ''}}"/>
+                                                                    <input type="hidden" id="sales_tax_seven" value="{{$sales_tax}}"/>
 
                                                                     <input type="hidden"name="type" id="type" value="{{$credit_note->type}}"/>
 
@@ -239,7 +237,7 @@ $type = $credit_note->type;
                                                 </tr>
                                                 <tr>
                                                     <td colspan="2">Further Sales Tax @3%</td>
-                                                    <td><td><input readonly  class="form-control number" type="text" name="sales_tax_further" id="sales_tax_further" value=""/> </td></td>
+                                                    <td><input readonly  class="form-control number" type="text" name="sales_tax_further" id="sales_tax_further" value=""/> </td>
                                                     <td class="text-center"> <div class="checkbox">
                                                             <label><input onclick="appliy('applyfurther','sales_tax_further',1)" type="checkbox" id="applyfurther" value="">Apply</label>
                                                         </div> </td>
@@ -247,14 +245,14 @@ $type = $credit_note->type;
                                                 </tr>
                                                 <tr>
                                                     <td colspan="2">Total Sales Tax</td>
-                                                    <td><td><input style="font-weight: bold;font-size: x-large" readonly class="form-control number" type="text" name="sales_total" id="sales_total" value="0"/> </td></td>
+                                                    <td><input style="font-weight: bold;font-size: x-large" readonly class="form-control number" type="text" name="sales_total" id="sales_total" value="0"/> </td>
                                                     <td></td>
 
                                                 </tr>
 
                                                 <tr>
                                                     <td colspan="2">Grand Total</td>
-                                                    <td><td><input style="font-weight: bold;font-size: x-large" readonly class="form-control number" type="text" name="grand_total" id="grand_total" value="0"/> </td></td>
+                                                    <td><input style="font-weight: bold;font-size: x-large" readonly class="form-control number" type="text" name="grand_total" id="grand_total" value="0"/> </td>
                                                     <td></td>
 
                                                 </tr>
@@ -264,7 +262,6 @@ $type = $credit_note->type;
 
 
                                                 </tbody>
-                                                </tr>
                                             </table>
 
                                             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">

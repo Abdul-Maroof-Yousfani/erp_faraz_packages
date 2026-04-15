@@ -3617,6 +3617,11 @@ class SalesAddDetailControler extends Controller
         $credit_note = new CreditNote();
         $credit_note = $credit_note->setConnection('mysql2');
         $credit_note = $credit_note->where('cr_no', $cr_no)->first();
+        
+        if (is_null($credit_note)) {
+            return redirect('sales/viewCustomerCreditNoteList?pageType=view&&parentCode=000&&m=' . $request->m . '#SFR')->with('error', 'Credit Note not found.');
+        }
+        
         $credit_note->cr_date = $request->credit_date;
         $credit_note->description = $request->description_1;
         $credit_note->save();
@@ -3627,6 +3632,11 @@ class SalesAddDetailControler extends Controller
             $credit_note_data = new CreditNoteData();
             $credit_note_data = $credit_note_data->setConnection('mysql2');
             $credit_note_data = $credit_note_data->find($item);
+            
+            if (is_null($credit_note_data)) {
+                continue;
+            }
+            
             $credit_note_data->qty = $request->itemQty[$key];
             $credit_note_data->amount = $request->amount[$key];
             $credit_note_data->discount_amount = $request->discount_amount[$key];
@@ -3636,6 +3646,11 @@ class SalesAddDetailControler extends Controller
             $stockTable = new Stock();
             $stockTable = $stockTable->setConnection('mysql2');
             $stockTable = $stockTable->where('main_id', $id)->where('master_id', $credit_note_data->id)->where('voucher_no', $cr_no)->first();
+            
+            if (is_null($stockTable)) {
+                continue;
+            }
+            
             $stockTable->qty = $request->itemQty[$key];
             $stockTable->amount = $request->net_amount[$key];
             $stockTable->save();

@@ -23,7 +23,7 @@ use App\Helpers\ReuseableCode;
         <th class="text-center">S.No</th>
         <th class="text-center">Category</th>
         <th class="text-center">Sub Category</th>
-        <th class="text-center">Item  Code</th>
+        <th class="text-center hide">Item  Code</th>
         <th class="text-center">Item Name</th>
         <th class="text-center">Primary Pack</th>
         <th class="text-center">Pack Size</th>
@@ -108,7 +108,7 @@ use App\Helpers\ReuseableCode;
             
     
             <?php $in_stock=$purchase_amount+$produce_qty-$purchase_return-$stock_tarnsfer-$stock_consumption-$sales_qty+$sales_return_qty-$issuence_against_plan_qty+$return_against_plan_qty; ?>
-            <td><?php echo $data->item_code; ?></td>
+            <td class="hide"><?php echo $data->item_code; ?></td>
             <td class="text-center">
                 <a class="" href="<?php echo url('/') ?>/store/fullstockReportView?pageType=&&parentCode=97&&m=<?php echo $_GET['m'] ?>&&sub_item_id=<?php echo $data->sub_item_id ?>&&warehouse_id=<?php echo $data->warehouse_id ?>#SFR" target="_blank">
                     {{ CommonHelper::get_item_name($data->sub_item_id) }}</a>
