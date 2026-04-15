@@ -1799,14 +1799,24 @@ class SalesAddDetailControler extends Controller
     }
     function addeDirectSalesTaxInvoice(Request $request)
     {
-        // dd($request->all());
+        // dd($request->all()); customerType
 
         DB::Connection('mysql2')->beginTransaction();
         try {
-            $byers_id = $request->buyers_id;
-            $byers_id = explode('*', $byers_id);
-            $byers_id = $byers_id[0];
+            $walkinCustomerName = trim($request->walkin_customer_name ?? '');
+            $byers_id = $request->buyers_id ? explode('*', $request->buyers_id)[0] : 0;
+            $walkinCustomer = 0;
 
+            if ($walkinCustomerName != '') {
+                $walkinCustomer = 1; 
+            } else {
+                $byers_id = $request->buyers_id ? explode('*', $request->buyers_id)[0] : 0;
+            }
+
+
+            // dd($customerType, $walkinCustomerName, $byers_id, $walkinCustomer);
+
+         
             foreach ($request->item_id as $key => $value) {
 
                 $stock = array
@@ -1832,7 +1842,7 @@ class SalesAddDetailControler extends Controller
                     'opening' => 0,
                     'so_data_id' => '',
                 );
-                //  DB::Connection('mysql2')->table('stock')->insert($stock);
+                //  DB::Connection('mysql2')->table('stock')->insert($stock); acc_id
             }
 
 
@@ -1860,17 +1870,21 @@ class SalesAddDetailControler extends Controller
             $sales_tax_invoice->order_no = $request->order_no ?? '';
             $sales_tax_invoice->date = date('Y-m-d');
             $sales_tax_invoice->buyers_id = $byers_id;
+            $sales_tax_invoice->walkin_customer = $walkinCustomer;
+            $sales_tax_invoice->walkin_customer_name = $request->walkin_customer_name ?? '';
+            $sales_tax_invoice->customer_type = $walkinCustomer;
             $sales_tax_invoice->description = $request->description;
 
             //    $sales_tax_data = SalesHelper::get_sales_tax_by_sales_order_id($request->sales_order_id);
             $sales_tax_invoice->sales_tax = CommonHelper::check_str_replace($request->sales_tax);
             $sales_tax_invoice->sales_tax_further = CommonHelper::check_str_replace($request->sales_tax_further);
-            $sales_tax_invoice->acc_id = $request->acc_id;
+            $sales_tax_invoice->acc_id = $request->acc_id ?? '';
             $sales_tax_invoice->currency = $request->curren;
             $sales_tax_invoice->currency_rate = $request->currency_rate;
             $sales_tax_invoice->save();
             $id = $sales_tax_invoice->id;
 
+            
 
             $total_amount = 0;
             foreach ($request->item_id as $key => $value) {
@@ -1902,6 +1916,7 @@ class SalesAddDetailControler extends Controller
                 $total_amount += $qty * $rate;
             }
 
+            
             $t_data = DB::Connection('mysql2')->table('sales_tax_invoice as a')
                 ->join('sales_tax_invoice_data as b', 'a.id', '=', 'b.master_id')
                 ->join('subitem as c', 'b.item_id', '=', 'c.id')
@@ -1912,6 +1927,7 @@ class SalesAddDetailControler extends Controller
                 ->groupBy('d.id')
                 ->get();
 
+                
             foreach ($t_data as $revenue):
                 $transaction = new Transactions();
                 $transaction = $transaction->SetConnection('mysql2');
@@ -1935,6 +1951,8 @@ class SalesAddDetailControler extends Controller
                 ->where('master_id', $id)
                 ->sum('tax_amount');
 
+                // dd($sales_tax);
+
             if ($sales_tax > 0):
 
 
@@ -1957,6 +1975,8 @@ class SalesAddDetailControler extends Controller
                 $total_amount += $sales_tax;
 
             endif;
+
+            
 
             $sales_tax_further = CommonHelper::check_str_replace($request->sales_tax_further);
 
@@ -2014,8 +2034,11 @@ class SalesAddDetailControler extends Controller
                 }
             }
 
+            // dd($byers_id);
+
             $customer_acc_id = SalesHelper::get_customer_acc_id($byers_id);
-            ;
+            
+            // dd($customer_acc_id);
 
             $transaction = new Transactions();
             $transaction = $transaction->SetConnection('mysql2');
@@ -2045,6 +2068,7 @@ class SalesAddDetailControler extends Controller
             DB::Connection('mysql2')->commit();
         } catch (Exception $ex) {
 
+                dd([$ex, $ex->getMessage(), $ex->getLine()]);
             DB::rollBack();
             echo $ex->getLine();
 
@@ -2688,6 +2712,16 @@ class SalesAddDetailControler extends Controller
     {
         $SavePrintVal = Input::get('SavePrintVal');
         $update_id = explode(',', $request->input('dn_ids'));
+        $walkinCustomerName = trim($request->walkin_customer_name ?? '');
+        $byers_id = $request->buyers_id ? explode('*', $request->buyers_id)[0] : 0;
+        $walkinCustomer = 0;
+
+        if ($walkinCustomerName != '') {
+            $walkinCustomer = 1; 
+        } else {
+            $byers_id = $request->buyers_id ? explode('*', $request->buyers_id)[0] : 0;
+        }
+
 
         DB::Connection('mysql2')->beginTransaction();
         try {
@@ -2713,7 +2747,9 @@ class SalesAddDetailControler extends Controller
             $sales_tax_invoice->amount_in_words = $request->rupeess;
             $sales_tax_invoice->order_no = $request->order_no ?? '';
             $sales_tax_invoice->date = date('Y-m-d');
-            $sales_tax_invoice->buyers_id = $request->buyers_id;
+            $sales_tax_invoice->buyers_id = $byers_id;
+            $sales_tax_invoice->walkin_customer_name = $walkinCustomerName;
+            $sales_tax_invoice->walkin_customer = $walkinCustomer;
             $sales_tax_invoice->description = $request->description;
             $sales_tax_data = SalesHelper::get_sales_tax_by_sales_order_id($request->sales_order_id);
             $sales_tax_invoice->sales_tax = CommonHelper::check_str_replace($request->sales_tax);
@@ -3022,7 +3058,9 @@ class SalesAddDetailControler extends Controller
         } catch (Exception $ex) {
 
             DB::rollBack();
-            dd($ex->getLine());
+            dd(['exception' => $ex->getMessage(), 'line' => $ex->getLine(), 'file' => $ex->getFile()]);
+             //dd($ex);
+
         }
 
         if ($SavePrintVal == 1) {

@@ -128,7 +128,7 @@ $total_amount = 0;
                                                         @endphp
                                                         <tr>        
 
-                                                            <td class="text-left">{{ $sale_order_item->item_code.' -- '.$sale_order_item->sub_ic }}</td>
+                                                            <td class="text-left">{{$sale_order_item->sub_ic }}</td>
                                                             {{-- <td class="text-left">{{ $sale_order_item->color }}</td> --}}
                                                             <td class="text-center">{{ $sale_order_item->uom_name }}</td>
                                                             <td class="text-left">{{ $sale_order_item->qty/$sale_order_item->pack_size}}</td>

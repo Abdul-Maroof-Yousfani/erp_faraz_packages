@@ -1,0 +1,128 @@
+
+
+
+Minutes of Meeting
+
+Date: 13-04-2026
+
+Company Name: Faraz Packages
+
+ 
+
+(Purchase Module)
+
+ 
+
+1. Payment will be deducted from the overall total amount, not against individual invoices.
+
+2. In the supplier payment voucher, the bank row (currently second from the bottom) should be moved to the top, and the credit amount 
+should be auto-filled.
+
+3. A single account should be used for both customer and supplier (if a customer is also a supplier, there should be an option 
+to handle both under one account).
+
+   (Note) i will update you after discussed .
+
+ 
+
+4. While adding a customer or supplier, only (name and phone number should be mandatory); all other fields should be optional. (DONE)
+
+5. In both sales and purchase invoices, only those fields should be displayed in which data has been entered.
+
+6. Remove the GRN number from the purchase invoice list.    (DONE)
+
+7. In the purchase invoice, the godown number should appear below the DO number.
+
+8. Add a signature option in the purchase invoice.
+
+ 
+
+ 
+
+(Sales Module)
+
+ 
+
+1. On the sales invoice, when a walking customer is selected, an additional field for customer name should appear, and the same name should be printed on the invoice.
+
+2. Commission management is required in the sales invoice. For example, if a client comes through a reference and goods are sold at 205, then at the time of payment, 200 should go to our account and 5 should go to the third party (referrer).
+
+   (Note) I will update you after discussed 
+
+3. If two items are added to a sales invoice, both should appear on the print (currently only one item is showing).
+
+4. Sales UOM should include: Bag, KG, Pounds, PCS, Bundle
+
+ 
+
+   * One bundle = 10 KG
+
+   * In case of PCS, the field should be editable for manual input.
+
+ 
+
+5. (Workflow)
+
+ 
+
+   Direct Invoice Flow: Invoice → Gate Pass → Payment
+
+   Delivery Challan Flow: Sales Order → Delivery Challan → Gate Pass → Invoice (against gate pass) → Payment
+
+6. Remove the item code from the sales invoice.
+
+7. After approval of a sales invoice, only the master user should have access to reverse it.
+
+8. An error is occurring in the sales return edit form (needs fixing).
+
+9. Add a tax filter in the sales invoice list.
+
+ 
+
+(Inventory Module)
+
+ 
+
+1. The stock report should display the current quantity
+
+2. Remove the item code from the stock report.
+
+3. Add a tax filter in the ledger report to view tax and non-tax reports separately.
+
+4. In the ledger report, show invoice details including:
+
+ 
+
+   * Item name
+
+   * Quantity (for bags only)
+
+   * Rate
+
+   * Payment terms
+
+ 
+
+ 
+
+(Production Module)
+
+ 
+
+1. Reports are required for each production process.
+
+2. In the mixing list, when items move to rolling, only the remaining unused items should be shown.
+
+3. In rolling item details, the operator and machine fields should display only relevant data.
+
+4. In the bulk rolling form, only the printing category should be visible.
+
+5. In bulk rolling, if the same item appears twice, it should be merged and shown as a single entry
+
+6. In printed roll item details, the machine field should only show printing machines
+
+ 
+
+ 
+
+(Note) The timeline for all the above points will be discussed with the team and shared accordingly. @⁨Unknown user⁩

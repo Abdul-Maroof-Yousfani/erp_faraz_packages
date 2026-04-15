@@ -134,7 +134,7 @@ $type = $credit_note->type;
                                                                          else:
                                                                              $bacth=SalesHelper::get_batch_code($invoice_data->so_data_id,$credit_note->type);
                                                                             endif;
-                                                                        $bacth=$bacth->batch_code;
+                                                                        $bacth=$bacth->batch_code ?? '';
                                                                          ?>
 
 
@@ -208,10 +208,10 @@ $type = $credit_note->type;
                                         <?php
 
                                         $sales_tax=CommonHelper::generic('sales_order',array('id'=>$so_id),'sales_tax')->first();
-                                        $sales_tax=$sales_tax->sales_tax;
+                                        $sales_tax=$sales_tax->sales_tax ?? '';
 
                                         ?>
-                                                                    <input type="hidden" id="sales_tax_seven" value="{{$sales_tax}}"/>
+                                                                    <input type="hidden" id="sales_tax_seven" value="{{$sales_tax ?? ''}}"/>
 
                                                                     <input type="hidden"name="type" id="type" value="{{$credit_note->type}}"/>
 
@@ -233,7 +233,7 @@ $type = $credit_note->type;
                                                     <td><input readonly  class="form-control number" type="text" name="sales_tax" id="sales_tax" value=""/> </td>
                                                     <td class="text-center">
                                                         <div class="checkbox">
-                                                            <label><input <?php if ($sales_tax>0): ?> checked <?php endif ?>  onclick="appliy('apply17','sales_tax',0)" type="checkbox" id="apply17" value="">Apply</label>
+                                                            <label><input <?php if ($sales_tax ?? '0'>0): ?> checked <?php endif ?>  onclick="appliy('apply17','sales_tax',0)" type="checkbox" id="apply17" value="">Apply</label>
                                                         </div> </td>
 
                                                 </tr>

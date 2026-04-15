@@ -127,6 +127,13 @@ $AmountInWordsMain =0;
                                         <td style="border:1px solid black; width: 50%" class="text-left"><strong><?php echo ucwords($customer_data->name ?? '')?></strong></td>
                                     </tr>
                                 @endif
+                             
+                                @if($sales_tax_invoice->walkin_customer == 1)
+                                    <tr>
+                                        <th style="border:1px solid black;" class="text-left" style="width:60%; border: solid 1px;">Walk-in Customer</th>
+                                        <td style="border:1px solid black;" class="text-left" style="width:40%;"><?php echo $sales_tax_invoice->walkin_customer_name; ?></td>
+                                    </tr>
+                                @endif
 
                                 @if($orderDate != '' && $orderDate != '0000-00-00' && substr($orderDate,0,4) != '0001')
                                     <tr>
@@ -204,7 +211,7 @@ $AmountInWordsMain =0;
                                 @if($sales_tax_invoice->currency != 0)
                                     <tr>
                                         <th style="border:1px solid black;" class="text-left" style="border: solid 1px;">CURRENCY</th>
-                                        <td style="border:1px solid black;" class="text-left">{!! $currency !!}</td>
+                                        <td style="border:1px solid black;" class="text-left">{!! $currency ?? '' !!}</td>
                                     </tr>
                                 @endif
                                 </tbody>

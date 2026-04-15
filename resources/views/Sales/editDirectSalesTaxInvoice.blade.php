@@ -140,7 +140,7 @@ $aeCounter = 1;
                                                 <input  type="text" class="form-control" placeholder="" name="terms_of_delivery" id="terms_of_delivery" value="{{$sale_tax_invoice->terms_of_delivery}}" />
                                             </div>
 
-                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" id="customer_select_wrapper">
                                                 <label class="sf-label">Buyer's Name <span class="rflabelsteric"><strong>*</strong></span></label>
                                                 <select style="width: 100%"  name="buyers_id" id="ntn" onchange="get_ntn()" class="form-control select2 requiredField">
                                                     <option value="">Select</option>
@@ -148,6 +148,11 @@ $aeCounter = 1;
                                                         <option @if($row->id == $sale_tax_invoice->buyers_id) selected  @endif value="{{$row->id.'*'.$row->cnic_ntn.'*'.$row->strn}}">{{$row->name}}</option>
                                                     @endforeach
                                                 </select>
+                                            </div>
+
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" id="walkin_customer_wrapper" style="display: none">
+                                                <label class="sf-label">Walkin Customer Name <span class="rflabelsteric"><strong>*</strong></span></label>
+                                                <input type="text" class="form-control" placeholder="" name="walkin_customer_name" id="walkin_customer_name" value="{{$sale_tax_invoice->walkin_customer_name}}" />
                                             </div>
 
                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
@@ -724,6 +729,27 @@ $aeCounter = 1;
             for (i=1; i<=cal_count; i++) {
                 calc(i);
             }
+
+            // Handle walkin customer visibility
+            function initWalkinCustomerHandler() {
+                handleCustomerChange(); // Call on page load
+            }
+
+            $('#ntn').on('select2:select', function () {
+                handleCustomerChange();
+            });
+
+            $('#ntn').on('change', function () {
+                handleCustomerChange();
+            });
+
+            $('#ntn').on('select2:unselecting', function () {
+                $('#walkin_customer_wrapper').hide();
+                $('#walkin_customer_name').val('');
+            });
+
+            // Initialize on page load
+            initWalkinCustomerHandler();
 		});
 
 
@@ -938,6 +964,19 @@ $aeCounter = 1;
    	$('#model_terms_of_payment').val(ntn[3]);
    	calculate_due_date();
    	sales_tax();
+   }
+
+   function handleCustomerChange() {
+   	let value = $('#ntn').val();
+   	let parts = value ? value.split('*') : [];
+   	let id = parts[0] || '';
+
+   	if (parseInt(id) === 4) { // Walk-in Customer
+   		$('#walkin_customer_wrapper').show();
+   	} else {
+   		$('#walkin_customer_wrapper').hide();
+   		$('#walkin_customer_name').val('');
+   	}
    }
 
    	function net()

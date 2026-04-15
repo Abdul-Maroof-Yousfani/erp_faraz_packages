@@ -207,32 +207,42 @@ use App\Helpers\ReuseableCode;
 													name="terms_of_delivery" id="terms_of_delivery" value="" />
 											</div>
 
-											<div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-												<label class="sf-label">Buyer's Name <span
-														class="rflabelsteric"><strong>*</strong></span></label>
-												<select style="width: 100%" name="buyers_id" id="ntn" onchange="get_ntn()"
-													class="form-control select2 requiredField">
-													<option value="">Select</option>
-													@foreach(SalesHelper::get_all_customer() as $row)
-														<option value="{{$row->id . '*' . $row->cnic_ntn . '*' . $row->strn}}">
-															{{$row->name}}
-														</option>
-													@endforeach
-												</select>
-											</div>
+							<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12" id="customer_select_wrapper">
+								<label class="sf-label">
+									Buyer's Name <span class="rflabelsteric"><strong>*</strong></span>
+								</label>
+
+								<select style="width: 100%" name="buyers_id" id="ntn"
+							class="form-control select2">
+									<option value="">Select</option>
+
+									@foreach(SalesHelper::get_all_customer() as $row)
+										<option value="{{ $row->id . '*' . $row->cnic_ntn . '*' . $row->strn }}">
+											{{ $row->name }}
+										</option>
+									@endforeach
+
+								</select>
+							</div>
+							
+
+								<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12" id="walkin_customer_wrapper" style="display: none">
+									<label class="sf-label">Walkin Customer Name <span
+										class="rflabelsteric"><strong>*</strong></span></label>
+									<input type="text" class="form-control" placeholder=""
+										name="walkin_customer_name" id="walkin_customer_name" value="" />
+								</div>
 
 
-											<div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-												<label class="sf-label">Buyer's Ntn </label>
-												<input readonly type="text" class="form-control" placeholder=""
-													name="buyers_ntn" id="buyers_ntn" value="" />
-											</div>
+						<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12" id="buyers_ntn_wrapper">
+								<label class="sf-label">Buyer's Ntn </label>
+								<input readonly type="text" class="form-control" placeholder=""
+									name="buyers_ntn" id="buyers_ntn" value="" />
+							</div>
 
+						</div>
 
-
-										</div>
-
-										<div class="row">
+						<div class="row">
 
 											<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
 												<label class="sf-label">Buyer's Sales Tax No </label>
@@ -246,11 +256,11 @@ use App\Helpers\ReuseableCode;
 											</div>
 											<?php
 
-	$accounts = DB::connection('mysql2')
-		->table('accounts')
-		->where('status', 1)
-		->where('parent_code', 'like', '5%')
-		->get();
+													$accounts = DB::connection('mysql2')
+														->table('accounts')
+														->where('status', 1)
+														->where('parent_code', 'like', '5%')
+														->get();
 
 														?>
 											<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12 ">
@@ -334,7 +344,7 @@ use App\Helpers\ReuseableCode;
 													<tr>
 														<th class="text-center nowrap" style="width: 9%;">Category</th>
 														<th class="text-center nowrap" style="width: 14%;">Item</th>
-														<th class="text-center col-narrow">Bags Qty</th>
+														<th class="text-center col-narrow">Qty</th>
 														<th class="text-center col-narrow">UoM<span
 																class="rflabelsteric"><strong>*</strong></span></th>
 														<th class="text-center col-narrow">Qty (KG)<span
@@ -386,8 +396,8 @@ use App\Helpers\ReuseableCode;
 														</td>
 														<td>
 															<input class="form-control requiredField"
-																onchange="claculation()" type="number" name="actual_qty[]"
-																id="actual_qty1" step="any" readonly />
+																onchange="claculation(1)" type="number" name="actual_qty[]"
+																id="actual_qty1" step="any" oninput="bag_qq(1); claculation(1)" />
 															<input type="hidden" class="PackQty" name="pack_qty[]"
 																id="pack_qty">
 														</td>
@@ -635,7 +645,9 @@ use App\Helpers\ReuseableCode;
 															</select>
 													</td>
 													<td>
-									<input readonly class="form-control" onkeyup="claculation()" type="text" name="actual_qty[]" id="actual_qty${Counter}" value="">
+									<input class="form-control requiredField"
+										onchange="claculation(${Counter})" type="number" name="actual_qty[]"
+										id="actual_qty${Counter}" step="any" oninput="bag_qq(${Counter}); claculation(${Counter})" />
 									<input type="hidden" name="pack_qty[]" id="pack_qty">
 								</td>
 								<td>
@@ -774,7 +786,7 @@ use App\Helpers\ReuseableCode;
 
 				console.log(uom);
 
-				$('#item_code' + index).val(uom[2]);
+				$('#item_code' + index).val(uom[3]); // sub_ic from item data
 
 				// store both quantities in hidden attributes
 				$('#uom_id' + index).data('qty1', uom[4]);
@@ -799,7 +811,8 @@ use App\Helpers\ReuseableCode;
 			$(document).on('change', '[id^=uom_id]', function () {
 
 				var index = this.id.replace('uom_id', '');
-				var selectedText = $(this).val(); // Kilogram / Pieces
+				var selectedText = $(this).val(); // Kilogram / Pieces / Bundle
+				console.log('Selected UOM:', selectedText);
 
 				var firstUom = $('#uom_id' + index + ' option:eq(1)').text();
 				var qty1 = $(this).data('qty1') || 0;
@@ -807,9 +820,42 @@ use App\Helpers\ReuseableCode;
 
 				var pack_qty = (selectedText === firstUom) ? qty1 : qty2;
 
-				$('#pack_qty').val(pack_qty);
-				$('#actual_qty' + index).val(pack_qty);
-				$('#qty_lbs' + index).val(pack_qty * 2.2);
+				// Check for Bundle (case-insensitive)
+				if(selectedText.toLowerCase().includes('bundle')){
+					console.log('Bundle matched');
+					// Bundle: Set fixed 10 KG and make readonly
+					$('#actual_qty' + index).val(10);
+					$('#qty_lbs' + index).val((10 * 2.2).toFixed(2));
+					$('#actual_qty' + index).prop('readonly', true);
+					$('#qty_lbs' + index).prop('readonly', true);
+					$('#rate' + index).val('');
+					 $('#amount' + index).val('');
+					 $('#net').val('');
+					 $('#total').val('');
+					
+				} else if(selectedText.toLowerCase().includes('pcs') || selectedText.toLowerCase().includes('pieces')){
+					console.log('Pcs matched');
+					// Pcs: Make KG field editable for manual input
+					$('#actual_qty' + index).val('');
+					$('#actual_qty' + index).prop('readonly', false);
+					$('#qty_lbs' + index).prop('readonly', true);
+					$('#rate' + index).val('');
+					 $('#amount' + index).val('');
+					 $('#net').val('');
+					 $('#total').val('');
+				} else {
+					console.log('Other UOM matched');
+					// Other UOMs: Auto-calculate based on pack_qty
+					$('#pack_qty').val(pack_qty);
+					$('#actual_qty' + index).val(pack_qty);
+					$('#qty_lbs' + index).val((pack_qty * 2.2).toFixed(2));
+					$('#actual_qty' + index).prop('readonly', true);
+					$('#qty_lbs' + index).prop('readonly', true);
+					$('#rate' + index).val('');
+					 $('#amount' + index).val('');
+					 $('#net').val('');
+					 $('#total').val('');
+				}
 
 				bag_qq(index);
 			});
@@ -817,9 +863,24 @@ use App\Helpers\ReuseableCode;
 			function bag_qq(counter) {
 				var bags_qty = parseFloat($('#pack_size' + counter).val()) || 1;
 				var pack_qty = parseFloat($('#pack_qty').val()) || 0;
-				var total_qty = (bags_qty * pack_qty).toFixed(2);
-				$('#actual_qty' + counter).val(total_qty);
-				$('#qty_lbs' + counter).val(total_qty * 2.2);
+				var selectedUom = $('#uom_id' + counter).val();
+
+				// For Bundle: multiply 10 by pack_size (bags_qty)
+				if (selectedUom.toLowerCase().includes('bundle')) {
+					var total_qty = (10 * bags_qty).toFixed(2);
+					$('#actual_qty' + counter).val(total_qty);
+					$('#qty_lbs' + counter).val((total_qty * 2.2).toFixed(2));
+				}
+				// For Pcs: actual_qty is manually entered, auto-calculate lbs
+				else if (selectedUom.toLowerCase().includes('pcs') || selectedUom.toLowerCase().includes('pieces')) {
+					var actual_qty = parseFloat($('#actual_qty' + counter).val()) || 0;
+					$('#qty_lbs' + counter).val((actual_qty * 2.2).toFixed(2));
+				} else {
+					// For other UOMs: use pack_qty
+					var total_qty = (bags_qty * pack_qty).toFixed(2);
+					$('#actual_qty' + counter).val(total_qty);
+					$('#qty_lbs' + counter).val((total_qty * 2.2).toFixed(2));
+				}
 			}
 		</script>
 		<script>
@@ -1167,7 +1228,7 @@ use App\Helpers\ReuseableCode;
 				sales_tax();
 			}
 
-
+		
 
 			function calculate_due_date() {
 
@@ -1259,6 +1320,47 @@ use App\Helpers\ReuseableCode;
 		</script>
 		<script type="text/javascript">
 			$('.select2').select2();
+		</script>
+		<script>
+			$(document).ready(function () {
+
+		function handleCustomerChange() {
+			let value = $('#ntn').val();
+			let parts = value ? value.split('*') : [];
+			let id = parts[0] || '';
+
+			if (parseInt(id) === 4) { // Walk-in Customer
+				$('#walkin_customer_wrapper').show();
+			} else {
+				$('#walkin_customer_wrapper').hide();
+				$('#walkin_customer_name').val('');
+			}
+		}
+
+		// Handle select2:select event
+		$('#ntn').on('select2:select', function () {
+			let value = $(this).val();
+			let parts = value ? value.split('*') : [];
+			let id = parts[0] || '';
+			let ntn = parts[1] || '';
+			let strn = parts[2] || '';
+
+			get_ntn(); // existing function
+			handleCustomerChange();
+		});
+
+		// Handle regular change event as fallback
+		$('#ntn').on('change', function () {
+			handleCustomerChange();
+		});
+
+		// Handle if the select is cleared
+		$('#ntn').on('select2:unselecting', function () {
+			$('#walkin_customer_wrapper').hide();
+			$('#walkin_customer_name').val('');
+		});
+
+	});
 		</script>
 		<script src="{{ URL::asset('assets/js/select2/js_tabindex.js') }}"></script>
 @endsection

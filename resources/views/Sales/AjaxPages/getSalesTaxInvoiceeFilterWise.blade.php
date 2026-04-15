@@ -63,7 +63,13 @@ $complete = 0;
         <td class="text-center"><?php  echo CommonHelper::changeDateFormat($row->gi_date);?></td>
         <td class="text-center hide">{{ $row->model_terms_of_payment }}</td>
         <td class="text-center"><?php  echo CommonHelper::changeDateFormat($row->order_date);?></td>
-        <td class="text-center">{{$customer->name??''}}</td>
+        <td class="text-center">
+           @if($row->walkin_customer == 1)
+                {{ $row->walkin_customer_name ?? '' }}  <br>  <small>{{ $customer->name ?? '' }}</small>
+            @else
+                {{ $customer->name ?? '' }}
+            @endif
+        </td>
         <td class="text-right">{{number_format($data->amount+$row->sales_tax+$row->sales_tax_further+$fright+$row->cartage_amount + $row->advance_tax_amount,2)}}</td>
         <td class="text-center">{{$status}}</td>
         <td id="stat{{ $row->id }}" class="text-center"><?php echo SalesHelper::si_status($row->si_status)?></td>

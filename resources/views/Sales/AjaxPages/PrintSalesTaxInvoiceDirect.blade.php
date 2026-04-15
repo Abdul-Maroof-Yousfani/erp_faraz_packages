@@ -115,10 +115,16 @@ $AmountInWordsMain =0;
                                         $showBuyerNTN = trim($customer_data->cnic_ntn ?? '') != '';
                                         $showBuyerUnit = $sales_tax_invoice->so_id != 0 && trim($sales_order->buyers_unit ?? '') != '';
                                     @endphp
-                                    @if($showBuyerName)
+                                 
+                                    @if($sales_tax_invoice->walkin_customer == 1)
                                         <tr>
-                                            <th style="border:1px solid black;width: 50%"  class="text-left" style="border: solid 1px;">BUYER'S NAME</th>
-                                            <td style="border:1px solid black; width: 50%" class="text-left"><strong><?php echo ucwords($customer_data->name ?? '')?></strong></td>
+                                            <th style="border:1px solid black;" class="text-left" style="width:60%; border: solid 1px;">BUYER'S NAME</th>
+                                            <td style="border:1px solid black;" class="text-left" style="width:40%;"><?php echo $sales_tax_invoice->walkin_customer_name; ?></td>
+                                        </tr>
+                                    @else
+                                        <tr>
+                                            <th style="border:1px solid black;" class="text-left" style="width:60%; border: solid 1px;">BUYER'S NAME</th>
+                                            <td style="border:1px solid black;" class="text-left" style="width:40%;"><?php echo ucwords($customer_data->name ?? '');?></td>
                                         </tr>
                                     @endif
 
