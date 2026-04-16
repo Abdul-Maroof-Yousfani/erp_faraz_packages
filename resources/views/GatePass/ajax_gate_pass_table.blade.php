@@ -46,15 +46,16 @@ use App\Helpers\CommonHelper;
                             </button>
                             <ul class="dropdown-menu">
                                 <li>
+                                    <a href="javascript:void(0)" onclick="showDetailModelOneParamerter('pdc/viewGatePassDetailAjax','{{ $gatePass->id }}','View Gate Pass Detail','{{ $m }}')" title="View">
+                                        <i class="fa-regular fa-eye"></i> View
+                                    </a>
                                     <a href="{{ url('/pdc/editGatePassForm/' . $gatePass->id . '?m=' . $m) }}" type="button" class="dropdown-item_sale_order_list dropdown-item">
                                         <i class="fa-solid fa-pencil"></i> Edit
                                     </a>
                                     <a href="{{ url('/pdc/deleteGatePass/' . $gatePass->id . '?m=' . $m) }}" class="dropdown-item_sale_order_list dropdown-item" onclick="return confirm('Delete this gate pass?')">
                                         <i class="fa-solid fa-trash"></i> Delete
                                     </a>
-                                    <a href="javascript:void(0)" onclick="showDetailModelOneParamerter('pdc/viewGatePassDetailAjax','{{ $gatePass->id }}','View Gate Pass Detail','{{ $m }}')" title="View">
-                                        <i class="fa-regular fa-eye"></i> View
-                                    </a>
+                                 
                                 </li>
                             </ul>
                         </div>
