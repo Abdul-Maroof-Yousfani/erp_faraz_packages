@@ -3589,6 +3589,19 @@ echo "aa"; die;
         $m = $_GET['m'] ?? Session::get('run_company');
         CommonHelper::companyDatabaseConnection($m);
 
+        $gatePassEdit = null;
+        $selectedGatePassType = old('gate_pass_type', '');
+        $selectedSalesInvoiceId = old('sales_invoice_id', '');
+        $selectedDeliveryNoteId = old('delivery_note_id', '');
+        $description = old('description', '');
+        $gatePassDate = old('gate_pass_date', date('Y-m-d'));
+        $gatePassTime = old('gate_pass_time', date('H:i'));
+        $vehicleNo = old('vehicle_no', '');
+        $vehicleType = old('vehicle_type', '');
+        $driverName = old('driver_name', '');
+        $transporterName = old('transporter_name', '');
+        $vehicleContact = old('vehicle_contact', '');
+
         $gatePassNo = $this->generateGatePassNo(date('Y-m-d'));
 
         $directSaleInvoices = DB::connection('mysql2')
@@ -3694,6 +3707,133 @@ echo "aa"; die;
             'directSaleInvoiceItems',
             'deliveryNoteItems',
             'gatePassNo',
+            'gatePassEdit',
+            'selectedGatePassType',
+            'selectedSalesInvoiceId',
+            'selectedDeliveryNoteId',
+            'description',
+            'gatePassDate',
+            'gatePassTime',
+            'vehicleNo',
+            'vehicleType',
+            'driverName',
+            'transporterName',
+            'vehicleContact',
+            'm'
+        ));
+    }
+
+    public function editGatePassForm($id, Request $request)
+    {
+        $m = $request->input('m', $_GET['m'] ?? Session::get('run_company'));
+        CommonHelper::companyDatabaseConnection($m);
+
+        $gatePassEdit = DB::connection('mysql2')->table('gate_pass')->where('id', $id)->where('company_id', $m)->first();
+        if (empty($gatePassEdit)) {
+            CommonHelper::reconnectMasterDatabase();
+            return redirect()->back()->with('error', 'Gate pass not found.');
+        }
+
+        $selectedGatePassType = (string) ($gatePassEdit->gate_pass_type ?? '');
+        $selectedSalesInvoiceId = (string) ($gatePassEdit->gate_pass_type == 1 ? ($gatePassEdit->source_id ?? '') : '');
+        $selectedDeliveryNoteId = (string) ($gatePassEdit->gate_pass_type == 2 ? ($gatePassEdit->source_id ?? '') : '');
+        $description = $gatePassEdit->description ?? '';
+        $gatePassDate = $gatePassEdit->gate_pass_date ?? date('Y-m-d');
+        $gatePassTime = $gatePassEdit->gate_pass_time ?? date('H:i');
+        $vehicleNo = $gatePassEdit->vehicle_no ?? '';
+        $vehicleType = $gatePassEdit->vehicle_type ?? '';
+        $driverName = $gatePassEdit->driver_name ?? '';
+        $transporterName = $gatePassEdit->transporter_name ?? '';
+        $vehicleContact = $gatePassEdit->vehicle_contact ?? '';
+        $gatePassNo = $gatePassEdit->gate_pass_no ?? $this->generateGatePassNo(date('Y-m-d'));
+
+        $directSaleInvoices = DB::connection('mysql2')
+            ->table('sales_tax_invoice as sti')
+            ->leftJoin('customers as c', 'c.id', '=', 'sti.buyers_id')
+            ->where('sti.status', 1)
+            ->where(function ($query) {
+                $query->whereNull('sti.so_no')
+                    ->orWhere('sti.so_no', '')
+                    ->orWhere('sti.so_no', '0');
+            })
+            ->select('sti.id', 'sti.gi_no', 'sti.gi_date', 'sti.buyers_id', 'sti.gate_pass_status', 'c.name as customer_name')
+            ->orderBy('sti.id', 'DESC')
+            ->get();
+
+        $deliveryNotes = DB::connection('mysql2')
+            ->table('delivery_note as dn')
+            ->leftJoin('customers as c', 'c.id', '=', 'dn.buyers_id')
+            ->where('dn.status', 1)
+            ->select('dn.id', 'dn.gd_no', 'dn.gd_date', 'dn.buyers_id', 'dn.gate_pass_status', 'c.name as customer_name')
+            ->orderBy('dn.id', 'DESC')
+            ->get();
+
+        $directSaleInvoiceItems = [];
+        $directSaleInvoiceIds = $directSaleInvoices->pluck('id')->filter()->values()->all();
+        if (!empty($directSaleInvoiceIds)) {
+            $invoiceItems = DB::connection('mysql2')
+                ->table('sales_tax_invoice_data as a')
+                ->leftJoin('subitem as si', 'si.id', '=', 'a.item_id')
+                ->where('a.status', 1)
+                ->whereIn('a.master_id', $directSaleInvoiceIds)
+                ->select('a.master_id', 'a.item_id', DB::raw('COALESCE(NULLIF(a.description, \'\'), si.sub_ic) as item_name'), 'a.qty', 'a.rate', 'a.amount')
+                ->orderBy('a.master_id')
+                ->orderBy('a.id')
+                ->get();
+
+            foreach ($invoiceItems as $item) {
+                $directSaleInvoiceItems[$item->master_id][] = [
+                    'item_name' => $item->item_name,
+                    'qty' => $item->qty,
+                    'rate' => $item->rate,
+                    'amount' => $item->amount,
+                ];
+            }
+        }
+
+        $deliveryNoteItems = [];
+        $deliveryNoteIds = $deliveryNotes->pluck('id')->filter()->values()->all();
+        if (!empty($deliveryNoteIds)) {
+            $dnItems = DB::connection('mysql2')
+                ->table('delivery_note_data as a')
+                ->leftJoin('subitem as si', 'si.id', '=', 'a.item_id')
+                ->where('a.status', 1)
+                ->whereIn('a.master_id', $deliveryNoteIds)
+                ->select('a.master_id', 'a.item_id', DB::raw('COALESCE(NULLIF(a.`desc`, \'\'), si.sub_ic) as item_name'), 'a.qty', 'a.rate', 'a.amount')
+                ->orderBy('a.master_id')
+                ->orderBy('a.id')
+                ->get();
+
+            foreach ($dnItems as $item) {
+                $deliveryNoteItems[$item->master_id][] = [
+                    'item_name' => $item->item_name,
+                    'qty' => $item->qty,
+                    'rate' => $item->rate,
+                    'amount' => $item->amount,
+                ];
+            }
+        }
+
+        CommonHelper::reconnectMasterDatabase();
+
+        return view('GatePass.create_gate_pass_form', compact(
+            'directSaleInvoices',
+            'deliveryNotes',
+            'directSaleInvoiceItems',
+            'deliveryNoteItems',
+            'gatePassNo',
+            'gatePassEdit',
+            'selectedGatePassType',
+            'selectedSalesInvoiceId',
+            'selectedDeliveryNoteId',
+            'description',
+            'gatePassDate',
+            'gatePassTime',
+            'vehicleNo',
+            'vehicleType',
+            'driverName',
+            'transporterName',
+            'vehicleContact',
             'm'
         ));
     }
@@ -3840,13 +3980,47 @@ echo "aa"; die;
                 'delivery_note_count' => (int) ($summary->delivery_note_count ?? 0),
                 'manual_count' => (int) ($summary->manual_count ?? 0),
             ],
-            'table_html' => view('GatePass.ajax_gate_pass_table', compact('gatePasses'))->render(),
+            'table_html' => view('GatePass.ajax_gate_pass_table', compact('gatePasses', 'm'))->render(),
             'page_info' => [
                 'from' => $gatePasses->firstItem() ?: 0,
                 'to' => $gatePasses->lastItem() ?: 0,
                 'total' => $gatePasses->total(),
             ],
         ]);
+    }
+
+    public function viewGatePassDetailAjax(Request $request)
+    {
+        $id = $request->input('id');
+        $m = $request->input('m', $_GET['m'] ?? Session::get('run_company'));
+        CommonHelper::companyDatabaseConnection($m);
+
+        $gatePass = DB::connection('mysql2')->table('gate_pass')
+            ->where('id', $id)
+            ->where('company_id', $m)
+            ->first();
+
+        if (empty($gatePass)) {
+            CommonHelper::reconnectMasterDatabase();
+            return response()->json(['message' => 'Gate pass not found.'], 404);
+        }
+
+        $items = DB::connection('mysql2')->table('gate_pass_data')
+            ->where('gate_pass_id', $id)
+            ->where('status', 1)
+            ->orderBy('id', 'ASC')
+            ->get();
+
+        $sourceTypeLabel = 'Manual';
+        if ((int) $gatePass->gate_pass_type === 1) {
+            $sourceTypeLabel = 'Direct Sale Invoice';
+        } elseif ((int) $gatePass->gate_pass_type === 2) {
+            $sourceTypeLabel = 'Delivery Note';
+        }
+
+        CommonHelper::reconnectMasterDatabase();
+
+        return view('GatePass.ajax_gate_pass_detail', compact('gatePass', 'items', 'sourceTypeLabel', 'm'));
     }
 
     public function storeGatePass(Request $request)
@@ -3998,6 +4172,180 @@ echo "aa"; die;
             DB::connection('mysql2')->rollBack();
             CommonHelper::reconnectMasterDatabase();
             return redirect()->back()->with('error', 'Gate pass could not be saved.');
+        }
+    }
+
+    public function updateGatePass(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'gate_pass_type' => 'required|in:1,2,3',
+            'description' => 'required|string',
+            'gate_pass_date' => 'required|date',
+            'gate_pass_time' => 'nullable',
+            'sales_invoice_id' => 'nullable',
+            'delivery_note_id' => 'nullable',
+        ]);
+
+        $m = $request->input('m', $_GET['m'] ?? Session::get('run_company'));
+        CommonHelper::companyDatabaseConnection($m);
+
+        DB::connection('mysql2')->beginTransaction();
+
+        try {
+            $gatePass = DB::connection('mysql2')->table('gate_pass')->where('id', $id)->where('company_id', $m)->first();
+            if (empty($gatePass)) {
+                DB::connection('mysql2')->rollBack();
+                CommonHelper::reconnectMasterDatabase();
+                return redirect()->back()->with('error', 'Gate pass not found.');
+            }
+
+            if ((int) $gatePass->gate_pass_type === 1 && !empty($gatePass->source_id)) {
+                DB::connection('mysql2')->table('sales_tax_invoice')->where('id', $gatePass->source_id)->update(['gate_pass_status' => 0]);
+            } elseif ((int) $gatePass->gate_pass_type === 2 && !empty($gatePass->source_id)) {
+                DB::connection('mysql2')->table('delivery_note')->where('id', $gatePass->source_id)->update(['gate_pass_status' => 0]);
+            }
+
+            DB::connection('mysql2')->table('gate_pass_data')->where('gate_pass_id', $id)->update(['status' => 2]);
+
+            $gatePassDate = $request->gate_pass_date;
+            $gatePassTime = $request->gate_pass_time ?: date('H:i');
+            $sourceId = null;
+            $sourceNo = '';
+            $itemRows = [];
+
+            if ((string) $request->gate_pass_type === '1') {
+                $sourceId = $request->sales_invoice_id;
+                $source = DB::connection('mysql2')->table('sales_tax_invoice')->where('id', $sourceId)->first();
+                if (empty($source)) {
+                    DB::connection('mysql2')->rollBack();
+                    CommonHelper::reconnectMasterDatabase();
+                    return redirect()->back()->with('error', 'Direct sale invoice not found.');
+                }
+                if (!empty($source->gate_pass_status)) {
+                    DB::connection('mysql2')->rollBack();
+                    CommonHelper::reconnectMasterDatabase();
+                    return redirect()->back()->with('error', 'Gate pass already created for this direct sale invoice.');
+                }
+                $sourceNo = $source->gi_no ?? '';
+                $itemRows = DB::connection('mysql2')->table('sales_tax_invoice_data as a')
+                    ->leftJoin('subitem as si', 'si.id', '=', 'a.item_id')
+                    ->where('a.status', 1)
+                    ->where('a.master_id', $sourceId)
+                    ->select('a.item_id', DB::raw('COALESCE(NULLIF(a.description, \'\'), si.sub_ic) as item_name'), 'a.qty', 'a.rate', 'a.amount')
+                    ->orderBy('a.id')
+                    ->get();
+            } elseif ((string) $request->gate_pass_type === '2') {
+                $sourceId = $request->delivery_note_id;
+                $source = DB::connection('mysql2')->table('delivery_note')->where('id', $sourceId)->first();
+                if (empty($source)) {
+                    DB::connection('mysql2')->rollBack();
+                    CommonHelper::reconnectMasterDatabase();
+                    return redirect()->back()->with('error', 'Delivery note not found.');
+                }
+                if (!empty($source->gate_pass_status)) {
+                    DB::connection('mysql2')->rollBack();
+                    CommonHelper::reconnectMasterDatabase();
+                    return redirect()->back()->with('error', 'Gate pass already created for this delivery note.');
+                }
+                $sourceNo = $source->gd_no ?? '';
+                $itemRows = DB::connection('mysql2')->table('delivery_note_data as a')
+                    ->leftJoin('subitem as si', 'si.id', '=', 'a.item_id')
+                    ->where('a.status', 1)
+                    ->where('a.master_id', $sourceId)
+                    ->select('a.item_id', DB::raw('COALESCE(NULLIF(a.`desc`, \'\'), si.sub_ic) as item_name'), 'a.qty', 'a.rate', 'a.amount')
+                    ->orderBy('a.id')
+                    ->get();
+            }
+
+            DB::connection('mysql2')->table('gate_pass')->where('id', $id)->update([
+                'gate_pass_no' => $gatePass->gate_pass_no,
+                'gate_pass_type' => $request->gate_pass_type,
+                'source_id' => $sourceId,
+                'source_no' => $sourceNo,
+                'gate_pass_date' => $gatePassDate,
+                'gate_pass_time' => $gatePassTime,
+                'description' => $request->description,
+                'vehicle_no' => $request->vehicle_no,
+                'vehicle_type' => $request->vehicle_type,
+                'driver_name' => $request->driver_name,
+                'transporter_name' => $request->transporter_name,
+                'vehicle_contact' => $request->vehicle_contact,
+                'company_id' => $m,
+                'username' => Auth::user()->name ?? '',
+                'status' => 1,
+                'date' => date('Y-m-d'),
+                'time' => date('H:i:s'),
+            ]);
+
+            foreach ($itemRows as $itemRow) {
+                DB::connection('mysql2')->table('gate_pass_data')->insert([
+                    'gate_pass_id' => $id,
+                    'source_type' => $request->gate_pass_type,
+                    'source_id' => $sourceId,
+                    'source_no' => $sourceNo,
+                    'source_item_id' => $itemRow->item_id ?? 0,
+                    'item_name' => $itemRow->item_name ?? '',
+                    'qty' => $itemRow->qty ?? 0,
+                    'rate' => $itemRow->rate ?? 0,
+                    'amount' => $itemRow->amount ?? 0,
+                    'is_editable' => 0,
+                    'company_id' => $m,
+                    'username' => Auth::user()->name ?? '',
+                    'status' => 1,
+                    'date' => date('Y-m-d'),
+                    'time' => date('H:i:s'),
+                ]);
+            }
+
+            if ((string) $request->gate_pass_type === '1') {
+                DB::connection('mysql2')->table('sales_tax_invoice')->where('id', $sourceId)->update(['gate_pass_status' => 1]);
+            } elseif ((string) $request->gate_pass_type === '2') {
+                DB::connection('mysql2')->table('delivery_note')->where('id', $sourceId)->update(['gate_pass_status' => 1]);
+            }
+
+            DB::connection('mysql2')->commit();
+            CommonHelper::reconnectMasterDatabase();
+
+            return redirect('/pdc/viewGatePassList?m=' . $m)->with('message', 'Gate pass updated successfully.');
+        } catch (\Throwable $e) {
+            DB::connection('mysql2')->rollBack();
+            CommonHelper::reconnectMasterDatabase();
+            return redirect()->back()->with('error', 'Gate pass could not be updated.');
+        }
+    }
+
+    public function deleteGatePass($id, Request $request)
+    {
+        $m = $request->input('m', $_GET['m'] ?? Session::get('run_company'));
+        CommonHelper::companyDatabaseConnection($m);
+
+        DB::connection('mysql2')->beginTransaction();
+
+        try {
+            $gatePass = DB::connection('mysql2')->table('gate_pass')->where('id', $id)->where('company_id', $m)->first();
+            if (empty($gatePass)) {
+                DB::connection('mysql2')->rollBack();
+                CommonHelper::reconnectMasterDatabase();
+                return redirect()->back()->with('error', 'Gate pass not found.');
+            }
+
+            if ((int) $gatePass->gate_pass_type === 1 && !empty($gatePass->source_id)) {
+                DB::connection('mysql2')->table('sales_tax_invoice')->where('id', $gatePass->source_id)->update(['gate_pass_status' => 0]);
+            } elseif ((int) $gatePass->gate_pass_type === 2 && !empty($gatePass->source_id)) {
+                DB::connection('mysql2')->table('delivery_note')->where('id', $gatePass->source_id)->update(['gate_pass_status' => 0]);
+            }
+
+            DB::connection('mysql2')->table('gate_pass_data')->where('gate_pass_id', $id)->update(['status' => 2]);
+            DB::connection('mysql2')->table('gate_pass')->where('id', $id)->update(['status' => 2]);
+
+            DB::connection('mysql2')->commit();
+            CommonHelper::reconnectMasterDatabase();
+
+            return redirect()->back()->with('message', 'Gate pass deleted successfully.');
+        } catch (\Throwable $e) {
+            DB::connection('mysql2')->rollBack();
+            CommonHelper::reconnectMasterDatabase();
+            return redirect()->back()->with('error', 'Gate pass could not be deleted.');
         }
     }
 

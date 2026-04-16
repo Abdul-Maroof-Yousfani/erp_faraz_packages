@@ -14,6 +14,7 @@ use App\Helpers\CommonHelper;
                 <th class="text-center">Source No</th>
                 <th class="text-center">Description</th>
                 <th class="text-center">Vehicle No</th>
+                <th class="text-center">Action</th>
                 <th class="text-center hide">Items</th>
                 <th class="text-center hide">Amount</th>
             </tr>
@@ -37,12 +38,33 @@ use App\Helpers\CommonHelper;
                     <td>{{ $gatePass->source_no ?: '-' }}</td>
                     <td>{{ $gatePass->description ?: '-' }}</td>
                     <td>{{ $gatePass->vehicle_no ?: '-' }}</td>
+                    <td class="text-center">
+                        
+                        <div class="dropdown" style="display:inline-block;">
+                            <button class="drop-bt dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false" title="More Actions">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a href="{{ url('/pdc/editGatePassForm/' . $gatePass->id . '?m=' . $m) }}" type="button" class="dropdown-item_sale_order_list dropdown-item">
+                                        <i class="fa-solid fa-pencil"></i> Edit
+                                    </a>
+                                    <a href="{{ url('/pdc/deleteGatePass/' . $gatePass->id . '?m=' . $m) }}" class="dropdown-item_sale_order_list dropdown-item" onclick="return confirm('Delete this gate pass?')">
+                                        <i class="fa-solid fa-trash"></i> Delete
+                                    </a>
+                                    <a href="javascript:void(0)" onclick="showDetailModelOneParamerter('pdc/viewGatePassDetailAjax','{{ $gatePass->id }}','View Gate Pass Detail','{{ $m }}')" title="View">
+                                        <i class="fa-regular fa-eye"></i> View
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
                     <td class="text-center hide">{{ (int) ($gatePass->items_count ?? 0) }}</td>
                     <td class="text-right hide">{{ number_format((float) ($gatePass->total_amount ?? 0), 2) }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="10" class="text-center text-muted">No gate passes found for the selected filters.</td>
+                    <td colspan="12" class="text-center text-muted">No gate passes found for the selected filters.</td>
                 </tr>
             @endforelse
         </tbody>

@@ -106,7 +106,7 @@ $currentToDate = $currentDate;
                                 <strong class="small text-uppercase">All Gate Passes</strong>
                             </div>
                             <div id="gatePassTableWrap">
-                                @include('GatePass.ajax_gate_pass_table', ['gatePasses' => $gatePasses])
+                                @include('GatePass.ajax_gate_pass_table', ['gatePasses' => $gatePasses, 'm' => $m])
                             </div>
                         </div>
                     </div>

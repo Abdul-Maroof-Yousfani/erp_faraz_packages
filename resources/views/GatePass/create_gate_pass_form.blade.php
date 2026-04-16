@@ -24,9 +24,12 @@ $currentTime = date('H:i');
                 </div>
 
                 <div class="panel-body">
-                    <form id="gatePassForm" method="post" action="{{ url('/pdc/storeGatePass?m=' . $m) }}">
+                    <form id="gatePassForm" method="post" action="{{ !empty($gatePassEdit) ? url('/pdc/updateGatePass/' . $gatePassEdit->id . '?m=' . $m) : url('/pdc/storeGatePass?m=' . $m) }}">
                         {{ csrf_field() }}
                         <input type="hidden" name="m" value="{{ $m }}">
+                        @if(!empty($gatePassEdit))
+                            <input type="hidden" name="gate_pass_id" value="{{ $gatePassEdit->id }}">
+                        @endif
 
                         <div class="panel panel-default">
                             {{-- <div class="panel-heading">
@@ -38,9 +41,9 @@ $currentTime = date('H:i');
                                         <label class="control-label small" for="gate_pass_type">Input Type</label>
                                         <select class="form-control" id="gate_pass_type" name="gate_pass_type">
                                             <option value="">Select input type</option>
-                                            <option value="1">Against Direct Sale Invoice</option>
-                                            <option value="2">Against Delivery Note</option>
-                                            <option value="3">Manual</option>
+                                            <option value="1" @if(($selectedGatePassType ?? '') === '1') selected @endif>Against Direct Sale Invoice</option>
+                                            <option value="2" @if(($selectedGatePassType ?? '') === '2') selected @endif>Against Delivery Note</option>
+                                            <option value="3" @if(($selectedGatePassType ?? '') === '3') selected @endif>Manual</option>
                                         </select>
                                         {{-- <div class="help-block">Direct invoice and delivery note will load read-only items.</div> --}}
                                     </div>
@@ -54,7 +57,7 @@ $currentTime = date('H:i');
                                         <select class="form-control" id="sales_invoice_id" name="sales_invoice_id">
                                             <option value="">Select direct sale invoice</option>
                                             @forelse($directSaleInvoices as $invoice)
-                                                <option value="{{ $invoice->id }}" @if(!empty($invoice->gate_pass_status) && (int) $invoice->gate_pass_status === 1) disabled @endif>
+                                                <option value="{{ $invoice->id }}" @if((string)($selectedSalesInvoiceId ?? '') === (string) $invoice->id) selected @elseif(!empty($invoice->gate_pass_status) && (int) $invoice->gate_pass_status === 1) disabled @endif>
                                                     {{ strtoupper($invoice->gi_no) }}
                                                     @if(!empty($invoice->customer_name))
                                                         - {{ $invoice->customer_name }}
@@ -62,7 +65,7 @@ $currentTime = date('H:i');
                                                     @if(!empty($invoice->gi_date))
                                                         - {{ CommonHelper::changeDateFormat($invoice->gi_date) }}
                                                     @endif
-                                                    @if(!empty($invoice->gate_pass_status) && (int) $invoice->gate_pass_status === 1)
+                                                    @if(!empty($invoice->gate_pass_status) && (int) $invoice->gate_pass_status === 1 && (string)($selectedSalesInvoiceId ?? '') !== (string) $invoice->id)
                                                         - Gate Pass Created
                                                     @endif
                                                 </option>
@@ -82,7 +85,7 @@ $currentTime = date('H:i');
                                         <select class="form-control" id="delivery_note_id" name="delivery_note_id">
                                             <option value="">Select delivery note</option>
                                             @forelse($deliveryNotes as $note)
-                                                <option value="{{ $note->id }}" @if(!empty($note->gate_pass_status) && (int) $note->gate_pass_status === 1) disabled @endif>
+                                                <option value="{{ $note->id }}" @if((string)($selectedDeliveryNoteId ?? '') === (string) $note->id) selected @elseif(!empty($note->gate_pass_status) && (int) $note->gate_pass_status === 1) disabled @endif>
                                                     {{ strtoupper($note->gd_no) }}
                                                     @if(!empty($note->customer_name))
                                                         - {{ $note->customer_name }}
@@ -90,7 +93,7 @@ $currentTime = date('H:i');
                                                     @if(!empty($note->gd_date))
                                                         - {{ CommonHelper::changeDateFormat($note->gd_date) }}
                                                     @endif
-                                                    @if(!empty($note->gate_pass_status) && (int) $note->gate_pass_status === 1)
+                                                    @if(!empty($note->gate_pass_status) && (int) $note->gate_pass_status === 1 && (string)($selectedDeliveryNoteId ?? '') !== (string) $note->id)
                                                         - Gate Pass Created
                                                     @endif
                                                 </option>
@@ -127,8 +130,8 @@ $currentTime = date('H:i');
                                             <th width="50" class="text-center">#</th>
                                             <th class="text-center">Item Name</th>
                                             <th width="110" class="text-center">Qty</th>
-                                            <th width="110" class="text-center">Rate</th>
-                                            <th width="130" class="text-center">Amount</th>
+                                            <th width="110" class="text-center hide">Rate</th>
+                                            <th width="130" class="text-center hide">Amount</th>
                                         </tr>
                                     </thead>
                                     <tbody id="gatePassItemsBody">
@@ -148,13 +151,13 @@ $currentTime = date('H:i');
                                 <div class="row">
                                     <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12">
                                         <label class="control-label small" for="description">Description</label>
-                                        <textarea class="form-control" id="description" name="description" placeholder="Add gate pass description"></textarea>
+                                        <textarea class="form-control" id="description" name="description" placeholder="Add gate pass description">{{ $description ?? '' }}</textarea>
                                     </div>
                                     <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
                                         <label class="control-label small" for="gate_pass_date">Date</label>
-                                        <input type="date" class="form-control" id="gate_pass_date" name="gate_pass_date" value="{{ $currentDate }}">
+                                        <input type="date" class="form-control" id="gate_pass_date" name="gate_pass_date" value="{{ $gatePassDate ?? $currentDate }}">
                                         <label class="control-label small" for="gate_pass_time">Time <span class="text-muted">optional, defaults to current time</span></label>
-                                        <input type="time" class="form-control" id="gate_pass_time" name="gate_pass_time" value="{{ $currentTime }}">
+                                        <input type="time" class="form-control" id="gate_pass_time" name="gate_pass_time" value="{{ $gatePassTime ?? $currentTime }}">
                                     </div>
                                 </div>
                             </div>
@@ -169,25 +172,25 @@ $currentTime = date('H:i');
                                 <div class="row">
                                     <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
                                         <label class="control-label small" for="vehicle_no">Vehicle No</label>
-                                        <input type="text" class="form-control" id="vehicle_no" name="vehicle_no" placeholder="Vehicle number">
+                                        <input type="text" class="form-control" id="vehicle_no" name="vehicle_no" placeholder="Vehicle number" value="{{ $vehicleNo ?? '' }}">
                                     </div>
                                     <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
                                         <label class="control-label small" for="vehicle_type">Vehicle Type</label>
-                                        <input type="text" class="form-control" id="vehicle_type" name="vehicle_type" placeholder="Truck, van, etc.">
+                                        <input type="text" class="form-control" id="vehicle_type" name="vehicle_type" placeholder="Truck, van, etc." value="{{ $vehicleType ?? '' }}">
                                     </div>
                                     <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
                                         <label class="control-label small" for="driver_name">Driver Name</label>
-                                        <input type="text" class="form-control" id="driver_name" name="driver_name" placeholder="Driver name">
+                                        <input type="text" class="form-control" id="driver_name" name="driver_name" placeholder="Driver name" value="{{ $driverName ?? '' }}">
                                     </div>
                                     <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
                                         <label class="control-label small" for="vehicle_contact">Contact</label>
-                                        <input type="text" class="form-control" id="vehicle_contact" name="vehicle_contact" placeholder="Optional contact">
+                                        <input type="text" class="form-control" id="vehicle_contact" name="vehicle_contact" placeholder="Optional contact" value="{{ $vehicleContact ?? '' }}">
                                     </div>
                                 </div>
                                 <div class="row hide">
                                     <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                                         <label class="control-label small" for="transporter_name">Transporter / Company</label>
-                                        <input type="text" class="form-control" id="transporter_name" name="transporter_name" placeholder="Transporter name">
+                                        <input type="text" class="form-control" id="transporter_name" name="transporter_name" placeholder="Transporter name" value="{{ $transporterName ?? '' }}">
                                     </div>
                                 </div>
                             </div>
@@ -240,8 +243,8 @@ $currentTime = date('H:i');
                     <td class="text-center">${index + 1}</td>
                     <td>${item.item_name ?? ''}</td>
                     <td class="text-right">${formatNumber(item.qty)}</td>
-                    <td class="text-right">${formatNumber(item.rate)}</td>
-                    <td class="text-right">${formatNumber(item.amount)}</td>
+                    <td class="text-right hide">${formatNumber(item.rate)}</td>
+                    <td class="text-right hide">${formatNumber(item.amount)}</td>
                 </tr>
             `;
         });
