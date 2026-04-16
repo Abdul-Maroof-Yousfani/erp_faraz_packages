@@ -988,6 +988,13 @@ Route::group(['prefix' => 'pdc', 'middleware' => 'mysql2', 'before' => 'csrf'], 
     Route::get('/delete_supp', 'PurchaseDataCallController@delete_supp');
 
 
+    //gate pass routes
+    Route::get('/createGatePassForm', 'PurchaseDataCallController@createGatePassForm');
+    Route::get('/viewGatePassList', 'PurchaseDataCallController@viewGatePassList');
+    Route::get('/viewGatePassListAjax', 'PurchaseDataCallController@viewGatePassListAjax');
+    Route::post('/storeGatePass', 'PurchaseDataCallController@storeGatePass');
+
+
 
     Route::get('/createSupplierAccount', 'PurchaseDataCallController@createSupplierAccount');
     Route::get('/get_sub_category', 'PurchaseDataCallController@get_sub_category');
