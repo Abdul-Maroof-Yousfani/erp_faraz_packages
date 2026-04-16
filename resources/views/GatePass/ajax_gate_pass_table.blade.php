@@ -1,5 +1,6 @@
 <?php
 use App\Helpers\CommonHelper;
+use Carbon\Carbon;
 ?>
 
 <div class="table-responsive">
@@ -24,7 +25,7 @@ use App\Helpers\CommonHelper;
                     <td class="text-center">{{ $gatePasses->firstItem() + $index }}</td>
                     <td>{{ $gatePass->gate_pass_no }}</td>
                     <td class="text-center">{{ !empty($gatePass->gate_pass_date) ? CommonHelper::changeDateFormat($gatePass->gate_pass_date) : '-' }}</td>
-                    <td class="text-center">{{ $gatePass->gate_pass_time ?? '-' }}</td>
+                    <td class="text-center">{{ Carbon\Carbon::parse($gatePass->gate_pass_time)->format('h:i A') ?? '-' }}</td>
                     <td class="text-center">
                         @if((int) $gatePass->gate_pass_type === 1)
                             <span class="label label-success">Direct Sale</span>
