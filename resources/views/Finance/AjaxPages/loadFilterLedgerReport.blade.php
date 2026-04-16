@@ -60,18 +60,56 @@ $m=Input::get('m');
 
         $quarterVoucherNos = collect($quarter)->pluck('voucher_no')->filter()->unique()->values()->all();
         $ledgerItemDetails = [];
+        $purchaseVoucherPaymentTerms = [];
         if (!empty($quarterVoucherNos)) {
             $ledgerItems = DB::Connection('mysql2')->table('stock as s')
                 ->join('subitem as si', 'si.id', '=', 's.sub_item_id')
                 ->whereIn('s.status', [1, 3])
                 ->whereIn('s.voucher_no', $quarterVoucherNos)
-                ->select('s.voucher_no', 'si.sub_ic', DB::raw('SUM(s.qty) as qty'))
-                ->groupBy('s.voucher_no', 'si.sub_ic')
+                ->select('s.voucher_no', 'si.sub_ic', 's.rate', DB::raw('SUM(s.qty) as qty'))
+                ->groupBy('s.voucher_no', 'si.sub_ic', 's.rate')
                 ->orderBy('si.sub_ic')
+                ->orderBy('s.rate')
                 ->get();
 
             foreach ($ledgerItems as $ledgerItem) {
                 $ledgerItemDetails[$ledgerItem->voucher_no][] = $ledgerItem;
+            }
+
+            $purchaseVoucherRows = DB::Connection('mysql2')->table('new_purchase_voucher as npv')
+                ->whereIn('npv.pv_no', $quarterVoucherNos)
+                ->select('npv.pv_no', 'npv.supplier')
+                ->get();
+
+            $supplierIds = $purchaseVoucherRows->pluck('supplier')->filter()->unique()->values()->all();
+            $supplierTerms = collect();
+            if (!empty($supplierIds)) {
+                $supplierTerms = DB::Connection('mysql2')->table('supplier')
+                    ->whereIn('id', $supplierIds)
+                    ->select('id', 'terms_of_payment', 'no_of_days')
+                    ->get()
+                    ->keyBy('id');
+            }
+
+            foreach ($purchaseVoucherRows as $purchaseVoucherRow) {
+                $supplier = $supplierTerms->get($purchaseVoucherRow->supplier);
+                $termLabel = '-';
+
+                if ($supplier) {
+                    if ((int) $supplier->terms_of_payment === 1) {
+                        $termLabel = 'Advance';
+                    } elseif ((int) $supplier->terms_of_payment === 2) {
+                        $termLabel = 'Against Delivery';
+                    } elseif ((int) $supplier->terms_of_payment === 3) {
+                        $termLabel = 'Credit';
+                    }
+
+                    if (!empty($supplier->no_of_days)) {
+                        $termLabel .= ' (' . $supplier->no_of_days . ' Days)';
+                    }
+                }
+
+                $purchaseVoucherPaymentTerms[$purchaseVoucherRow->pv_no] = $termLabel;
             }
         }
 
@@ -100,11 +138,11 @@ $m=Input::get('m');
 
         <tr>
             <th style="width: 100px" class="text-center">Voucher No</th>
+            <th style="width: 220px" class="text-center">Item Details</th>
             <th style="width: 120px" class="text-center">Date</th>
             <th style="width: 120px" class="text-center">V Type</th>
             <th style="width: 120px" class="text-center">Cheque No</th>
             <th style="width: 120px" class="text-center">Description</th>
-            <th style="width: 220px" class="text-center">Item Details</th>
             <th class="text-center" style="width:100px;">Dr</th>
             <th class="text-center" style="width:100px;">Cr.</th>
             <th class="text-center" style="width:100px;">Balance</th>
@@ -287,6 +325,21 @@ $m=Input::get('m');
 
         <tr  title="<?php echo $trow->voucher_type ?>"  class="hov" >
             <td><?php echo strtoupper($trow->voucher_no) ?></td>
+            <td class="text-left">
+                <?php
+                    $itemDetails = [];
+                    if (!empty($ledgerItemDetails[$trow->voucher_no])) {
+                        foreach ($ledgerItemDetails[$trow->voucher_no] as $ledgerItem) {
+                            $paymentTerm = $purchaseVoucherPaymentTerms[$trow->voucher_no] ?? '-';
+                            $itemDetails[] = 'Item Name: ' . e($ledgerItem->sub_ic)
+                                . '<br>' . 'Qty: ' . number_format((float) $ledgerItem->qty, 2)
+                                . '<br>' . 'Rate: ' . number_format((float) ($ledgerItem->rate ?? 0), 2)
+                                . '<br>' . 'Payment Term: ' . e($paymentTerm);
+                        }
+                    }
+                    echo implode('<br>', $itemDetails);
+                ?>
+            </td>
                 <td class="text-center"> <a onclick="showDetailModelOneParamerter('<?php echo $detail?>','<?php echo 'other'.','.$trow->voucher_no;?>','<?php echo $PageTitle?>','<?php echo $_GET['m']?>','')" class="btn btn-xs btn-success"><?php echo  date_format(date_create($trow->v_date), 'd-M-Y'); ?></a></td>
             <td class="text-center">{{$type}}</td>
             <td class="text-left"><?php echo $cheque_no.'</br>';if ($cheque_date!='0000-00-00' && $cheque_date!=''): date_format(date_create($cheque_date), 'd-m-Y');endif; ?></td>
@@ -299,17 +352,6 @@ $m=Input::get('m');
                     // else:
                     // echo $trow->particulars.' '.$so.strtoupper($ref_no);
                     // endif;
-                ?>
-            </td>
-            <td class="text-left">
-                <?php
-                    $itemDetails = [];
-                    if (!empty($ledgerItemDetails[$trow->voucher_no])) {
-                        foreach ($ledgerItemDetails[$trow->voucher_no] as $ledgerItem) {
-                            $itemDetails[] = 'Item Name: ' . $ledgerItem->sub_ic . '<br>' . 'Qty: ' . number_format((float) $ledgerItem->qty, 2);
-                        }
-                    }
-                    echo implode('<br>', $itemDetails);
                 ?>
             </td>
             <td class="text-right"><?php if($trow->debit_credit==1){ $debit=$trow->amount; echo number_format($trow->amount,2); $total_debit+=$trow->amount;} ?></td>
