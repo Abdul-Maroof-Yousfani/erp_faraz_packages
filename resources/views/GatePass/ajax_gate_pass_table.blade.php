@@ -14,8 +14,8 @@ use App\Helpers\CommonHelper;
                 <th class="text-center">Source No</th>
                 <th class="text-center">Description</th>
                 <th class="text-center">Vehicle No</th>
-                <th class="text-center">Items</th>
-                <th class="text-center">Amount</th>
+                <th class="text-center hide">Items</th>
+                <th class="text-center hide">Amount</th>
             </tr>
         </thead>
         <tbody>
@@ -37,8 +37,8 @@ use App\Helpers\CommonHelper;
                     <td>{{ $gatePass->source_no ?: '-' }}</td>
                     <td>{{ $gatePass->description ?: '-' }}</td>
                     <td>{{ $gatePass->vehicle_no ?: '-' }}</td>
-                    <td class="text-center">{{ (int) ($gatePass->items_count ?? 0) }}</td>
-                    <td class="text-right">{{ number_format((float) ($gatePass->total_amount ?? 0), 2) }}</td>
+                    <td class="text-center hide">{{ (int) ($gatePass->items_count ?? 0) }}</td>
+                    <td class="text-right hide">{{ number_format((float) ($gatePass->total_amount ?? 0), 2) }}</td>
                 </tr>
             @empty
                 <tr>
