@@ -58,6 +58,23 @@ $m=Input::get('m');
   											WHERE acc_id = ".$acc_id." and opening_bal=0  AND status=1 $clause AND v_date
   											 between '".$from."' and '".$to."'  ORDER BY v_date");
 
+        $quarterVoucherNos = collect($quarter)->pluck('voucher_no')->filter()->unique()->values()->all();
+        $ledgerItemDetails = [];
+        if (!empty($quarterVoucherNos)) {
+            $ledgerItems = DB::Connection('mysql2')->table('stock as s')
+                ->join('subitem as si', 'si.id', '=', 's.sub_item_id')
+                ->whereIn('s.status', [1, 3])
+                ->whereIn('s.voucher_no', $quarterVoucherNos)
+                ->select('s.voucher_no', 'si.sub_ic', DB::raw('SUM(s.qty) as qty'))
+                ->groupBy('s.voucher_no', 'si.sub_ic')
+                ->orderBy('si.sub_ic')
+                ->get();
+
+            foreach ($ledgerItems as $ledgerItem) {
+                $ledgerItemDetails[$ledgerItem->voucher_no][] = $ledgerItem;
+            }
+        }
+
         CommonHelper::reconnectMasterDatabase();
         ?>
         <thead>
@@ -70,13 +87,13 @@ $m=Input::get('m');
             </td>
         </tr>
         <tr>
-            <td colspan="8" style="font-size: 20px;" class="text-center"><b>Company Name:   (<?php echo FinanceHelper::getCompanyName(Session::get('run_company'));?>)</b></td>
+            <td colspan="9" style="font-size: 20px;" class="text-center"><b>Company Name:   (<?php echo FinanceHelper::getCompanyName(Session::get('run_company'));?>)</b></td>
         </tr>
         <tr>
-            <td colspan="8" style="font-size: 20px;" class="text-center"><b>Account Name:   (<?php echo CommonHelper::get_account_code($acc_id).'---'.CommonHelper::get_account_name($acc_id);?>)</b></td>
+            <td colspan="9" style="font-size: 20px;" class="text-center"><b>Account Name:   (<?php echo CommonHelper::get_account_code($acc_id).'---'.CommonHelper::get_account_name($acc_id);?>)</b></td>
         </tr>
         <tr>
-            <td style="font-size: 20px;" class="text-center" colspan="8"><b>From Date: (<?php echo date_format(date_create($from), 'd-m-Y');?>)==========To Date: (<?php echo date_format(date_create($to), 'd-m-Y');?>)</b></td>
+            <td style="font-size: 20px;" class="text-center" colspan="9"><b>From Date: (<?php echo date_format(date_create($from), 'd-m-Y');?>)==========To Date: (<?php echo date_format(date_create($to), 'd-m-Y');?>)</b></td>
 
         </tr>
 
@@ -87,6 +104,7 @@ $m=Input::get('m');
             <th style="width: 120px" class="text-center">V Type</th>
             <th style="width: 120px" class="text-center">Cheque No</th>
             <th style="width: 120px" class="text-center">Description</th>
+            <th style="width: 220px" class="text-center">Item Details</th>
             <th class="text-center" style="width:100px;">Dr</th>
             <th class="text-center" style="width:100px;">Cr.</th>
             <th class="text-center" style="width:100px;">Balance</th>
@@ -106,7 +124,7 @@ $m=Input::get('m');
         <tr>
             <td></td>
             <td></td>
-            <td class="text-left" colspan="3">Opening Balance</td>
+            <td class="text-left" colspan="4">Opening Balance</td>
             <td class="text-right"><?php if ($amount>=0): echo number_format($amount,2); $balance=$amount;  endif; ?></td>
             <td class="text-right"><?php if ($amount < 0): $balance=$amount;     $amount=$amount*-1;  echo number_format($amount,2);   endif; ?></td>
             <td class="text-right">
@@ -283,6 +301,17 @@ $m=Input::get('m');
                     // endif;
                 ?>
             </td>
+            <td class="text-left">
+                <?php
+                    $itemDetails = [];
+                    if (!empty($ledgerItemDetails[$trow->voucher_no])) {
+                        foreach ($ledgerItemDetails[$trow->voucher_no] as $ledgerItem) {
+                            $itemDetails[] = 'Item Name: ' . $ledgerItem->sub_ic . '<br>' . 'Qty: ' . number_format((float) $ledgerItem->qty, 2);
+                        }
+                    }
+                    echo implode('<br>', $itemDetails);
+                ?>
+            </td>
             <td class="text-right"><?php if($trow->debit_credit==1){ $debit=$trow->amount; echo number_format($trow->amount,2); $total_debit+=$trow->amount;} ?></td>
             <td class="text-right"><?php if($trow->debit_credit==0){ $credit=$trow->amount; echo number_format($trow->amount,2); $total_credit+=$trow->amount;} ?></td>
             <?php
@@ -310,7 +339,7 @@ $m=Input::get('m');
 
         <?php endforeach; ?>
         <tr>
-            <td class="text-center" colspan="5"><b style="font-size: large;">TOTAL</b></td>
+            <td class="text-center" colspan="6"><b style="font-size: large;">TOTAL</b></td>
             <td class="text-right" colspan="1"><b style="font-size: large;"><?php echo  number_format($total_debit,2) ?></b></td>
             <td class="text-right" colspan="1"><b style="font-size: large;"><?php echo  number_format($total_credit,2) ?></b></td>
             <td  class="text-center" colspan="1"><b style="font-size: large;color: #ff9999"><?php // echo  number_format($total_debit-$total_credit) ?></b></td>
