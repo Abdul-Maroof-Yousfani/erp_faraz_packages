@@ -12,6 +12,7 @@ if ($accType == "client") {
 }
 
 $icons = [
+
     "Finance" => "fa fa-usd",
     "Purchase" => "fa fa-money-bill",
     "Inventory" => "fa fa-list",
@@ -34,6 +35,7 @@ $icons = [
     "Color" => "glyphicon glyphicon-cog",
     "Invertory Master" => "glyphicon glyphicon-cog",
     "Ledger" => "fa fa-usd",
+    "Gate Pass" => "fa fa-usd",
 ];
     CommonHelper::reconnectMasterDatabase();
     ?>

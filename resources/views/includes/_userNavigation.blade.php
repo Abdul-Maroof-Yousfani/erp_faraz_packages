@@ -23,6 +23,8 @@ $icons = array(
     'Production Master' => 'glyphicon glyphicon-wrench',
     "Assets" => "glyphicon glyphicon-list",
     "Machine Production" => "glyphicon glyphicon-cog",
+        "Gate Pass" => "fa fa-usd",
+
 );
 $accType = Auth::user()->acc_type;
 if($accType == 'client'){$m = $_GET['m'];}else{$m = Auth::user()->company_id;}
