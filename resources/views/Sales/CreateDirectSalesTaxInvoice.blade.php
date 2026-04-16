@@ -826,7 +826,7 @@ use App\Helpers\ReuseableCode;
 					// Bundle: Set fixed 10 KG and make readonly
 					$('#actual_qty' + index).val(10);
 					$('#qty_lbs' + index).val((10 * 2.2).toFixed(2));
-					$('#actual_qty' + index).prop('readonly', true);
+					$('#actual_qty' + index).prop('readonly', false);
 					$('#qty_lbs' + index).prop('readonly', true);
 					$('#rate' + index).val('');
 					 $('#amount' + index).val('');
@@ -863,17 +863,16 @@ use App\Helpers\ReuseableCode;
 			function bag_qq(counter) {
 				var bags_qty = parseFloat($('#pack_size' + counter).val()) || 1;
 				var pack_qty = parseFloat($('#pack_qty').val()) || 0;
+				var actual_qty = parseFloat($('#actual_qty' + counter).val()) || 0;
 				var selectedUom = $('#uom_id' + counter).val();
 
-				// For Bundle: multiply 10 by pack_size (bags_qty)
+				// For Bundle: keep actual_qty editable and multiply it by pack_size
 				if (selectedUom.toLowerCase().includes('bundle')) {
-					var total_qty = (10 * bags_qty).toFixed(2);
-					$('#actual_qty' + counter).val(total_qty);
+					var total_qty = (actual_qty * bags_qty).toFixed(2);
 					$('#qty_lbs' + counter).val((total_qty * 2.2).toFixed(2));
 				}
 				// For Pcs: actual_qty is manually entered, auto-calculate lbs
 				else if (selectedUom.toLowerCase().includes('pcs') || selectedUom.toLowerCase().includes('pieces')) {
-					var actual_qty = parseFloat($('#actual_qty' + counter).val()) || 0;
 					$('#qty_lbs' + counter).val((actual_qty * 2.2).toFixed(2));
 				} else {
 					// For other UOMs: use pack_qty
@@ -1029,10 +1028,18 @@ use App\Helpers\ReuseableCode;
 
 			function claculation(number) {
 				var qty = $('#actual_qty' + number).val();
+				var packSize = parseFloat($('#pack_size' + number).val()) || 1;
+				var selectedUom = $('#uom_id' + number).val() || '';
 				var rate = $('#rate' + number).val();
-				var qty_lbs = parseFloat(qty) * 2.2 || 0;
+				var totalQty = parseFloat(qty) || 0;
 
-				var total = parseFloat(qty * rate).toFixed(2);
+				if (selectedUom.toLowerCase().includes('bundle')) {
+					totalQty = totalQty * packSize;
+				}
+
+				var qty_lbs = parseFloat(totalQty) * 2.2 || 0;
+
+				var total = parseFloat(totalQty * rate).toFixed(2);
 				$('#amount' + number).val(total);
 
 				var amount = 0;
