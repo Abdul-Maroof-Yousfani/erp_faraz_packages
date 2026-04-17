@@ -224,7 +224,19 @@ use App\Helpers\ReuseableCode;
 
 								</select>
 							</div>
-							
+
+							<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+								<label class="sf-label">Commission Buyer</label>
+								<select style="width: 100%" name="commission_buyer" id="commission_buyer"
+									class="form-control select2">
+									<option value="">Select</option>
+									@foreach(SalesHelper::get_all_customer() as $row)
+										<option value="{{ $row->id}}">
+											{{ $row->name }}
+										</option>
+									@endforeach
+								</select>
+							</div>
 
 								<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12" id="walkin_customer_wrapper" style="display: none">
 									<label class="sf-label">Walkin Customer Name <span
@@ -263,7 +275,7 @@ use App\Helpers\ReuseableCode;
 														->get();
 
 														?>
-											<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12 ">
+											<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12 hide">
 												<label class="sf-label">Cr Account<span
 														class="rflabelsteric requiredField"><strong>*</strong></span></label>
 												<select class="form-control" id="acc_id" name="acc_id">
@@ -277,7 +289,8 @@ use App\Helpers\ReuseableCode;
 											</div>
 
 
-											<div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+
+											<div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 hide">
 												<label class="sf-label"> <a href="#"
 														onclick="showDetailModelOneParamerter('pdc/createCurrencyTypeForm')"
 														class="">Currency</a></label>
@@ -294,7 +307,7 @@ use App\Helpers\ReuseableCode;
 
 											</div>
 
-											<div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+											<div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 hide">
 												<label class="sf-label"> Currency Rate</label>
 												<span class="rflabelsteric"><strong>*</strong></span>
 												<input class="form-control" value="1" type="text" name="currency_rate"
@@ -354,6 +367,7 @@ use App\Helpers\ReuseableCode;
 														<th class="text-center" style="width: 11%;">Warehouse<span
 																class="rflabelsteric"><strong>*</strong></span></th>
 														<th class="text-center col-narrow">In Stock</th>
+														<th class="text-center col-narrow">Commission Rate</th>
 														<th class="text-center col-narrow">Rate<span
 																class="rflabelsteric"><strong>*</strong></span></th>
 														<th class="text-center col-narrow">Amount</th>
@@ -432,6 +446,12 @@ use App\Helpers\ReuseableCode;
 														<td class="">
 															<input readonly class="form-control instock zerovalidate"
 																name="instock[]" type="text" value="" id="instock1" />
+														</td>
+														
+														<td>
+															{{-- <label class="sf-label">Commission</label> --}}
+															<input type="text" class="form-control" placeholder=""
+																name="commission[]" id="commission1" value="" />
 														</td>
 														<td>
 															<input type="text" onkeyup="claculation('1')"
@@ -672,6 +692,10 @@ use App\Helpers\ReuseableCode;
 													<td class="">
 														<input readonly   class="form-control instock"  type="text" name="instock[]" id="instock${Counter}"/>
 													</td>
+														<td>
+															<input type="text" class="form-control" placeholder=""
+																name="commission[]" id="commission${Counter}" value="" />
+														</td>
 													<td>
 														<input type="text" onkeyup="claculation(${Counter})" onblur="claculation(${Counter})" class="form-control requiredField" name="rate[]" id="rate${Counter}"  min="1" value="">
 													</td>

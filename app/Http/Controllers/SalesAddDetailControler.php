@@ -1817,34 +1817,7 @@ class SalesAddDetailControler extends Controller
             // dd($customerType, $walkinCustomerName, $byers_id, $walkinCustomer);
 
          
-            foreach ($request->item_id as $key => $value) {
-
-                $stock = array
-                (
-                    'main_id' => '',
-                    'master_id' => '',
-                    'voucher_no' => $request->gi_no,
-                    'voucher_date' => $request->gi_date,
-                    'supplier_id' => 0,
-                    'customer_id' => $byers_id,
-                    'voucher_type' => 5,
-                    'rate' => $request->rate[$key],
-                    'sub_item_id' => $request->item_id[$key],
-                    'batch_code' => $request->batch_code[$key] ?? '0',
-                    'qty' => $request->actual_qty[$key],
-                    'discount_percent' => '',
-                    'discount_amount' => '',
-                    'amount' => $request->actual_qty[$key] * $request->rate[$key],
-                    'status' => 1,
-                    'warehouse_id' => $request->warehouse[$key],
-                    'username' => Auth::user()->username,
-                    'created_date' => date('Y-m-d'),
-                    'opening' => 0,
-                    'so_data_id' => '',
-                );
-                //  DB::Connection('mysql2')->table('stock')->insert($stock); acc_id
-            }
-
+            
 
             $sales_tax_invoice = new SalesTaxInvoice();
             $sales_tax_invoice = $sales_tax_invoice->SetConnection('mysql2');
@@ -1857,6 +1830,7 @@ class SalesAddDetailControler extends Controller
             $sales_tax_invoice->order_date = $request->order_date ?? '';
             $sales_tax_invoice->other_refrence = $request->other_refrence;
             $sales_tax_invoice->despacth_document_no = $request->despacth_document_no;
+            $sales_tax_invoice->commission_buyer = $request->commission_buyer;
             $sales_tax_invoice->despacth_document_date = $request->despacth_document_date;
             $sales_tax_invoice->despacth_through = $request->despacth_through;
             $sales_tax_invoice->destination = $request->destination;
@@ -1887,6 +1861,7 @@ class SalesAddDetailControler extends Controller
             
 
             $total_amount = 0;
+            $total_commission_amount = 0;
             foreach ($request->item_id as $key => $value) {
                 # code...
 
@@ -1900,10 +1875,12 @@ class SalesAddDetailControler extends Controller
                 $qty = $request->actual_qty[$key];
                 $rate = $request->rate[$key];
                 $amount = $request->amount[$key];
+                $commission_amount = $request->commission[$key] * $rate;
                 $sales_tax_invoice_data->qty = $qty;
                 $sales_tax_invoice_data->uom = CommonHelper::get_uom_id($request->uom_id);
                 // dd($sales_tax_invoice_data->uom);
                 $sales_tax_invoice_data->rate = $rate;
+                $sales_tax_invoice_data->commission = $request->commission[$key];
                 $sales_tax_invoice_data->tax = $request->tax[$key];
                 $sales_tax_invoice_data->tax_amount = $request->tax_amount[$key];
                 $sales_tax_invoice_data->amount = $amount;
@@ -1914,37 +1891,64 @@ class SalesAddDetailControler extends Controller
                 $sales_tax_invoice_data->username = Auth::user()->name;
                 $sales_tax_invoice_data->save();
                 $total_amount += $qty * $rate;
+                $total_commission_amount += $commission_amount;
+
+
+                $stock = array
+                (
+                    'main_id' => '',
+                    'master_id' => '',
+                    'voucher_no' => $request->gi_no,
+                    'voucher_date' => $request->gi_date,
+                    'supplier_id' => 0,
+                    'customer_id' => $byers_id,
+                    'voucher_type' => 5,
+                    'rate' => $request->rate[$key],
+                    'sub_item_id' => $request->item_id[$key],
+                    'batch_code' => 0,//$request->batch_code[$key] ?? '0',
+                    'qty' => $request->actual_qty[$key],
+                    'discount_percent' => '',
+                    'discount_amount' => '',
+                    'amount' => $request->actual_qty[$key] * $request->rate[$key],
+                    'status' => 1,
+                    'warehouse_id' => $request->warehouse[$key],
+                    'username' => Auth::user()->username,
+                    'created_date' => date('Y-m-d'),
+                    'opening' => 0,
+                    'so_data_id' => '',
+                );
+                DB::Connection('mysql2')->table('stock')->insert($stock);
             }
 
             
-            $t_data = DB::Connection('mysql2')->table('sales_tax_invoice as a')
-                ->join('sales_tax_invoice_data as b', 'a.id', '=', 'b.master_id')
-                ->join('subitem as c', 'b.item_id', '=', 'c.id')
-                ->join('category as d', 'd.id', '=', 'c.main_ic_id')
-                ->select(DB::raw('SUM(b.rate*b.qty) as amount'), 'b.item_id', 'a.gi_date', 'd.revenue_acc_id')
-                ->where('a.gi_no', $gi_no)
-                ->where('a.status', 1)
-                ->groupBy('d.id')
-                ->get();
+            // $t_data = DB::Connection('mysql2')->table('sales_tax_invoice as a')
+            //     ->join('sales_tax_invoice_data as b', 'a.id', '=', 'b.master_id')
+            //     ->join('subitem as c', 'b.item_id', '=', 'c.id')
+            //     ->join('category as d', 'd.id', '=', 'c.main_ic_id')
+            //     ->select(DB::raw('SUM(b.rate*b.qty) as amount'), 'b.item_id', 'a.gi_date', 'd.revenue_acc_id')
+            //     ->where('a.gi_no', $gi_no)
+            //     ->where('a.status', 1)
+            //     ->groupBy('d.id')
+            //     ->get();
 
                 
-            foreach ($t_data as $revenue):
-                $transaction = new Transactions();
-                $transaction = $transaction->SetConnection('mysql2');
-                $transaction->voucher_no = $gi_no;
-                $transaction->v_date = $request->gi_date;
-                $transaction->acc_id = $revenue->revenue_acc_id;
-                $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($request->acc_id);
-                $transaction->particulars = $request->description;
-                $transaction->opening_bal = 0;
-                $transaction->debit_credit = 0;
-                $transaction->amount = $revenue->amount;
-                $transaction->username = Auth::user()->name;
-                ;
-                $transaction->status = 100;
-                $transaction->voucher_type = 6;
-                $transaction->save();
-            endforeach;
+            // foreach ($t_data as $revenue):
+            //     $transaction = new Transactions();
+            //     $transaction = $transaction->SetConnection('mysql2');
+            //     $transaction->voucher_no = $gi_no;
+            //     $transaction->v_date = $request->gi_date;
+            //     $transaction->acc_id = $revenue->revenue_acc_id;
+            //     $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($request->acc_id);
+            //     $transaction->particulars = $request->description;
+            //     $transaction->opening_bal = 0;
+            //     $transaction->debit_credit = 0;
+            //     $transaction->amount = $revenue->amount;
+            //     $transaction->username = Auth::user()->name;
+            //     ;
+            //     $transaction->status = 100;
+            //     $transaction->voucher_type = 6;
+            //     $transaction->save();
+            // endforeach;
 
             $sales_tax = DB::Connection('mysql2')->table('sales_tax_invoice_data')
                 ->where('status', 1)
@@ -2037,8 +2041,25 @@ class SalesAddDetailControler extends Controller
             // dd($byers_id);
 
             $customer_acc_id = SalesHelper::get_customer_acc_id($byers_id);
+            $commission_buyer_acc_id = SalesHelper::get_customer_acc_id($request->commission_buyer);
             
             // dd($customer_acc_id);
+
+            $transaction = new Transactions();
+            $transaction = $transaction->SetConnection('mysql2');
+            $transaction->voucher_no = $gi_no;
+            $transaction->v_date = $request->gi_date;
+            $transaction->acc_id = 5;
+            $transaction->acc_code = FinanceHelper::getAccountCodeByAccId(5);
+            $transaction->particulars = $request->description;
+            $transaction->opening_bal = 0;
+            $transaction->debit_credit = 1;
+            $transaction->amount = $total_amount-$total_commission_amount;
+            $transaction->username = Auth::user()->name;
+            $transaction->status = 100;
+            $transaction->voucher_type = 6;
+            $transaction->save();
+
 
             $transaction = new Transactions();
             $transaction = $transaction->SetConnection('mysql2');
@@ -2051,10 +2072,26 @@ class SalesAddDetailControler extends Controller
             $transaction->debit_credit = 1;
             $transaction->amount = $total_amount;
             $transaction->username = Auth::user()->name;
-            ;
             $transaction->status = 100;
             $transaction->voucher_type = 6;
             $transaction->save();
+
+            $transaction = new Transactions();
+            $transaction = $transaction->SetConnection('mysql2');
+            $transaction->voucher_no = $gi_no;
+            $transaction->v_date = $request->gi_date;
+            $transaction->acc_id = $commission_buyer_acc_id;
+            $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($commission_buyer_acc_id);
+            $transaction->particulars = $request->description;
+            $transaction->opening_bal = 0;
+            $transaction->debit_credit = 1;
+            $transaction->amount = $total_commission_amount;
+            $transaction->username = Auth::user()->name;
+            $transaction->status = 100;
+            $transaction->voucher_type = 6;
+            $transaction->save();
+
+
             $data['sales_tax_invoice_id'] = $id;
             $data['sales_tax_invoice'] = 1;
 
