@@ -224,7 +224,7 @@ use App\Helpers\ReuseableCode;
                                                 <t title="">
                                                     <td class="text-center" class="text-center"><?php echo $counter;?></td>
                                                     <td id="{{$row1->item_id}}" class="text-left">
-                                                        <textarea readonly class="form-control" name="desc{{$id_count}}" style="margin: 0px 221.973px 0px 0px; resize: none; height: 90px;">{{ $row1->item_code .' -- '. $row1->sub_ic }}</textarea>
+                                                        <textarea readonly class="form-control" name="desc{{$id_count}}" style="margin: 0px 221.973px 0px 0px; resize: none; height: 90px;">{{$row1->sub_ic }}</textarea>
                                                     </td>
                                                     <td>{{ $row1->pack_size.' '.$row1->uom_name.' '.$row1->type }}</td>
                                                     <td>{{ $row1->color }}</td>

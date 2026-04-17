@@ -492,7 +492,7 @@
                                                                                         @foreach($sub_item as $val)
                                                                                             <option
                                                                                                 value="{{ $val->id . '@' . $val->uom_name . '@' . $val->sub_ic. '@' . $val->pack_size . '@' . $val->type. '@' . $val->color }}">
-                                                                                                {{ $val->item_code . ' -- ' . $val->sub_ic . ' ' . $val->pack_size . ' ' . $val->uom_name . ' ' . $val->type. ' ' . $val->color }}
+                                                                                                {{ $val->sub_ic . ' ' . $val->pack_size . ' ' . $val->uom_name . ' ' . $val->type. ' ' . $val->color }}
                                                                                             </option>
                                                                                         @endforeach
                                                                                     </select>

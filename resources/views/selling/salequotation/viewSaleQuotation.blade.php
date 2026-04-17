@@ -322,7 +322,7 @@
                                                         ?>
                                                         <tr>
                                                             <td class="text-center">{{ $counter++ }}</td>
-                                                            <td class="text-left">{{ $value->item_code.' -- '.$value->sub_ic }}</td>
+                                                            <td class="text-left">{{ $value->sub_ic }}</td>
                                                             <td class="text-left">{{ $value->pack_size.' '.$value->uom_name.' '.$value->type }}</td>
                                                             <td class="text-left">{{ $value->color }}</td>
                                                             <td class="text-right">{{ number_format($value->qty,2) }}</td>

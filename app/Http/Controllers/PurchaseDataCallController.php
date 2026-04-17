@@ -642,7 +642,7 @@ class PurchaseDataCallController extends Controller
             <tr id="RemoveTr<?php echo $row['id'] ?>" title="<?php echo $row['id'] ?>">
                 <td class="text-center"><?php echo $row['id']; ?></td>
                 <td>-</td>
-                <td><?php echo $row['item_code']; ?></td>
+                <td class="hide"><?php echo $row['item_code']; ?></td>
                 <td><?php echo $row['sub_ic']; ?></td>
                 <td>-</td>
                 <td><?php echo $row['pack_size']; ?></td>

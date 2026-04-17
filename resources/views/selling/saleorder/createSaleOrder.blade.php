@@ -173,7 +173,7 @@
                                                                         @foreach($sub_item as $val)
                                                                             <option
                                                                                 value="{{ $val->id . '@' . $val->uom_name . '@' . $val->sub_ic . '@' . $val->pack_size . '@' . $val->color }}">
-                                                                                {{ $val->item_code . ' -- ' . $val->sub_ic . ' ' . $val->pack_size . ' ' . $val->uom_name . ' ' . $val->color }}
+                                                                                {{  $val->sub_ic . '- ' . $val->pack_size . '-' . $val->uom_name . '-' . $val->color }}
                                                                             </option>
                                                                         @endforeach
                                                                     </select>
@@ -424,8 +424,12 @@
             console.log(uom);
             $('#uom_id' + index).val(uom[1]);
             $('#item_code' + index).val(uom[2]);
-            $('#qty' + index).val(uom[3]);
-            $('#qty_lbs' + index).val(uom[3]*2.2);
+          if (uom[1] && uom[1].toLowerCase() === 'bundle') {
+                $('#qty' + index).val(10).removeAttr('readonly').attr('oninput', 'calculation_amount()');
+            } else {
+                $('#qty' + index).val(uom[3]).attr('readonly', true).removeAttr('oninput');
+            }
+            $('#qty_lbs' + index).val(uom[3] * 2.2);
             $('#pack_qty').val(uom[3]);
             $('#color' + index).val(uom[5]);
             $('#pack_size' + index).val(1);
@@ -533,14 +537,33 @@
         }
 
 
+        // function bag_qq(counter) {
+        //     var bags_qty = parseFloat($('#pack_size' + counter).val()) || 1;
+        //     var pack_qty = parseFloat($('#pack_qty').val()) || 0;
+        //     var total_qty = (bags_qty * pack_qty).toFixed(2);
+        //     $('#qty' + counter).val(total_qty);
+        //     $('#qty_lbs' + counter).val(total_qty*2.2);
+        // }
+
         function bag_qq(counter) {
             var bags_qty = parseFloat($('#pack_size' + counter).val()) || 1;
             var pack_qty = parseFloat($('#pack_qty').val()) || 0;
             var total_qty = (bags_qty * pack_qty).toFixed(2);
-            $('#qty' + counter).val(total_qty);
-            $('#qty_lbs' + counter).val(total_qty*2.2);
-        }
 
+            var uom_val = $('#uom_id' + counter).val() || '';
+
+            if (uom_val.toLowerCase() === 'bundle' || uom_val.toLowerCase() === 'pcs') {
+                // For Bundle: Bags Qty * 10 (default kg per bundle)
+                var bundle_kg = bags_qty * 10;
+                $('#qty' + counter).val(bundle_kg.toFixed(2));
+                $('#qty_lbs' + counter).val((bundle_kg * 2.2).toFixed(2));
+            } else {
+                $('#qty' + counter).val(total_qty);
+                $('#qty_lbs' + counter).val((total_qty * 2.2).toFixed(2));
+            }
+
+            calculation_amount();
+        }
 
         function saletax(instance) {
             var value = $(instance).val();

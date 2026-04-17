@@ -71,7 +71,7 @@ if($accType == 'client'){
                                                     <thead>
                                                     <th class="text-center">S.No</th>
                                                     <th class="text-center">Category</th>
-                                                    <th class="text-center">Item  Code</th>
+                                                    <th class="text-center hide">Item  Code</th>
                                                     <th class="text-center">Item Name</th>
                                                     <th class="text-center">Primary Pack</th>
                                                     <th class="text-center">Pack Size</th>
