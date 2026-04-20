@@ -137,7 +137,7 @@ if (isset($_GET['item_id'])) {
                 method: 'GET',
                 data: { location: location, category: category, sub_category_id: sub_category_id, m: m, sub_1: sub_1, item_des: item_des },
                 error: function () {
-                    alert('error');
+                    alert('Please Select at least one filter option');
 
                 },
                 success: function (response) {
