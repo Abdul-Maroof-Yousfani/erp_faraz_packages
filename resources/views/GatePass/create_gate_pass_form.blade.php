@@ -6,11 +6,37 @@ use App\Helpers\CommonHelper;
 $m = $_GET['m'] ?? Session::get('run_company');
 $currentDate = date('Y-m-d');
 $currentTime = date('H:i');
+
+$manualGatePassItems = $manualGatePassItems ?? [];
+$manualGatePassOldRows = [];
+
+$oldDescriptions = old('manual_description', []);
+$oldPurposes = old('manual_purpose', []);
+$oldQuantities = old('manual_qty', []);
+
+if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) {
+    $manualRowCount = max(count($oldDescriptions), count($oldPurposes), count($oldQuantities));
+    for ($i = 0; $i < $manualRowCount; $i++) {
+        $manualGatePassOldRows[] = [
+            'description' => $oldDescriptions[$i] ?? '',
+            'purpose' => $oldPurposes[$i] ?? '',
+            'qty' => $oldQuantities[$i] ?? '',
+        ];
+    }
+} elseif (!empty($manualGatePassItems)) {
+    foreach ($manualGatePassItems as $manualItem) {
+        $manualGatePassOldRows[] = [
+            'description' => $manualItem->item_name ?? '',
+            'purpose' => $manualItem->purpose ?? '',
+            'qty' => $manualItem->qty ?? '',
+        ];
+    }
+}
 ?>
 
 <div class="container-fluid">
     <div class="row well_N">
-        <div class="col-lg-10 col-lg-offset-1 col-md-12 col-sm-12 col-xs-12">
+        <div class="col-lg-12">
             <div class="panel panel-info">
                 <div class="panel-heading clearfix">
                     <div class="pull-left">
@@ -37,7 +63,7 @@ $currentTime = date('H:i');
                             </div> --}}
                             <div class="panel-body">
                                 <div class="row">
-                                    <div class="col-lg-4 col-md-5 col-sm-12 col-xs-12">
+                                    <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
                                         <label class="control-label small" for="gate_pass_type">Input Type</label>
                                         <select class="form-control" id="gate_pass_type" name="gate_pass_type">
                                             <option value="">Select input type</option>
@@ -47,71 +73,70 @@ $currentTime = date('H:i');
                                         </select>
                                         {{-- <div class="help-block">Direct invoice and delivery note will load read-only items.</div> --}}
                                     </div>
-                                    <div class="col-lg-8 col-md-7 col-sm-12 col-xs-12">
+                                    <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                                        <label class="control-label small" for="gate_pass_date">Date</label>
+                                        <input type="date" class="form-control" id="gate_pass_date" name="gate_pass_date" value="{{ $gatePassDate ?? $currentDate }}">
+                                    </div>
+                                    <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                                        <label class="control-label small" for="gate_pass_time">Time <span class="text-muted">optional</span></label>
+                                        <input type="time" class="form-control" id="gate_pass_time" name="gate_pass_time" value="{{ $gatePassTime ?? $currentTime }}">
+                                    </div>
+                                    <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12">
+                                        <label class="control-label small">&nbsp;</label>
+                                        <button type="button" id="btnAddManualRow" class="btn btn-primary btn-block" onclick="handleAddManualRowClick()">
+                                            Add Row
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="row" style="margin-top:15px;">
+                                    <div class="col-md-6">
                                         <div class="panel panel-default" id="direct_sale_section" hidden>
-                                            {{-- <div class="panel-heading">
-                                                <strong class="small text-uppercase">Direct Sale Invoice</strong>
-                                            </div> --}}
                                             <div class="panel-body">
-                                        <label class="control-label small" for="sales_invoice_id">Select Invoice</label>
-                                        <select class="form-control" id="sales_invoice_id" name="sales_invoice_id">
-                                            <option value="">Select direct sale invoice</option>
-                                            @forelse($directSaleInvoices as $invoice)
-                                                <option value="{{ $invoice->id }}" @if((string)($selectedSalesInvoiceId ?? '') === (string) $invoice->id) selected @elseif(!empty($invoice->gate_pass_status) && (int) $invoice->gate_pass_status === 1) disabled @endif>
-                                                    {{ strtoupper($invoice->gi_no) }}
-                                                    @if(!empty($invoice->customer_name))
-                                                        - {{ $invoice->customer_name }}
-                                                    @endif
-                                                    @if(!empty($invoice->gi_date))
-                                                        - {{ CommonHelper::changeDateFormat($invoice->gi_date) }}
-                                                    @endif
-                                                    @if(!empty($invoice->gate_pass_status) && (int) $invoice->gate_pass_status === 1 && (string)($selectedSalesInvoiceId ?? '') !== (string) $invoice->id)
-                                                        - Gate Pass Created
-                                                    @endif
-                                                </option>
-                                            @empty
-                                                <option value="">No direct sale invoices found</option>
-                                            @endforelse
+                                                <label class="control-label small" for="sales_invoice_id">Select Invoice</label>
+                                                <select class="form-control" id="sales_invoice_id" name="sales_invoice_id">
+                                                    <option value="">Select direct sale invoice</option>
+                                                    @forelse($directSaleInvoices as $invoice)
+                                                        <option value="{{ $invoice->id }}" @if((string)($selectedSalesInvoiceId ?? '') === (string) $invoice->id) selected @elseif(!empty($invoice->gate_pass_status) && (int) $invoice->gate_pass_status === 1) disabled @endif>
+                                                            {{ strtoupper($invoice->gi_no) }}
+                                                            @if(!empty($invoice->customer_name))
+                                                                - {{ $invoice->customer_name }}
+                                                            @endif
+                                                            @if(!empty($invoice->gi_date))
+                                                                - {{ CommonHelper::changeDateFormat($invoice->gi_date) }}
+                                                            @endif
+                                                            @if(!empty($invoice->gate_pass_status) && (int) $invoice->gate_pass_status === 1 && (string)($selectedSalesInvoiceId ?? '') !== (string) $invoice->id)
+                                                                - Gate Pass Created
+                                                            @endif
+                                                        </option>
+                                                    @empty
+                                                        <option value="">No direct sale invoices found</option>
+                                                    @endforelse
                                                 </select>
                                             </div>
                                         </div>
 
                                         <div class="panel panel-default" id="delivery_note_section" hidden>
-                                            {{-- <div class="panel-heading">
-                                                <strong class="small text-uppercase">Delivery Note</strong>
-                                            </div> --}}
                                             <div class="panel-body">
-                                        <label class="control-label small" for="delivery_note_id">Select Delivery Note</label>
-                                        <select class="form-control" id="delivery_note_id" name="delivery_note_id">
-                                            <option value="">Select delivery note</option>
-                                            @forelse($deliveryNotes as $note)
-                                                <option value="{{ $note->id }}" @if((string)($selectedDeliveryNoteId ?? '') === (string) $note->id) selected @elseif(!empty($note->gate_pass_status) && (int) $note->gate_pass_status === 1) disabled @endif>
-                                                    {{ strtoupper($note->gd_no) }}
-                                                    @if(!empty($note->customer_name))
-                                                        - {{ $note->customer_name }}
-                                                    @endif
-                                                    @if(!empty($note->gd_date))
-                                                        - {{ CommonHelper::changeDateFormat($note->gd_date) }}
-                                                    @endif
-                                                    @if(!empty($note->gate_pass_status) && (int) $note->gate_pass_status === 1 && (string)($selectedDeliveryNoteId ?? '') !== (string) $note->id)
-                                                        - Gate Pass Created
-                                                    @endif
-                                                </option>
-                                            @empty
-                                                <option value="">No delivery notes found</option>
-                                            @endforelse
+                                                <label class="control-label small" for="delivery_note_id">Select Delivery Note</label>
+                                                <select class="form-control" id="delivery_note_id" name="delivery_note_id">
+                                                    <option value="">Select delivery note</option>
+                                                    @forelse($deliveryNotes as $note)
+                                                        <option value="{{ $note->id }}" @if((string)($selectedDeliveryNoteId ?? '') === (string) $note->id) selected @elseif(!empty($note->gate_pass_status) && (int) $note->gate_pass_status === 1) disabled @endif>
+                                                            {{ strtoupper($note->gd_no) }}
+                                                            @if(!empty($note->customer_name))
+                                                                - {{ $note->customer_name }}
+                                                            @endif
+                                                            @if(!empty($note->gd_date))
+                                                                - {{ CommonHelper::changeDateFormat($note->gd_date) }}
+                                                            @endif
+                                                            @if(!empty($note->gate_pass_status) && (int) $note->gate_pass_status === 1 && (string)($selectedDeliveryNoteId ?? '') !== (string) $note->id)
+                                                                - Gate Pass Created
+                                                            @endif
+                                                        </option>
+                                                    @empty
+                                                        <option value="">No delivery notes found</option>
+                                                    @endforelse
                                                 </select>
-                                            </div>
-                                        </div>
-
-                                        <div class="panel panel-warning" id="manual_section" hidden>
-                                            {{-- <div class="panel-heading">
-                                                <strong class="small text-uppercase">Manual Mode</strong>
-                                            </div> --}}
-                                            <div class="panel-body hide">
-                                                <div class="alert alert-warning" style="margin-bottom:0;">
-                                                    No linked invoice or delivery note will be shown here.
-                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -141,23 +166,38 @@ $currentTime = date('H:i');
                                     </tbody>
                                 </table>
                             </div>
-                        </div><br>
+                        </div>
+
+                        <div class="panel panel-default" id="manual_section" hidden>
+                            <div class="panel-heading clearfix">
+                                <strong class="small text-uppercase pull-left">Manual Items</strong>
+                            </div>
+                            <div class="panel-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-striped table-condensed">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-center">Description</th>
+                                                <th class="text-center">Purpose</th>
+                                                <th class="text-center" width="140">Quantity</th>
+                                                <th class="text-center" width="90">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="manualGatePassBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <strong class="small text-uppercase">Common Details</strong>
+                            <div class="panel-heading clearfix">
+                                <strong class="small text-uppercase pull-left">Common Details</strong>
                             </div>
                             <div class="panel-body">
                                 <div class="row">
-                                    <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12">
+                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                         <label class="control-label small" for="description">Description</label>
                                         <textarea class="form-control" id="description" name="description" placeholder="Add gate pass description">{{ $description ?? '' }}</textarea>
-                                    </div>
-                                    <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
-                                        <label class="control-label small" for="gate_pass_date">Date</label>
-                                        <input type="date" class="form-control" id="gate_pass_date" name="gate_pass_date" value="{{ $gatePassDate ?? $currentDate }}">
-                                        <label class="control-label small" for="gate_pass_time">Time <span class="text-muted">optional, defaults to current time</span></label>
-                                        <input type="time" class="form-control" id="gate_pass_time" name="gate_pass_time" value="{{ $gatePassTime ?? $currentTime }}">
                                     </div>
                                 </div>
                             </div>
@@ -198,7 +238,7 @@ $currentTime = date('H:i');
 
                         <div class="text-right">
                             <button type="button" class="btn btn-default" onclick="resetGatePassForm()">Reset</button>
-                            <button type="submit" class="btn btn-info">Save Gate Pass</button>
+                            <button type="submit" class="btn btn-primary">Save Gate Pass</button>
                         </div>
                     </form>
                 </div>
@@ -212,24 +252,108 @@ $currentTime = date('H:i');
         '1' => $directSaleInvoiceItems ?? [],
         '2' => $deliveryNoteItems ?? [],
     ]);
+    const manualGatePassExistingRows = @json($manualGatePassOldRows);
 
     function formatNumber(value) {
         const num = parseFloat(value) || 0;
         return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function buildManualRow(row = {}) {
+        return `
+            <tr class="manual-gate-pass-row">
+                <td>
+                    <input type="text" name="manual_description[]" class="form-control" placeholder="Enter description" value="${escapeHtml(row.description)}">
+                </td>
+                <td>
+                    <input type="text" name="manual_purpose[]" class="form-control" placeholder="Enter purpose" value="${escapeHtml(row.purpose)}">
+                </td>
+                <td>
+                    <input type="number" name="manual_qty[]" class="form-control" step="any" min="0" placeholder="Enter Qty" value="${escapeHtml(row.qty)}">
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-xs btn-danger" onclick="removeGatePassManualRow(this)">Remove</button>
+                </td>
+            </tr>
+        `;
+    }
+
+    function renderManualRows(rows) {
+        const body = document.getElementById('manualGatePassBody');
+        body.innerHTML = '';
+
+        if (!rows || !rows.length) {
+            body.insertAdjacentHTML('beforeend', buildManualRow());
+            return;
+        }
+
+        rows.forEach(function (row) {
+            body.insertAdjacentHTML('beforeend', buildManualRow(row));
+        });
+    }
+
+    function addGatePassManualRow() {
+        document.getElementById('manualGatePassBody').insertAdjacentHTML('beforeend', buildManualRow());
+    }
+
+    function handleAddManualRowClick() {
+        const typeSelect = document.getElementById('gate_pass_type');
+
+        if (typeSelect.value !== '3') {
+            typeSelect.value = '3';
+            setGatePassType('3');
+            return;
+        }
+
+        addGatePassManualRow();
+    }
+
+    function removeGatePassManualRow(button) {
+        const body = document.getElementById('manualGatePassBody');
+        const row = button.closest('tr');
+
+        if (body.querySelectorAll('tr').length > 1) {
+            row.remove();
+            return;
+        }
+
+        row.querySelectorAll('input').forEach(function (input) {
+            input.value = '';
+        });
+    }
+
     function renderGatePassItems(type, sourceId) {
         const body = document.getElementById('gatePassItemsBody');
         const itemsCard = document.getElementById('items_card');
+        const manualSection = document.getElementById('manual_section');
+        const addManualButton = document.getElementById('btnAddManualRow');
         const rows = (gatePassSourceData[String(type)] || {})[String(sourceId)] || [];
 
-        if (!sourceId || !type || String(type) === '3') {
-            body.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No linked items for manual mode.</td></tr>';
+        if (String(type) === '3') {
             itemsCard.hidden = true;
+            manualSection.hidden = false;
+            renderManualRows(manualGatePassExistingRows);
+            return;
+        }
+
+        if (!sourceId || !type) {
+            body.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Select a source to load items.</td></tr>';
+            itemsCard.hidden = true;
+            manualSection.hidden = true;
             return;
         }
 
         itemsCard.hidden = false;
+        manualSection.hidden = true;
 
         if (!rows.length) {
             body.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No items found for the selected source.</td></tr>';
@@ -275,6 +399,7 @@ $currentTime = date('H:i');
             renderGatePassItems(value, deliverySelect.value);
         } else if (value === '3') {
             manualSection.hidden = false;
+            renderManualRows(manualGatePassExistingRows);
             renderGatePassItems(value, '');
         } else {
             renderGatePassItems('', '');
@@ -284,6 +409,7 @@ $currentTime = date('H:i');
     function resetGatePassForm() {
         document.getElementById('gatePassForm').reset();
         document.getElementById('gatePassItemsBody').innerHTML = '<tr><td colspan="5" class="text-center text-muted">Select a source to load items.</td></tr>';
+        document.getElementById('manualGatePassBody').innerHTML = '';
         setGatePassType('');
     }
 

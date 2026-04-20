@@ -3585,6 +3585,48 @@ echo "aa"; die;
         return $query;
     }
 
+    private function collectManualGatePassRows(Request $request)
+    {
+        $descriptions = $request->input('manual_description', []);
+        $purposes = $request->input('manual_purpose', []);
+        $quantities = $request->input('manual_qty', []);
+
+        $rows = [];
+        $maxRows = max(count($descriptions), count($purposes), count($quantities));
+
+        for ($i = 0; $i < $maxRows; $i++) {
+            $description = trim((string) ($descriptions[$i] ?? ''));
+            $purpose = trim((string) ($purposes[$i] ?? ''));
+            $qtyRaw = trim((string) ($quantities[$i] ?? ''));
+
+            if ($description === '' && $purpose === '' && $qtyRaw === '') {
+                continue;
+            }
+
+            if ($description === '' || $qtyRaw === '' || !is_numeric($qtyRaw)) {
+                return [
+                    'error' => 'Please fill description and quantity for each manual row.',
+                ];
+            }
+
+            $rows[] = (object) [
+                'item_name' => $description,
+                'purpose' => $purpose,
+                'qty' => (float) $qtyRaw,
+            ];
+        }
+
+        if (empty($rows)) {
+            return [
+                'error' => 'Please add at least one manual row.',
+            ];
+        }
+
+        return [
+            'rows' => $rows,
+        ];
+    }
+
     public function createGatePassForm(){
         $m = $_GET['m'] ?? Session::get('run_company');
         CommonHelper::companyDatabaseConnection($m);
@@ -3746,6 +3788,15 @@ echo "aa"; die;
         $transporterName = $gatePassEdit->transporter_name ?? '';
         $vehicleContact = $gatePassEdit->vehicle_contact ?? '';
         $gatePassNo = $gatePassEdit->gate_pass_no ?? $this->generateGatePassNo(date('Y-m-d'));
+        $manualGatePassItems = [];
+
+        if ((int) ($gatePassEdit->gate_pass_type ?? 0) === 3) {
+            $manualGatePassItems = DB::connection('mysql2')->table('gate_pass_data')
+                ->where('gate_pass_id', $id)
+                ->where('status', 1)
+                ->orderBy('id', 'ASC')
+                ->get(['item_name', 'purpose', 'qty']);
+        }
 
         $directSaleInvoices = DB::connection('mysql2')
             ->table('sales_tax_invoice as sti')
@@ -3834,6 +3885,7 @@ echo "aa"; die;
             'driverName',
             'transporterName',
             'vehicleContact',
+            'manualGatePassItems',
             'm'
         ));
     }
@@ -4112,6 +4164,15 @@ echo "aa"; die;
                     )
                     ->orderBy('a.id')
                     ->get();
+            } else {
+                $manualRows = $this->collectManualGatePassRows($request);
+                if (!empty($manualRows['error'])) {
+                    DB::connection('mysql2')->rollBack();
+                    CommonHelper::reconnectMasterDatabase();
+                    return redirect()->back()->withInput()->with('error', $manualRows['error']);
+                }
+
+                $itemRows = collect($manualRows['rows']);
             }
 
             $gatePassId = DB::connection('mysql2')->table('gate_pass')->insertGetId([
@@ -4140,12 +4201,13 @@ echo "aa"; die;
                     'source_type' => $request->gate_pass_type,
                     'source_id' => $sourceId,
                     'source_no' => $sourceNo,
-                    'source_item_id' => $itemRow->item_id ?? 0,
+                    'source_item_id' => $itemRow->item_id ?? null,
                     'item_name' => $itemRow->item_name ?? '',
+                    'purpose' => $itemRow->purpose ?? null,
                     'qty' => $itemRow->qty ?? 0,
                     'rate' => $itemRow->rate ?? 0,
                     'amount' => $itemRow->amount ?? 0,
-                    'is_editable' => 0,
+                    'is_editable' => (string) $request->gate_pass_type === '3' ? 1 : 0,
                     'company_id' => $m,
                     'username' => Auth::user()->name ?? '',
                     'status' => 1,
@@ -4255,6 +4317,15 @@ echo "aa"; die;
                     ->select('a.item_id', DB::raw('COALESCE(NULLIF(a.`desc`, \'\'), si.sub_ic) as item_name'), 'a.qty', 'a.rate', 'a.amount')
                     ->orderBy('a.id')
                     ->get();
+            } else {
+                $manualRows = $this->collectManualGatePassRows($request);
+                if (!empty($manualRows['error'])) {
+                    DB::connection('mysql2')->rollBack();
+                    CommonHelper::reconnectMasterDatabase();
+                    return redirect()->back()->withInput()->with('error', $manualRows['error']);
+                }
+
+                $itemRows = collect($manualRows['rows']);
             }
 
             DB::connection('mysql2')->table('gate_pass')->where('id', $id)->update([
@@ -4283,12 +4354,13 @@ echo "aa"; die;
                     'source_type' => $request->gate_pass_type,
                     'source_id' => $sourceId,
                     'source_no' => $sourceNo,
-                    'source_item_id' => $itemRow->item_id ?? 0,
+                    'source_item_id' => $itemRow->item_id ?? null,
                     'item_name' => $itemRow->item_name ?? '',
+                    'purpose' => $itemRow->purpose ?? null,
                     'qty' => $itemRow->qty ?? 0,
                     'rate' => $itemRow->rate ?? 0,
                     'amount' => $itemRow->amount ?? 0,
-                    'is_editable' => 0,
+                    'is_editable' => (string) $request->gate_pass_type === '3' ? 1 : 0,
                     'company_id' => $m,
                     'username' => Auth::user()->name ?? '',
                     'status' => 1,
