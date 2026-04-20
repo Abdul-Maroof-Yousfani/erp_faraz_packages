@@ -2372,7 +2372,7 @@ class SalesAddDetailControler extends Controller
             $customer_acc_id = SalesHelper::get_customer_acc_id($buyers_id);
             $commission_buyer_acc_id = SalesHelper::get_customer_acc_id($request->commission_buyer);
             
-            dd([$customer_acc_id, $commission_buyer_acc_id]);
+            dd([$customer_acc_id, $commission_buyer_acc_id, $buyers_id, $request->commission_buyer]);
 
             $transaction = new Transactions();
             $transaction = $transaction->SetConnection('mysql2');
