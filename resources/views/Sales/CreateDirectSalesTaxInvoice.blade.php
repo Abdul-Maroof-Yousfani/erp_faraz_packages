@@ -1360,7 +1360,7 @@ use App\Helpers\ReuseableCode;
 			let parts = value ? value.split('*') : [];
 			let id = parts[0] || '';
 
-			if (parseInt(id) === 4) { // Walk-in Customer
+			if (parseInt(id) === 5) { // Walk-in Customer
 				$('#walkin_customer_wrapper').show();
 			} else {
 				$('#walkin_customer_wrapper').hide();
