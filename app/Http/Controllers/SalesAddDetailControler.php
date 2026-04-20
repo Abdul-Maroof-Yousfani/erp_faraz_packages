@@ -2127,7 +2127,6 @@ class SalesAddDetailControler extends Controller
 
     // }
 
-    <?php
   function addeDirectSalesTaxInvoice(Request $request)
     {
         // dd($request->all()); customerType
