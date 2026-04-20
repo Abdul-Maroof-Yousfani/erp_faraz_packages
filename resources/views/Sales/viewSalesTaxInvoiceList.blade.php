@@ -54,6 +54,7 @@ $export=ReuseableCode::check_rights(257);
                                 <option value="1">Search By Date</option>
                                 <option value="2">Search By Voucher No</option>
                                 <option value="3">Search By Buyer</option>
+                                <option value="4">Search By Tax</option>
                             </select>
                         </div>
 
@@ -113,6 +114,19 @@ $export=ReuseableCode::check_rights(257);
                                 <label class="radio-inline"><input value="1" type="radio" name="optradio">Open</label>
                                 <label class="radio-inline"><input value="2" type="radio" name="optradio">Partial</label>
                                 <label class="radio-inline"><input value="3" type="radio" name="optradio">Complete</label>
+                            </div>
+                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12 ">
+                                <input type="button" value="Search" class="btn btn-sm btn-primary" onclick="viewRangeWiseDataFilter();" style="margin-top: 32px;" />
+                            </div>
+                        </span>
+                        <span id="ShowHideTax" style="display: none">
+                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                <label>Tax Type</label>
+                                <select id="TaxFilterType" class="form-control">
+                                    <option value="">Select Tax Type</option>
+                                    <option value="1">Tax</option>
+                                    <option value="2">Non Tax</option>
+                                </select>
                             </div>
                             <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12 ">
                                 <input type="button" value="Search" class="btn btn-sm btn-primary" onclick="viewRangeWiseDataFilter();" style="margin-top: 32px;" />
@@ -221,12 +235,21 @@ $export=ReuseableCode::check_rights(257);
                 $('#ShowHideBuyer').fadeIn('slow');
                 $('#ShowHideSoNo').css('display','none');
                 $('#ShowHideDate').css('display','none');
+                $('#ShowHideTax').css('display','none');
+            }
+            else if(radioValue == 4)
+            {
+                $('#ShowHideTax').fadeIn('slow');
+                $('#ShowHideBuyer').css('display','none');
+                $('#ShowHideSoNo').css('display','none');
+                $('#ShowHideDate').css('display','none');
             }
             else
             {
                 $('#ShowHideBuyer').css('display','none');
                 $('#ShowHideSoNo').css('display','none');
-                $('#ShowHideBuyer').css('display','none');
+                $('#ShowHideDate').css('display','none');
+                $('#ShowHideTax').css('display','none');
             }
         }
 
@@ -289,6 +312,7 @@ $export=ReuseableCode::check_rights(257);
             var FilterType = $('#filters').val();
             var SearchText = $('#SearchText').val();
             var BuyerId = $('#BuyerId').val();
+            var TaxFilterType = $('#TaxFilterType').val();
             var from= $('#from').val();
             var to= $('#to').val();
             var m = '<?php echo $m;?>';
@@ -298,7 +322,7 @@ $export=ReuseableCode::check_rights(257);
             $.ajax({
                 url: '{{ url('/sdc/getSalesTaxInvoiceeFilterWise') }}',
                 type: 'Get',
-                data: {from: from,to:to,m:m,radioValue:radioValue,SearchText:SearchText,FilterType:FilterType,BuyerId:BuyerId,radio:radio},
+                data: {from: from,to:to,m:m,radioValue:radioValue,SearchText:SearchText,FilterType:FilterType,BuyerId:BuyerId,TaxFilterType:TaxFilterType,radio:radio},
 
                 success: function (response) {
                     $('#data').html(response);

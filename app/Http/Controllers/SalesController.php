@@ -640,6 +640,8 @@ class SalesController extends Controller
             ])
             ->get();
 
+            // return $sale_order_data;
+
         // $sale_order_data = DB::Connection('mysql2')->select('select 
         // a.id,
         // a.master_id,

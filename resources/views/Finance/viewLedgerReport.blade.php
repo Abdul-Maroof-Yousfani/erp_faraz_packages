@@ -23,6 +23,13 @@ $current_date = date('Y-m-d');
         $AccId = '';
     endif;
 
+    $taxFilter = request()->get('tax_filter', '');
+    $taxMode = request()->get('tax_mode', 'all');
+    $gstTaxes = DB::Connection('mysql2')->table('gst')
+        ->where('status', 1)
+        ->orderBy('id')
+        ->get();
+
     if(isset($_GET['FromDate'])):
         $currentMonthStartDate = $_GET['FromDate'];
     else:
@@ -79,6 +86,25 @@ $All = session()->all();
                                                         <option value="">Select Account</option>
                                                         @foreach($accounts as $key => $y)
                                                             <option value="{{ $y->id.','.$y->type}}" <?php if($AccId == $y->id):echo "selected";endif;?>>{{ $y->code .' ---- '. $y->name}}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                    <label>Tax:</label>
+                                                    <select class="form-control select2" name="tax_mode" id="tax_mode">
+                                                        <option value="all" {{ $taxMode === 'all' ? 'selected' : '' }}>All Vouchers</option>
+                                                        <option value="with_tax" {{ $taxMode === 'with_tax' ? 'selected' : '' }}>With Tax</option>
+                                                        <option value="non_tax" {{ $taxMode === 'non_tax' ? 'selected' : '' }}>Non Tax</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" id="tax_filter_wrap" style="{{ $taxMode === 'with_tax' ? '' : 'display:none;' }}">
+                                                    <label>Specific Tax:</label>
+                                                    <select class="form-control select2" name="tax_filter" id="tax_filter">
+                                                        <option value="">All Taxes</option>
+                                                        @foreach($gstTaxes as $tax)
+                                                            <option value="{{ $tax->acc_id }}" {{ (string)$taxFilter === (string)$tax->acc_id ? 'selected' : '' }}>
+                                                                {{ $tax->percent }} - {{ $tax->rate }}%
+                                                            </option>
                                                         @endforeach
                                                     </select>
                                                 </div>
@@ -178,7 +204,18 @@ $All = session()->all();
             viewRangeWiseDataFilter();
             <?php endif;?>
             $('#account_id').select2();
+            $('#tax_mode').select2();
+            $('#tax_filter').select2();
             $('#paid_to').select2();
+
+            $('#tax_mode').on('change', function () {
+                if ($(this).val() === 'with_tax') {
+                    $('#tax_filter_wrap').show();
+                } else {
+                    $('#tax_filter_wrap').hide();
+                    $('#tax_filter').val('').trigger('change');
+                }
+            });
         });
 
         function viewRangeWiseDataFilter() {
@@ -225,12 +262,14 @@ $All = session()->all();
             var toDate = $('#toDate').val();
             var paid_to = $('#paid_to').val();
             var accountName = $('#account_id').val();
+            var tax_mode = $('#tax_mode').val();
+            var tax_filter = $('#tax_filter').val();
             var m = '<?php echo $_GET['m'];?>';
             $('#loadFilterLedgerReport').html('<div class="row"><div class="col-lg-12 col-md-12 col-sm-12 col-xs-12"><div class="loader"></div></div></div>');
             $.ajax({
                 url: '<?php echo url('/');?>/fdc/loadFilterLedgerReport',
                 method:'GET',
-                data:{fromDate:fromDate,toDate:toDate,m:m,accountName:accountName,paid_to:paid_to},
+                data:{fromDate:fromDate,toDate:toDate,m:m,accountName:accountName,paid_to:paid_to,tax_mode:tax_mode,tax_filter:tax_filter},
                 error: function(){
                     alert('error');
                 },

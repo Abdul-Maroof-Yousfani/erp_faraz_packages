@@ -11,6 +11,8 @@ $acc_id  =$acc_id[0];
 
 // paid to
 $cost_center=Input::get('paid_to');
+$tax_mode=Input::get('tax_mode','all');
+$tax_filter=Input::get('tax_filter');
 
 
         if ($cost_center!=0):
@@ -54,9 +56,66 @@ $m=Input::get('m');
     <table class="table table-bordered sf-table-th sf-table-list" id="table_export1" >
         <?php
         CommonHelper::companyDatabaseConnection($_GET['m']);
-        $quarter = DB::select("SELECT * from  transactions
-  											WHERE acc_id = ".$acc_id." and opening_bal=0  AND status=1 $clause AND v_date
-  											 between '".$from."' and '".$to."'  ORDER BY v_date");
+        $gstTaxAccountIds = DB::Connection('mysql2')->table('gst')
+            ->where('status', 1)
+            ->pluck('acc_id')
+            ->filter()
+            ->map(function ($id) {
+                return (int) $id;
+            })
+            ->values()
+            ->all();
+
+        $taxVouchers = [];
+        if ($tax_mode === 'with_tax' || $tax_mode === 'non_tax') {
+            $taxVoucherQuery = DB::Connection('mysql2')->table('transactions')
+                ->where('status', 1)
+                ->whereBetween('v_date', [$from, $to]);
+
+            if ($tax_mode === 'with_tax') {
+                if (!empty($tax_filter) && $tax_filter != '0') {
+                    $taxVoucherQuery->where('acc_id', (int) $tax_filter);
+                } else {
+                    if (!empty($gstTaxAccountIds)) {
+                        $taxVoucherQuery->whereIn('acc_id', $gstTaxAccountIds);
+                    } else {
+                        $taxVoucherQuery->whereRaw('1 = 0');
+                    }
+                }
+            } else {
+                if (!empty($gstTaxAccountIds)) {
+                    $taxVoucherQuery->whereIn('acc_id', $gstTaxAccountIds);
+                }
+            }
+
+            $taxVouchers = $taxVoucherQuery->pluck('voucher_no')->filter()->unique()->values()->all();
+        }
+
+        $quarterQuery = DB::Connection('mysql2')->table('transactions')
+            ->where('acc_id', $acc_id)
+            ->where('opening_bal', 0)
+            ->where('status', 1)
+            ->whereBetween('v_date', [$from, $to]);
+
+        if ($cost_center!=0) {
+            $quarterQuery->where('sub_department_id', $cost_center);
+        }
+
+        if ($tax_mode === 'with_tax' && !empty($taxVouchers)) {
+            $quarterQuery->whereIn('voucher_no', $taxVouchers);
+        }
+
+        if ($tax_mode === 'with_tax' && empty($taxVouchers)) {
+            $quarterQuery->whereRaw('1 = 0');
+        }
+
+        if ($tax_mode === 'non_tax') {
+            if (!empty($taxVouchers)) {
+                $quarterQuery->whereNotIn('voucher_no', $taxVouchers);
+            }
+        }
+
+        $quarter = $quarterQuery->orderBy('v_date')->get();
 
         $quarterVoucherNos = collect($quarter)->pluck('voucher_no')->filter()->unique()->values()->all();
         $ledgerItemDetails = [];
@@ -129,6 +188,25 @@ $m=Input::get('m');
         </tr>
         <tr>
             <td colspan="9" style="font-size: 20px;" class="text-center"><b>Account Name:   (<?php echo CommonHelper::get_account_code($acc_id).'---'.CommonHelper::get_account_name($acc_id);?>)</b></td>
+        </tr>
+        <tr>
+            <td colspan="9" style="font-size: 16px;" class="text-center">
+                <b>Tax Filter:</b>
+                <?php
+                    if ($tax_mode === 'with_tax') {
+                        $taxName = DB::Connection('mysql2')->table('gst')->where('status', 1)->where('acc_id', $tax_filter)->select('percent', 'rate')->first();
+                        if (!empty($tax_filter) && $tax_filter != '0') {
+                            echo $taxName ? e($taxName->percent) . ' (' . e($taxName->rate) . '%)' : 'Selected Tax';
+                        } else {
+                            echo 'All Taxes';
+                        }
+                    } elseif ($tax_mode === 'non_tax') {
+                        echo 'Non Tax';
+                    } else {
+                        echo 'All Taxes';
+                    }
+                ?>
+            </td>
         </tr>
         <tr>
             <td style="font-size: 20px;" class="text-center" colspan="9"><b>From Date: (<?php echo date_format(date_create($from), 'd-m-Y');?>)==========To Date: (<?php echo date_format(date_create($to), 'd-m-Y');?>)</b></td>

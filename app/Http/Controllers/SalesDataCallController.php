@@ -2389,6 +2389,27 @@ class SalesDataCallController extends Controller
                 echo '<tr class="text-center"><td class="text-danger" colspan="11" style="font-size: 18px;"><strong>Please Select Buyer</strong></td></tr>';
             }
         }
+        elseif($FilterType == 4)
+        {
+            if($request->TaxFilterType == 1)
+            {
+                $sales_tax_invoice = DB::Connection('mysql2')->table('sales_tax_invoice')
+                    ->where('status',1)
+                    ->whereRaw('(IFNULL(sales_tax,0) + IFNULL(sales_tax_further,0) + IFNULL(advance_tax_amount,0)) > 0')
+                    ->get();
+            }
+            elseif($request->TaxFilterType == 2)
+            {
+                $sales_tax_invoice = DB::Connection('mysql2')->table('sales_tax_invoice')
+                    ->where('status',1)
+                    ->whereRaw('(IFNULL(sales_tax,0) + IFNULL(sales_tax_further,0) + IFNULL(advance_tax_amount,0)) = 0')
+                    ->get();
+            }
+            else
+            {
+                echo '<tr class="text-center"><td class="text-danger" colspan="11" style="font-size: 18px;"><strong>Please Select Tax Type</strong></td></tr>';
+            }
+        }
         else
         {
             $sales_tax_invoice = DB::Connection('mysql2')->table('sales_tax_invoice')->where('status',1)->whereBetween('gi_date',[$fromDate,$to])->get();
