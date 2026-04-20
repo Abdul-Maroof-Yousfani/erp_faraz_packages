@@ -2367,7 +2367,7 @@ class SalesAddDetailControler extends Controller
             //     }
             // }
 
-            // dd($byers_id);
+            dd([$buyers_id, $request->commission_buyer]);
 
             $customer_acc_id = SalesHelper::get_customer_acc_id($buyers_id);
             $commission_buyer_acc_id = SalesHelper::get_customer_acc_id($request->commission_buyer);
