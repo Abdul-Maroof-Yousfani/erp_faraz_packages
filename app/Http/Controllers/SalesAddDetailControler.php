@@ -2142,6 +2142,7 @@ class SalesAddDetailControler extends Controller
                 $buyers_id = $request->buyers_id ? explode('*', $request->buyers_id)[0] : 0;
             }
 
+            dd($request->all());
 
             // dd($customerType, $walkinCustomerName, $byers_id, $walkinCustomer);
 
