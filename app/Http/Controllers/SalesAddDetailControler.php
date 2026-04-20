@@ -2129,7 +2129,7 @@ class SalesAddDetailControler extends Controller
 
   function addeDirectSalesTaxInvoice(Request $request)
     {
-        // dd($request->all()); customerType
+        dd($request->all()); 
 
         DB::Connection('mysql2')->beginTransaction();
         try {
