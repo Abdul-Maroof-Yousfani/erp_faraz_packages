@@ -2129,6 +2129,7 @@ class SalesAddDetailControler extends Controller
 
   function addeDirectSalesTaxInvoice(Request $request)
     {
+        // dd($request->all()); customerType
 
         DB::Connection('mysql2')->beginTransaction();
         try {
@@ -2142,9 +2143,8 @@ class SalesAddDetailControler extends Controller
                 $buyers_id = $request->buyers_id ? explode('*', $request->buyers_id)[0] : 0;
             }
 
-            dd($request->all()); 
 
-            // dd($customerType, .$walkinCustomerName, $byers_id, $walkinCustomer);
+            // dd($customerType, $walkinCustomerName, $byers_id, $walkinCustomer);
 
          
             
@@ -2368,12 +2368,12 @@ class SalesAddDetailControler extends Controller
             //     }
             // }
 
-            dd([$buyers_id, $request->commission_buyer]);
+            // dd($byers_id);
 
             $customer_acc_id = SalesHelper::get_customer_acc_id($buyers_id);
             $commission_buyer_acc_id = SalesHelper::get_customer_acc_id($request->commission_buyer);
             
-            dd([$customer_acc_id, $commission_buyer_acc_id, $buyers_id, $request->commission_buyer]);
+            // dd($customer_acc_id);
 
             $transaction = new Transactions();
             $transaction = $transaction->SetConnection('mysql2');
