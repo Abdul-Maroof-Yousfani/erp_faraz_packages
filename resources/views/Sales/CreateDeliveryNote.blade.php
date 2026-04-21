@@ -179,9 +179,10 @@ use App\Helpers\ReuseableCode;
                                                     <th class="text-center">S.NO</th>
                                                     <th class="text-center">Item</th>
                                                     <th class="text-center">Pack Type</th>
-                                                    <th class="text-center">Color</th>
+                                                    <th class="text-center hide">Color</th>
                                                     <th class="text-center">QTY (KG) <span class="rflabelsteric"><strong>*</strong></span></th>
                                                     <th class="text-center">WareHouse <span class="rflabelsteric"><strong>*</strong></span></th>
+                                                    <th class="text-center">Available Stock</th>
                                                     <!-- <th style="width: 150px" class="text-center" >Batch Code <span class="rflabelsteric"><strong>*</strong></span></th> -->
                                                     <!-- <th class="text-center">In Stock<span class="rflabelsteric"><strong>*</strong></span></th> -->
                                                     <th class="text-center hidee">Rate</th>
@@ -227,7 +228,7 @@ use App\Helpers\ReuseableCode;
                                                         <textarea readonly class="form-control" name="desc{{$id_count}}" style="margin: 0px 221.973px 0px 0px; resize: none; height: 90px;">{{$row1->sub_ic }}</textarea>
                                                     </td>
                                                     <td>{{ $row1->pack_size.' '.$row1->uom_name.' '.$row1->type }}</td>
-                                                    <td>{{ $row1->color }}</td>
+                                                    <td class="hide">{{ $row1->color }}</td>
 
                                                     <?php $sub_ic_detail=CommonHelper::get_subitem_detail($row1->item_id);
                                                     $sub_ic_detail= explode(',',$sub_ic_detail)
@@ -250,19 +251,10 @@ use App\Helpers\ReuseableCode;
 
                                                         </select>
                                                     </td>
-
-
-                                                    <!-- <td>
-                                                        <select onchange="get_stock_qty(this.id,'{{$id_count}}')" class="form-control requiredField" name="batch_code{{$id_count}}" id="batch_code{{$id_count}}">
-                                                            <option value="">Select&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
-
-                                                        </select>
-                                                    </td> -->
-                                                    <!-- <td>
-
-                                                        <input readonly class="form-control instock {{$row1->item_id}}"  type="text" value="" id="instock{{$id_count}}"/>
-
-                                                    </td> -->
+                                                    <td>
+                                                        <input readonly class="form-control instock {{$row1->item_id}}" type="text" value="0" id="instock{{$id_count}}"/>
+                                                        <small id="stock_msg{{$id_count}}" class="text-danger"></small>
+                                                    </td>
 
                                                         <td class="text-right hidee">
                                                         <input readonly class="form-control" type="text" name="send_rate{{$id_count}}" id="send_rate{{$id_count}}" value="{{$row1->rate}}"/>
@@ -350,16 +342,18 @@ use App\Helpers\ReuseableCode;
                                                                 <td><select onchange="get_stock(this.id,'{{$id_count}}');ApplyAll('<?php echo $id_count?>')" class="form-control requiredField ClsAll ShowOn<?php echo $counter?>" name="warehouse{{$working_counter}}" id="warehouse{{$working_counter}}">
                                                                         <option value="">Select</option>
                                                                         @foreach(CommonHelper::get_all_warehouse() as $row)
-                                                                        <option value="{{$row->id}}">{{$row->name}}</option>
+                                                                <option value="{{$row->id}}">{{$row->name}}</option>
                                                                    <?php ?>     @endforeach
                                                                     </select></td>
+                                                                <td>
+                                                                    <input readonly class="form-control instock {{$bundle_data->item_id}}" type="text" value="0" id="instock{{$id_count}}"/>
+                                                                    <small id="stock_msg{{$id_count}}" class="text-danger"></small>
+                                                                </td>
 
 
                                                                 <td><select onchange="get_stock_qty(this.id,'{{$id_count}}')" class="form-control requiredField" name="batch_code{{$id_count}}" id="batch_code{{$id_count}}">
                                                                         <option value="">Select&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
-f
                                                                     </select></td>
-                                                                <td><input readonly class="form-control instock {{$bundle_data->item_id}}"  type="text" value="" id="instock{{$id_count}}"/> </td>
 
 
                                                                 <td class="text-right hidee">
@@ -408,6 +402,7 @@ f
 
                                                     <td id="total_" style="background-color: darkgray" class="text-center" colspan="3">Total</td>
                                                     <td  style="background-color: darkgray" class="text-right"  colspan="1"><input style="font-weight: bolder" class="form-control" readonly type="text" id="total_qty" value="{{$total_qty,3}}" /> </td>
+                                                    <td style="background-color: darkgray" class="text-right" colspan="1"></td>
                                                     <td   style="background-color: darkgray" class="text-right hidee nett"  colspan="4"><input style="font-weight: bolder" class="form-control text-right comma_seprated" readonly type="text" id="total_amount" value="{{$total}}" /></td>
                                                     <td style="background-color: darkgray" class="text-right" colspan="1"></td>
 
@@ -438,7 +433,7 @@ f
                                                         <td  class="text-right" colspan="5"></td>
                                                         <td class="text-right" colspan="2">Further Sales Tax {{ number_format($sales_order->sales_tax_further,2) }}</td>
                                                         <td class="text-right" colspan="1">
-                                                            <input type="hidden" name="sales_tax_further_per" id="sales_tax_further_per" value="{{ $sales_order->sales_tax_further }}" />
+                                                            <input type="text" name="sales_tax_further_per" id="sales_tax_further_per" value="{{ $sales_order->sales_tax_further ?? 0 }}" />
                                                             
                                                             <input style="font-weight: bolder" class="form-control text-right comma_seprated" readonly type="text" name="sales_tax_further" id="sales_tax_further" value="{{ $further_tax }}" />
                                                         </td>
@@ -584,7 +579,8 @@ f
         {
             var total =	$('#total_amount').val();
             var sales_tax_per = $('#sales_tax_rate').val();
-            var sales_tax_further_per = $('#sales_tax_further_per').val();
+            var sales_tax_further_per = $('#sales_tax_further_per').val() ?? 0;
+            // alert(sales_tax_further_per);
             var sales_tax = (total / 100) * sales_tax_per;
             var sales_tax_further = (total / 100) * sales_tax_further_per;
             var advance_tax_rate = $('#advance_tax_rate').val();
@@ -592,6 +588,7 @@ f
             var cartage_amount = parseFloat($('#cartage_amount').val());
 
             $('#sales_tax').val(sales_tax);
+
 
             var strn= $('#buyers_sales').val();
             if (strn == '')
@@ -604,11 +601,11 @@ f
                 $('#sales_tax_further').val(0);
             }
 
+
             var total_tax = sales_tax + sales_tax_further + advance_tax;
 
             var total_amount = $('#total_amount').val();
             var total_after_sales_tax = parseFloat(total_amount) + parseFloat(total_tax);
-            
             $('#grand').val(total_after_sales_tax + cartage_amount);
             $('#d_t_amount_1').val(total_after_sales_tax + cartage_amount);
 
@@ -714,6 +711,12 @@ f
             var item = $('#item_id' + count).val(); // make sure this input exists
             var batch_code = '';
 
+            if (!warehouse) {
+                $('#instock' + count).val(0);
+                $('#stock_msg' + count).text('');
+                return;
+            }
+
             $.ajax({
                 url: '{{ url('/') }}/pdc/get_stock_location_wise?batch_code=' + batch_code,
                 type: "GET",
@@ -755,6 +758,28 @@ f
                //     `);
 
                     $('.select2').select2();
+                }
+            });
+
+            $.ajax({
+                url: '{{ url('/') }}/pdc/get_available_stock_location_wise',
+                type: 'GET',
+                data: { warehouse: warehouse, item: item },
+                success: function (data) {
+                    var stock = parseFloat(data);
+                    if (isNaN(stock)) {
+                        stock = 0;
+                    }
+
+                    $('#instock' + count).val(stock);
+
+                    if (stock <= 0) {
+                        $('#stock_msg' + count).text('Stock not available');
+                        $('#instock' + count).css('border-color', 'red');
+                    } else {
+                        $('#stock_msg' + count).text('');
+                        $('#instock' + count).css('border-color', '');
+                    }
                 }
             });
         }
@@ -883,13 +908,14 @@ f
             $('#total_amount').val(amount);
 
             var sales_tax_per = $('#sales_tax_rate').val();
-            var sales_tax_further_per = $('#sales_tax_further_per').val();
+            var sales_tax_further_per = $('#sales_tax_further_per').val() ?? 0;
             var sales_tax = parseFloat((amount / 100) * sales_tax_per);
             var sales_tax_further = parseFloat((amount / 100) * sales_tax_further_per);
             var advance_tax_rate1 = $('#advance_tax_rate').val();
             var advance_tax = parseFloat((amount / 100) * advance_tax_rate1);
             var cartage_amount = parseFloat($('#cartage_amount').val());
 
+            // alert([amount, sales_tax, sales_tax_further, advance_tax, cartage_amount]);
             $('#grand').val(amount + sales_tax + sales_tax_further + advance_tax + cartage_amount);
             var qty = 0;
             $('.qty').each(function (i, obj) {

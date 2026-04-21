@@ -3282,6 +3282,19 @@ echo "aa"; die;
 
     }
 
+    public function get_available_stock_location_wise(Request $request)
+    {
+        $warehouse = $request->warehouse;
+        $item = $request->item;
+
+        if ($warehouse == '' || $item == '') {
+            echo 0;
+            return;
+        }
+
+        echo CommonHelper::in_stock_edit($item, $warehouse, null);
+    }
+
     public  function get_data_opening(Request $request)
     {
         $item_id=$request->item;

@@ -965,6 +965,7 @@ Route::group(['prefix' => 'pdc', 'middleware' => 'mysql2', 'before' => 'csrf'], 
     Route::get('/fetchDataOfMr', 'PurchaseDataCallController@fetchDataOfMr');
     Route::get('/get_stock_location_wise', 'PurchaseDataCallController@get_stock_location_wise');
     Route::get('/get_stock_location_wise2', 'PurchaseDataCallController@get_stock_location_wise2');
+    Route::get('/get_available_stock_location_wise', 'PurchaseDataCallController@get_available_stock_location_wise');
     Route::get('/getDupicate', 'PurchaseDataCallController@getDupicate');
 
     Route::get('/delete_cate', 'PurchaseDataCallController@delete_cate');

@@ -95,7 +95,7 @@ $total_open=0;
     <tr @if($status=='Open') style="background-color: #fdc8c8" @elseif($status=='partial') style="background-color: #c9d6ec" @endif title="{{$row->id}}" id="{{$row->id}}">
         <td class="text-center">{{$counter++}}</td>
         <td class="text-center"><?php echo  strtoupper($row->so_no) ?></td>
-        <td title="{{$row->id}}" class="text-center">{{strtoupper($row->dc_no)}}</td>
+        <td title="{{$row->id}}" class="text-center">{{strtoupper($row->gd_no)}}</td>
         <td class="text-center"><?php  echo CommonHelper::changeDateFormat($row->gd_date);?></td>
 
         <?php $dn_date = date("m",strtotime($row->gd_date)); ?>

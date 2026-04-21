@@ -122,7 +122,7 @@
                                                 <input type="number" class="form-control"
                                                     name="cartage_amount" id="cartage_amount" />
                                             </div>
-                                            <div class="col-md-3">
+                                            <div class="col-md-3 hide">
                                                 <label for="control-label">Currency</label>
                                                 <select required onchange="getrate()" name="currency_id" id="curren" class="form-control select2 requiredField">
                                                     <option value="">Select Currency</option>
@@ -131,7 +131,7 @@
                                                     @endforeach
                                                 </select>
                                             </div>
-                                            <div class="col-md-3">
+                                            <div class="col-md-3 hide">
                                                 <label for="control-label">Exchange Rate</label>
                                                 <input required class="form-control requiredField" value="1.0" type="text" name="exchange_rate" id="exchange_rate" />
                                             </div>
@@ -515,7 +515,7 @@
                 var qty_lbs = parseFloat(qty) * 2.2 || 0;
                 row.find('[name="qty_lbs[]"]').val(qty_lbs.toFixed(2));
 
-                var total = parseFloat(qty_lbs) * parseFloat(rate);
+                var total = parseFloat(actual_qty) * parseFloat(rate);
 
                 var sale_tax_amount = total / 100 * sale_tax;
                 var further_tax_amount = total / 100 * further_tax;
@@ -527,11 +527,10 @@
 
                 row.find('[name="total[]"]').val(total);
             });
-
-            $('#total_tax').val(all_tax);
-            $('#grand_total').val(befor_tax);
-            $('#grand_total_with_tax').val(grad_total);
-            $('#d_t_amount_1').val(grad_total);
+            $('#total_tax').val(Number(all_tax).toFixed(3));
+            $('#grand_total').val(Number(befor_tax).toFixed(3));
+            $('#grand_total_with_tax').val(Number(grad_total).toFixed(3));
+            $('#d_t_amount_1').val(Number(grad_total).toFixed(3));
 
             toWords(1);
         }

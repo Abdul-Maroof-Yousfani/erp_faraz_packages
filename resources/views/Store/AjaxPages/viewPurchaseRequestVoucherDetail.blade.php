@@ -369,21 +369,26 @@ if($_GET['pageType']=='viewlist'){
                     </style>
                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="margin-top:40px;">
                         <div class="container-fluid">
-                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center">
-                                    <h6 class="signature_bor">Prepared By: </h6>
-                                    <b>   <p><?php echo strtoupper($row->username);  ?></p></b>
-                                </div>
-                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center">
-                                    <h6 class="signature_bor">Checked By:</h6>
-                                    <b>   <p><?php  ?></p></b>
-                                </div>
-                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center">
-                                    <h6 class="signature_bor">Approved By:</h6>
-                                    <b>  <p><?php echo $row->approve_username?></p></b>
-                                </div>
+                               <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-center">
+                                            <h6 class="signature_bor">Prepared By: </h6>
+                                            <b>   <p></p></b>
+                                        </div>
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-center">
+                                            <h6 class="signature_bor">Checked By:</h6>
+                                            <b>   <p></p></b>
+                                        </div>
+                                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2 text-center">
+                                            <h6 class="signature_bor">Entry By:</h6>
+                                            <b>  <p></p></b>
+                                        </div>
+                                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2 text-center">
+                                            <h6 class="signature_bor">Approved By</h6>
+                                            <b>  <p></p></b>
+                                        </div>
 
-                            </div>
+                                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2 text-center">
+                                               <h6 class="signature_bor">Signature:</h6>
+                                        </div>
                         </div>
                     </div>
 
