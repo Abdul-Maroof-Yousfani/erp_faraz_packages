@@ -42,14 +42,31 @@ $OverAllTotal = 0;
 
 
         <td class="text-center">
-            <?php if($view == true):?>
-            <button onclick="showDetailModelOneParamerter('sales/viewCreditNoteDetail','<?php echo $row->id ?>','View Sales Tax Invoice')"
-                    type="button" class="btn btn-success btn-xs">View</button>
-            <?php endif;?>
-            <?php if($edit == true):?>
-            <a href="{{ URL::asset('sales/editSalesReturn/'.$row->id.'?m='.$m) }}" class="btn btn-primary btn-xs">Edit </a>
-                <button onclick="delete_sales_return('{{$row->id}}','{{$row->cr_no}}')" type="button" class="btn btn-danger btn-xs">Delete</button>
-            <?php endif;?>
+            <div class="dropdown">
+                <button class="drop-bt dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
+                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <?php if($view == true):?>
+                            <a onclick="showDetailModelOneParamerter('sales/viewCreditNoteDetail','<?php echo $row->id ?>','View Sales Tax Invoice')"
+                               type="button" class="dropdown-item_sale_order_list dropdown-item">
+                                <i class="fa-regular fa-eye"></i> View
+                            </a>
+                            <a href="{{ URL::asset('sales/editSalesReturn/'.$row->id.'?m='.$m) }}"
+                               class="dropdown-item_sale_order_list dropdown-item">
+                                <i class="fa-solid fa-pencil"></i> Edit
+                            </a>
+                        <?php endif;?>
+                        <?php if($edit == true):?>
+                            <a onclick="delete_sales_return('{{$row->id}}','{{$row->cr_no}}')"
+                               type="button" class="dropdown-item_sale_order_list dropdown-item">
+                                <i class="fa-solid fa-trash"></i> Delete
+                            </a>
+                        <?php endif;?>
+                    </li>
+                </ul>
+            </div>
         </td>
 
         {{--<td class="text-center"><button onclick="DeleteSalesReturn('{{$row->id}}')" type="button" class="btn btn-danger btn-xs">DELETE</button></td>--}}

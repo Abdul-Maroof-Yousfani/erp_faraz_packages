@@ -40,8 +40,8 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
             <div class="panel panel-dark">
                 <div class="panel-heading clearfix">
                     <div class="pull-left">
-                        <h3 class="panel-title text-info">Create Gate Pass</h3>
-                        <div class="small text-info">Pick a source type, auto-load items, and keep the form compact.</div>
+                        <h3 class="panel-title text-info"><b>Create Gate Pass</b></h3>
+                        <div class="small text-info hide">Pick a source type, auto-load items, and keep the form compact.</div>
                     </div>
                     <div class="pull-right text-right">
                         <div><span class="label label-primary">Gate Pass ID</span></div>

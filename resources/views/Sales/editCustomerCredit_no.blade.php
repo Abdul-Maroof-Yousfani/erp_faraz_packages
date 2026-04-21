@@ -65,7 +65,7 @@ $type = $credit_note->type;
 
                                                         <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 panel">
                                                             <label class="sf-label">Buyer's Name</label>
-                                                            <input readonly class="form-control" type="text" name="customer" id="customer" value="{{ $credit_note->customer->name }}"/>
+                                                            <input readonly class="form-control" type="text" name="customer" id="customer" value="{{ $credit_note->customer->name ?? '' }}"/>
                                                             <input type="hidden" name="buyer_id" value="{{$credit_note->customer->id}}">
                                                         </div>
 

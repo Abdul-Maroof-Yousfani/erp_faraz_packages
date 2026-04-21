@@ -109,19 +109,21 @@ $currentDate = date('Y-m-d');
                                 <?php $customer_data= CommonHelper::byers_name($creit_note->buyer_id);?>
                                 <tr>
                                     <td class="text-left">Buyer's Name</td>
-                                    <td class="text-left"><?php echo ucwords($customer_data->name).$customer_name?></td>
-                                </tr>
+                                        <td class="text-left">
+                                            {{ trim(ucwords(optional($customer_data)->name) . ' ' . ($customer_name ?? '')) ?: 'N/A' }}
+                                        </td>                               
+                                    </tr>
 
 
 
                                 <tr>
                                     <td class="text-left">Buyer's Address</td>
-                                    <td class="text-left"><?php echo  ucwords($customer_data->address);?></td>
+                                    <td class="text-left"><?php echo  ucwords($customer_data->address ?? '');?></td>
                                 </tr>
 
                                 <tr>
                                     <td class="text-left">Description</td>
-                                    <td class="text-left"><?php echo  ucwords($creit_note->description);?></td>
+                                    <td class="text-left"><?php echo  ucwords($creit_note->description ?? '');?></td>
                                 </tr>
 
 

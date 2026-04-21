@@ -113,23 +113,38 @@ $export=ReuseableCode::check_rights(258);
                                                     <td title="{{$row->id}}" class="text-center">{{strtoupper($row->cr_no)}}</td>
                                                     <td class="text-center"><?php  echo CommonHelper::changeDateFormat($row->cr_date);?></td>
                                                     <td class="text-center"><?php   $customer=CommonHelper::byers_name($row->buyer_id);
-                                                      echo   $customer->name;
+                                                      echo   $customer->name ?? '';
                                                         ?></td>
                                                     <td class="text-center"><?php echo number_format($NetAmount,2);?></td>
 
 
 
                                                     <td class="text-center">
-                                                            <?php if($view == true):?>
-                                                                <button onclick="showDetailModelOneParamerter('sales/viewCreditNoteDetail','<?php echo $row->id ?>','View Sales Tax Invoice')"
-                                                                        type="button" class="btn btn-success btn-xs">View</button>
-                                                                <a href="{{ route('sales.salereturn.edit', ['id'=> $row->id]) }}" type="button" class="btn btn-warning btn-xs">Edit</a>
-                                                            <?php endif;?>
-                                                            <?php if($edit == true):?>
-                                                           
-                                                                <button onclick="delete_sales_return('{{$row->id}}','{{$row->cr_no}}')" type="button" class="btn btn-danger btn-xs">Delete</button>
-                                                            <?php endif;?>
-
+                                                        <div class="dropdown">
+                                                            <button class="drop-bt dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
+                                                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                                                            </button>
+                                                            <ul class="dropdown-menu">
+                                                                <li>
+                                                                    <?php if($view == true):?>
+                                                                        <a onclick="showDetailModelOneParamerter('sales/viewCreditNoteDetail','<?php echo $row->id ?>','View Sales Tax Invoice')"
+                                                                           type="button" class="dropdown-item_sale_order_list dropdown-item">
+                                                                            <i class="fa-regular fa-eye"></i> View
+                                                                        </a>
+                                                                        <a href="{{ route('sales.salereturn.edit', ['id'=> $row->id]) }}"
+                                                                           type="button" class="dropdown-item_sale_order_list dropdown-item">
+                                                                            <i class="fa-solid fa-pencil"></i> Edit
+                                                                        </a>
+                                                                    <?php endif;?>
+                                                                    <?php if($edit == true):?>
+                                                                        <a onclick="delete_sales_return('{{$row->id}}','{{$row->cr_no}}')"
+                                                                           type="button" class="dropdown-item_sale_order_list dropdown-item">
+                                                                            <i class="fa-solid fa-trash"></i> Delete
+                                                                        </a>
+                                                                    <?php endif;?>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
                                                     </td>
 
 
