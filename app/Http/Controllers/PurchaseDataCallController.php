@@ -3627,12 +3627,18 @@ echo "aa"; die;
         ];
     }
 
-    public function createGatePassForm(){
-        $m = $_GET['m'] ?? Session::get('run_company');
+    public function createGatePassForm(Request $request){
+
+        $m = $request->input('m', $_GET['m'] ?? Session::get('run_company'));
+        $pageType = trim((string) $request->input('pageType', ''));
+        $parentCode = trim((string) $request->input('parentCode', ''));
         CommonHelper::companyDatabaseConnection($m);
 
         $gatePassEdit = null;
-        $selectedGatePassType = old('gate_pass_type', '');
+        $selectedGatePassType = old('gate_pass_type', $pageType);
+        if (!in_array($selectedGatePassType, ['1', '2', '3'], true)) {
+            $selectedGatePassType = '';
+        }
         $selectedSalesInvoiceId = old('sales_invoice_id', '');
         $selectedDeliveryNoteId = old('delivery_note_id', '');
         $description = old('description', '');
@@ -3761,13 +3767,17 @@ echo "aa"; die;
             'driverName',
             'transporterName',
             'vehicleContact',
-            'm'
+            'm',
+            'pageType',
+            'parentCode'
         ));
     }
 
     public function editGatePassForm($id, Request $request)
     {
         $m = $request->input('m', $_GET['m'] ?? Session::get('run_company'));
+        $pageType = trim((string) $request->input('pageType', ''));
+        $parentCode = trim((string) $request->input('parentCode', ''));
         CommonHelper::companyDatabaseConnection($m);
 
         $gatePassEdit = DB::connection('mysql2')->table('gate_pass')->where('id', $id)->where('company_id', $m)->first();
@@ -3885,6 +3895,8 @@ echo "aa"; die;
             'driverName',
             'transporterName',
             'vehicleContact',
+            'pageType',
+            'parentCode',
             'manualGatePassItems',
             'm'
         ));
@@ -4087,6 +4099,8 @@ echo "aa"; die;
         ]);
 
         $m = $request->input('m', $_GET['m'] ?? Session::get('run_company'));
+        $pageType = trim((string) $request->input('pageType', ''));
+        $parentCode = trim((string) $request->input('parentCode', ''));
         CommonHelper::companyDatabaseConnection($m);
 
         if ((string) $request->gate_pass_type === '1' && empty($request->sales_invoice_id)) {
@@ -4229,7 +4243,8 @@ echo "aa"; die;
             DB::connection('mysql2')->commit();
             CommonHelper::reconnectMasterDatabase();
 
-            return redirect()->back()->with('message', 'Gate pass ' . $gatePassNo . ' saved successfully.');
+            return redirect($this->gatePassListUrl($m, $pageType, $parentCode))
+                ->with('message', 'Gate pass ' . $gatePassNo . ' saved successfully.');
         } catch (\Throwable $e) {
             DB::connection('mysql2')->rollBack();
             CommonHelper::reconnectMasterDatabase();
@@ -4249,6 +4264,8 @@ echo "aa"; die;
         ]);
 
         $m = $request->input('m', $_GET['m'] ?? Session::get('run_company'));
+        $pageType = trim((string) $request->input('pageType', ''));
+        $parentCode = trim((string) $request->input('parentCode', ''));
         CommonHelper::companyDatabaseConnection($m);
 
         DB::connection('mysql2')->beginTransaction();
@@ -4378,12 +4395,24 @@ echo "aa"; die;
             DB::connection('mysql2')->commit();
             CommonHelper::reconnectMasterDatabase();
 
-            return redirect('/pdc/viewGatePassList?m=' . $m)->with('message', 'Gate pass updated successfully.');
+            return redirect($this->gatePassListUrl($m, $pageType, $parentCode))
+                ->with('message', 'Gate pass updated successfully.');
         } catch (\Throwable $e) {
             DB::connection('mysql2')->rollBack();
             CommonHelper::reconnectMasterDatabase();
             return redirect()->back()->with('error', 'Gate pass could not be updated.');
         }
+    }
+
+    private function gatePassListUrl($m, $pageType = '', $parentCode = '')
+    {
+        $query = [
+            'pageType' => $pageType,
+            'parentCode' => $parentCode,
+            'm' => $m,
+        ];
+
+        return url('/pdc/viewGatePassList?' . http_build_query($query));
     }
 
     public function deleteGatePass($id, Request $request)

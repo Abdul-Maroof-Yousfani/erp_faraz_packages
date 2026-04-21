@@ -2184,7 +2184,7 @@ if (!empty($_GET['pageType'])) {
 				success: function (response) {
 					$('#item_id' + index_val).append(new Option('Select', ''))
 					$.each(response, function (index, element) {
-						$('#item_id' + index_val).append(new Option(element['item_code'] + ' -- '+ element['sub_ic'], element['id'] + '@' + element['uom_name'] + '@' + element['sub_ic'] + '@' + element['pack_size']))
+						$('#item_id' + index_val).append(new Option(cleanItemName(element['sub_ic']), element['id'] + '@' + element['uom_name'] + '@' + element['sub_ic'] + '@' + element['pack_size']))
 					});
 					$('#item_id' + index_val).trigger('change.select2');
 				}
@@ -2210,7 +2210,7 @@ if (!empty($_GET['pageType'])) {
 				success: function (response) {
 					$('#item_id' + index_val).append(new Option('Select', ''))
 					$.each(response, function (index, element) {
-						$('#item_id' + index_val).append(new Option(element['item_code'] + ' -- '+ element['sub_ic'], element['id'] + '@' + element['uom_name'] + '@' + element['uom_name2'] + '@' + element['sub_ic'] + '@' + element['pack_size'] + '@' + element['secondary_pack_size']))
+						$('#item_id' + index_val).append(new Option(cleanItemName(element['sub_ic']), element['id'] + '@' + element['uom_name'] + '@' + element['uom_name2'] + '@' + element['sub_ic'] + '@' + element['pack_size'] + '@' + element['secondary_pack_size']))
 					});
 				}
 			});
@@ -2231,10 +2231,18 @@ if (!empty($_GET['pageType'])) {
 				success: function (response) {
 					$('#item_id' + index_val).append(new Option('Select', 'Select'))
 					$.each(response, function (index, element) {
-						$('#item_id' + index_val).append(new Option(element['sub_ic'], element['id'] + '@' + element['uom_name'] + '@' + element['sub_ic']))
+						$('#item_id' + index_val).append(new Option(cleanItemName(element['sub_ic']), element['id'] + '@' + element['uom_name'] + '@' + element['sub_ic']))
 					});
 				}
 			});
+		}
+
+		function cleanItemName(value) {
+			var label = String(value ?? '');
+			if (label.indexOf(' -- ') !== -1) {
+				label = label.split(' -- ')[0];
+			}
+			return label.trim();
 		}
 
 

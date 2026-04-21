@@ -54,6 +54,13 @@ use App\Helpers\CommonHelper;
                 <strong>Vehicle No:</strong> 
                 <span>{{ $gatePass->vehicle_no ?: '__________' }}</span>
             </div>
+
+            @if(!empty($gatePass->driver_name))
+            <div style="flex: 1;">
+                <strong>Driver Name:</strong>
+                <span>{{ $gatePass->driver_name }}</span>
+            </div>
+            @endif
         </div>
     </div>
 

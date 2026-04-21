@@ -37,22 +37,24 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
 <div class="container-fluid">
     <div class="row well_N">
         <div class="col-lg-12">
-            <div class="panel panel-info">
+            <div class="panel panel-dark">
                 <div class="panel-heading clearfix">
                     <div class="pull-left">
                         <h3 class="panel-title text-info">Create Gate Pass</h3>
                         <div class="small text-info">Pick a source type, auto-load items, and keep the form compact.</div>
                     </div>
                     <div class="pull-right text-right">
-                        <div><span class="label label-info">Gate Pass ID</span></div>
-                        <strong class="text-info">{{ $gatePassNo }}</strong>
+                        <div><span class="label label-primary">Gate Pass ID</span></div>
+                        <strong class="text-primary">{{ $gatePassNo }}</strong>
                     </div>
                 </div>
 
                 <div class="panel-body">
-                    <form id="gatePassForm" method="post" action="{{ !empty($gatePassEdit) ? url('/pdc/updateGatePass/' . $gatePassEdit->id . '?m=' . $m) : url('/pdc/storeGatePass?m=' . $m) }}">
+                    <form id="gatePassForm" method="post" action="{{ !empty($gatePassEdit) ? url('/pdc/updateGatePass/' . $gatePassEdit->id . '?m=' . $m . '&pageType=' . ($pageType ?? '') . '&parentCode=' . ($parentCode ?? '')) : url('/pdc/storeGatePass?m=' . $m . '&pageType=' . ($pageType ?? '') . '&parentCode=' . ($parentCode ?? '')) }}">
                         {{ csrf_field() }}
                         <input type="hidden" name="m" value="{{ $m }}">
+                        <input type="hidden" name="pageType" value="{{ $pageType ?? '' }}">
+                        <input type="hidden" name="parentCode" value="{{ $parentCode ?? '' }}">
                         @if(!empty($gatePassEdit))
                             <input type="hidden" name="gate_pass_id" value="{{ $gatePassEdit->id }}">
                         @endif
@@ -153,10 +155,11 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
                                     <thead>
                                         <tr>
                                             <th width="50" class="text-center">#</th>
-                                            <th class="text-center">Item Name</th>
-                                            <th width="110" class="text-center">Qty</th>
-                                            <th width="110" class="text-center hide">Rate</th>
-                                            <th width="130" class="text-center hide">Amount</th>
+                                            <th width="50" class="text-center">Item Name</th>
+                                            <th width="50" class="text-center">Qty</th>
+                                            <th width="50" class="text-center">Purpose</th>
+                                            <th width="50" class="text-center hide">Rate</th>
+                                            <th width="50" class="text-center hide">Amount</th>
                                         </tr>
                                     </thead>
                                     <tbody id="gatePassItemsBody">
@@ -190,7 +193,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
                         </div>
 
                         <div class="panel panel-default">
-                            <div class="panel-heading clearfix">
+                            {{-- <div class="panel-heading clearfix">
                                 <strong class="small text-uppercase pull-left">Common Details</strong>
                             </div>
                             <div class="panel-body">
@@ -200,7 +203,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
                                         <textarea class="form-control" id="description" name="description" placeholder="Add gate pass description">{{ $description ?? '' }}</textarea>
                                     </div>
                                 </div>
-                            </div>
+                            </div> --}}
                         </div>
 
                         <div class="panel panel-default">
@@ -227,6 +230,10 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
                                         <input type="text" class="form-control" id="vehicle_contact" name="vehicle_contact" placeholder="Optional contact" value="{{ $vehicleContact ?? '' }}">
                                     </div>
                                 </div>
+                                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                        <label class="control-label small" for="description">Description</label>
+                                        <textarea class="form-control" id="description" name="description" placeholder="Add gate pass description">{{ $description ?? '' }}</textarea>
+                                    </div>
                                 <div class="row hide">
                                     <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                                         <label class="control-label small" for="transporter_name">Transporter / Company</label>
@@ -369,6 +376,9 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
                     <td class="text-right">${formatNumber(item.qty)}</td>
                     <td class="text-right hide">${formatNumber(item.rate)}</td>
                     <td class="text-right hide">${formatNumber(item.amount)}</td>
+                    <td class="text-center">
+                       <input type="text" name="item_purpose[${index}]" class="form-control" placeholder="Enter purpose" value="${escapeHtml(item.purpose)}">
+                    </td>
                 </tr>
             `;
         });
