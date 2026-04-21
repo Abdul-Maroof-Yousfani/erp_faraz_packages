@@ -428,7 +428,7 @@ class PurchaseAddDetailControler extends Controller
     {
         $request->validate([
             'vendor_name' => 'required',
-            'mobile_no' => 'required',
+            // 'mobile_no' => 'required',
         ]);
 
         $vendor_code = PurchaseHelper::generateVendorCode();

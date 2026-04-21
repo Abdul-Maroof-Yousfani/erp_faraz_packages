@@ -110,10 +110,10 @@ if ($accType == 'client') {
                                                                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                         <label>Telephone</label>
                                                                         <span
-                                                                            class="rflabelsteric"><strong>*</strong></span>
+                                                                            class="rflabelsteric"><strong></strong></span>
                                                                         <input id="Telephone" name="mobile_no" type="text"
-                                                                            class="form-control requiredField" required
-                                                                            value="{{ $supplier->mobile_no }}"
+                                                                            class="form-control" 
+                                                                            value="{{ $supplier->mobile_no ?? '0' }}"
                                                                             onkeyup="validateField('2', 'Telephone')">
                                                                     </div>
 

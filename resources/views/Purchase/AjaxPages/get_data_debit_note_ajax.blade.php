@@ -42,8 +42,8 @@ $po_no=     DB::Connection('mysql2')->table('goods_receipt_note')->where('grn_no
     <td><?php echo strtoupper($Fil->pr_no);?></td>
     <td><?php echo CommonHelper::changeDateFormat($Fil->pr_date);?></td>
     <td><?php echo CommonHelper::getCompanyDatabaseTableValueById($m,'supplier','name',$Fil->supplier_id);?></td>
-    <td><?php echo strtoupper($Fil->grn_no.'</br>'.$po_no);?></td>
-    <td><?php echo CommonHelper::changeDateFormat($Fil->grn_date);?></td>
+    <td class="hide"><?php echo strtoupper($Fil->grn_no.'</br>'.$po_no);?></td>
+    <td class="hide"><?php echo CommonHelper::changeDateFormat($Fil->grn_date);?></td>
     <td><?php echo $Fil->remarks;?></td>
     <td class="text-right hide">{{number_format($return_amount,2)}}</td>
     <td class="text-right hide">{{number_format($net_stock,2)}}</td>

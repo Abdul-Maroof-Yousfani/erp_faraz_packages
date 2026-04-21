@@ -66,8 +66,14 @@ if ($accType == 'client') {
                                                                     <label>Account Head :</label>
                                                                     <select onchange="get_nature_type()" name="account_head" id="account_id" class="form-control select2">
                                                                         <option value="">Select Account</option>
-                                                                        @foreach($accounts as $key => $y)
+                                                                        {{-- @foreach($accounts as $key => $y)
+                                                                        
                                                                             <option value="{{ $y->code}}">{{ $y->code . ' ---- ' . $y->name}}</option>
+                                                                        @endforeach --}}
+                                                                        @foreach($accounts as $key => $y)
+                                                                            <option value="{{ $y->code }}" {{ $y->code == '2-2-4' ? 'selected' : '' }}>
+                                                                                {{ $y->code . ' ---- ' . $y->name }}
+                                                                            </option>
                                                                         @endforeach
 
                                                                     </select>
@@ -85,8 +91,8 @@ if ($accType == 'client') {
 
                                                                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                         <label>Telephone</label>
-                                                                        <span class="rflabelsteric"><strong>*</strong></span>
-                                                                        <input id="Telephone" name="mobile_no"  type="text" class="form-control requiredField" required value="" onkeyup="validateField('2', 'Telephone')" />
+                                                                        <span class="rflabelsteric"><strong></strong></span>
+                                                                        <input id="Telephone" name="mobile_no"  type="text" class="form-control"  value="" onkeyup="validateField('2', 'Telephone')" />
                                                                     </div>
 
                                                                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">

@@ -59,8 +59,13 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
                                                                 <label>Account Head :</label>
                                                                 <select onchange="get_nature_type()" name="account_head" id="account_id" class="form-control select2">
                                                                     <option value="">Select Account</option>
-                                                                    @foreach($accounts as $key => $y)
+                                                                    {{-- @foreach($accounts as $key => $y)
                                                                         <option value="{{ $y->code}}">{{ $y->code .' ---- '. $y->name}}</option>
+                                                                    @endforeach --}}
+                                                                    @foreach($accounts as $key => $y)
+                                                                        <option value="{{ $y->code }}" {{ $y->code == '1-2-4' ? 'selected' : '' }}>
+                                                                            {{ $y->code . ' ---- ' . $y->name }}
+                                                                        </option>
                                                                     @endforeach
                                                                         
                                                                 </select>
@@ -86,13 +91,12 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
                                                                 <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                     <label>Customer Name</label>
                                                                     <span class="rflabelsteric"><strong>*</strong></span>
-                                                                    <input id="Customer_name" name="customer_name" type="text" class="form-control requiredField" value="">
+                                                                    <input id="Customer_name" name="customer_name" type="text" class="form-control requiredField" required value="">
                                                                 </div>
-        
+
                                                                 <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                     <label>Tel</label>
-                                                                    <span class="rflabelsteric"><strong>*</strong></span>
-                                                                    <input id="tel" type="text" name="contact_no" class="form-control requiredField" value="">
+                                                                    <input id="tel" type="text" name="contact_no" class="form-control" value="">
                                                                 </div>
         
                                                                 <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
@@ -526,15 +530,15 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
                 $("#cnic").fadeIn(500);
                 $("#amir").removeClass("col-lg-12 col-md-12 col-sm-12 col-xs-12");
                 $("#amir").addClass("col-lg-6 col-md-6 col-sm-6 col-xs-12");
-                $("#ntn").addClass("requiredField");
-                $("#cnic").addClass("requiredField");
+                $("#ntn").removeClass("requiredField");
+                $("#cnic").removeClass("requiredField");
             }
 
             else
             {
 
                 $("#ntn").fadeIn(500);
-                $("#ntn").addClass("requiredField");
+                $("#ntn").removeClass("requiredField");
                 $("#cnic").css("display", "none");
                 $("#cnic").removeClass("requiredField");
                 $("#amir").removeClass("col-lg-6 col-md-6 col-sm-6 col-xs-12");
@@ -561,7 +565,7 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
             if ($(this).is(':checked'))
             {
                 document.getElementById("sales_tax_div").style.display = "block";
-                $("#strn").addClass("requiredField");
+                $("#strn").removeClass("requiredField");
             } else {
                 document.getElementById("sales_tax_div").style.display = "none";
                 $('#strn').val("");
@@ -573,7 +577,7 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
             if ($(this).is(':checked'))
             {
                 document.getElementById("sales_tax_srb").style.display = "block";
-                $("#srb").addClass("requiredField");
+                $("#srb").removeClass("requiredField");
             } else {
                 document.getElementById("sales_tax_srb").style.display = "none";
                 $('#srb').val("");
@@ -586,7 +590,7 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
             if ($(this).is(':checked'))
             {
                 document.getElementById("sales_tax_pra").style.display = "block";
-                $("#pra").addClass("requiredField");
+                $("#pra").removeClass("requiredField");
             } else {
                 document.getElementById("sales_tax_pra").style.display = "none";
                 $('#pra').val("");
@@ -599,7 +603,7 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
             {
 
                 $(".banks").css("display", "block");
-                $(".required").addClass("requiredField");
+                $(".required").removeClass("requiredField");
 
                 //   $("#pra").addClass("requiredField");
             } else {
@@ -612,59 +616,13 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
 
         $(document).ready(function(){
             $("#customerForm").submit(function(){
-                var input = document.getElementsByClassName('requiredField');
-                var v= input.length;
-
-
-                if ($('#regd_in_income_tax').is(':checked'))
-                {
-                    if ($('#business').is(':checked')==false && $('#company').is(':checked')==false && $('#aop').is(':checked')==false )
-                    {
-                        alert('Required Business Type');
-                        $('#regd_in_income_tax').focus();
-                        return false;
-                    }
+                if ($('#Customer_name').val() == '') {
+                    $('#Customer_name').css('border-color', 'red');
+                    $('#Customer_name').focus();
+                    return false;
                 }
 
-
-                if ($('#regd_in_sales_tax').is(':checked'))
-                {
-                    if ($('#business').is(':checked')==false && $('#company').is(':checked')==false && $('#aop').is(':checked')==false )
-                    {
-                        alert('Required Business Type');
-                        $('#regd_in_income_tax').focus();
-                        return false;
-                    }
-                }
-
-                //var select = document.getElementsByTagName('select');
-                for (i = 0; i < input.length; i++){
-                    var v = input[i].id;
-                    if(v == '')
-                    {
-
-                    }
-
-                    else{
-                        if($('#'+v).val() == '')
-
-                        {
-
-
-                            $('#'+v).css('border-color', 'red');
-
-                            $('#'+v).focus();
-                            return false;
-                        }
-
-                        else
-                        {
-                            $('#'+v).css('border-color', '#ccc');
-                        }
-                    }
-                }
-
-
+                $('#Customer_name').css('border-color', '#ccc');
             });
         });
 
@@ -688,7 +646,7 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
 
                 count++;
 
-                $(wrapper).append('<input  type="text" name="contact_no[]" id="contact_no'+count+'" value="" class="form-control requiredField remove'+count+'"/>');
+                $(wrapper).append('<input  type="text" name="contact_no[]" id="contact_no'+count+'" value="" class="form-control remove'+count+'"/>');
 
             });
 
@@ -704,7 +662,7 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
 
                 count_address++;
                 $(".removes").css("display", "block");
-                $(wrapper_address).append('<input  type="text" name="address[]" id="address'+count+'" value="" class="form-control requiredField remove_address'+count_address+'"/>');
+                $(wrapper_address).append('<input  type="text" name="address[]" id="address'+count+'" value="" class="form-control remove_address'+count_address+'"/>');
 
             });
 
@@ -719,7 +677,7 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
 
                 count_contact_person++;
                 $(".remove_contact_person").css("display", "block");
-                $(wrapper_contact_person).append('<input  type="text" name="contact_person[]" id="contact_person'+count+'" value="" class="form-control requiredField remove_contact_person'+count_address+'"/>');
+                $(wrapper_contact_person).append('<input  type="text" name="contact_person[]" id="contact_person'+count+'" value="" class="form-control remove_contact_person'+count_address+'"/>');
 
             });
 
@@ -734,7 +692,7 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
 
                 count_fax++;
                 $(".remove_fax").css("display", "block");
-                $(wrapper_fax).append('<input  type="text" name="fax[]" id="fax'+count+'" value="" class="form-control requiredField remove_fax'+count_fax+'"/>');
+                $(wrapper_fax).append('<input  type="text" name="fax[]" id="fax'+count+'" value="" class="form-control remove_fax'+count_fax+'"/>');
 
             });
 

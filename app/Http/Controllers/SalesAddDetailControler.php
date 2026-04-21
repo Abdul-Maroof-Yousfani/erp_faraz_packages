@@ -321,7 +321,7 @@ class SalesAddDetailControler extends Controller
     {
         $request->validate([
             'customer_name' => 'required',
-            'contact_no' => 'required',
+            // 'contact_no' => 'required',
         ]);
 
         CommonHelper::companyDatabaseConnection($_GET['m']);

@@ -337,21 +337,29 @@ if (!empty($row->bill_date) && !empty($row->due_date)) {
 
 
                         <div style="line-height:8px;">&nbsp;</div>
-                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                            <div class="row">
-                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 text-center">
+                       <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <div class="row text-center">
+
+                               <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-center">
                                             <h6 class="signature_bor">Prepared By: </h6>
-                                            <b>   <p><?php echo strtoupper($username);  ?></p></b>
+                                            <b>   <p></p></b>
                                         </div>
-                                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 text-center">
-                                         
-                                            <p>____________________</p>
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-center">
+                                            <h6 class="signature_bor">Checked By:</h6>
+                                            <b>   <p></p></b>
+                                        </div>
+                                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2 text-center">
+                                            <h6 class="signature_bor">Entry By:</h6>
+                                            <b>  <p></p></b>
+                                        </div>
+                                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2 text-center">
+                                            <h6 class="signature_bor">Approved By</h6>
+                                            <b>  <p></p></b>
+                                        </div>
+
+                                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2 text-center">
                                                <h6 class="signature_bor">Signature:</h6>
                                         </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
