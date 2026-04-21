@@ -3966,7 +3966,7 @@ echo "aa"; die;
         }
 
         $gatePassSourceDetails = collect();
-        if (in_array((int) $gatePassEdit->gate_pass_type, [1, 2], true)) {
+        if (!empty($gatePassEdit) && in_array((int) $gatePassEdit->gate_pass_type, [1, 2], true)) {
             $gatePassSourceDetails = DB::connection('mysql2')->table('gate_pass_data')
                 ->where('gate_pass_id', $id)
                 ->where('status', 1)
