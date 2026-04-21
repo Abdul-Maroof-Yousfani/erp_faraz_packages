@@ -2371,8 +2371,26 @@ class SalesAddDetailControler extends Controller
             // dd($byers_id);
 
             $customer_acc_id = SalesHelper::get_customer_acc_id($buyers_id);
+
+            if($request->commission_buyer != null){
             $commission_buyer_acc_id = SalesHelper::get_customer_acc_id($request->commission_buyer);
-            
+            $transaction = new Transactions();
+            $transaction = $transaction->SetConnection('mysql2');
+            $transaction->voucher_no = $gi_no;
+            $transaction->v_date = $request->gi_date;
+            $transaction->acc_id = $commission_buyer_acc_id;
+            $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($commission_buyer_acc_id);
+            $transaction->particulars = $request->description;
+            $transaction->opening_bal = 0;
+            $transaction->debit_credit = 1;
+            $transaction->amount = $total_commission_amount;
+            $transaction->username = Auth::user()->name;
+            $transaction->status = 100;
+            $transaction->voucher_type = 6;
+            $transaction->save();
+
+            }
+          
             // dd($customer_acc_id);
 
             $transaction = new Transactions();
@@ -2406,21 +2424,7 @@ class SalesAddDetailControler extends Controller
             $transaction->voucher_type = 6;
             $transaction->save();
 
-            $transaction = new Transactions();
-            $transaction = $transaction->SetConnection('mysql2');
-            $transaction->voucher_no = $gi_no;
-            $transaction->v_date = $request->gi_date;
-            $transaction->acc_id = $commission_buyer_acc_id;
-            $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($commission_buyer_acc_id);
-            $transaction->particulars = $request->description;
-            $transaction->opening_bal = 0;
-            $transaction->debit_credit = 1;
-            $transaction->amount = $total_commission_amount;
-            $transaction->username = Auth::user()->name;
-            $transaction->status = 100;
-            $transaction->voucher_type = 6;
-            $transaction->save();
-
+     
 
             $data['sales_tax_invoice_id'] = $id;
             $data['sales_tax_invoice'] = 1;
