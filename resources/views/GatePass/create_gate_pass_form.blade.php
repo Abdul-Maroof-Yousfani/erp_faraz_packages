@@ -9,18 +9,23 @@ $currentTime = date('H:i');
 
 $manualGatePassItems = $manualGatePassItems ?? [];
 $manualGatePassOldRows = [];
+$selectedSalesInvoiceIds = $selectedSalesInvoiceIds ?? [];
+$selectedDeliveryNoteIds = $selectedDeliveryNoteIds ?? [];
+$customers = $customers ?? collect();
 
 $oldDescriptions = old('manual_description', []);
 $oldPurposes = old('manual_purpose', []);
 $oldQuantities = old('manual_qty', []);
+$oldPartyIds = old('manual_party_id', []);
 
-if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) {
-    $manualRowCount = max(count($oldDescriptions), count($oldPurposes), count($oldQuantities));
+if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) || !empty($oldPartyIds)) {
+    $manualRowCount = max(count($oldDescriptions), count($oldPurposes), count($oldQuantities), count($oldPartyIds));
     for ($i = 0; $i < $manualRowCount; $i++) {
         $manualGatePassOldRows[] = [
             'description' => $oldDescriptions[$i] ?? '',
             'purpose' => $oldPurposes[$i] ?? '',
             'qty' => $oldQuantities[$i] ?? '',
+            'party_id' => $oldPartyIds[$i] ?? '',
         ];
     }
 } elseif (!empty($manualGatePassItems)) {
@@ -29,10 +34,12 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
             'description' => $manualItem->item_name ?? '',
             'purpose' => $manualItem->purpose ?? '',
             'qty' => $manualItem->qty ?? '',
+            'party_id' => $manualItem->party_id ?? '',
         ];
     }
 }
 ?>
+@include('select2')
 
 <div class="container-fluid">
     <div class="row well_N">
@@ -95,10 +102,9 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
                                         <div class="panel panel-default" id="direct_sale_section" hidden>
                                             <div class="panel-body">
                                                 <label class="control-label small" for="sales_invoice_id">Select Invoice</label>
-                                                <select class="form-control" id="sales_invoice_id" name="sales_invoice_id">
-                                                    <option value="">Select direct sale invoice</option>
+                                                <select class="form-control select2" id="sales_invoice_id" name="sales_invoice_id[]" multiple  style="width: 100%;">
                                                     @forelse($directSaleInvoices as $invoice)
-                                                        <option value="{{ $invoice->id }}" @if((string)($selectedSalesInvoiceId ?? '') === (string) $invoice->id) selected @elseif(!empty($invoice->gate_pass_status) && (int) $invoice->gate_pass_status === 1) disabled @endif>
+                                                        <option value="{{ $invoice->id }}" @if(in_array((string) $invoice->id, array_map('strval', $selectedSalesInvoiceIds ?? []), true)) selected @elseif(!empty($invoice->gate_pass_status) && (int) $invoice->gate_pass_status === 1) disabled @endif>
                                                             {{ strtoupper($invoice->gi_no) }}
                                                             @if(!empty($invoice->customer_name))
                                                                 - {{ $invoice->customer_name }}
@@ -106,7 +112,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
                                                             @if(!empty($invoice->gi_date))
                                                                 - {{ CommonHelper::changeDateFormat($invoice->gi_date) }}
                                                             @endif
-                                                            @if(!empty($invoice->gate_pass_status) && (int) $invoice->gate_pass_status === 1 && (string)($selectedSalesInvoiceId ?? '') !== (string) $invoice->id)
+                                                            @if(!empty($invoice->gate_pass_status) && (int) $invoice->gate_pass_status === 1 && !in_array((string) $invoice->id, array_map('strval', $selectedSalesInvoiceIds ?? []), true))
                                                                 - Gate Pass Created
                                                             @endif
                                                         </option>
@@ -120,10 +126,9 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
                                         <div class="panel panel-default" id="delivery_note_section" hidden>
                                             <div class="panel-body">
                                                 <label class="control-label small" for="delivery_note_id">Select Delivery Note</label>
-                                                <select class="form-control" id="delivery_note_id" name="delivery_note_id">
-                                                    <option value="">Select delivery note</option>
+                                                <select class="form-control select2" id="delivery_note_id" name="delivery_note_id[]" multiple style="width: 100%;">
                                                     @forelse($deliveryNotes as $note)
-                                                        <option value="{{ $note->id }}" @if((string)($selectedDeliveryNoteId ?? '') === (string) $note->id) selected @elseif(!empty($note->gate_pass_status) && (int) $note->gate_pass_status === 1) disabled @endif>
+                                                        <option value="{{ $note->id }}" @if(in_array((string) $note->id, array_map('strval', $selectedDeliveryNoteIds ?? []), true)) selected @elseif(!empty($note->gate_pass_status) && (int) $note->gate_pass_status === 1) disabled @endif>
                                                             {{ strtoupper($note->gd_no) }}
                                                             @if(!empty($note->customer_name))
                                                                 - {{ $note->customer_name }}
@@ -131,7 +136,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
                                                             @if(!empty($note->gd_date))
                                                                 - {{ CommonHelper::changeDateFormat($note->gd_date) }}
                                                             @endif
-                                                            @if(!empty($note->gate_pass_status) && (int) $note->gate_pass_status === 1 && (string)($selectedDeliveryNoteId ?? '') !== (string) $note->id)
+                                                            @if(!empty($note->gate_pass_status) && (int) $note->gate_pass_status === 1 && !in_array((string) $note->id, array_map('strval', $selectedDeliveryNoteIds ?? []), true))
                                                                 - Gate Pass Created
                                                             @endif
                                                         </option>
@@ -141,6 +146,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
                                                 </select>
                                             </div>
                                         </div>
+
                                     </div>
                                 </div>
                             </div>
@@ -156,6 +162,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
                                         <tr>
                                             <th width="50" class="text-center">#</th>
                                             <th width="50" class="text-center">Item Name</th>
+                                            <th width="90" class="text-center">Customer</th>
                                             <th width="50" class="text-center">Qty</th>
                                             <th width="50" class="text-center">Purpose</th>
                                             <th width="50" class="text-center hide">Rate</th>
@@ -164,7 +171,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
                                     </thead>
                                     <tbody id="gatePassItemsBody">
                                         <tr>
-                                            <td colspan="5" class="text-center text-muted">Select a source to load items.</td>
+                                            <td colspan="7" class="text-center text-muted">Select a source to load items.</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -182,6 +189,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
                                             <tr>
                                                 <th class="text-center">Description</th>
                                                 <th class="text-center">Purpose</th>
+                                                <th class="text-center">Customer / Party Name</th>
                                                 <th class="text-center" width="140">Quantity</th>
                                                 <th class="text-center" width="90">Action</th>
                                             </tr>
@@ -193,17 +201,14 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
                         </div>
 
                         <div class="panel panel-default">
-                            {{-- <div class="panel-heading clearfix">
-                                <strong class="small text-uppercase pull-left">Common Details</strong>
-                            </div>
                             <div class="panel-body">
                                 <div class="row">
                                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                        <label class="control-label small" for="description">Description</label>
+                                        <label class="control-label small" for="description">Description <span class="text-muted">optional</span></label>
                                         <textarea class="form-control" id="description" name="description" placeholder="Add gate pass description">{{ $description ?? '' }}</textarea>
                                     </div>
                                 </div>
-                            </div> --}}
+                            </div>
                         </div>
 
                         <div class="panel panel-default">
@@ -260,6 +265,11 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
         '2' => $deliveryNoteItems ?? [],
     ]);
     const manualGatePassExistingRows = @json($manualGatePassOldRows);
+    const selectedSalesInvoiceIds = @json($selectedSalesInvoiceIds ?? []);
+    const customerOptions = @json($customers->map(function ($customer) {
+        return ['id' => $customer->id, 'name' => $customer->name];
+    })->values());
+    let gatePassItemsRequestToken = 0;
 
     function formatNumber(value) {
         const num = parseFloat(value) || 0;
@@ -276,6 +286,12 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
     }
 
     function buildManualRow(row = {}) {
+        let customerHtml = '<option value="">Select customer / party</option>';
+        customerOptions.forEach(function (customer) {
+            const selected = String(row.party_id ?? '') === String(customer.id) ? 'selected' : '';
+            customerHtml += `<option value="${escapeHtml(customer.id)}" ${selected}>${escapeHtml(customer.name)}</option>`;
+        });
+
         return `
             <tr class="manual-gate-pass-row">
                 <td>
@@ -283,6 +299,11 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
                 </td>
                 <td>
                     <input type="text" name="manual_purpose[]" class="form-control" placeholder="Enter purpose" value="${escapeHtml(row.purpose)}">
+                </td>
+                <td>
+                    <select name="manual_party_id[]" class="form-control select2 manual-party-select">
+                        ${customerHtml}
+                    </select>
                 </td>
                 <td>
                     <input type="number" name="manual_qty[]" class="form-control" step="any" min="0" placeholder="Enter Qty" value="${escapeHtml(row.qty)}">
@@ -294,22 +315,71 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
         `;
     }
 
+    function initManualPartySelects() {
+        $('#manualGatePassBody .manual-party-select').each(function () {
+            if (!$(this).data('select2')) {
+                $(this).select2({ width: '100%' });
+            }
+        });
+    }
+
+    function getSourceRows(type, sourceIds) {
+        const sourceMap = gatePassSourceData[String(type)] || {};
+        const ids = Array.isArray(sourceIds) ? sourceIds : (sourceIds ? [sourceIds] : []);
+        let rows = [];
+
+        ids.forEach(function (id) {
+            rows = rows.concat(sourceMap[String(id)] || []);
+        });
+
+        return rows;
+    }
+
+    function buildGatePassItemsHtml(rows) {
+        if (!rows || !rows.length) {
+            return '<tr><td colspan="7" class="text-center text-muted">No items found for the selected source.</td></tr>';
+        }
+
+        let html = '';
+        rows.forEach(function (item, index) {
+            html += `
+                <tr>
+                    <td class="text-center">${index + 1}</td>
+                    <td>${item.item_name ?? ''}</td>
+                    <td class="text-center">${escapeHtml(item.customer_name ?? '')}</td>
+                    <td class="text-right">${formatNumber(item.qty)}</td>
+                    <td class="text-right hide">${formatNumber(item.rate)}</td>
+                    <td class="text-right hide">${formatNumber(item.amount)}</td>
+                    <td class="text-center">
+                       <input type="text" name="item_purpose[${index}]" class="form-control" placeholder="Enter purpose" value="${escapeHtml(item.purpose)}">
+                    </td>
+                </tr>
+            `;
+        });
+
+        return html;
+    }
+
     function renderManualRows(rows) {
         const body = document.getElementById('manualGatePassBody');
         body.innerHTML = '';
 
         if (!rows || !rows.length) {
             body.insertAdjacentHTML('beforeend', buildManualRow());
+            initManualPartySelects();
             return;
         }
 
         rows.forEach(function (row) {
             body.insertAdjacentHTML('beforeend', buildManualRow(row));
         });
+
+        initManualPartySelects();
     }
 
     function addGatePassManualRow() {
         document.getElementById('manualGatePassBody').insertAdjacentHTML('beforeend', buildManualRow());
+        initManualPartySelects();
     }
 
     function handleAddManualRowClick() {
@@ -342,8 +412,8 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
         const body = document.getElementById('gatePassItemsBody');
         const itemsCard = document.getElementById('items_card');
         const manualSection = document.getElementById('manual_section');
-        const addManualButton = document.getElementById('btnAddManualRow');
-        const rows = (gatePassSourceData[String(type)] || {})[String(sourceId)] || [];
+        const rows = getSourceRows(type, sourceId);
+        const hasSource = Array.isArray(sourceId) ? sourceId.length > 0 : !!sourceId;
 
         if (String(type) === '3') {
             itemsCard.hidden = true;
@@ -352,8 +422,8 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
             return;
         }
 
-        if (!sourceId || !type) {
-            body.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Select a source to load items.</td></tr>';
+        if (!hasSource || !type) {
+            body.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Select a source to load items.</td></tr>';
             itemsCard.hidden = true;
             manualSection.hidden = true;
             return;
@@ -363,27 +433,41 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
         manualSection.hidden = true;
 
         if (!rows.length) {
-            body.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No items found for the selected source.</td></tr>';
+            const requestToken = ++gatePassItemsRequestToken;
+            body.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Loading items...</td></tr>';
+
+            $.get("{{ url('/pdc/getGatePassSourceItems') }}", {
+                type: type,
+                source_ids: Array.isArray(sourceId) ? sourceId : [sourceId]
+            }).done(function (response) {
+                if (requestToken !== gatePassItemsRequestToken) {
+                    return;
+                }
+
+                const responseRows = (response && response.rows) ? response.rows : {};
+                const mergedRows = [];
+
+                (Array.isArray(sourceId) ? sourceId : [sourceId]).forEach(function (id) {
+                    mergedRows.push(...(responseRows[String(id)] || []));
+                });
+
+                if (!mergedRows.length) {
+                    mergedRows.push(...rows);
+                }
+
+                body.innerHTML = buildGatePassItemsHtml(mergedRows);
+            }).fail(function () {
+                if (requestToken !== gatePassItemsRequestToken) {
+                    return;
+                }
+
+                body.innerHTML = buildGatePassItemsHtml(rows);
+            });
+
             return;
         }
 
-        let html = '';
-        rows.forEach(function (item, index) {
-            html += `
-                <tr>
-                    <td class="text-center">${index + 1}</td>
-                    <td>${item.item_name ?? ''}</td>
-                    <td class="text-right">${formatNumber(item.qty)}</td>
-                    <td class="text-right hide">${formatNumber(item.rate)}</td>
-                    <td class="text-right hide">${formatNumber(item.amount)}</td>
-                    <td class="text-center">
-                       <input type="text" name="item_purpose[${index}]" class="form-control" placeholder="Enter purpose" value="${escapeHtml(item.purpose)}">
-                    </td>
-                </tr>
-            `;
-        });
-
-        body.innerHTML = html;
+        body.innerHTML = buildGatePassItemsHtml(rows);
     }
 
     function setGatePassType(value) {
@@ -402,11 +486,11 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
         if (value === '1') {
             directSection.hidden = false;
             directSelect.disabled = false;
-            renderGatePassItems(value, directSelect.value);
+            renderGatePassItems(value, $('#sales_invoice_id').val() || []);
         } else if (value === '2') {
             deliverySection.hidden = false;
             deliverySelect.disabled = false;
-            renderGatePassItems(value, deliverySelect.value);
+            renderGatePassItems(value, $('#delivery_note_id').val() || []);
         } else if (value === '3') {
             manualSection.hidden = false;
             renderManualRows(manualGatePassExistingRows);
@@ -418,8 +502,10 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
 
     function resetGatePassForm() {
         document.getElementById('gatePassForm').reset();
-        document.getElementById('gatePassItemsBody').innerHTML = '<tr><td colspan="5" class="text-center text-muted">Select a source to load items.</td></tr>';
+        document.getElementById('gatePassItemsBody').innerHTML = '<tr><td colspan="7" class="text-center text-muted">Select a source to load items.</td></tr>';
         document.getElementById('manualGatePassBody').innerHTML = '';
+        $('#sales_invoice_id').val(null).trigger('change');
+        $('#delivery_note_id').val(null).trigger('change');
         setGatePassType('');
     }
 
@@ -432,14 +518,15 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities)) 
             setGatePassType(this.value);
         });
 
-        salesInvoiceSelect.addEventListener('change', function () {
-            renderGatePassItems(typeSelect.value, this.value);
+        $(salesInvoiceSelect).on('change select2:select select2:unselect', function () {
+            renderGatePassItems(typeSelect.value, $(this).val() || []);
         });
 
-        deliveryNoteSelect.addEventListener('change', function () {
-            renderGatePassItems(typeSelect.value, this.value);
+        $(deliveryNoteSelect).on('change select2:select select2:unselect', function () {
+            renderGatePassItems(typeSelect.value, $(this).val() || []);
         });
 
+        $('.select2').select2();
         setGatePassType(typeSelect.value);
     });
 </script>

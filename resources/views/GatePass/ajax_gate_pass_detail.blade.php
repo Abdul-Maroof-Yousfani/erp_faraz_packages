@@ -55,6 +55,18 @@ use App\Helpers\CommonHelper;
                 <span>{{ $gatePass->vehicle_no ?: '__________' }}</span>
             </div>
 
+            <div style="flex: 1;" class="hide">
+                <strong>Source No:</strong>
+                <span>{{ $gatePass->source_no ?: '__________' }}</span>
+            </div>
+
+            @if(!empty($partyName))
+            <div style="flex: 1;">
+                <strong>Customer / Party:</strong>
+                <span>{{ $partyName }}</span>
+            </div>
+            @endif
+
             @if(!empty($gatePass->driver_name))
             <div style="flex: 1;">
                 <strong>Driver Name:</strong>
@@ -72,10 +84,25 @@ use App\Helpers\CommonHelper;
                     <th style="border: 1px solid #333; padding: 12px; text-align: left; width: 45%;">DESCRIPTION</th>
                     <th style="border: 1px solid #333; padding: 12px; text-align: center; width: 15%;">QUANTITY</th>
                     <th style="border: 1px solid #333; padding: 12px; text-align: left; width: 25%;">PURPOSE</th>
+                    <th style="border: 1px solid #333; padding: 12px; text-align: left; width: 25%;">CUSTOMER / PARTY</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($items as $item)
+                <?php
+                    $partyName = '';
+                    if (property_exists($item, 'party_id') && !empty($item->party_id)) {
+                        $partyName = DB::connection('mysql2')
+                            ->table('customers')
+                            ->where('id', $item->party_id)
+                            ->value('name') ?? '';
+                    } elseif (!empty($gatePass->party_id)) {
+                        $partyName = DB::connection('mysql2')
+                            ->table('customers')
+                            ->where('id', $gatePass->party_id)
+                            ->value('name') ?? '';
+                    }
+                ?>
                 
                 <tr>
                     <td style="border: 1px solid #333; padding: 12px; font-weight: 500;">
@@ -94,12 +121,16 @@ use App\Helpers\CommonHelper;
                     <td style="border: 1px solid #333; padding: 12px;">
                         {{ $item->purpose ?? '' }}
                     </td>
+                    <td style="border: 1px solid #333; padding: 12px;">
+                        {{ $partyName ?: '-' }}
+                    </td>
                 </tr>
                 @empty
                 <tr>
                     <td style="border: 1px solid #333; padding: 12px; font-weight: 500;">
                         {{ $gatePass->description ?: 'The Names' }}
                     </td>
+                    <td style="border: 1px solid #333; padding: 12px;"></td>
                     <td style="border: 1px solid #333; padding: 12px;"></td>
                     <td style="border: 1px solid #333; padding: 12px;"></td>
                 </tr>
@@ -109,6 +140,7 @@ use App\Helpers\CommonHelper;
                 @for($i = count($items); $i < 6; $i++)
                 <tr>
                     <td style="border: 1px solid #333; padding: 12px; height: 38px;"></td>
+                    <td style="border: 1px solid #333; padding: 12px;"></td>
                     <td style="border: 1px solid #333; padding: 12px;"></td>
                     <td style="border: 1px solid #333; padding: 12px;"></td>
                 </tr>
