@@ -3646,6 +3646,14 @@ echo "aa"; die;
 
     private function normalizeSelectedIds($value)
     {
+        if (is_null($value) || $value === '') {
+            return [];
+        }
+
+        if (is_string($value)) {
+            $value = preg_split('/[\s,]+/', $value, -1, PREG_SPLIT_NO_EMPTY);
+        }
+
         $ids = is_array($value) ? $value : [$value];
 
         return collect($ids)
@@ -3657,6 +3665,46 @@ echo "aa"; die;
             })
             ->values()
             ->all();
+    }
+
+    private function resolveGatePassSourceIds($gatePassId, $gatePass)
+    {
+        if (in_array((int) ($gatePass->gate_pass_type ?? 0), [1, 2], true)) {
+            $detailSourceIds = DB::connection('mysql2')->table('gate_pass_data')
+                ->where('gate_pass_id', $gatePassId)
+                ->where('status', 1)
+                ->whereNotNull('source_id')
+                ->orderBy('id', 'ASC')
+                ->pluck('source_id')
+                ->filter(function ($id) {
+                    return (int) $id > 0;
+                })
+                ->unique()
+                ->values()
+                ->all();
+
+            if (!empty($detailSourceIds)) {
+                return $detailSourceIds;
+            }
+        }
+
+        $sourceIds = $this->normalizeSelectedIds($gatePass->source_ids ?? '');
+
+        if (!empty($sourceIds)) {
+            return $sourceIds;
+        }
+
+        $sourceIds = $this->normalizeSelectedIds($gatePass->source_id ?? '');
+
+        if (!empty($sourceIds)) {
+            return $sourceIds;
+        }
+
+        if (!in_array((int) ($gatePass->gate_pass_type ?? 0), [1, 2], true)) {
+            return [];
+        }
+
+        return [];
     }
 
     private function attachItemPurposes($itemRows, Request $request, $sourceType = null)
@@ -4024,11 +4072,11 @@ echo "aa"; die;
         $selectedGatePassType = (string) ($gatePassEdit->gate_pass_type ?? '');
         $selectedSalesInvoiceIds = [];
         if ((int) ($gatePassEdit->gate_pass_type ?? 0) === 1) {
-            $selectedSalesInvoiceIds = $this->normalizeSelectedIds($gatePassEdit->source_ids ?? ($gatePassEdit->source_id ?? ''));
+            $selectedSalesInvoiceIds = $this->resolveGatePassSourceIds($id, $gatePassEdit);
         }
         $selectedDeliveryNoteIds = [];
         if ((int) ($gatePassEdit->gate_pass_type ?? 0) === 2) {
-            $selectedDeliveryNoteIds = $this->normalizeSelectedIds($gatePassEdit->source_ids ?? ($gatePassEdit->source_id ?? ''));
+            $selectedDeliveryNoteIds = $this->resolveGatePassSourceIds($id, $gatePassEdit);
         }
         $description = $gatePassEdit->description ?? '';
         $selectedPartyId = (string) ($gatePassEdit->party_id ?? '');
@@ -4112,6 +4160,21 @@ echo "aa"; die;
                     'rate' => $item->rate,
                     'amount' => $item->amount,
                 ];
+            }
+        }
+
+        $gatePassSourceDetails = collect();
+        if (in_array((int) ($gatePassEdit->gate_pass_type ?? 0), [1, 2], true)) {
+            $gatePassSourceDetails = DB::connection('mysql2')->table('gate_pass_data')
+                ->where('gate_pass_id', $id)
+                ->where('status', 1)
+                ->orderBy('id', 'ASC')
+                ->get(['source_id', 'source_item_id', 'purpose', 'party_id']);
+
+            if ((int) $gatePassEdit->gate_pass_type === 1) {
+                $directSaleInvoiceItems = $this->applyGatePassDetailsToSourceItems($directSaleInvoiceItems, $gatePassSourceDetails);
+            } elseif ((int) $gatePassEdit->gate_pass_type === 2) {
+                $deliveryNoteItems = $this->applyGatePassDetailsToSourceItems($deliveryNoteItems, $gatePassSourceDetails);
             }
         }
 
@@ -4557,7 +4620,7 @@ echo "aa"; die;
                 return redirect()->back()->with('error', 'Gate pass not found.');
             }
 
-            $existingSourceIds = $this->normalizeSelectedIds($gatePass->source_ids ?? ($gatePass->source_id ?? ''));
+            $existingSourceIds = $this->resolveGatePassSourceIds($id, $gatePass);
             $this->markGatePassSources($existingSourceIds, (int) $gatePass->gate_pass_type, 0);
 
             DB::connection('mysql2')->table('gate_pass_data')->where('gate_pass_id', $id)->update(['status' => 2]);
@@ -4731,7 +4794,7 @@ echo "aa"; die;
                 return redirect()->back()->with('error', 'Gate pass not found.');
             }
 
-            $sourceIds = $this->normalizeSelectedIds($gatePass->source_ids ?? ($gatePass->source_id ?? ''));
+            $sourceIds = $this->resolveGatePassSourceIds($id, $gatePass);
             $this->markGatePassSources($sourceIds, (int) $gatePass->gate_pass_type, 0);
 
             DB::connection('mysql2')->table('gate_pass_data')->where('gate_pass_id', $id)->update(['status' => 2]);

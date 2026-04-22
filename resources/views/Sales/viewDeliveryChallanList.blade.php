@@ -138,7 +138,7 @@ $AccYearTo = $AccYearDate->accyearto;
                             <div class="row">
                                 <div class="col-lg-12 col-md-12 col-sm-12col-xs-12">
                                     <div class="table-responsive">
-                                        <table class="table table-bordered sf-table-list" id="EmpExitInterviewList">
+                                        <table class="table table-bordered sf-table-list" id="EmpExitInterviewList" style="white-space: nowrap">
                                             <thead>
                                             <th class="text-center col-sm-1">S.No</th>
                                             <th class="text-center col-sm-1">SO No</th>
@@ -154,7 +154,7 @@ $AccYearTo = $AccYearDate->accyearto;
                                             <th class="text-center">DN Status</th>
                                             <th class="text-center">Username</th>
 
-                                            <th class="text-center">Action</th>
+                                            <th class="text-center printHide">Action</th>
                                             {{--<th class="text-center">Delete</th>--}}
                                             </thead>
                                             <tbody id="data">
@@ -208,22 +208,35 @@ $AccYearTo = $AccYearDate->accyearto;
                                                     <td class="text-center"><?php echo $row->username?></td>
 
 
-                                                    <td class="text-center">
-
-
-                                                        <?php if($view == true):?>
-                                                        <button onclick="showDetailModelOneParamerter('sales/viewDeliveryChallanDetail/<?php echo $row->id ?>','','View Delivery Challan')"
-                                                                type="button" class="btn btn-success btn-xs">View</button>
-
-                                                        <?php endif;?>
-                                                        <?php if($edit == true && $status!='Complete'):?>
-                                                        <button onclick="delivery_note('<?php echo $row->id?>','<?php echo $m ?>')"
-                                                                type="button" class="btn btn-primary btn-xs">Edit </button>
-                                                        <?php endif;?>
-                                                            <?php if($delete == true && $status!='Complete'):?>
-                                                        <button onclick="delivery_note_delete('<?php echo $row->id?>','<?php echo $m ?>')"
-                                                                type="button" class="btn btn-danger btn-xs">Delete</button>
-                                                        <?php endif;?>
+                                                    <td class="text-center printHide">
+                                                        <div class="dropdown">
+                                                            <button class="drop-bt dropdown-toggle" type="button" data-toggle="dropdown">
+                                                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                                                            </button>
+                                                            <ul class="dropdown-menu dropdown-menu-right">
+                                                                <?php if($view == true):?>
+                                                                    <li>
+                                                                        <a onclick="showDetailModelOneParamerter('sales/viewDeliveryChallanDetail/<?php echo $row->id ?>','','View Delivery Challan')" type="button" class="dropdown-item_sale_order_list dropdown-item">
+                                                                            <i class="fa-regular fa-eye"></i> View
+                                                                        </a>
+                                                                    </li>
+                                                                <?php endif;?>
+                                                                <?php if($edit == true && $status!='Complete'):?>
+                                                                    <li>
+                                                                        <a onclick="delivery_note('<?php echo $row->id?>','<?php echo $m ?>')" type="button" class="dropdown-item_sale_order_list dropdown-item">
+                                                                            <i class="fa-solid fa-pencil"></i> Edit
+                                                                        </a>
+                                                                    </li>
+                                                                <?php endif;?>
+                                                                <?php if($delete == true && $status!='Complete'):?>
+                                                                    <li>
+                                                                        <a onclick="delivery_note_delete('<?php echo $row->id?>','<?php echo $m ?>')" type="button" class="dropdown-item_sale_order_list dropdown-item">
+                                                                            <i class="fa-solid fa-trash"></i> Delete
+                                                                        </a>
+                                                                    </li>
+                                                                <?php endif;?>
+                                                            </ul>
+                                                        </div>
 
                                                     </td>
                                                     {{--<td class="text-center"><a href="{{ URL::asset('purchase/editPurchaseVoucherForm/'.$row->id) }}" class="btn btn-success btn-xs">Edit </a></td>--}}

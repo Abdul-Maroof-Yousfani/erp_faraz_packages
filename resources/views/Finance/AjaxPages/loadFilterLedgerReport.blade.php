@@ -36,20 +36,15 @@ $m=Input::get('m');
 
 <div id="">
     <div class="row">
-        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-            <label style="border-bottom:2px solid #000 !important;">Printed On Date&nbsp;:&nbsp;</label><label style="border-bottom:2px solid #000 !important;"><?php echo CommonHelper::changeDateFormat(date('Y-m-d'));$x = date('Y-m-d');
-                echo ' '.'('.date('D', strtotime($x)).')';?></label>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
             <?php echo CommonHelper::get_company_logo(Session::get('run_company'));?>
         </div>
-
-    </div>
-    <div class="row">
-        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
             <h3 style="text-align: center;">Ledger Report</h3>
+        </div>
+        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-right">
+            <label style="border-bottom:2px solid #000 !important;">Printed On Date&nbsp;:&nbsp;</label><label style="border-bottom:2px solid #000 !important;"><?php echo CommonHelper::changeDateFormat(date('Y-m-d'));$x = date('Y-m-d');
+                echo ' '.'('.date('D', strtotime($x)).')';?></label>
         </div>
     </div>
     <div style="line-height:5px;">&nbsp;</div>
@@ -403,20 +398,24 @@ $m=Input::get('m');
 
         <tr  title="<?php echo $trow->voucher_type ?>"  class="hov" >
             <td><?php echo strtoupper($trow->voucher_no) ?></td>
-            <td class="text-left">
+            <td class="text-left" style="white-space: nowrap !important;font-size: 11px;">
                 <?php
                     $itemDetails = [];
+
                     if (!empty($ledgerItemDetails[$trow->voucher_no])) {
                         foreach ($ledgerItemDetails[$trow->voucher_no] as $ledgerItem) {
                             $paymentTerm = $purchaseVoucherPaymentTerms[$trow->voucher_no] ?? '-';
-                            $itemDetails[] = 'Item Name: ' . e($ledgerItem->sub_ic)
-                                . '<br>' . 'Qty: ' . number_format((float) $ledgerItem->qty, 2)
-                                . '<br>' . 'Rate: ' . number_format((float) ($ledgerItem->rate ?? 0), 2)
-                                . '<br>' . 'Payment Term: ' . e($paymentTerm);
+
+                            $itemDetails[] = 
+                                'Item Name: ' . e($ledgerItem->sub_ic) . ' | ' .
+                                'Qty: ' . number_format((float) $ledgerItem->qty, 2) . ' |</br> ' .
+                                'Rate: ' . number_format((float) ($ledgerItem->rate ?? 0), 2) . ' | ' .
+                                'Payment Term: ' . e($paymentTerm);
                         }
                     }
+
                     echo implode('<br>', $itemDetails);
-                ?>
+                    ?>
             </td>
                 <td class="text-center"> <a onclick="showDetailModelOneParamerter('<?php echo $detail?>','<?php echo 'other'.','.$trow->voucher_no;?>','<?php echo $PageTitle?>','<?php echo $_GET['m']?>','')" class="btn btn-xs btn-success"><?php echo  date_format(date_create($trow->v_date), 'd-M-Y'); ?></a></td>
             <td class="text-center">{{$type}}</td>

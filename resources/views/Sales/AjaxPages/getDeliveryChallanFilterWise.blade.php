@@ -119,20 +119,34 @@ $total_open=0;
 
 
         <td class="text-center">
-
-            <?php if($view == true):?>
-            <button onclick="showDetailModelOneParamerter('sales/viewDeliveryChallanDetail/<?php echo $row->id ?>','','View Delivery Challan')"
-                    type="button" class="btn btn-success btn-xs">View</button>
-
-            <?php endif;?>
-            <?php if($edit == true):?>
-            <button onclick="delivery_note('<?php echo $row->id?>','<?php echo $m ?>')"
-                    type="button" class="btn btn-parimay btn-xs">Edit</button>
-                <?php endif;?>
-                <?php if($delete == true):?>
-            <button onclick="delivery_note_delete('<?php echo $row->id?>','<?php echo $m ?>')"
-                    type="button" class="btn btn-danger btn-xs">Delete</button>
-            <?php endif;?>
+            <div class="dropdown">
+                <button class="drop-bt dropdown-toggle" type="button" data-toggle="dropdown">
+                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-right">
+                    <?php if($view == true):?>
+                        <li>
+                            <a onclick="showDetailModelOneParamerter('sales/viewDeliveryChallanDetail/<?php echo $row->id ?>','','View Delivery Challan')" type="button" class="dropdown-item_sale_order_list dropdown-item">
+                                <i class="fa-regular fa-eye"></i> View
+                            </a>
+                        </li>
+                    <?php endif;?>
+                    <?php if($edit == true):?>
+                        <li>
+                            <a onclick="delivery_note('<?php echo $row->id?>','<?php echo $m ?>')" type="button" class="dropdown-item_sale_order_list dropdown-item">
+                                <i class="fa-solid fa-pencil"></i> Edit
+                            </a>
+                        </li>
+                    <?php endif;?>
+                    <?php if($delete == true):?>
+                        <li>
+                            <a onclick="delivery_note_delete('<?php echo $row->id?>','<?php echo $m ?>')" type="button" class="dropdown-item_sale_order_list dropdown-item">
+                                <i class="fa-solid fa-trash"></i> Delete
+                            </a>
+                        </li>
+                    <?php endif;?>
+                </ul>
+            </div>
 
         </td>
 

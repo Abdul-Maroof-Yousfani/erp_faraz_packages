@@ -266,6 +266,8 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
     ]);
     const manualGatePassExistingRows = @json($manualGatePassOldRows);
     const selectedSalesInvoiceIds = @json($selectedSalesInvoiceIds ?? []);
+    const selectedDeliveryNoteIds = @json($selectedDeliveryNoteIds ?? []);
+    const isGatePassEdit = @json(!empty($gatePassEdit));
     const customerOptions = @json($customers->map(function ($customer) {
         return ['id' => $customer->id, 'name' => $customer->name];
     })->values());
@@ -470,6 +472,14 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
         body.innerHTML = buildGatePassItemsHtml(rows);
     }
 
+    function syncMultiSelectValues(selector, values) {
+        const normalizedValues = (values || []).map(function (value) {
+            return String(value);
+        });
+
+        $(selector).val(normalizedValues).trigger('change.select2');
+    }
+
     function setGatePassType(value) {
         const directSection = document.getElementById('direct_sale_section');
         const deliverySection = document.getElementById('delivery_note_section');
@@ -486,10 +496,16 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
         if (value === '1') {
             directSection.hidden = false;
             directSelect.disabled = false;
+            if (isGatePassEdit) {
+                syncMultiSelectValues('#sales_invoice_id', selectedSalesInvoiceIds);
+            }
             renderGatePassItems(value, $('#sales_invoice_id').val() || []);
         } else if (value === '2') {
             deliverySection.hidden = false;
             deliverySelect.disabled = false;
+            if (isGatePassEdit) {
+                syncMultiSelectValues('#delivery_note_id', selectedDeliveryNoteIds);
+            }
             renderGatePassItems(value, $('#delivery_note_id').val() || []);
         } else if (value === '3') {
             manualSection.hidden = false;
@@ -527,6 +543,10 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
         });
 
         $('.select2').select2();
+        if (isGatePassEdit) {
+            syncMultiSelectValues('#sales_invoice_id', selectedSalesInvoiceIds);
+            syncMultiSelectValues('#delivery_note_id', selectedDeliveryNoteIds);
+        }
         setGatePassType(typeSelect.value);
     });
 </script>

@@ -190,26 +190,32 @@ endif;
                                                 <label class="sf-label"> <a href="#"
                                                         onclick="showDetailModelOneParamerter('pdc/createSupplierFormAjax');"
                                                         class="">Vendor</a></label>
-                                                <span class="rflabelsteric"><strong>*</strong></span>
-                                                <select onchange="get_address()" name="supplier_id" id="supplier_id"
-                                                    class="form-control requiredField select2">
-                                                    <option value="">Select Vendor</option>
-                                                    <?php
-        foreach ($supplierList as $row1) {
+                                                        <span class="rflabelsteric"><strong>*</strong></span>
+                                                        <select onchange="get_address()" name="supplier_id" id="supplier_id"
+                                                            class="form-control requiredField select2">
+                                                            <option value="">Select Vendor</option>
+                                                            <?php
+                                                                foreach ($supplierList as $row1) {
 
-            $address = CommonHelper::get_supplier_address($row1->id);
-                                                                            ?>
-                                                    <option
-                                                        value="<?php        echo $row1->id . '@#' . $address . '@#' . $row1->ntn . '@#' . $row1->terms_of_payment?>">
-                                                        <?php        echo ucwords($row1->name)?>
-                                                    </option>
-                                                    <?php
-        }
-                                                                            ?>
-                                                </select>
+                                                                    $address = CommonHelper::get_supplier_address($row1->id);
+                                                                                                                                    ?>
+                                                                <option
+                                                                    value="<?php        echo $row1->id . '@#' . $address . '@#' . $row1->ntn . '@#' . $row1->terms_of_payment?>">
+                                                                    <?php        echo ucwords($row1->name)?>
+                                                                </option>
+                                                                <?php
+                                                                }
+                                                            ?>
+                                                        </select>
                                             </div>
 
-                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                                <label class="sf-label">Supplier's Address</label>
+                                                <input style="text-transform: capitalize;" readonly type="text"
+                                                    class="form-control" placeholder="" name="address" id="addresss"
+                                                    value="" />
+                                            </div>
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 hide">
                                                 <label class="sf-label"> <a href="#"
                                                         onclick="showDetailModelOneParamerter('pdc/createCurrencyTypeForm')"
                                                         class="">Currency</a></label>
@@ -219,18 +225,19 @@ endif;
                                                     {{-- <option value="0,1"> PKR</option> --}}
                                                     <option value=""> Select Currency</option>
 
-                                                    @foreach(CommonHelper::get_all_currency_with_current_rate() as $row)
-                                                        <option value="{{$row->id . ',' . $row->rate}}">{{$row->name}}</option>
+                                                    @foreach(CommonHelper::get_all_currency_with_current_rate() as $row) 
+                                                    
+                                                        <option value="{{$row->id . ',' . $row->rate}}" @if($row->name == 'PKR') selected @endif>{{$row->name}}</option>
                                                     @endforeach;
 
                                                 </select>
 
                                             </div>
 
-                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 hide">
                                                 <label class="sf-label"> Currency Rate</label>
                                                 <span class="rflabelsteric"></span>
-                                                <input class="form-control" type="text" name="currency_rate"
+                                                <input class="form-control" type="text" name="currency_rate" value="1"
                                                     id="currency_rate" />
 
                                             </div>
@@ -254,12 +261,7 @@ endif;
                                                 <input type="date" class="form-control" placeholder="" name="due_date"
                                                     id="due_date" value="" readonly />
                                             </div>
-                                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-                                                <label class="sf-label">Supplier's Address</label>
-                                                <input style="text-transform: capitalize;" readonly type="text"
-                                                    class="form-control" placeholder="" name="address" id="addresss"
-                                                    value="" />
-                                            </div>
+                                           
                                         </div>
                                         <div class="lineHeight">&nbsp;</div>
 

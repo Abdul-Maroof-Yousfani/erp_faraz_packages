@@ -69,12 +69,12 @@ use App\Helpers\CommonHelper;
                                        <div class="table-responsive">
 
                                           <table class="userlittab table table-bordered sf-table-list"
-                                             id="TableExportToCsv">
+                                             id="TableExportToCsv" style="white-space: nowrap">
                                              <thead>
                                                 <tr>
                                                    <th class="text-center">S No</th>
                                                    <th class="text-center">Customer Name</th>
-                                                   <th class="wsale text-center">Contact</th>
+                                                   <th class="wsale text-center hide">Contact</th>
                                                    <th style="width: 150px;" class="wsale2 text-center">Address</th>
                                                    <th class="text-center">Point of Contact</th>
                                                    <th class="text-center">POC Contact No</th>

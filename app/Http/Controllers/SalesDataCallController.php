@@ -275,8 +275,8 @@ class SalesDataCallController extends Controller
 
             <tr id="<?php echo $row->id?>">
                 <td class="text-center"><?php echo $counter++; ?></td>
-                <td class="text-center"><?php echo $row->customer_code ?: 'N/A'; ?></td>
-                <td class="text-center"><?php echo strtoupper($row->name ?: 'N/A'); ?></td>
+                <td class="text-center"><?php echo $row->name ?: 'N/A'; ?></td>
+                <td class="text-center hide"><?php echo strtoupper($row->name ?: 'N/A'); ?></td>
                 <td class="text-center"><?php echo $row->address ?: 'N/A' ?></td>
                 <td class="text-center"><?php echo  $row->contact_person ?: 'N/A' ?></td>
                 <td class="text-center"><?php echo  $row->contact ?: 'N/A' ?></td>

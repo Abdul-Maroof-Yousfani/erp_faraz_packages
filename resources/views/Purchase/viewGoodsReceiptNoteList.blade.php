@@ -91,7 +91,7 @@ $currentMonthEndDate   = date('Y-m-t');
                                     <div class="row">
                                         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                             <div class="table-responsive">
-                                                <table class="table table-bordered sf-table-list" id="export_table_to_excel_1">
+                                                <table class="table table-bordered sf-table-list" id="export_table_to_excel_1" style="white-space: nowrap">
                                                     <thead>
                                                     <th class="text-center">S.No</th>
                                                     <th class="text-center">GRN NO..</th>

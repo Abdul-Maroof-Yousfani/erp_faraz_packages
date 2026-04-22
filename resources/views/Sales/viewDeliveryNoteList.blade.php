@@ -138,7 +138,7 @@ $AccYearTo = $AccYearDate->accyearto;
                                 <div class="row">
                                     <div class="col-lg-12 col-md-12 col-sm-12col-xs-12">
                                         <div class="table-responsive">
-                                            <table class="table table-bordered sf-table-list" id="EmpExitInterviewList">
+                                            <table class="table table-bordered sf-table-list" id="EmpExitInterviewList" style="white-space: nowrap">
                                                 <thead>
                                                     <tr>
                                                         <th class="text-center col-sm-1">S.No</th>

@@ -271,7 +271,7 @@ $All = session()->all();
                 method:'GET',
                 data:{fromDate:fromDate,toDate:toDate,m:m,accountName:accountName,paid_to:paid_to,tax_mode:tax_mode,tax_filter:tax_filter},
                 error: function(){
-                    alert('error');
+                    alert('Please select Parent Account Head');
                 },
                 success: function(response){
                     setTimeout(function(){
