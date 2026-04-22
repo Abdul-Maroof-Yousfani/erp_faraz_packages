@@ -151,11 +151,12 @@
                                                     <table class="table" id="more_details">
                                                         <thead>
                                                             <tr>
+                                                                <th class="text-center col-sm-2">Category</th>
                                                                 <th class="text-center col-sm-2">Item</th>
-                                                                <th class="text-center">Bags Qty</th>
+                                                                <th class="text-center">Qty</th>
                                                                 <th class="text-center">UOM</th>
                                                                 {{-- <th class="text-center">Color</th> --}}
-                                                                <th class="text-center">Qty in KG</th>
+                                                                <th class="text-center">Qty in UOM</th>
                                                                 <th class="text-center">Qty (lbs)</th>
                                                                 <th class="text-center">Unit Price</th>
                                                                 <th class="text-center">Total</th>
@@ -166,16 +167,20 @@
                                                             <tr class="m-tab main" id="RemoveRows1">
 
                                                                 <td style="width: 15%;">
+                                                                    <select onchange="load_sale_order_items('category_id1')"
+                                                                        class="form-control requiredField category select2"
+                                                                        name="category[]" id="category_id1">
+                                                                        <option value="">Select</option>
+                                                                        @foreach (CommonHelper::get_all_category() as $category)
+                                                                            <option value="{{ $category->id }}">{{ $category->main_ic }}</option>
+                                                                        @endforeach
+                                                                    </select>
+                                                                </td>
+                                                                <td style="width: 15%;">
                                                                     <select onchange="get_item_name(1);"
-                                                                        class="form-control requiredField item_id itemsclass"
+                                                                        class="form-control requiredField item_id itemsclass select2"
                                                                         name="item_id[]" id="item_id1">
                                                                         <option value="">Select</option>
-                                                                        @foreach($sub_item as $val)
-                                                                            <option
-                                                                                value="{{ $val->id . '@' . $val->uom_name . '@' . $val->sub_ic . '@' . $val->pack_size . '@' . $val->color }}">
-                                                                                {{  $val->sub_ic . '- ' . $val->pack_size . '-' . $val->uom_name . '-' . $val->color }}
-                                                                            </option>
-                                                                        @endforeach
                                                                     </select>
                                                                 </td>
                                                                 <input style="display: none" class="form-control"
@@ -190,7 +195,10 @@
                                                                         id="pack_size1" class="form-control" oninput="bag_qq(1)" />
                                                                 </td>
                                                                 <td>
-                                                                    <input readonly class="form-control" type="text" name="uom[]" id="uom_id1" value="">
+                                                                    <select name="uom[]" id="uom_id1"
+                                                                        class="form-control requiredField select2">
+                                                                        <option value="">Select UOM</option>
+                                                                    </select>
                                                                 </td>
                                                                 {{-- <td>
                                                                     <input readonly type="text" name="color[]"
@@ -198,8 +206,8 @@
                                                                 </td> --}}
                                                                 <td>
                                                                     <input class="form-control requiredField"
-                                                                        onchange="calculation_amount()" type="number"
-                                                                        name="qty[]" id="qty1" step="any" readonly />
+                                                                        onchange="calculation_amount()" oninput="calculation_amount()" type="number"
+                                                                        name="qty[]" id="qty1" step="any" />
                                                                          <input type="hidden" class="PackQty" name="pack_qty[]"
                                                                 id="pack_qty">
                                                                 </td>
@@ -307,13 +315,16 @@
             $('#more_details').append(`
                 <tr class="m-tab main" id="RemoveRows${Counter}">
                     <td style="width: 15%">
-                        <select onchange="get_item_name(${Counter})" class="form-control  item_id itemsclass" name="item_id[]" id="item_id${Counter}">
+                        <select onchange="load_sale_order_items('category_id${Counter}')" class="form-control requiredField category select2" name="category[]" id="category_id${Counter}">
                             <option value="">Select</option>
-                            @foreach($sub_item as $val)
-                                <option value="{{ $val->id . '@' . $val->uom_name . '@' . $val->sub_ic . '@' . $val->pack_size . '@' . $val->color }}">
-                                    {{ $val->item_code . ' -- ' . $val->sub_ic . ' ' . $val->pack_size . ' ' . $val->uom_name . ' ' . $val->color }}
-                                </option>
+                            @foreach (CommonHelper::get_all_category() as $category)
+                                <option value="{{ $category->id }}">{{ $category->main_ic }}</option>
                             @endforeach
+                        </select>
+                    </td>
+                    <td style="width: 15%">
+                        <select onchange="get_item_name(${Counter})" class="form-control  item_id itemsclass select2" name="item_id[]" id="item_id${Counter}">
+                            <option value="">Select</option>
                         </select>                  
                     </td>
                     <input style="display: none" class="form-control" type="text" name="item_code[]" id="item_code" value="">
@@ -323,11 +334,13 @@
                         <input type="text" name="pack_size[]" id="pack_size${Counter}" oninput="bag_qq(${Counter})" class="form-control" />
                     </td>
                     <td>
-                        <input readonly id="uom_id${Counter}" type="text" name="uom[]" class="form-control uom" />
+                        <select id="uom_id${Counter}" name="uom[]" class="form-control requiredField select2">
+                            <option value="">Select UOM</option>
+                        </select>
                     </td>
                    
                     <td>
-                        <input readonly class="form-control" onkeyup="calculation_amount()" type="text" name="qty[]" id="qty${Counter}" value="">
+                        <input class="form-control" onkeyup="calculation_amount()" oninput="calculation_amount()" type="text" name="qty[]" id="qty${Counter}" value="">
                         <input type="hidden" name="pack_qty[]" id="pack_qty">
                     </td>
                     <td>
@@ -347,6 +360,7 @@
                         </a>
                     </td>
                 </tr> `);
+            $('#category_id' + Counter).select2();
             $('#item_id' + Counter).select2();
 
             Counter++;
@@ -358,6 +372,18 @@
             var selectedOption = document.querySelector('#curren option:checked');
             var rate = selectedOption.getAttribute('data-value');
             document.getElementById('exchange_rate').value = rate ? rate : '1.0';
+        }
+
+        function load_sale_order_items(categoryId) {
+            var indexVal = categoryId.replace("category_id", "");
+            $('#item_id' + indexVal).html('<option value="">Select</option>').val('').trigger('change.select2');
+            $('#uom_id' + indexVal).html('<option value="">Select UOM</option>').val('').trigger('change.select2');
+            $('#item_code' + indexVal).val('');
+            $('#pack_size' + indexVal).val('');
+            $('#qty' + indexVal).val('');
+            $('#qty_lbs' + indexVal).val('');
+            $('#pack_qty').val('');
+            get_sub_item(categoryId);
         }
     
 
@@ -419,19 +445,36 @@
 
         function get_item_name(index) {
             var item = $('#item_id' + index).val();
+            if (!item) {
+                $('#uom_id' + index).val('');
+                $('#uom_id' + index).html('<option value="">Select UOM</option>').val('').trigger('change.select2');
+                $('#item_code' + index).val('');
+                $('#qty' + index).val('');
+                $('#qty_lbs' + index).val('');
+                $('#pack_qty').val('');
+                $('#pack_size' + index).val('');
+                return;
+            }
 
             var uom = item.split('@');
             console.log(uom);
-            $('#uom_id' + index).val(uom[1]);
-            $('#item_code' + index).val(uom[2]);
-          if (uom[1] && uom[1].toLowerCase() === 'bundle') {
-                $('#qty' + index).val(10).removeAttr('readonly').attr('oninput', 'calculation_amount()');
-            } else {
-                $('#qty' + index).val(uom[3]).attr('readonly', true).removeAttr('oninput');
+            var uomDropdown = $('#uom_id' + index);
+            uomDropdown.html('<option value="">Select UOM</option>');
+            if (uom[1]) {
+                uomDropdown.append(new Option(uom[1], uom[1]));
+                uomDropdown.val(uom[1]).trigger('change.select2');
             }
-            $('#qty_lbs' + index).val(uom[3] * 2.2);
-            $('#pack_qty').val(uom[3]);
-            $('#color' + index).val(uom[5]);
+            $('#item_code' + index).val(uom[2]);
+            if (uom[1] && uom[1].toLowerCase() === 'bundle') {
+                $('#qty' + index).val(10);
+            } else {
+                $('#qty' + index).val(uom[3] || 0);
+            }
+            $('#qty_lbs' + index).val((parseFloat(uom[3] || 0) * 2.2).toFixed(2));
+            $('#pack_qty').val(uom[3] || 0);
+            if (uom[4]) {
+                $('#color' + index).val(uom[4]);
+            }
             $('#pack_size' + index).val(1);
             console.log(index);
 

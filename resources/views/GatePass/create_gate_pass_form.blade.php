@@ -268,7 +268,10 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
     const selectedSalesInvoiceIds = @json($selectedSalesInvoiceIds ?? []);
     const selectedDeliveryNoteIds = @json($selectedDeliveryNoteIds ?? []);
     const isGatePassEdit = @json(!empty($gatePassEdit));
-    const customerOptions = @json($customers->map(function ($customer) {
+    const customerOptions = @json($customers->filter(function ($customer) {
+        $name = strtolower(trim($customer->name ?? ''));
+        return $name !== 'walk-in customer' && $name !== 'walk in customer';
+    })->map(function ($customer) {
         return ['id' => $customer->id, 'name' => $customer->name];
     })->values());
     let gatePassItemsRequestToken = 0;
@@ -291,6 +294,9 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
         let customerHtml = '<option value="">Select customer / party</option>';
         customerOptions.forEach(function (customer) {
             const selected = String(row.party_id ?? '') === String(customer.id) ? 'selected' : '';
+            if (String(customer.name ?? '').trim().toLowerCase() === 'walk-in customer' || String(customer.name ?? '').trim().toLowerCase() === 'walk in customer') {
+                return;
+            }
             customerHtml += `<option value="${escapeHtml(customer.id)}" ${selected}>${escapeHtml(customer.name)}</option>`;
         });
 

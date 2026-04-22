@@ -349,7 +349,7 @@ use App\Helpers\ReuseableCode;
 											<table class="table table-bordered table-compact">
 												<thead>
 													<tr class="text-center">
-														<th colspan="11" class="text-center">Sales Invoice Detail</th>
+														<th colspan="12" class="text-center">Sales Invoice Detail</th>
 														<th class="text-center">
 															<span class="badge badge-success" id="span">1</span>
 														</th>
@@ -360,7 +360,7 @@ use App\Helpers\ReuseableCode;
 														<th class="text-center col-narrow">Qty</th>
 														<th class="text-center col-narrow">UoM<span
 																class="rflabelsteric"><strong>*</strong></span></th>
-														<th class="text-center col-narrow">Qty (KG)<span
+														<th class="text-center col-narrow">Qty in UOM<span
 																class="rflabelsteric"><strong>*</strong></span></th>
 														<th class="text-center col-narrow">Qty (lbs)<span
 																class="rflabelsteric"><strong>*</strong></span></th>
@@ -892,7 +892,8 @@ use App\Helpers\ReuseableCode;
 
 				// For Bundle: keep actual_qty editable and multiply it by pack_size
 				if (selectedUom.toLowerCase().includes('bundle')) {
-					var total_qty = (actual_qty * bags_qty).toFixed(2);
+					var total_qty = (actual_qty).toFixed(2);
+					alert(total_qty);
 					$('#qty_lbs' + counter).val((total_qty * 2.2).toFixed(2));
 				}
 				// For Pcs: actual_qty is manually entered, auto-calculate lbs
