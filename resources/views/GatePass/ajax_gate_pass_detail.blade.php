@@ -2,7 +2,7 @@
 use App\Helpers\CommonHelper;
 ?>
 
-<div class="gate-pass-container" style="max-width: 1250px; margin: 20px auto; background: white; border: 2px solid #333; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">
+<div class="gate-pass-container" style=" background: white; border: 2px solid #333; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">
     
     <!-- Print Button -->
     <div style="text-align: right; padding: 15px 25px 0 25px;">
@@ -13,7 +13,7 @@ use App\Helpers\CommonHelper;
     </div>
 
     <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 25px; border-bottom: 2px solid #333; position: relative;">
+    <div class="gateprint" style="display: flex; justify-content: space-between; align-items: center; padding: 20px 25px; border-bottom: 2px solid #333; position: relative;">
         
         <!-- Logo + Company Info -->
         <div style="display: flex; align-items: center; gap: 12px;">
@@ -78,7 +78,7 @@ use App\Helpers\CommonHelper;
 
     <!-- Main Table -->
     <div style="padding: 0 25px 25px;">
-        <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+        <table style="white-space: nowrap; width: 100%;">
             <thead>
                 <tr style="background: #f8f8f8;">
                     <th style="border: 1px solid #333; padding: 12px; text-align: left; width: 45%;">DESCRIPTION</th>
@@ -187,24 +187,36 @@ use App\Helpers\CommonHelper;
 
     /* Print Styles - Hide button and optimize for printing */
     @media print {
+
+        @page{size:A4;margin:0.5mm 0.5mm 0.5mm 0.5mm !important;}
         .gate-pass-container button {
             display: none !important;
         }
         body * {
             visibility: hidden;
+            width: 100% !important;
         }
+
+    .gateprint{
+        padding: 5px 5px !important;
+     
+    }
+
+    .gate-pass-container{
+   margin: -75px 0px !important;
+    }
         .gate-pass-container,
         .gate-pass-container * {
             visibility: visible;
         }
         .gate-pass-container {
-            position: absolute;
+            /* position: absolute;
             left: 0;
             top: 0;
             width: 100%;
             box-shadow: none;
             margin: 0;
-            padding: 0;
+            padding: 0; */
         }
     }
 </style>
