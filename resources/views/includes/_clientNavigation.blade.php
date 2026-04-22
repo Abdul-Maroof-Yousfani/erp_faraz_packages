@@ -46,9 +46,8 @@ $icons = [
         <div class="logo_flex">
             <div class="logo_wrp">
                 <a href="{{route('dClient')}}">
-                <img class="logo_m hide" src="{{ asset('logoo.png') }}">
-                <img class="logo_m" src="{{ url('public/logoo.png') }}" onerror="this.onerror=null;this.src='{{ asset('logoo.png') }}'" />
-            
+                    <img class="logo_m" style="width: 90% !important; height: 90px !important" src="https://hr-innovative.com/assets/images/cbimage.png">
+             
                 </a>
             </div>
             
