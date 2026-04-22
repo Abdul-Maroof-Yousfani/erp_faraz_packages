@@ -230,8 +230,12 @@ use App\Helpers\ReuseableCode;
                                                     <td>{{ $row1->pack_size.' '.$row1->uom_name.' '.$row1->type }}</td>
                                                     <td class="hide">{{ $row1->color }}</td>
 
-                                                    <?php $sub_ic_detail=CommonHelper::get_subitem_detail($row1->item_id);
-                                                    $sub_ic_detail= explode(',',$sub_ic_detail)
+                                                    <?php
+                                                    $sub_ic_detail = '';
+                                                    if (!empty($row1->item_id)) {
+                                                        $sub_ic_detail = CommonHelper::get_subitem_detail($row1->item_id);
+                                                    }
+                                                    $sub_ic_detail = explode(',', (string) $sub_ic_detail);
                                                     ?>
                                                     <!-- <td class="text-left"> <?php echo CommonHelper::get_uom_name($sub_ic_detail[0]);?></td> -->
 
@@ -240,7 +244,6 @@ use App\Helpers\ReuseableCode;
                                                         <input onkeyup="calc('{{$id_count}}')" onblur="calc('{{$id_count}}')" class="form-control qty {{'item'.$row1->item_id}}" type="text" name="send_qty{{$id_count}}" id="send_qty{{$id_count}}" value="{{$qty}}"/>
                                                         <input type="hidden" class="" name="qty{{$id_count}}" id="qty{{$id_count}}" value="{{$qty}}"/>
                                                         </td>
-                                                        <?php $type =  CommonHelper::get_item_type($row1->item_id); ?>
                                                     <td>
 
                                                         <select onchange="get_stock(this.id,'{{$id_count}}')" class="form-control select2 requiredField ClsAll ShowOn<?php echo $counter?>" name="warehouse{{$id_count}}" id="warehouse{{$id_count}}">

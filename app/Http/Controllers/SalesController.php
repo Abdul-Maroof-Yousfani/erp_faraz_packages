@@ -603,9 +603,9 @@ class SalesController extends Controller
         $sale_order_data = DB::connection('mysql2')
             ->table('sales_order_data as a')
             ->leftJoin('bundles as b', 'a.bundles_id', '=', 'b.id')
-            ->join('subitem as s', 's.id', '=', 'a.item_id')
-            ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
-            ->join('packaging_type AS pt', 'pt.id', '=', 's.primary_pack_type')
+            ->leftJoin('subitem as s', 's.id', '=', 'a.item_id')
+            ->leftJoin(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
+            ->leftJoin('packaging_type AS pt', 'pt.id', '=', 's.primary_pack_type')
             ->where('a.master_id', $id)
             ->where('a.status', 1)
             ->select([
@@ -1035,14 +1035,30 @@ class SalesController extends Controller
         $delivery_note = $delivery_note->SetConnection('mysql2');
         $delivery_note = $delivery_note->where('id', $id)->first();
 
-        $delivery_note_data_other = new DeliveryNoteData();
-        $delivery_note_data_other = $delivery_note_data_other->SetConnection('mysql2');
-        $delivery_note_data = $delivery_note_data_other->join('subitem as s', 's.id', '=', 'delivery_note_data.item_id')
-            ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
-            ->join('packaging_type as pt', 'pt.id', '=', 's.primary_pack_type')
-            ->select('delivery_note_data.*', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 'pt.type', 's.pack_size', 's.primary_pack_type', 's.color')->where('master_id', $id)->get();
+        $delivery_note_data_other = DB::connection('mysql2')
+            ->table('delivery_note_data as dnd')
+            ->leftJoin('subitem as s', 's.id', '=', 'dnd.item_id')
+            ->leftJoin(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
+            ->leftJoin('packaging_type as pt', 'pt.id', '=', 's.primary_pack_type')
+            ->select(
+                'dnd.*',
+                's.sub_ic',
+                's.uom',
+                's.item_code',
+                'u.uom_name',
+                'pt.type',
+                's.pack_size',
+                's.primary_pack_type',
+                's.color'
+            )
+            ->where('dnd.master_id', $id)
+            ->where('dnd.status', 1)
+            ->orderBy('dnd.id', 'ASC')
+            ->get();
 
-        return view('Sales.AjaxPages.viewDeliveryNoteDetail', compact('delivery_note', 'delivery_note_data', 'id'));
+        $delivery_note_data = $delivery_note_data_other;
+
+        return view('Sales.AjaxPages.viewDeliveryNoteDetail', compact('delivery_note', 'delivery_note_data', 'delivery_note_data_other', 'id'));
     }
 
     public function viewDeliveryChallanDetail($id)

@@ -231,7 +231,7 @@ $AmountInWordsMain =0;
                                 <tr>
                                     <th class="text-center" style="border:1px solid black;">S.NO</th>
                                     <th class="text-center" style="border:1px solid black;">Item</th>
-                                    <th class="text-center" style="border:1px solid black;">HS Code</th>
+                                    <th class="text-center hide" style="border:1px solid black;">HS Code</th>
                                     <th class="text-center" style="border:1px solid black;">Bags</th>
                                     {{-- <th class="text-center" style="border:1px solid black;">Color</th> --}}
                                     <th class="text-center" style="border:1px solid black;">Uom</th>
@@ -240,8 +240,8 @@ $AmountInWordsMain =0;
                                     <th class="text-center" style="border:1px solid black;">Amount</th>
                                     {{-- <th class="text-center" style="border:1px solid black;">Tax %</th> --}}
                                     {{-- <th class="text-center" style="border:1px solid black;">Tax Amount</th> --}}
-                                    <th class="text-center" style="border:1px solid black;">Further Tax %</th>
-                                    <th class="text-center" style="border:1px solid black;">Further Tax Amount</th>
+                                    <th class="text-center hide" style="border:1px solid black;">Further Tax %</th>
+                                    <th class="text-center hide" style="border:1px solid black;">Further Tax Amount</th>
                                     <th class="text-center" style="border:1px solid black;">Net Amount</th>
                                     <!-- <th class="text-center printHide" style="border:1px solid black;">View</th> -->
 
@@ -254,8 +254,9 @@ $AmountInWordsMain =0;
                                      $total_before_tax=0;
                                      $total_tax=0;
                                      $total_after_tax=0;
-                                  
+                                   
                                      $total_tax_amount = 0 ;
+                                     $total_bags = 0;
                                      $total_qty = 0;
                                     ?>
                                     @foreach ( $sales_tax_invoice_data as $row )
@@ -265,12 +266,13 @@ $AmountInWordsMain =0;
                                         $total_before_tax += $row->rate * $row->qty;
                                         $total_tax += $row->tax_amount;
                                         $total_after_tax += $row->amount;
+                                        $bags = ($row->final_pack_size > 0) ? ($row->qty / $row->final_pack_size) : 0;
                                         ?>
                                         <tr>
                                             <td style="border:1px solid black;"> {{ $count++ }} </td>
                                             <td style="border:1px solid black;">{{ CommonHelper::get_item_name($row->item_id) }}</td>
-                                            <td style="border:1px solid black;">{{ $row->hs_code_id }}</td>
-                                            <td style="border:1px solid black;">{{ ($row->final_pack_size > 0) ? number_format($row->qty / $row->final_pack_size,2) : '' }}</td>
+                                            <td class="hide" style="border:1px solid black;">{{ $row->hs_code_id }}</td>
+                                            <td style="border:1px solid black;">{{ ($row->final_pack_size > 0) ? number_format($bags,2) : '' }}</td>
                                             {{-- <td style="border:1px solid black;">{{ $row->color }}</td> --}}
                                             <td style="border:1px solid black;">{{ CommonHelper::get_uom_name($row->uom) ??  CommonHelper::get_uom($row->item_id) }}</td>
                                             <td class="text-right" style="border:1px solid black;">{{ $row->qty }}</td>
@@ -278,20 +280,23 @@ $AmountInWordsMain =0;
                                             <td class="text-right" style="border:1px solid black;">{{ number_format($row->rate * $row->qty,2) }}</td>
                                             {{-- <td class="text-right" style="border:1px solid black;">{{ $row->tax }}</td> --}}
                                             {{-- <td class="text-right" style="border:1px solid black;">{{ number_format($row->tax_amount,2) }}</td> --}}
-                                            <td class="text-right" style="border:1px solid black;">{{ $row->sales_tax_further_per }}</td>
-                                            <td class="text-right" style="border:1px solid black;">{{ number_format($row->sales_tax_further,2) }}</td>
+                                            <td class="text-right hide" style="border:1px solid black;">{{ $row->sales_tax_further_per }}</td>
+                                            <td class="text-right hide" style="border:1px solid black;">{{ number_format($row->sales_tax_further,2) }}</td>
                                             <td class="text-right" style="border:1px solid black;">{{ number_format($row->amount,2) }}</td>
-                                            @php
+                                        @php
                                             $total_tax_amount += $row->tax_amount;
+                                            $total_bags += $bags;
                                             $total_qty += $row->qty;
-                                            @endphp
+                                        @endphp
                                         </tr>
                                     @endforeach
                                         
                                     <tr class="text-center" style="font-weight: bold">
-                                        <td  colspan="5" style="border:1px solid black;"> Total </td>
+                                        <td  colspan="2" style="border:1px solid black;"> Total </td>
+                                        <td class="text-right" colspan="1" style="border:1px solid black;"> {{ number_format($total_bags,2) }} </td>
+                                        <td></td>
                                         <td class="text-right" colspan="1" style="border:1px solid black;"> {{ number_format($total_qty,2) }} </td>
-                                        <td colspan="4"></td>
+                                        <td colspan="2"></td>
 
                                         <!-- <td class="text-right hide" colspan="1" style="border:1px solid black;"> {{ number_format($total_before_tax) }} </td>
                                         <td></td>
@@ -300,11 +305,11 @@ $AmountInWordsMain =0;
                                     </tr>
 
                                     <tr class="text-center" style="font-weight: bold">
-                                        <td colspan="10" style="border:1px solid black;">Advance Tax</td>
+                                        <td colspan="7" style="border:1px solid black;">Advance Tax</td>
                                         <td class="text-right" style="border:1px solid black;"> {{ number_format($sales_tax_invoice->advance_tax_amount,2) }} </td>
                                     </tr>
                                     <tr class="text-center" style="font-weight: bold">
-                                        <td colspan="10" style="border:1px solid black;">Cartage Amount</td>
+                                        <td colspan="7" style="border:1px solid black;">Cartage Amount</td>
                                         <td class="text-right" style="border:1px solid black;"> {{ number_format($sales_tax_invoice->cartage_amount,2) }} </td>
                                     </tr>
                                     <?php
@@ -315,7 +320,7 @@ $AmountInWordsMain =0;
                                         @foreach($AddionalExpense->get() as $Fil)
                                             <tr class="text-center">
 
-                                                <td style="border:1px solid black;" colspan="10">
+                                                <td style="border:1px solid black;" colspan="7">
                                                         <?php $Accounts = CommonHelper::get_single_row('accounts','id',$Fil->acc_id);
                                                         ?>
                                                     <strong><?php echo $Accounts->name ?? '';?></strong>
@@ -327,7 +332,7 @@ $AmountInWordsMain =0;
                                     @endif
 
                                     <tr class="text-center" style="font-weight: bold">
-                                        <td colspan="10" style="border:1px solid black;">Grand Total</td>
+                                        <td colspan="7" style="border:1px solid black;">Grand Total</td>
                                         <td class="text-right" style="border:1px solid black;"> {{ number_format($total_after_tax + $total_expense + $sales_tax_invoice->cartage_amount + $sales_tax_invoice->advance_tax_amount,2) }} </td>
                                     </tr>
 
@@ -498,7 +503,7 @@ $AmountInWordsMain =0;
                                         </div>
 
                                     </div> --}}
-                                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-center">
+                                     {{-- <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-center">
                                             <h6 class="signature_bor">Prepared By: </h6>
                                             <b>   <p></p></b>
                                         </div>
@@ -513,8 +518,11 @@ $AmountInWordsMain =0;
                                         <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2 text-center">
                                             <h6 class="signature_bor">Approved By</h6>
                                             <b>  <p></p></b>
-                                        </div>
+                                        </div> --}}
 
+                                           <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 text-center">
+                                            
+                                        </div> 
                                         <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2 text-center">
                                                <h6 class="signature_bor">Signature:</h6>
                                         </div>
