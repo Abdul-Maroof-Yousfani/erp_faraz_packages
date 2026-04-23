@@ -14,8 +14,9 @@ $AmountInWordsMain =0;
 
 
 <style>
+
     body{
-        font-size: 10px !important;
+        font-size: 9px !important;
     }
     textarea {
         border-style: none;
@@ -23,11 +24,18 @@ $AmountInWordsMain =0;
 
     }
     @media print{
+
+
+
+         @page{size:A4;margin:1mm 5mm 5mm 5mm !important;}
         .printHide{
             display:none !important;
         }
         .fa {
             font-size: small;!important;
+        }
+        .gateprint{
+        margin-top: -95px !important;
         }
 
         .table-bordered{
@@ -71,16 +79,16 @@ $AmountInWordsMain =0;
     </div>
     <!-->
         <div style="line-height:5px;">&nbsp;</div>
-        <div id="" class="col-lg-12 col-md-12 col-sm-12 col-xs-12 fo">
+        <div id="" class="col-lg-12 col-md-12 col-sm-12 col-xs-12 fo ">
             <div class="">
 
-                <div class="row">
+                <div class="row  ">
                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                     <?php echo CommonHelper::get_company_logo(Session::get('run_company'));?>
                     </div>
 
                 </div>
-                <div class="row">
+                <div class="row  noprint">
                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-4">
                         {{--<label style="border-bottom:2px solid #000 !important;">Printed On Date&nbsp;:&nbsp;</label><label style="border-bottom:2px solid #000 !important;">< ?php echo CommonHelper::changeDateFormat($currentDate);?></label>--}}
                     </div>
@@ -117,9 +125,8 @@ $AmountInWordsMain =0;
                     
 
                     <div style="text-align: center; flex: 1;" class="printShow">
-                        <h2 style="margin: 0; font-size: 26px; font-weight: bold;">Bill</h2>
-                        <h2 style="margin: 0; font-size: 26px; font-weight: bold;">Faraz Pack</h2>
-                        <p style="font-size: 10px;">
+                        <h2 style="margin: 0; font-size: 26px; font-weight: bold;">Bill Faraz Pack</h2>
+                        <p style="font-size: 10px !important;line-height: 12px !important;margin-top: 15px !important;">
                             Plot No. F-188-E, Near D-1 Bus Stop SITE Area, Karachi<br>
                             Ph: 021-32544444 • Cell: 0321 3254444<br>
                             Email: farazpackages@gmail.com
@@ -135,7 +142,7 @@ $AmountInWordsMain =0;
                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                         <div style="width:50%; float:left;
                         ">
-                            <table style="border:1px solid black;white-space:nowrap; font-size: 10px" class="table sales_Tax_Invoice_data">
+                            <table style="border:1px solid black;white-space:nowrap; font-size: 9px" class="table sales_Tax_Invoice_data">
                                 <tbody>
                                 <?php $customer_data= CommonHelper::byers_name($sales_tax_invoice->buyers_id);
 
