@@ -17,15 +17,17 @@ $oldDescriptions = old('manual_description', []);
 $oldPurposes = old('manual_purpose', []);
 $oldQuantities = old('manual_qty', []);
 $oldPartyIds = old('manual_party_id', []);
+$oldUomIds = old('manual_uom_id', []);
 
-if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) || !empty($oldPartyIds)) {
-    $manualRowCount = max(count($oldDescriptions), count($oldPurposes), count($oldQuantities), count($oldPartyIds));
+if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) || !empty($oldPartyIds) || !empty($oldUomIds)) {
+    $manualRowCount = max(count($oldDescriptions), count($oldPurposes), count($oldQuantities), count($oldPartyIds), count($oldUomIds));
     for ($i = 0; $i < $manualRowCount; $i++) {
         $manualGatePassOldRows[] = [
             'description' => $oldDescriptions[$i] ?? '',
             'purpose' => $oldPurposes[$i] ?? '',
             'qty' => $oldQuantities[$i] ?? '',
             'party_id' => $oldPartyIds[$i] ?? '',
+            'uom_id' => $oldUomIds[$i] ?? '',
         ];
     }
 } elseif (!empty($manualGatePassItems)) {
@@ -35,6 +37,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
             'purpose' => $manualItem->purpose ?? '',
             'qty' => $manualItem->qty ?? '',
             'party_id' => $manualItem->party_id ?? '',
+            'uom_id' => $manualItem->uom_id ?? ($manualItem->uom ?? ''),
         ];
     }
 }
@@ -164,6 +167,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
                                             <th width="50" class="text-center">Item Name</th>
                                             <th width="90" class="text-center">Customer</th>
                                             <th width="50" class="text-center">Qty</th>
+                                            <th width="80" class="text-center">UOM</th>
                                             <th width="50" class="text-center">Purpose</th>
                                             <th width="50" class="text-center hide">Rate</th>
                                             <th width="50" class="text-center hide">Amount</th>
@@ -171,7 +175,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
                                     </thead>
                                     <tbody id="gatePassItemsBody">
                                         <tr>
-                                            <td colspan="7" class="text-center text-muted">Select a source to load items.</td>
+                                            <td colspan="8" class="text-center text-muted">Select a source to load items.</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -188,9 +192,10 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
                                         <thead>
                                             <tr>
                                                 <th class="text-center">Description</th>
-                                                <th class="text-center">Purpose</th>
                                                 <th class="text-center">Customer / Party Name</th>
                                                 <th class="text-center" width="140">Quantity</th>
+                                                <th class="text-center">UOM</th>
+                                                <th class="text-center">Purpose</th>
                                                 <th class="text-center" width="90">Action</th>
                                             </tr>
                                         </thead>
@@ -268,6 +273,9 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
     const selectedSalesInvoiceIds = @json($selectedSalesInvoiceIds ?? []);
     const selectedDeliveryNoteIds = @json($selectedDeliveryNoteIds ?? []);
     const isGatePassEdit = @json(!empty($gatePassEdit));
+    const uomOptions = @json($uoms->map(function ($uom) {
+        return ['id' => $uom->id, 'name' => $uom->uom_name];
+    })->values());
     const customerOptions = @json($customers->filter(function ($customer) {
         $name = strtolower(trim($customer->name ?? ''));
         return $name !== 'walk-in customer' && $name !== 'walk in customer';
@@ -300,13 +308,16 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
             customerHtml += `<option value="${escapeHtml(customer.id)}" ${selected}>${escapeHtml(customer.name)}</option>`;
         });
 
+        let uomHtml = '<option value="">Select UOM</option>';
+        uomOptions.forEach(function (uom) {
+            const selected = String(row.uom_id ?? '') === String(uom.id) ? 'selected' : '';
+            uomHtml += `<option value="${escapeHtml(uom.id)}" ${selected}>${escapeHtml(uom.name)}</option>`;
+        });
+
         return `
             <tr class="manual-gate-pass-row">
                 <td>
                     <input type="text" name="manual_description[]" class="form-control" placeholder="Enter description" value="${escapeHtml(row.description)}">
-                </td>
-                <td>
-                    <input type="text" name="manual_purpose[]" class="form-control" placeholder="Enter purpose" value="${escapeHtml(row.purpose)}">
                 </td>
                 <td>
                     <select name="manual_party_id[]" class="form-control select2 manual-party-select">
@@ -316,6 +327,14 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
                 <td>
                     <input type="number" name="manual_qty[]" class="form-control" step="any" min="0" placeholder="Enter Qty" value="${escapeHtml(row.qty)}">
                 </td>
+                <td>
+                    <select name="manual_uom_id[]" class="form-control select2 manual-uom-select" required style="width: 100%;">
+                        ${uomHtml}
+                    </select>
+                </td>
+                <td>
+                    <input type="text" name="manual_purpose[]" class="form-control" placeholder="Enter purpose" value="${escapeHtml(row.purpose)}">
+                </td>
                 <td class="text-center">
                     <button type="button" class="btn btn-xs btn-danger" onclick="removeGatePassManualRow(this)">Remove</button>
                 </td>
@@ -323,8 +342,20 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
         `;
     }
 
+    function hasManualRows() {
+        return $('#manualGatePassBody .manual-gate-pass-row').length > 0;
+    }
+
     function initManualPartySelects() {
         $('#manualGatePassBody .manual-party-select').each(function () {
+            if (!$(this).data('select2')) {
+                $(this).select2({ width: '100%' });
+            }
+        });
+    }
+
+    function initManualUomSelects() {
+        $('#manualGatePassBody .manual-uom-select').each(function () {
             if (!$(this).data('select2')) {
                 $(this).select2({ width: '100%' });
             }
@@ -345,21 +376,23 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
 
     function buildGatePassItemsHtml(rows) {
         if (!rows || !rows.length) {
-            return '<tr><td colspan="7" class="text-center text-muted">No items found for the selected source.</td></tr>';
+            return '<tr><td colspan="8" class="text-center text-muted">No items found for the selected source.</td></tr>';
         }
 
         let html = '';
         rows.forEach(function (item, index) {
+            const rowKey = item.source_row_key ?? item.source_item_id ?? index;
             html += `
                 <tr>
                     <td class="text-center">${index + 1}</td>
                     <td>${item.item_name ?? ''}</td>
                     <td class="text-center">${escapeHtml(item.customer_name ?? '')}</td>
                     <td class="text-right">${formatNumber(item.qty)}</td>
+                    <td class="text-center">${escapeHtml(item.uom_name ?? item.uom ?? '')}</td>
                     <td class="text-right hide">${formatNumber(item.rate)}</td>
                     <td class="text-right hide">${formatNumber(item.amount)}</td>
                     <td class="text-center">
-                       <input type="text" name="item_purpose[${index}]" class="form-control" placeholder="Enter purpose" value="${escapeHtml(item.purpose)}">
+                       <input type="text" name="item_purpose[${rowKey}]" class="form-control" placeholder="Enter purpose" value="${escapeHtml(item.purpose)}">
                     </td>
                 </tr>
             `;
@@ -375,6 +408,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
         if (!rows || !rows.length) {
             body.insertAdjacentHTML('beforeend', buildManualRow());
             initManualPartySelects();
+            initManualUomSelects();
             return;
         }
 
@@ -383,22 +417,27 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
         });
 
         initManualPartySelects();
+        initManualUomSelects();
     }
 
     function addGatePassManualRow() {
+        const manualSection = document.getElementById('manual_section');
+        manualSection.hidden = false;
         document.getElementById('manualGatePassBody').insertAdjacentHTML('beforeend', buildManualRow());
         initManualPartySelects();
+        initManualUomSelects();
     }
 
     function handleAddManualRowClick() {
         const typeSelect = document.getElementById('gate_pass_type');
 
-        if (typeSelect.value !== '3') {
+        if (!typeSelect.value) {
             typeSelect.value = '3';
             setGatePassType('3');
             return;
         }
 
+        document.getElementById('manual_section').hidden = false;
         addGatePassManualRow();
     }
 
@@ -430,19 +469,23 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
             return;
         }
 
+        if (isGatePassEdit && Array.isArray(manualGatePassExistingRows) && manualGatePassExistingRows.length && !hasManualRows()) {
+            renderManualRows(manualGatePassExistingRows);
+        }
+
         if (!hasSource || !type) {
-            body.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Select a source to load items.</td></tr>';
+            body.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Select a source to load items.</td></tr>';
             itemsCard.hidden = true;
             manualSection.hidden = true;
             return;
         }
 
         itemsCard.hidden = false;
-        manualSection.hidden = true;
+        manualSection.hidden = !hasManualRows();
 
         if (!rows.length) {
             const requestToken = ++gatePassItemsRequestToken;
-            body.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Loading items...</td></tr>';
+            body.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Loading items...</td></tr>';
 
             $.get("{{ url('/pdc/getGatePassSourceItems') }}", {
                 type: type,
@@ -514,17 +557,19 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
             }
             renderGatePassItems(value, $('#delivery_note_id').val() || []);
         } else if (value === '3') {
-            manualSection.hidden = false;
-            renderManualRows(manualGatePassExistingRows);
             renderGatePassItems(value, '');
         } else {
             renderGatePassItems('', '');
+        }
+
+        if (value === '1' || value === '2') {
+            manualSection.hidden = !hasManualRows();
         }
     }
 
     function resetGatePassForm() {
         document.getElementById('gatePassForm').reset();
-        document.getElementById('gatePassItemsBody').innerHTML = '<tr><td colspan="7" class="text-center text-muted">Select a source to load items.</td></tr>';
+        document.getElementById('gatePassItemsBody').innerHTML = '<tr><td colspan="8" class="text-center text-muted">Select a source to load items.</td></tr>';
         document.getElementById('manualGatePassBody').innerHTML = '';
         $('#sales_invoice_id').val(null).trigger('change');
         $('#delivery_note_id').val(null).trigger('change');

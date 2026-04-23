@@ -83,6 +83,7 @@ use App\Helpers\CommonHelper;
                 <tr style="background: #f8f8f8;">
                     <th style="border: 1px solid #333; padding: 12px; text-align: left; width: 45%;">DESCRIPTION</th>
                     <th style="border: 1px solid #333; padding: 12px; text-align: center; width: 15%;">QUANTITY</th>
+                    <th style="border: 1px solid #333; padding: 12px; text-align: center; width: 15%;">UOM</th>
                     <th style="border: 1px solid #333; padding: 12px; text-align: left; width: 25%;">PURPOSE</th>
                     <th style="border: 1px solid #333; padding: 12px; text-align: left; width: 25%;">CUSTOMER / PARTY</th>
                 </tr>
@@ -109,14 +110,10 @@ use App\Helpers\CommonHelper;
                         {{ $item->item_name ?: 'The Names' }}
                     </td>
                     <td style="border: 1px solid #333; padding: 12px; text-align: center;">
-                        {{ number_format((float) $item->qty, 2) }} 
-                       {{ optional(
-                            DB::connection('mysql2')
-                                ->table('subitem')
-                                ->join('uom', 'uom.id', '=', 'subitem.uom')
-                                ->where('subitem.id', $item->source_item_id)
-                                ->first()
-                        )->uom_name ?? '' }}
+                        {{ number_format((float) $item->qty, 2) }}
+                    </td>
+                    <td style="border: 1px solid #333; padding: 12px; text-align: center;">
+                        {{ $item->uom ?? '' }}
                     </td>
                     <td style="border: 1px solid #333; padding: 12px;">
                         {{ $item->purpose ?? '' }}
@@ -133,6 +130,7 @@ use App\Helpers\CommonHelper;
                     <td style="border: 1px solid #333; padding: 12px;"></td>
                     <td style="border: 1px solid #333; padding: 12px;"></td>
                     <td style="border: 1px solid #333; padding: 12px;"></td>
+                    <td style="border: 1px solid #333; padding: 12px;"></td>
                 </tr>
                 @endforelse
 
@@ -140,6 +138,7 @@ use App\Helpers\CommonHelper;
                 @for($i = count($items); $i < 6; $i++)
                 <tr>
                     <td style="border: 1px solid #333; padding: 12px; height: 38px;"></td>
+                    <td style="border: 1px solid #333; padding: 12px;"></td>
                     <td style="border: 1px solid #333; padding: 12px;"></td>
                     <td style="border: 1px solid #333; padding: 12px;"></td>
                     <td style="border: 1px solid #333; padding: 12px;"></td>

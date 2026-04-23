@@ -3599,29 +3599,31 @@ echo "aa"; die;
         return $query;
     }
 
-    private function collectManualGatePassRows(Request $request)
+    private function collectManualGatePassRows(Request $request, $companyId = null)
     {
         $descriptions = $request->input('manual_description', []);
         $purposes = $request->input('manual_purpose', []);
         $quantities = $request->input('manual_qty', []);
         $partyIds = $request->input('manual_party_id', []);
+        $uomIds = $request->input('manual_uom_id', []);
 
         $rows = [];
-        $maxRows = max(count($descriptions), count($purposes), count($quantities), count($partyIds));
+        $maxRows = max(count($descriptions), count($purposes), count($quantities), count($partyIds), count($uomIds));
 
         for ($i = 0; $i < $maxRows; $i++) {
             $description = trim((string) ($descriptions[$i] ?? ''));
             $purpose = trim((string) ($purposes[$i] ?? ''));
             $qtyRaw = trim((string) ($quantities[$i] ?? ''));
             $partyId = (int) ($partyIds[$i] ?? 0);
+            $uomId = (int) ($uomIds[$i] ?? 0);
 
-            if ($description === '' && $purpose === '' && $qtyRaw === '' && $partyId === 0) {
+            if ($description === '' && $purpose === '' && $qtyRaw === '' && $partyId === 0 && $uomId === 0) {
                 continue;
             }
 
-            if ($description === '' || $qtyRaw === '' || !is_numeric($qtyRaw)) {
+            if ($description === '' || $qtyRaw === '' || !is_numeric($qtyRaw) || $uomId === 0) {
                 return [
-                    'error' => 'Please fill description and quantity for each manual row.',
+                    'error' => 'Please fill description, quantity, and UOM for each manual row.',
                 ];
             }
 
@@ -3630,6 +3632,8 @@ echo "aa"; die;
                 'purpose' => $purpose,
                 'qty' => (float) $qtyRaw,
                 'party_id' => $partyId > 0 ? $partyId : null,
+                'uom_id' => $uomId,
+                'uom_name' => $this->resolveGatePassUomName($uomId, $companyId),
             ];
         }
 
@@ -3642,6 +3646,37 @@ echo "aa"; die;
         return [
             'rows' => $rows,
         ];
+    }
+
+    private function resolveGatePassUomName($uomId, $companyId = null)
+    {
+        $uomId = (int) $uomId;
+        if ($uomId <= 0) {
+            return '';
+        }
+
+        $query = UOM::where('id', $uomId)->where('status', 1);
+        if (!empty($companyId)) {
+            $query->where('company_id', $companyId);
+        }
+
+        return (string) ($query->value('uom_name') ?? '');
+    }
+
+    private function resolveGatePassUomIdByName($uomName, $companyId = null)
+    {
+        $uomName = trim((string) $uomName);
+        if ($uomName === '') {
+            return null;
+        }
+
+        $query = UOM::where('uom_name', $uomName)->where('status', 1);
+        if (!empty($companyId)) {
+            $query->where('company_id', $companyId);
+        }
+
+        $uomId = $query->value('id');
+        return !empty($uomId) ? (int) $uomId : null;
     }
 
     private function normalizeSelectedIds($value)
@@ -3723,7 +3758,12 @@ echo "aa"; die;
         }
 
         return collect($itemRows)->values()->map(function ($row, $index) use ($purposes) {
-            $row->purpose = trim((string) ($purposes[$index] ?? ''));
+            if (empty($row->source_id) && empty($row->source_item_id)) {
+                return $row;
+            }
+
+            $rowKey = $row->source_row_key ?? $row->source_item_id ?? $index;
+            $row->purpose = trim((string) ($purposes[$rowKey] ?? ''));
             return $row;
         });
     }
@@ -3748,15 +3788,19 @@ echo "aa"; die;
                 ->leftJoin('subitem as si', 'si.id', '=', 'a.item_id')
                 ->leftJoin('sales_tax_invoice as sti', 'sti.id', '=', 'a.master_id')
                 ->leftJoin('customers as c', 'c.id', '=', 'sti.buyers_id')
+                ->leftJoin(env('DB_DATABASE') . '.uom as u', 'si.uom', '=', 'u.id')
                 ->where('a.status', 1)
                 ->whereIn('a.master_id', $sourceIds)
                 ->select(
                     'a.master_id',
                     'a.master_id as source_id',
+                    'a.id as source_row_key',
                     'sti.buyers_id as customer_id',
                     'c.name as customer_name',
                     'a.item_id',
                     DB::raw('COALESCE(NULLIF(a.description, \'\'), si.sub_ic) as item_name'),
+                    'si.uom',
+                    'u.uom_name',
                     'a.qty',
                     'a.rate',
                     'a.amount'
@@ -3770,15 +3814,19 @@ echo "aa"; die;
             ->leftJoin('subitem as si', 'si.id', '=', 'a.item_id')
             ->leftJoin('delivery_note as dn', 'dn.id', '=', 'a.master_id')
             ->leftJoin('customers as c', 'c.id', '=', 'dn.buyers_id')
+            ->leftJoin(env('DB_DATABASE') . '.uom as u', 'si.uom', '=', 'u.id')
             ->where('a.status', 1)
             ->whereIn('a.master_id', $sourceIds)
             ->select(
                 'a.master_id',
                 'a.master_id as source_id',
+                'a.id as source_row_key',
                 'dn.buyers_id as customer_id',
                 'c.name as customer_name',
                 'a.item_id',
                 DB::raw('COALESCE(NULLIF(a.`desc`, \'\'), si.sub_ic) as item_name'),
+                'si.uom',
+                'u.uom_name',
                 'a.qty',
                 'a.rate',
                 'a.amount'
@@ -3809,10 +3857,16 @@ echo "aa"; die;
             foreach ($rows as &$row) {
                 $matchedIndex = null;
                 $rowItemId = (string) ($row['item_id'] ?? '');
+                $rowKey = (string) ($row['source_row_key'] ?? '');
 
                 foreach ($detailsBySource[$sourceKey] as $index => $detail) {
                     if (in_array($index, $usedIndexes, true)) {
                         continue;
+                    }
+
+                    if ($rowKey !== '' && (string) ($detail->source_row_key ?? '') === $rowKey) {
+                        $matchedIndex = $index;
+                        break;
                     }
 
                     if ((string) ($detail->source_item_id ?? '') === $rowItemId) {
@@ -3839,6 +3893,9 @@ echo "aa"; die;
 
                 $row['purpose'] = $detail->purpose ?? '';
                 $row['party_id'] = $detail->party_id ?? ($row['party_id'] ?? null);
+                $row['source_row_key'] = $detail->source_row_key ?? ($row['source_row_key'] ?? null);
+                $row['uom_name'] = trim((string) ($detail->uom ?? ($row['uom_name'] ?? $row['uom'] ?? '')));
+                $row['uom'] = $row['uom_name'];
             }
             unset($row);
         }
@@ -3865,7 +3922,11 @@ echo "aa"; die;
         foreach ($rows as $row) {
             $grouped[$row->master_id][] = [
                 'source_id' => $row->source_id,
+                'source_row_key' => $row->source_row_key ?? null,
+                'item_id' => $row->item_id ?? null,
                 'item_name' => $row->item_name,
+                'uom' => $row->uom ?? null,
+                'uom_name' => $row->uom_name ?? '',
                 'qty' => $row->qty,
                 'rate' => $row->rate,
                 'amount' => $row->amount,
@@ -3935,9 +3996,18 @@ echo "aa"; die;
             ->where('status', 1)
             ->orderBy('name', 'ASC')
             ->get(['id', 'name']);
+        $uoms = UOM::where('status', 1)
+            ->where('company_id', $m)
+            ->orderBy('uom_name', 'ASC')
+            ->get(['id', 'uom_name']);
         $manualPartySelectColumns = ['item_name', 'purpose', 'qty'];
         if ($this->gatePassDataHasColumn('party_id')) {
             $manualPartySelectColumns[] = 'party_id';
+        }
+        if ($this->gatePassDataHasColumn('uom')) {
+            $manualPartySelectColumns[] = 'uom';
+        } elseif ($this->gatePassDataHasColumn('uom_id')) {
+            $manualPartySelectColumns[] = 'uom_id';
         }
 
         $directSaleInvoices = DB::connection('mysql2')
@@ -3983,10 +4053,13 @@ echo "aa"; die;
             foreach ($invoiceItems as $item) {
                 $directSaleInvoiceItems[$item->master_id][] = [
                     'source_id' => $item->source_id,
+                    'source_row_key' => $item->source_row_key ?? null,
                     'item_id' => $item->item_id,
                     'customer_id' => $item->customer_id,
                     'customer_name' => $item->customer_name,
                     'item_name' => $item->item_name,
+                    'uom' => $item->uom ?? null,
+                    'uom_name' => $item->uom_name ?? '',
                     'qty' => $item->qty,
                     'rate' => $item->rate,
                     'amount' => $item->amount,
@@ -4002,10 +4075,13 @@ echo "aa"; die;
             foreach ($dnItems as $item) {
                 $deliveryNoteItems[$item->master_id][] = [
                     'source_id' => $item->source_id,
+                    'source_row_key' => $item->source_row_key ?? null,
                     'item_id' => $item->item_id,
                     'customer_id' => $item->customer_id,
                     'customer_name' => $item->customer_name,
                     'item_name' => $item->item_name,
+                    'uom' => $item->uom ?? null,
+                    'uom_name' => $item->uom_name ?? '',
                     'qty' => $item->qty,
                     'rate' => $item->rate,
                     'amount' => $item->amount,
@@ -4019,7 +4095,7 @@ echo "aa"; die;
                 ->where('gate_pass_id', $id)
                 ->where('status', 1)
                 ->orderBy('id', 'ASC')
-                ->get(['source_id', 'source_item_id', 'purpose', 'party_id']);
+                ->get(['source_id', 'source_item_id', 'purpose', 'party_id', 'uom', 'uom_id', 'is_editable']);
 
             if ((int) $gatePassEdit->gate_pass_type === 1) {
                 $directSaleInvoiceItems = $this->applyGatePassDetailsToSourceItems($directSaleInvoiceItems, $gatePassSourceDetails);
@@ -4050,6 +4126,7 @@ echo "aa"; die;
             'transporterName',
             'vehicleContact',
             'customers',
+            'uoms',
             'm',
             'pageType',
             'parentCode'
@@ -4093,18 +4170,42 @@ echo "aa"; die;
             ->where('status', 1)
             ->orderBy('name', 'ASC')
             ->get(['id', 'name']);
+        $uoms = UOM::where('status', 1)
+            ->where('company_id', $m)
+            ->orderBy('uom_name', 'ASC')
+            ->get(['id', 'uom_name']);
         $manualPartySelectColumns = ['item_name', 'purpose', 'qty'];
         if ($this->gatePassDataHasColumn('party_id')) {
             $manualPartySelectColumns[] = 'party_id';
         }
+        if ($this->gatePassDataHasColumn('uom')) {
+            $manualPartySelectColumns[] = 'uom';
+        } elseif ($this->gatePassDataHasColumn('uom_id')) {
+            $manualPartySelectColumns[] = 'uom_id';
+        }
 
-        if ((int) ($gatePassEdit->gate_pass_type ?? 0) === 3) {
-            $manualGatePassItems = DB::connection('mysql2')->table('gate_pass_data')
+         $manualGatePassItems = DB::connection('mysql2')->table('gate_pass_data')
                 ->where('gate_pass_id', $id)
                 ->where('status', 1)
+                ->where(function ($query) {
+                    $query->where('is_editable', 1)
+                        ->orWhereNull('source_item_id')
+                        ->orWhere('source_item_id', 0);
+                })
                 ->orderBy('id', 'ASC')
                 ->get($manualPartySelectColumns);
-        }
+
+        $manualGatePassItems = $manualGatePassItems->map(function ($manualItem) use ($m) {
+            $savedUomName = trim((string) ($manualItem->uom ?? ''));
+            if ($savedUomName !== '') {
+                $manualItem->uom_id = $this->resolveGatePassUomIdByName($savedUomName, $m) ?? '';
+                $manualItem->uom_name = $savedUomName;
+            } elseif (!empty($manualItem->uom_id)) {
+                $manualItem->uom_name = $this->resolveGatePassUomName($manualItem->uom_id, $m);
+            }
+
+            return $manualItem;
+        });
 
         $directSaleInvoices = DB::connection('mysql2')
             ->table('sales_tax_invoice as sti')
@@ -4135,9 +4236,12 @@ echo "aa"; die;
             foreach ($invoiceItems as $item) {
                 $directSaleInvoiceItems[$item->master_id][] = [
                     'source_id' => $item->source_id,
+                    'source_row_key' => $item->source_row_key ?? null,
                     'customer_id' => $item->customer_id,
                     'customer_name' => $item->customer_name,
                     'item_name' => $item->item_name,
+                    'uom' => $item->uom ?? null,
+                    'uom_name' => $item->uom_name ?? '',
                     'qty' => $item->qty,
                     'rate' => $item->rate,
                     'amount' => $item->amount,
@@ -4153,9 +4257,12 @@ echo "aa"; die;
             foreach ($dnItems as $item) {
                 $deliveryNoteItems[$item->master_id][] = [
                     'source_id' => $item->source_id,
+                    'source_row_key' => $item->source_row_key ?? null,
                     'customer_id' => $item->customer_id,
                     'customer_name' => $item->customer_name,
                     'item_name' => $item->item_name,
+                    'uom' => $item->uom ?? null,
+                    'uom_name' => $item->uom_name ?? '',
                     'qty' => $item->qty,
                     'rate' => $item->rate,
                     'amount' => $item->amount,
@@ -4169,7 +4276,11 @@ echo "aa"; die;
                 ->where('gate_pass_id', $id)
                 ->where('status', 1)
                 ->orderBy('id', 'ASC')
-                ->get(['source_id', 'source_item_id', 'purpose', 'party_id']);
+                ->get(['source_id', 'source_item_id', 'purpose', 'party_id', 'uom', 'uom_id']);
+
+            $gatePassSourceDetails = $gatePassSourceDetails->filter(function ($detail) {
+                return (int) ($detail->is_editable ?? 0) !== 1;
+            })->values();
 
             if ((int) $gatePassEdit->gate_pass_type === 1) {
                 $directSaleInvoiceItems = $this->applyGatePassDetailsToSourceItems($directSaleInvoiceItems, $gatePassSourceDetails);
@@ -4203,6 +4314,7 @@ echo "aa"; die;
             'parentCode',
             'manualGatePassItems',
             'customers',
+            'uoms',
             'm'
         ));
     }
@@ -4467,9 +4579,9 @@ echo "aa"; die;
                 $sourceNo = $sources->pluck('gi_no')->filter()->implode(', ');
                 $sourceId = $sourceIds[0] ?? null;
                 $itemRows = $this->loadGatePassSourceItems($sourceIds, 1);
-            } elseif ((string) $request->gate_pass_type === '2') {
-                $sourceIds = $deliveryNoteIds;
-                $sourceIdsText = implode(',', $sourceIds);
+          } elseif ((string) $request->gate_pass_type === '2') {
+              $sourceIds = $deliveryNoteIds;
+              $sourceIdsText = implode(',', $sourceIds);
                 $sources = DB::connection('mysql2')->table('delivery_note')
                     ->whereIn('id', $sourceIds)
                     ->get(['id', 'gd_no', 'gate_pass_status']);
@@ -4488,22 +4600,25 @@ echo "aa"; die;
                     CommonHelper::reconnectMasterDatabase();
                     return redirect()->back()->with('error', 'Gate pass already created for one of the selected delivery notes.');
                 }
-                $sourceNo = $sources->pluck('gd_no')->filter()->implode(', ');
-                $sourceId = $sourceIds[0] ?? null;
-                $itemRows = $this->loadGatePassSourceItems($sourceIds, 2);
-            } else {
-                $manualRows = $this->collectManualGatePassRows($request);
-                if (!empty($manualRows['error'])) {
-                    DB::connection('mysql2')->rollBack();
-                    CommonHelper::reconnectMasterDatabase();
-                    return redirect()->back()->withInput()->with('error', $manualRows['error']);
-                }
+                  $sourceNo = $sources->pluck('gd_no')->filter()->implode(', ');
+                  $sourceId = $sourceIds[0] ?? null;
+                  $itemRows = $this->loadGatePassSourceItems($sourceIds, 2);
+              } else {
+                  $partyId = $partyId ?: null;
+              }
 
-                $itemRows = collect($manualRows['rows']);
-                $partyId = $partyId ?: null;
-            }
+              $manualRows = $this->collectManualGatePassRows($request, $m);
+              if (!empty($manualRows['error'])) {
+                  DB::connection('mysql2')->rollBack();
+                  CommonHelper::reconnectMasterDatabase();
+                  return redirect()->back()->withInput()->with('error', $manualRows['error']);
+              }
 
-            $itemRows = $this->attachItemPurposes($itemRows, $request, $request->gate_pass_type);
+              if (!empty($manualRows['rows'])) {
+                  $itemRows = $itemRows->concat(collect($manualRows['rows']))->values();
+              }
+
+              $itemRows = $this->attachItemPurposes($itemRows, $request, $request->gate_pass_type);
 
             $gatePassData = [
                 'gate_pass_no' => $gatePassNo,
@@ -4538,15 +4653,15 @@ echo "aa"; die;
                 $gatePassDetail = [
                     'gate_pass_id' => $gatePassId,
                     'source_type' => $request->gate_pass_type,
-                    'source_id' => $itemRow->source_id ?? $sourceId,
-                    'source_no' => $sourceNo,
+                    'source_id' => $itemRow->source_id ?? null,
+                    'source_no' => !empty($itemRow->source_id) ? $sourceNo : null,
                     'source_item_id' => $itemRow->item_id ?? null,
                     'item_name' => $itemRow->item_name ?? '',
                     'purpose' => $itemRow->purpose ?? null,
                     'qty' => $itemRow->qty ?? 0,
                     'rate' => $itemRow->rate ?? 0,
                     'amount' => $itemRow->amount ?? 0,
-                    'is_editable' => (string) $request->gate_pass_type === '3' ? 1 : 0,
+                    'is_editable' => ((string) $request->gate_pass_type === '3' || empty($itemRow->source_id)) ? 1 : 0,
                     'company_id' => $m,
                     'username' => Auth::user()->name ?? '',
                     'status' => 1,
@@ -4554,6 +4669,16 @@ echo "aa"; die;
                     'time' => date('H:i:s'),
                 ];
 
+                $uomName = trim((string) ($itemRow->uom_name ?? ''));
+                if ($uomName === '') {
+                    $uomName = $this->resolveGatePassUomName($itemRow->uom_id ?? 0, $m);
+                }
+
+                if ($this->gatePassDataHasColumn('uom')) {
+                    $gatePassDetail['uom'] = $uomName;
+                } elseif ($this->gatePassDataHasColumn('uom_id')) {
+                    $gatePassDetail['uom_id'] = (int) ($itemRow->uom_id ?? 0);
+                }
                 if ($this->gatePassDataHasColumn('party_id')) {
                     $gatePassDetail['party_id'] = $this->resolveGatePassPartyId($request->gate_pass_type, $itemRow, $partyId);
                 }
@@ -4656,9 +4781,9 @@ echo "aa"; die;
                 $sourceNo = $sources->pluck('gi_no')->filter()->implode(', ');
                 $sourceId = $sourceIds[0] ?? null;
                 $itemRows = $this->loadGatePassSourceItems($sourceIds, 1);
-            } elseif ((string) $request->gate_pass_type === '2') {
-                $sourceIds = $deliveryNoteIds;
-                $sourceIdsText = implode(',', $sourceIds);
+              } elseif ((string) $request->gate_pass_type === '2') {
+                  $sourceIds = $deliveryNoteIds;
+                  $sourceIdsText = implode(',', $sourceIds);
                 $sources = DB::connection('mysql2')->table('delivery_note')
                     ->whereIn('id', $sourceIds)
                     ->get(['id', 'gd_no', 'gate_pass_status']);
@@ -4677,22 +4802,25 @@ echo "aa"; die;
                     CommonHelper::reconnectMasterDatabase();
                     return redirect()->back()->with('error', 'Gate pass already created for one of the selected delivery notes.');
                 }
-                $sourceNo = $sources->pluck('gd_no')->filter()->implode(', ');
-                $sourceId = $sourceIds[0] ?? null;
-                $itemRows = $this->loadGatePassSourceItems($sourceIds, 2);
-            } else {
-                $manualRows = $this->collectManualGatePassRows($request);
-                if (!empty($manualRows['error'])) {
-                    DB::connection('mysql2')->rollBack();
-                    CommonHelper::reconnectMasterDatabase();
-                    return redirect()->back()->withInput()->with('error', $manualRows['error']);
-                }
+                  $sourceNo = $sources->pluck('gd_no')->filter()->implode(', ');
+                  $sourceId = $sourceIds[0] ?? null;
+                  $itemRows = $this->loadGatePassSourceItems($sourceIds, 2);
+              } else {
+                  $partyId = $partyId ?: null;
+              }
 
-                $itemRows = collect($manualRows['rows']);
-                $partyId = $partyId ?: null;
-            }
+              $manualRows = $this->collectManualGatePassRows($request, $m);
+              if (!empty($manualRows['error'])) {
+                  DB::connection('mysql2')->rollBack();
+                  CommonHelper::reconnectMasterDatabase();
+                  return redirect()->back()->withInput()->with('error', $manualRows['error']);
+              }
 
-            $itemRows = $this->attachItemPurposes($itemRows, $request, $request->gate_pass_type);
+              if (!empty($manualRows['rows'])) {
+                  $itemRows = $itemRows->concat(collect($manualRows['rows']))->values();
+              }
+
+              $itemRows = $this->attachItemPurposes($itemRows, $request, $request->gate_pass_type);
 
             $gatePassData = [
                 'gate_pass_no' => $gatePass->gate_pass_no,
@@ -4727,15 +4855,15 @@ echo "aa"; die;
                 $gatePassDetail = [
                     'gate_pass_id' => $id,
                     'source_type' => $request->gate_pass_type,
-                    'source_id' => $itemRow->source_id ?? $sourceId,
-                    'source_no' => $sourceNo,
+                    'source_id' => $itemRow->source_id ?? null,
+                    'source_no' => !empty($itemRow->source_id) ? $sourceNo : null,
                     'source_item_id' => $itemRow->item_id ?? null,
                     'item_name' => $itemRow->item_name ?? '',
                     'purpose' => $itemRow->purpose ?? null,
                     'qty' => $itemRow->qty ?? 0,
                     'rate' => $itemRow->rate ?? 0,
                     'amount' => $itemRow->amount ?? 0,
-                    'is_editable' => (string) $request->gate_pass_type === '3' ? 1 : 0,
+                    'is_editable' => ((string) $request->gate_pass_type === '3' || empty($itemRow->source_id)) ? 1 : 0,
                     'company_id' => $m,
                     'username' => Auth::user()->name ?? '',
                     'status' => 1,
@@ -4743,6 +4871,16 @@ echo "aa"; die;
                     'time' => date('H:i:s'),
                 ];
 
+                $uomName = trim((string) ($itemRow->uom_name ?? ''));
+                if ($uomName === '') {
+                    $uomName = $this->resolveGatePassUomName($itemRow->uom_id ?? 0, $m);
+                }
+
+                if ($this->gatePassDataHasColumn('uom')) {
+                    $gatePassDetail['uom'] = $uomName;
+                } elseif ($this->gatePassDataHasColumn('uom_id')) {
+                    $gatePassDetail['uom_id'] = (int) ($itemRow->uom_id ?? 0);
+                }
                 if ($this->gatePassDataHasColumn('party_id')) {
                     $gatePassDetail['party_id'] = $this->resolveGatePassPartyId($request->gate_pass_type, $itemRow, $partyId);
                 }
