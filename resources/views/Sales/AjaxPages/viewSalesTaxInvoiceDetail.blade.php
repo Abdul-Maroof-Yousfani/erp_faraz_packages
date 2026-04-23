@@ -253,7 +253,7 @@ $AmountInWordsMain =0;
                                     <th class="text-center" style="border:1px solid black;">S.NO</th>
                                     <th class="text-center" style="border:1px solid black;">Item</th>
                                     <th class="text-center hide" style="border:1px solid black;">HS Code</th>
-                                    <th class="text-center" style="border:1px solid black;">Bags</th>
+                                    <th class="text-center" style="border:1px solid black;">Bag Qty</th>
                                     {{-- <th class="text-center" style="border:1px solid black;">Color</th> --}}
                                     <th class="text-center" style="border:1px solid black;">Uom</th>
                                     <th class="text-center" style="border:1px solid black;">QTY. (KG)</th>
@@ -287,13 +287,13 @@ $AmountInWordsMain =0;
                                         $total_before_tax += $row->rate * $row->qty;
                                         $total_tax += $row->tax_amount;
                                         $total_after_tax += $row->amount;
-                                        $bags = ($row->final_pack_size > 0) ? ($row->qty / $row->final_pack_size) : 0;
+                                        $bags = $row->bag_qty ?? (($row->final_pack_size > 0) ? ($row->qty / $row->final_pack_size) : 0);
                                         ?>
                                         <tr>
                                             <td style="border:1px solid black;"> {{ $count++ }} </td>
                                             <td style="border:1px solid black;">{{ CommonHelper::get_item_name($row->item_id) }}</td>
                                             <td class="hide" style="border:1px solid black;">{{ $row->hs_code_id }}</td>
-                                            <td style="border:1px solid black;">{{ ($row->final_pack_size > 0) ? number_format($bags,2) : '' }}</td>
+                                            <td style="border:1px solid black;">{{ $bags !== '' ? number_format((float) $bags,2) : '' }}</td>
                                             {{-- <td style="border:1px solid black;">{{ $row->color }}</td> --}}
                                             <td style="border:1px solid black;">{{ CommonHelper::get_uom_name($row->uom) ??  CommonHelper::get_uom($row->item_id) }}</td>
                                             <td class="text-right" style="border:1px solid black;">{{ $row->qty }}</td>

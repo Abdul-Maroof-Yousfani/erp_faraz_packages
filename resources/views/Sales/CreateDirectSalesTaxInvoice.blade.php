@@ -213,7 +213,7 @@ use App\Helpers\ReuseableCode;
 								</label>
 
 								<select style="width: 100%" name="buyers_id" id="ntn"
-							class="form-control select2">
+							class="form-control select2" required>
 									<option value="">Select</option>
 
 									@foreach(SalesHelper::get_all_customer() as $row)
@@ -399,7 +399,7 @@ use App\Helpers\ReuseableCode;
 															</select>
 														</td>
 														<td>
-															<input type="text" name="pack_size[]" id="pack_size1"
+															<input type="text" name="bag_qty[]" id="bag_qty1"
 																class="form-control" oninput="bag_qq(1)" />
 														</td>
 														<td>
@@ -657,7 +657,7 @@ use App\Helpers\ReuseableCode;
 							</select>
 						</td>
 						  <td>
-									<input type="text" name="pack_size[]" id="pack_size${Counter}" oninput="bag_qq(${Counter})" class="form-control" />
+									<input type="text" name="bag_qty[]" id="bag_qty${Counter}" oninput="bag_qq(${Counter})" class="form-control" />
 								</td>
 			<td>
 														 <select name="uom_id[]" id="uom_id${Counter}" class="form-control requiredField select2">
@@ -885,7 +885,7 @@ use App\Helpers\ReuseableCode;
 			});
 
 			function bag_qq(counter) {
-				var bags_qty = parseFloat($('#pack_size' + counter).val()) || 1;
+				var bags_qty = parseFloat($('#bag_qty' + counter).val()) || 1;
 				var pack_qty = parseFloat($('#pack_qty').val()) || 0;
 				var actual_qty = parseFloat($('#actual_qty' + counter).val()) || 0;
 				var selectedUom = $('#uom_id' + counter).val();

@@ -923,7 +923,7 @@ class SalesDataCallController extends Controller
 
         $sales_tax_invoice_data=DB::Connection('mysql2')->select('select a.item_id,a.qty,a.rate,a.discount as discount_percent ,a.discount_amount,a.amount,a.gd_no,a.bundles_id,a.so_data_id,
         a.description,b.rate as bundle_rate, b.amount as bundle_amount , b.discount_percent as b_percent, b.discount_amount as b_dis_amount, b.net_amount as b_net, b.product_name, b.qty as bqty
-        ,b.bundle_unit,a.so_type,a.dn_data_ids
+        ,b.bundle_unit,a.so_type,a.dn_data_ids,a.bag_qty
         from sales_tax_invoice_data  a
         left join
         bundles b

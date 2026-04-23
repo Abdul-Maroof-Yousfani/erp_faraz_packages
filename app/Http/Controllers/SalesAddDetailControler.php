@@ -2202,12 +2202,13 @@ class SalesAddDetailControler extends Controller
                 $sales_tax_invoice_data->gi_no = $gi_no;
                 $sales_tax_invoice_data->item_id = $request->item_id[$key];
                 $sales_tax_invoice_data->description = '';
+                $sales_tax_invoice_data->bag_qty = $request->bag_qty[$key] ?? null;
                 $qty = $request->actual_qty[$key];
                 $rate = $request->rate[$key];
                 $amount = $request->amount[$key];
                 $commission_amount = $request->commission[$key] * $rate;
                 $sales_tax_invoice_data->qty = $qty;
-                $sales_tax_invoice_data->uom = CommonHelper::get_uom_id($request->uom_id);
+                $sales_tax_invoice_data->uom = CommonHelper::get_uom_id($request->uom_id[$key]);
                 // dd($sales_tax_invoice_data->uom);
                 $sales_tax_invoice_data->rate = $rate;
                 $sales_tax_invoice_data->commission = $request->commission[$key];
@@ -2527,6 +2528,7 @@ class SalesAddDetailControler extends Controller
                 $sales_tax_invoice_data->gi_no = $gi_no;
                 $sales_tax_invoice_data->item_id = $request->sub_ic_des[$key];
                 $sales_tax_invoice_data->description = $request->uom_id[$key] ?? '0';
+                $sales_tax_invoice_data->bag_qty = $request->bag_qty[$key] ?? null;
                 $qty = $request->actual_qty[$key];
                 $rate = $request->rate[$key];
                 $amount = $request->amount[$key];
