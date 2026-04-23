@@ -386,7 +386,7 @@ if($_GET['pageType']=='viewlist'){
                                             <b>  <p></p></b>
                                         </div>
 
-                                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2 text-center">
+                                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2 text-center hide">
                                                <h6 class="signature_bor">Signature:</h6>
                                         </div>
                         </div>

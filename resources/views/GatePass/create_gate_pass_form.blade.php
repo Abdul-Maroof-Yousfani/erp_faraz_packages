@@ -16,16 +16,18 @@ $customers = $customers ?? collect();
 $oldDescriptions = old('manual_description', []);
 $oldPurposes = old('manual_purpose', []);
 $oldQuantities = old('manual_qty', []);
+$oldBagQtys = old('manual_bag_qty', []);
 $oldPartyIds = old('manual_party_id', []);
 $oldUomIds = old('manual_uom_id', []);
 
-if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) || !empty($oldPartyIds) || !empty($oldUomIds)) {
-    $manualRowCount = max(count($oldDescriptions), count($oldPurposes), count($oldQuantities), count($oldPartyIds), count($oldUomIds));
+if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) || !empty($oldBagQtys) || !empty($oldPartyIds) || !empty($oldUomIds)) {
+    $manualRowCount = max(count($oldDescriptions), count($oldPurposes), count($oldQuantities), count($oldBagQtys), count($oldPartyIds), count($oldUomIds));
     for ($i = 0; $i < $manualRowCount; $i++) {
         $manualGatePassOldRows[] = [
             'description' => $oldDescriptions[$i] ?? '',
             'purpose' => $oldPurposes[$i] ?? '',
             'qty' => $oldQuantities[$i] ?? '',
+            'bag_qty' => $oldBagQtys[$i] ?? '',
             'party_id' => $oldPartyIds[$i] ?? '',
             'uom_id' => $oldUomIds[$i] ?? '',
         ];
@@ -36,6 +38,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
             'description' => $manualItem->item_name ?? '',
             'purpose' => $manualItem->purpose ?? '',
             'qty' => $manualItem->qty ?? '',
+            'bag_qty' => $manualItem->bag_qty ?? '',
             'party_id' => $manualItem->party_id ?? '',
             'uom_id' => $manualItem->uom_id ?? ($manualItem->uom ?? ''),
         ];
@@ -167,6 +170,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
                                             <th width="50" class="text-center">Item Name</th>
                                             <th width="90" class="text-center">Customer</th>
                                             <th width="50" class="text-center">Qty</th>
+                                            <th width="80" class="text-center">Bag Qty</th>
                                             <th width="80" class="text-center">UOM</th>
                                             <th width="50" class="text-center">Purpose</th>
                                             <th width="50" class="text-center hide">Rate</th>
@@ -195,6 +199,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
                                                 <th class="text-center">Customer / Party Name</th>
                                                 <th class="text-center" width="140">Quantity</th>
                                                 <th class="text-center">UOM</th>
+                                                <th class="text-center" width="140">Bag Qty</th>
                                                 <th class="text-center">Purpose</th>
                                                 <th class="text-center" width="90">Action</th>
                                             </tr>
@@ -333,6 +338,9 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
                     </select>
                 </td>
                 <td>
+                    <input type="number" name="manual_bag_qty[]" class="form-control" step="any" min="0" placeholder="Enter Bag Qty" value="${escapeHtml(row.bag_qty)}">
+                </td>
+                <td>
                     <input type="text" name="manual_purpose[]" class="form-control" placeholder="Enter purpose" value="${escapeHtml(row.purpose)}">
                 </td>
                 <td class="text-center">
@@ -376,7 +384,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
 
     function buildGatePassItemsHtml(rows) {
         if (!rows || !rows.length) {
-            return '<tr><td colspan="8" class="text-center text-muted">No items found for the selected source.</td></tr>';
+            return '<tr><td colspan="9" class="text-center text-muted">No items found for the selected source.</td></tr>';
         }
 
         let html = '';
@@ -388,6 +396,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
                     <td>${item.item_name ?? ''}</td>
                     <td class="text-center">${escapeHtml(item.customer_name ?? '')}</td>
                     <td class="text-right">${formatNumber(item.qty)}</td>
+                    <td class="text-right">${formatNumber(item.bag_qty)}</td>
                     <td class="text-center">${escapeHtml(item.uom_name ?? item.uom ?? '')}</td>
                     <td class="text-right hide">${formatNumber(item.rate)}</td>
                     <td class="text-right hide">${formatNumber(item.amount)}</td>
@@ -426,6 +435,14 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
         document.getElementById('manualGatePassBody').insertAdjacentHTML('beforeend', buildManualRow());
         initManualPartySelects();
         initManualUomSelects();
+        const rows = document.querySelectorAll('#manualGatePassBody .manual-gate-pass-row');
+        const lastRow = rows[rows.length - 1];
+        if (lastRow) {
+            const bagQtyInput = lastRow.querySelector('input[name="manual_bag_qty[]"]');
+            if (bagQtyInput) {
+                bagQtyInput.focus();
+            }
+        }
     }
 
     function handleAddManualRowClick() {
@@ -474,7 +491,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
         }
 
         if (!hasSource || !type) {
-            body.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Select a source to load items.</td></tr>';
+            body.innerHTML = '<tr><td colspan="9" class="text-center text-muted">Select a source to load items.</td></tr>';
             itemsCard.hidden = true;
             manualSection.hidden = true;
             return;
@@ -485,7 +502,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
 
         if (!rows.length) {
             const requestToken = ++gatePassItemsRequestToken;
-            body.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Loading items...</td></tr>';
+            body.innerHTML = '<tr><td colspan="9" class="text-center text-muted">Loading items...</td></tr>';
 
             $.get("{{ url('/pdc/getGatePassSourceItems') }}", {
                 type: type,
