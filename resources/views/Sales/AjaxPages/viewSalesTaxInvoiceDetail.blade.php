@@ -14,6 +14,9 @@ $AmountInWordsMain =0;
 
 
 <style>
+    body{
+        font-size: 10px !important;
+    }
     textarea {
         border-style: none;
         border-color: Transparent;
@@ -108,13 +111,31 @@ $AmountInWordsMain =0;
                     </div>
                 </div>
 
+                
+                <!-- Header -->
+                <div class="gateprint" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #fff; position: relative;">
+                    
+
+                    <div style="text-align: center; flex: 1;" class="printShow">
+                        <h2 style="margin: 0; font-size: 26px; font-weight: bold;">Bill</h2>
+                        <h2 style="margin: 0; font-size: 26px; font-weight: bold;">Faraz Pack</h2>
+                        <p style="font-size: 10px;">
+                            Plot No. F-188-E, Near D-1 Bus Stop SITE Area, Karachi<br>
+                            Ph: 021-32544444 • Cell: 0321 3254444<br>
+                            Email: farazpackages@gmail.com
+                        </p>
+                    </div>
+
+               
+                </div>
+
 
                 <div style="line-height:5px;">&nbsp;</div>
                 <div class="row">
                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                         <div style="width:50%; float:left;
                         ">
-                            <table style="border:1px solid black;" class="table sales_Tax_Invoice_data">
+                            <table style="border:1px solid black;white-space:nowrap; font-size: 10px" class="table sales_Tax_Invoice_data">
                                 <tbody>
                                 <?php $customer_data= CommonHelper::byers_name($sales_tax_invoice->buyers_id);
 
@@ -593,7 +614,7 @@ $AmountInWordsMain =0;
             var tax = '{{ $total_tax_amount }}';
             if (tax ==0)
             {
-                    $('#tax').html('Commerical Invoice');
+                    $('#tax').html('');
             }
 
         });

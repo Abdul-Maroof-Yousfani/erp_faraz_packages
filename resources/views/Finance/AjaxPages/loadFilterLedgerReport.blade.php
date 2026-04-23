@@ -150,16 +150,9 @@ $m=Input::get('m');
                 $termLabel = '-';
 
                 if ($supplier) {
-                    if ((int) $supplier->terms_of_payment === 1) {
-                        $termLabel = 'Advance';
-                    } elseif ((int) $supplier->terms_of_payment === 2) {
-                        $termLabel = 'Against Delivery';
-                    } elseif ((int) $supplier->terms_of_payment === 3) {
-                        $termLabel = 'Credit';
-                    }
-
+                    $termLabel = (string) $supplier->terms_of_payment;
                     if (!empty($supplier->no_of_days)) {
-                        $termLabel .= ' (' . $supplier->no_of_days . ' Days)';
+                        $termLabel .= ' | No of Days: ' . $supplier->no_of_days;
                     }
                 }
 
