@@ -66,7 +66,7 @@ $last_day_this_month  = date('Y-m-t');
                                     <label>Voucher Type</label>
                                     <select name="VoucherType" id="VoucherType" class="form-control">
                                         <option value="all">All</option>
-                                        <option value="1">GRN</option>
+                                        <option value="1">Purchase Invoice (Legacy)</option>
                                         <option value="2">Purchase Invoice</option>
                                     </select>
                                 </div>
@@ -101,8 +101,8 @@ $last_day_this_month  = date('Y-m-t');
                                                                 <th class="text-center">Purchase Return No.</th>
                                                                 <th class="text-center">Purchase Return Date</th>
                                                                 <th class="text-center">Supplier Name</th>
-                                                                <th class="text-center hide">Grn No</th>
-                                                                <th class="text-center hide">Grn Date</th>
+                                                                <th class="text-center hide">Purchase Invoice No</th>
+                                                                <th class="text-center hide">Purchase Invoice Date</th>
                                                                 <th class="text-center">Remarks</th>
                                                                 <th class="text-center hide">Return Amount</th>
                                                                 <th class="text-center hide">Net Stock</th>

@@ -1222,6 +1222,7 @@ Route::group(['prefix' => 'pmfal', 'middleware' => 'mysql2', 'before' => 'csrf']
     Route::get('/get_detail_purchase_voucher', 'PurchaseMakeFormAjaxLoadController@get_detail_purchase_voucher');
     Route::get('/get_po', 'PurchaseMakeFormAjaxLoadController@get_po');
     Route::get('/getGrnNoBySupplier', 'PurchaseMakeFormAjaxLoadController@getGrnNoBySupplier');
+    Route::get('/getPurchaseInvoiceNoBySupplier', 'PurchaseMakeFormAjaxLoadController@getPurchaseInvoiceNoBySupplier');
 
     Route::get('/get_refer', 'PurchaseMakeFormAjaxLoadController@get_refer');
     Route::get('/get_ledger_refrence_wise', 'PurchaseMakeFormAjaxLoadController@get_ledger_refrence_wise');
@@ -1238,6 +1239,7 @@ Route::group(['prefix' => 'pmfal', 'middleware' => 'mysql2', 'before' => 'csrf']
     Route::get('/makeFormGoodsReceiptNoteDetailByPRNoManual', 'PurchaseMakeFormAjaxLoadController@makeFormGoodsReceiptNoteDetailByPRNoManual');
 
     Route::get('/makeFormGoodsReceiptNoteDetailByGrnNo', 'PurchaseMakeFormAjaxLoadController@makeFormGoodsReceiptNoteDetailByGrnNo');
+    Route::get('/makeFormPurchaseReturnDetailByInvoiceNo', 'PurchaseMakeFormAjaxLoadController@makeFormPurchaseReturnDetailByInvoiceNo');
 
     Route::get('/addMorJobOrderRow', 'PurchaseMakeFormAjaxLoadController@addMorJobOrderRow');
 

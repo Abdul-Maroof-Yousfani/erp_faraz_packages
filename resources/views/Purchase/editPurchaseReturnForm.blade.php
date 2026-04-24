@@ -102,6 +102,11 @@ $m = $_GET['m'];
                                                 <?php
 
                                                 $PurchaseReturnNo = $Master->pr_no;
+                                                $PurchaseInvoiceData = DB::Connection('mysql2')->table('new_purchase_voucher')
+                                                    ->where('status', 1)
+                                                    ->where('id', $Master->grn_id)
+                                                    ->select('id', 'pv_no', 'pv_date')
+                                                    ->first();
                                                 ?>
                                                 <label for="">Purchase Return No</label>
                                                 <input name="PrNo" type="text" class="form-control" id="" value="<?php echo strtoupper($PurchaseReturnNo)?>" readonly>
@@ -111,12 +116,13 @@ $m = $_GET['m'];
                                                 <input type="date" id="PurchaseReturnDate" name="PurchaseReturnDate" value="<?php echo $Master->pr_date?>" class="form-control">
                                             </div>
                                             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
-                                                <label for="">Good Receipt Not Date</label>
+                                                <label for="">Purchase Invoice Date</label>
                                                 <input type="hidden" name="EditId" value="<?php echo $Master->id?>">
                                                 <input type="hidden" name="supplier" value="<?php echo $Master->supplier_id?>">
-                                                <input type="date" id="GrnDate" name="GrnDate" value="<?php echo $Master->grn_date?>" class="form-control" readonly>
-                                                <input type="hidden" id="GrnNo" name="GrnNo" value="<?php echo $Master->grn_no?>" class="form-control" readonly>
-                                                <input type="hidden" id="GrnId" name="GrnId" value="<?php echo $Master->grn_id?>" class="form-control" readonly>
+                                                <input type="date" id="InvoiceDate" name="InvoiceDate" value="<?php echo $PurchaseInvoiceData->pv_date ?? $Master->grn_date?>" class="form-control" readonly>
+                                                <input type="hidden" id="PurchaseInvoiceNo" name="PurchaseInvoiceNo" value="<?php echo $PurchaseInvoiceData->pv_no ?? $Master->grn_no?>" class="form-control" readonly>
+                                                <input type="hidden" id="PurchaseInvoiceId" name="PurchaseInvoiceId" value="<?php echo $PurchaseInvoiceData->id ?? $Master->grn_id?>" class="form-control" readonly>
+                                                <input type="hidden" id="PurchaseInvoiceDate" name="PurchaseInvoiceDate" value="<?php echo $PurchaseInvoiceData->pv_date ?? $Master->grn_date?>" class="form-control" readonly>
                                             </div>
                                             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                                 <label for="">Remarks</label>

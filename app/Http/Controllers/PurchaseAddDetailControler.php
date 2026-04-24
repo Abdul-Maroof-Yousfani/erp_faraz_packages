@@ -2589,6 +2589,10 @@ class PurchaseAddDetailControler extends Controller
                 $good_recipt_not = new GoodsReceiptNote();
                 $good_recipt_not = $good_recipt_not->SetConnection('mysql2');
                 $good_recipt_not = $good_recipt_not->find($request->input('grn_id' . $i));
+                if (!$good_recipt_not) {
+                    DB::Connection('mysql2')->rollBack();
+                    return redirect()->back()->with('error', 'GRN record not found for one of the selected rows.');
+                }
                 $po_no = $good_recipt_not->po_no;
                 $good_recipt_not->grn_status = 3;
                 $good_recipt_not->save();
@@ -3139,10 +3143,11 @@ class PurchaseAddDetailControler extends Controller
     }
 
 
-
+   //po_no
 
     public function addPurchaseReturnDetail(Request $request)
     {
+        
         DB::Connection('mysql2')->beginTransaction();
         // try {
         $str = DB::Connection('mysql2')->selectOne("select max(convert(substr(`pr_no`,3,length(substr(`pr_no`,3))-4),signed integer)) reg from `purchase_return` where substr(`pr_no`,-4,2) = " . date('m') . " and substr(`pr_no`,-2,2) = " . date('y') . "")->reg;
@@ -3150,27 +3155,22 @@ class PurchaseAddDetailControler extends Controller
         $PurchaseReturnDate = $request->PurchaseReturnDate;
         $SupplierId = $request->supplier;
         $supp_id = CommonHelper::get_supplier_acc_id($SupplierId);
-        $GrnId = $request->GrnId;
-        $GrnNo = $request->GrnNo;
-        $GrnDate = $request->GrnDate;
+        $PurchaseInvoiceId = $request->PurchaseInvoiceId ?? $request->GrnId;
+        $PurchaseInvoiceNo = $request->PurchaseInvoiceNo ?? $request->GrnNo;
+        $PurchaseInvoiceDate = $request->PurchaseInvoiceDate ?? $request->GrnDate;
         $Remarks = $request->Remarks;
-        $PurchaseReturnInsert['grn_id'] = $GrnId;
+        $PurchaseReturnInsert['grn_id'] = $PurchaseInvoiceId;
         $PurchaseReturnInsert['pr_no'] = $PurchaseReturnNo;
         $PurchaseReturnInsert['pr_date'] = $PurchaseReturnDate;
         $PurchaseReturnInsert['supplier_id'] = $SupplierId;
-        $PurchaseReturnInsert['grn_no'] = $GrnNo;
-        $PurchaseReturnInsert['grn_date'] = $GrnDate;
+        $PurchaseReturnInsert['grn_no'] = $PurchaseInvoiceNo;
+        $PurchaseReturnInsert['grn_date'] = $PurchaseInvoiceDate;
         $PurchaseReturnInsert['remarks'] = $Remarks;
         $PurchaseReturnInsert['created_date'] = date('Y-m-d');
         $PurchaseReturnInsert['status'] = 1;
         $PurchaseReturnInsert['username'] = Auth::user()->name;
 
-        $count_invoice = DB::Connection('mysql2')->table('new_purchase_voucher')->where('grn_id', $GrnId)->count();
-        if ($count_invoice > 0):
-            $PurchaseReturnInsert['type'] = 2;
-        else:
-            $PurchaseReturnInsert['type'] = 1;
-        endif;
+        $PurchaseReturnInsert['type'] = 2;
         $master_id = DB::Connection('mysql2')->table('purchase_return')->insertGetId($PurchaseReturnInsert);
 
         $data = $request->enable_disable;
@@ -3181,6 +3181,10 @@ class PurchaseAddDetailControler extends Controller
             $amount = $request->input('Rate')[$row] * $request->input('ReturnQty')[$row];
             $dicount_percent = $request->input('discount_percent')[$row];
             $dicount_amount = ($amount / 100) * $dicount_percent;
+            $batchCode = trim((string) ($request->input('BatchCode')[$row] ?? ''));
+            if ($batchCode === '') {
+                $batchCode = 'NA';
+            }
             $total = 0;
             $dataa = array
             (
@@ -3190,7 +3194,7 @@ class PurchaseAddDetailControler extends Controller
                 'sub_item_id' => $request->input('SubItemId')[$row],
                 'description' => $request->input('item_desc')[$row],
                 'warehouse_id' => $request->input('WarehouseId')[$row],
-                'batch_code' => $request->input('BatchCode')[$row],
+                'batch_code' => $batchCode,
                 'recived_qty' => $request->input('PurchaseRecQty')[$row],
                 'rate' => $request->input('Rate')[$row],
                 'amount' => $amount,
@@ -3204,7 +3208,13 @@ class PurchaseAddDetailControler extends Controller
             $master_data_id = DB::Connection('mysql2')->table('purchase_return_data')->insertGetId($dataa);
 
             $whare_hosue = CommonHelper::generic('grn_data', array('id' => $request->input('grn_data_id')[$row]), array('warehouse_id', 'description'))->first();
-
+            if (!$whare_hosue) {
+                $whare_hosue = (object) [
+                    'warehouse_id' => $request->input('WarehouseId')[$row] ?? 0,
+                    'description' => $request->input('item_desc')[$row] ?? '',
+                ];
+            }
+            
 
             $status = 1;
             $type = CommonHelper::get_item_type($request->input('SubItemId')[$row]);
@@ -3241,6 +3251,7 @@ class PurchaseAddDetailControler extends Controller
 
             DB::Connection('mysql2')->table('stock')->insert($stock);
             //endif;
+            
 
         endforeach;
         $PRInsertedData = DB::Connection('mysql2')->select('select b.* from purchase_return a
@@ -3250,6 +3261,7 @@ class PurchaseAddDetailControler extends Controller
 
                                             where a.id = ' . $master_id . '
                                             and a.type = 2');
+
 
         foreach ($PRInsertedData as $PRFil) {
 
@@ -3267,7 +3279,9 @@ class PurchaseAddDetailControler extends Controller
 
         }
 
-        $count_invoice = DB::Connection('mysql2')->table('new_purchase_voucher')->where('grn_id', $GrnId)->count();
+
+
+        $count_invoice = DB::Connection('mysql2')->table('new_purchase_voucher')->where('id', $PurchaseInvoiceId)->count();
         if ($count_invoice > 0):
 
             $dataa = DB::Connection('mysql2')->select('select sum(a.net_amount)net_amount,b.category_id ,d.acc_id
@@ -3286,6 +3300,7 @@ class PurchaseAddDetailControler extends Controller
                 d.id=c.main_ic_id
                 where a.master_id="' . $master_id . '"
                 group by d.acc_id');
+
             $debit_amount = 0;
             foreach ($dataa as $cr_note):
 
@@ -3305,20 +3320,24 @@ class PurchaseAddDetailControler extends Controller
                 $transaction->save();
                 $debit_amount += $cr_note->net_amount;
             endforeach;
+            
 
-            $po_data = CommonHelper::get_goodreciptnotedata($GrnId, 1);
+            $purchaseInvoiceMaster = DB::Connection('mysql2')->table('new_purchase_voucher')
+                ->where('id', $PurchaseInvoiceId)
+                ->select('sales_tax_acc_id', 'sales_tax_amount')
+                ->first();
+            $sales_tax_amount = (float) ($purchaseInvoiceMaster->sales_tax_amount ?? 0);
+            $sales_tax_acc_id = (int) ($purchaseInvoiceMaster->sales_tax_acc_id ?? 0);
 
-            $sales_tax_amount = $po_data->sales_tax_amount;
 
-
-            if ($sales_tax_amount > 0):
+            if ($sales_tax_amount > 0 && $sales_tax_acc_id != 0):
                 $sales_tax_amount = ($total / 100) * 17;
                 $transaction = new Transactions();
                 $transaction = $transaction->SetConnection('mysql2');
                 $transaction->voucher_no = $PurchaseReturnNo;
                 $transaction->v_date = $PurchaseReturnDate;
-                $transaction->acc_id = ReuseableCode::invoice_tax_acc_id($po_data->sales_tax);
-                $transaction->acc_code = ReuseableCode::invoice_tax_acc_id($po_data->sales_tax);
+                $transaction->acc_id = $sales_tax_acc_id;
+                $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($sales_tax_acc_id);
                 $transaction->particulars = $Remarks;
                 $transaction->opening_bal = 0;
                 $transaction->debit_credit = 0;
@@ -3349,7 +3368,9 @@ class PurchaseAddDetailControler extends Controller
 
         endif;
 
+        
 
+        // dd($total); po_no
         CommonHelper::inventory_activity($PurchaseReturnNo, $PurchaseReturnDate, $total, 4, 'Insert');
 
         DB::Connection('mysql2')->commit();
@@ -3381,16 +3402,16 @@ class PurchaseAddDetailControler extends Controller
             $EditId = $request->EditId;
             $SupplierId = $request->supplier;
             $supp_id = CommonHelper::get_supplier_acc_id($SupplierId);
-            $GrnId = $request->GrnId;
-            $GrnNo = $request->GrnNo;
-            $GrnDate = $request->GrnDate;
-            $Remarks = $request->Remarks;
-            $PurchaseReturnInsert['grn_id'] = $GrnId;
+        $PurchaseInvoiceId = $request->PurchaseInvoiceId ?? $request->GrnId;
+        $PurchaseInvoiceNo = $request->PurchaseInvoiceNo ?? $request->GrnNo;
+        $PurchaseInvoiceDate = $request->PurchaseInvoiceDate ?? $request->GrnDate;
+        $Remarks = $request->Remarks;
+        $PurchaseReturnInsert['grn_id'] = $PurchaseInvoiceId;
             $PurchaseReturnInsert['pr_no'] = $PurchaseReturnNo;
             $PurchaseReturnInsert['pr_date'] = $PurchaseReturnDate;
             $PurchaseReturnInsert['supplier_id'] = $SupplierId;
-            $PurchaseReturnInsert['grn_no'] = $GrnNo;
-            $PurchaseReturnInsert['grn_date'] = $GrnDate;
+        $PurchaseReturnInsert['grn_no'] = $PurchaseInvoiceNo;
+        $PurchaseReturnInsert['grn_date'] = $PurchaseInvoiceDate;
             $PurchaseReturnInsert['remarks'] = $Remarks;
             $PurchaseReturnInsert['created_date'] = date('Y-m-d');
             $PurchaseReturnInsert['status'] = 1;
@@ -3407,9 +3428,13 @@ class PurchaseAddDetailControler extends Controller
             foreach ($data as $key => $row):
 
 
-                $amount = $request->input('Rate')[$row] * $request->input('ReturnQty')[$row];
-                $dicount_percent = $request->input('discount_percent')[$row];
-                $dicount_amount = ($amount / 100) * $dicount_percent;
+            $amount = $request->input('Rate')[$row] * $request->input('ReturnQty')[$row];
+            $dicount_percent = $request->input('discount_percent')[$row];
+            $dicount_amount = ($amount / 100) * $dicount_percent;
+            $batchCode = trim((string) ($request->input('BatchCode')[$row] ?? ''));
+            if ($batchCode === '') {
+                $batchCode = 'NA';
+            }
 
 
                 $PurchaseReturnData = array
@@ -3420,7 +3445,7 @@ class PurchaseAddDetailControler extends Controller
                     'sub_item_id' => $request->input('SubItemId')[$row],
                     'description' => $request->input('item_desc')[$row],
                     'warehouse_id' => $request->input('WarehouseId')[$row],
-                    'batch_code' => $request->input('BatchCode')[$row],
+                    'batch_code' => $batchCode,
                     'recived_qty' => $request->input('PurchaseRecQty')[$row],
                     'rate' => $request->input('Rate')[$row],
                     'amount' => $amount,
@@ -3441,6 +3466,12 @@ class PurchaseAddDetailControler extends Controller
 
 
                 $whare_hosue = CommonHelper::generic('grn_data', array('id' => $request->input('grn_data_id')[$row]), array('warehouse_id', 'description'))->first();
+                if (!$whare_hosue) {
+                    $whare_hosue = (object) [
+                        'warehouse_id' => $request->input('WarehouseId')[$row] ?? 0,
+                        'description' => $request->input('item_desc')[$row] ?? '',
+                    ];
+                }
 
                 $stock = array
                 (
@@ -3540,19 +3571,22 @@ class PurchaseAddDetailControler extends Controller
                     $debit_amount += $cr_note->net_amount;
                 endforeach;
 
-                $po_data = CommonHelper::get_goodreciptnotedata($GrnId, 1);
+                $purchaseInvoiceMaster = DB::Connection('mysql2')->table('new_purchase_voucher')
+                    ->where('id', $PurchaseInvoiceId)
+                    ->select('sales_tax_acc_id', 'sales_tax_amount')
+                    ->first();
+                $sales_tax_amount = (float) ($purchaseInvoiceMaster->sales_tax_amount ?? 0);
+                $sales_tax_acc_id = (int) ($purchaseInvoiceMaster->sales_tax_acc_id ?? 0);
 
-                $sales_tax_amount = $po_data->sales_tax_amount;
 
-
-                if ($sales_tax_amount > 0):
+                if ($sales_tax_amount > 0 && $sales_tax_acc_id != 0):
                     $sales_tax_amount = ($total / 100) * 17;
                     $transaction = new Transactions();
                     $transaction = $transaction->SetConnection('mysql2');
                     $transaction->voucher_no = $PurchaseReturnNo;
                     $transaction->v_date = $PurchaseReturnDate;
-                    $transaction->acc_id = $po_data->sales_tax;
-                    $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($po_data->sales_tax);
+                    $transaction->acc_id = $sales_tax_acc_id;
+                    $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($sales_tax_acc_id);
                     $transaction->particulars = $Remarks;
                     $transaction->opening_bal = 0;
                     $transaction->debit_credit = 0;

@@ -872,6 +872,117 @@ function addDirectgrn()
         }
     }
 
+    public static function getPurchaseInvoiceNoBySupplier(){
+        $id = $_GET['supplier_id'];
+        echo '<option value="">Select Purchase Invoice</option>';
+
+        $purchaseInvoices = DB::connection('mysql2')->table('new_purchase_voucher as npv')
+            // ->leftJoin('goods_receipt_note as grn', 'grn.id', '=', 'npv.grn_id')
+            // ->where('npv.status', 1)
+            ->where('npv.supplier', $id)
+            // ->where('npv.grn_no', '!=', '')
+            ->select(
+                'npv.id',
+                'npv.pv_no',
+                'npv.pv_date',
+                // 'npv.grn_id',
+                // 'npv.grn_no',
+                // 'grn.grn_date as grn_date'
+            )
+            ->orderBy('npv.pv_date', 'DESC')
+            ->orderBy('npv.id', 'DESC')
+            ->get();
+
+        foreach($purchaseInvoices as $row){
+            $label = strtoupper($row->pv_no).' => '.CommonHelper::changeDateFormat($row->pv_date);
+            ?>
+            <option value="<?php echo $row->id.'*'.$row->pv_no.'*'.$row->pv_date;?>">
+                <?php echo $label; ?>
+            </option>
+            <?php
+        }
+    }
+
+    // public function makeFormPurchaseReturnDetailByInvoiceNo(){
+    //     $m = $_GET['m'];
+    //     $makeGetValue = explode('*', $_GET['PurchaseInvoiceNo']);
+    //     $InvoiceId = $makeGetValue[0] ?? 0;
+    //     $InvoiceNo = $makeGetValue[1] ?? '';
+    //     $InvoiceDate = $makeGetValue[2] ?? '';
+
+    //     CommonHelper::companyDatabaseConnection($m);
+
+    //     $DataMaster = DB::connection('mysql2')->table('new_purchase_voucher')
+    //         ->where('status', 1)
+    //         ->where('id', $InvoiceId)
+    //         ->first();
+
+    //     $DataDetail = DB::connection('mysql2')->table('new_purchase_voucher_data as npvd')
+    //         ->leftJoin('grn_data as gd', 'gd.id', '=', 'npvd.grn_data_id')
+    //         ->where('npvd.staus', 1)
+    //         ->where('npvd.master_id', $InvoiceId)
+    //         ->select(
+    //             'npvd.*',
+    //             DB::raw('COALESCE(npvd.grn_data_id, 0) as purchase_grn_data_id'),
+    //             DB::raw('COALESCE(gd.warehouse_id, 0) as warehouse_id'),
+    //             DB::raw('COALESCE(gd.batch_code, "") as batch_code'),
+    //             DB::raw('COALESCE(npvd.qty, gd.purchase_recived_qty) as purchase_recived_qty'),
+    //             DB::raw('COALESCE(gd.description, "") as grn_description')
+    //         )
+    //         ->get();
+
+    //     CommonHelper::reconnectMasterDatabase();
+
+    //     return view('Purchase.AjaxPages.makeFormPurchaseReturnDetailByInvoiceNo', compact(
+    //         'DataMaster',
+    //         'DataDetail',
+    //         'InvoiceId',
+    //         'InvoiceNo',
+    //         'InvoiceDate',
+    //         'm'
+    //     ));
+    // }
+
+     public function makeFormPurchaseReturnDetailByInvoiceNo(){
+        $m = $_GET['m'];
+        $makeGetValue = explode('*', $_GET['PurchaseInvoiceNo']);
+        $InvoiceId = $makeGetValue[0] ?? 0;
+        $InvoiceNo = $makeGetValue[1] ?? '';
+        $InvoiceDate = $makeGetValue[2] ?? '';
+
+        CommonHelper::companyDatabaseConnection($m);
+
+        $DataMaster = DB::connection('mysql2')->table('new_purchase_voucher')
+            ->where('status', 1)
+            ->where('id', $InvoiceId)
+            ->first();
+
+        $DataDetail = DB::connection('mysql2')->table('new_purchase_voucher_data as npvd')
+            ->leftJoin('grn_data as gd', 'gd.id', '=', 'npvd.grn_data_id')
+            ->where('npvd.staus', 1)
+            ->where('npvd.master_id', $InvoiceId)
+            ->select(
+                'npvd.*',
+                DB::raw('COALESCE(npvd.grn_data_id, 0) as purchase_grn_data_id'),
+                DB::raw('COALESCE(gd.warehouse_id, 0) as warehouse_id'),
+                DB::raw('COALESCE(gd.batch_code, "") as batch_code'),
+                DB::raw('COALESCE(npvd.qty, gd.purchase_recived_qty) as purchase_recived_qty'),
+                DB::raw('COALESCE(gd.description, "") as grn_description')
+            )
+            ->get();
+
+        CommonHelper::reconnectMasterDatabase();
+
+        return view('Purchase.AjaxPages.makeFormPurchaseReturnDetailByInvoiceNo', compact(
+            'DataMaster',
+            'DataDetail',
+            'InvoiceId',
+            'InvoiceNo',
+            'InvoiceDate',
+            'm'
+        ));
+    }
+
 
     public  static function get_refrence_nature($nature)
     {
