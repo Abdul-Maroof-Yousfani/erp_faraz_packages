@@ -19,12 +19,12 @@ $InvoiceDate = $makeGetValue[2] ?? '';
                     <th class="text-center">Sr.No</th>
                     <th class="text-center">Item Name</th>
                     <th class="text-center">Location</th>
-                    <th class="text-center">Batch Code</th>
+                    <th class="text-center hide">Batch Code</th>
                     <th class="text-center">Purchase Qty</th>
-                    <th class="text-center">Return Qty</th>
+                    <th class="text-center">Return Qty Sum Total</th>
                     <th style="display: none" class="text-center">Rate</th>
                     <th style="display: none" class="text-center">Amount</th>
-                    <th class="text-center">Stock Qty</th>
+                    <th class="text-center hide">Purchase Remaining Qty</th>
                     <th class="text-center">Return Qty</th>
                     <th class="text-center">Enable/Disable</th>
                 </thead>
@@ -42,13 +42,15 @@ $InvoiceDate = $makeGetValue[2] ?? '';
                     $rate = $Fil->rate ?? 0;
                     $amount = $Fil->amount ?? 0;
                     $discountPercent = $Fil->discount_percent ?? 0;
-                    $returnQtyData = null;
-                    if (!empty($grnDataId)) {
-                        $returnQtyData = DB::connection('mysql2')->selectOne(
-                            'select sum(return_qty) qty from purchase_return_data where status=1 and grn_data_id="' . $grnDataId . '" group by grn_data_id'
-                        );
+                    $reurn = 0;
+                    if (!empty($InvoiceId) && !empty($itemId)) {
+                        $reurn = (float) DB::connection('mysql2')->table('purchase_return_data')
+                            ->where('status', 1)
+                            ->where('purchase_invoice_id', $InvoiceId)
+                            ->where('sub_item_id', $itemId)
+                            ->sum('return_qty');
                     }
-                    $reurn = !empty($returnQtyData->qty) ? $returnQtyData->qty : 0;
+                    $remainingQty = max(((float) $purchaseQty) - $reurn, 0);
                 ?>
                 <input type="hidden" name="grn_data_id[]" value="{{ $grnDataId }}"/>
                     <tr class="text-center">
@@ -63,7 +65,7 @@ $InvoiceDate = $makeGetValue[2] ?? '';
                             <?php echo $warehouseId ? CommonHelper::getCompanyDatabaseTableValueById($m,'warehouse','name',$warehouseId) : ''; ?>
                             <input value="<?php echo $warehouseId?>" type="hidden" name="WarehouseId[]" id="warehouse_id_<?php echo $lineKey; ?>"/>
                         </td>
-                        <td>
+                        <td class="hide">
                             <?php echo $batchCode; ?>
                             <input type="hidden" name="BatchCode[]" id="BatchCode<?php echo $lineKey?>" value="<?php echo $batchCode; ?>">
                         </td>
@@ -81,7 +83,7 @@ $InvoiceDate = $makeGetValue[2] ?? '';
                         </td>
 
                         <td>
-                            <input type="number" class="form-control" id="stock_qty<?php echo $lineKey?>" name="stock_qty[]" value="{{ ReuseableCode::get_stock($itemId,$warehouseId,0,$batchCode) }}" readonly>
+                            <input type="number" class="form-control" id="stock_qty<?php echo $lineKey?>" name="stock_qty[]" value="{{ number_format($remainingQty,2,'.','') }}" readonly>
                         </td>
                         <td>
                             <input type="number" step="any" class="form-control" id="return_qty_<?php echo $lineKey?>" name="ReturnQty[]" value="0.00" readonly onkeyup="check_val('<?php echo $lineKey?>')">

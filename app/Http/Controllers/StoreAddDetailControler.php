@@ -690,7 +690,6 @@ class StoreAddDetailControler extends Controller
     }
 
     public function insertDirectPurchaseOrder(Request $request){
-        // dd($request->all());
         $edit_mode= $request->id;
         DB::Connection('mysql2')->beginTransaction();
         try {

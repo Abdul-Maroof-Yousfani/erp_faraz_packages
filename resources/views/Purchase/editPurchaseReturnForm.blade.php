@@ -37,7 +37,7 @@ $m = $_GET['m'];
                                                         <th class="text-center">Location</th>
                                                         <th class="text-center">Batch Code</th>
                                                         <th class="text-center"> Received Qty</th>
-                                                        <th class="text-center"> Return QTY</th>
+                                                        <th class="text-center"> Return Qty Sum Total</th>
                                                         <th class="text-center">Rate</th>
                                                         <th class="text-center">Amount</th>
                                                         <th class="text-center">Stock Qty</th>
@@ -68,10 +68,17 @@ $m = $_GET['m'];
                                                             <td class="text-center"><?php echo number_format($Fil->recived_qty,2);?>
                                                                 <input value="<?php echo $Fil->recived_qty?>" type="hidden" name="PurchaseRecQty[]" id="purchase_recived_qty_<?php echo $Fil->grn_data_id; ?>"/>
                                                             </td>
-                                                            <?php $reurn=0; ?>
-                                                            <?php $return_qty=DB::Connection('mysql2')->selectOne('select sum(return_qty)qty from purchase_return_data where status=1 and
-                                                            grn_data_id="'.$Fil->grn_data_id.'" and id!="'.$Fil->id.'" group by grn_data_id') ?>
-                                                            <td class="text-center">@if(!empty($return_qty->qty)){{$reurn=$return_qty->qty}} @else <?php  ?> @endif</td>
+                                                            <?php
+                                                                $currentInvoiceId = $Master->purchase_invoice_id ?? $Master->grn_id;
+                                                                $reurn = (float) DB::Connection('mysql2')->table('purchase_return_data')
+                                                                    ->where('status', 1)
+                                                                    ->where('purchase_invoice_id', $currentInvoiceId)
+                                                                    ->where('sub_item_id', $Fil->sub_item_id)
+                                                                    ->where('id', '!=', $Fil->id)
+                                                                    ->sum('return_qty');
+                                                                $remainingQty = max(((float) $Fil->recived_qty) - $reurn, 0);
+                                                            ?>
+                                                            <td class="text-center"><?php echo number_format($reurn, 2); ?></td>
                                                             <input type="hidden" id="return_<?php echo $Fil->id; ?>" value="{{$reurn}}"/>
 
                                                             <td class="text-center"><?php echo number_format($Fil->rate,2);?>
@@ -81,7 +88,7 @@ $m = $_GET['m'];
                                                                 <input value="<?php echo $Fil->amount?>" type="hidden" name="Amount[]" id="amount_<?php echo $Fil->grn_data_id; ?>"/>
                                                             </td>
                                                             <td>
-                                                                <input type="number" class="form-control" id="stock_qty<?php echo $Fil->grn_data_id?>" name="stock_qty[]" value="{{ReuseableCode::get_stock($Fil->sub_item_id,$Fil->warehouse_id,0,$Fil->batch_code)+$Fil->return_qty}}" readonly>
+                                                                <input type="number" class="form-control" id="stock_qty<?php echo $Fil->grn_data_id?>" name="stock_qty[]" value="<?php echo number_format($remainingQty, 2, '.', ''); ?>" readonly>
                                                             </td>
                                                             <td>
                                                                 <input type="number" class="form-control ReturnQty" id="return_qty_<?php echo $Fil->grn_data_id?>" name="ReturnQty[]" value="<?php echo $Fil->return_qty?>" onkeyup="check_val('<?php echo $Fil->grn_data_id?>')">

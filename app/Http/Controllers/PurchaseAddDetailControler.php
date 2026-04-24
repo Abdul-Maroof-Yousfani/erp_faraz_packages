@@ -3160,6 +3160,7 @@ class PurchaseAddDetailControler extends Controller
         $PurchaseInvoiceDate = $request->PurchaseInvoiceDate ?? $request->GrnDate;
         $Remarks = $request->Remarks;
         $PurchaseReturnInsert['grn_id'] = $PurchaseInvoiceId;
+        $PurchaseReturnInsert['purchase_invoice_id'] = $PurchaseInvoiceId;
         $PurchaseReturnInsert['pr_no'] = $PurchaseReturnNo;
         $PurchaseReturnInsert['pr_date'] = $PurchaseReturnDate;
         $PurchaseReturnInsert['supplier_id'] = $SupplierId;
@@ -3178,7 +3179,22 @@ class PurchaseAddDetailControler extends Controller
         foreach ($data as $key => $row):
 
 
-            $amount = $request->input('Rate')[$row] * $request->input('ReturnQty')[$row];
+            $requestedReturnQty = (float) $request->input('ReturnQty')[$row];
+            $purchaseQty = (float) $request->input('PurchaseRecQty')[$row];
+            $alreadyReturnedQty = (float) DB::connection('mysql2')->table('purchase_return_data')
+                ->where('status', 1)
+                ->where('purchase_invoice_id', $PurchaseInvoiceId)
+                ->where('sub_item_id', $request->input('SubItemId')[$row])
+                ->sum('return_qty');
+            $remainingQty = max($purchaseQty - $alreadyReturnedQty, 0);
+
+            if ($requestedReturnQty > $remainingQty) {
+                DB::Connection('mysql2')->rollBack();
+                Session::flash('error', 'Return qty exceeds remaining qty for item ' . $request->input('SubItemId')[$row]);
+                return Redirect::back()->withInput();
+            }
+
+            $amount = $request->input('Rate')[$row] * $requestedReturnQty;
             $dicount_percent = $request->input('discount_percent')[$row];
             $dicount_amount = ($amount / 100) * $dicount_percent;
             $batchCode = trim((string) ($request->input('BatchCode')[$row] ?? ''));
@@ -3191,6 +3207,7 @@ class PurchaseAddDetailControler extends Controller
                 'master_id' => $master_id,
                 'pr_no' => $PurchaseReturnNo,
                 'grn_data_id' => $request->input('grn_data_id')[$row],
+                'purchase_invoice_id' => $PurchaseInvoiceId,
                 'sub_item_id' => $request->input('SubItemId')[$row],
                 'description' => $request->input('item_desc')[$row],
                 'warehouse_id' => $request->input('WarehouseId')[$row],
@@ -3201,19 +3218,14 @@ class PurchaseAddDetailControler extends Controller
                 'discount_percent' => $dicount_percent,
                 'discount_amount' => $dicount_amount,
                 'net_amount' => $amount - $dicount_amount,
-                'return_qty' => $request->input('ReturnQty')[$row],
+                'return_qty' => $requestedReturnQty,
             );
             $net_amount = $amount - $dicount_amount;
             $total += $net_amount;
             $master_data_id = DB::Connection('mysql2')->table('purchase_return_data')->insertGetId($dataa);
 
-            $whare_hosue = CommonHelper::generic('grn_data', array('id' => $request->input('grn_data_id')[$row]), array('warehouse_id', 'description'))->first();
-            if (!$whare_hosue) {
-                $whare_hosue = (object) [
-                    'warehouse_id' => $request->input('WarehouseId')[$row] ?? 0,
-                    'description' => $request->input('item_desc')[$row] ?? '',
-                ];
-            }
+            $warehouseId = $request->input('WarehouseId')[$row] ?? 0;
+            $itemDescription = $request->input('item_desc')[$row] ?? '';
             
 
             $status = 1;
@@ -3232,7 +3244,7 @@ class PurchaseAddDetailControler extends Controller
                 'rate' => $request->input('Rate')[$row],
                 'sub_item_id' => $request->input('SubItemId')[$row],
                 'batch_code' => $request->input('BatchCode')[$row],
-                'qty' => $request->input('ReturnQty')[$row],
+                'qty' => $requestedReturnQty,
                 'amount_before_discount' => $amount,
 
                 'discount_percent' => $dicount_percent,
@@ -3240,8 +3252,8 @@ class PurchaseAddDetailControler extends Controller
                 'amount' => $amount - $dicount_amount,
 
                 'status' => $status,
-                'warehouse_id' => $whare_hosue->warehouse_id,
-                'description' => $whare_hosue->description,
+                'warehouse_id' => $warehouseId,
+                'description' => $itemDescription,
                 'username' => Auth::user()->username,
                 'created_date' => date('Y-m-d'),
                 'created_date' => date('Y-m-d'),
@@ -3289,7 +3301,7 @@ class PurchaseAddDetailControler extends Controller
                 inner join
                 new_purchase_voucher_data b
                 on
-                a.grn_data_id=b.grn_data_id
+                a.grn_data_id=b.id
                 inner join
                 subitem as c
                 on
@@ -3407,6 +3419,7 @@ class PurchaseAddDetailControler extends Controller
         $PurchaseInvoiceDate = $request->PurchaseInvoiceDate ?? $request->GrnDate;
         $Remarks = $request->Remarks;
         $PurchaseReturnInsert['grn_id'] = $PurchaseInvoiceId;
+        $PurchaseReturnInsert['purchase_invoice_id'] = $PurchaseInvoiceId;
             $PurchaseReturnInsert['pr_no'] = $PurchaseReturnNo;
             $PurchaseReturnInsert['pr_date'] = $PurchaseReturnDate;
             $PurchaseReturnInsert['supplier_id'] = $SupplierId;
@@ -3425,10 +3438,24 @@ class PurchaseAddDetailControler extends Controller
             //            print_r($data);
 //            die();
             $total = 0;
-            foreach ($data as $key => $row):
+        foreach ($data as $key => $row):
 
 
-            $amount = $request->input('Rate')[$row] * $request->input('ReturnQty')[$row];
+            $requestedReturnQty = (float) $request->input('ReturnQty')[$row];
+            $purchaseQty = (float) $request->input('PurchaseRecQty')[$row];
+            $alreadyReturnedQty = (float) DB::connection('mysql2')->table('purchase_return_data')
+                ->where('status', 1)
+                ->where('purchase_invoice_id', $PurchaseInvoiceId)
+                ->where('sub_item_id', $request->input('SubItemId')[$row])
+                ->where('master_id', '!=', $EditId)
+                ->sum('return_qty');
+            $remainingQty = max($purchaseQty - $alreadyReturnedQty, 0);
+
+            if ($requestedReturnQty > $remainingQty) {
+                throw new \Exception('Return qty exceeds remaining qty for item ' . $request->input('SubItemId')[$row]);
+            }
+
+            $amount = $request->input('Rate')[$row] * $requestedReturnQty;
             $dicount_percent = $request->input('discount_percent')[$row];
             $dicount_amount = ($amount / 100) * $dicount_percent;
             $batchCode = trim((string) ($request->input('BatchCode')[$row] ?? ''));
@@ -3442,6 +3469,7 @@ class PurchaseAddDetailControler extends Controller
                     'master_id' => $EditId,
                     'pr_no' => $PurchaseReturnNo,
                     'grn_data_id' => $request->input('grn_data_id')[$row],
+                    'purchase_invoice_id' => $PurchaseInvoiceId,
                     'sub_item_id' => $request->input('SubItemId')[$row],
                     'description' => $request->input('item_desc')[$row],
                     'warehouse_id' => $request->input('WarehouseId')[$row],
@@ -3456,7 +3484,7 @@ class PurchaseAddDetailControler extends Controller
                     'net_amount' => $amount - $dicount_amount,
 
 
-                    'return_qty' => $request->input('ReturnQty')[$row]
+                    'return_qty' => $requestedReturnQty
                 );
 
                 $net_amount = $amount - $dicount_amount;
@@ -3465,13 +3493,8 @@ class PurchaseAddDetailControler extends Controller
                 $master_data_id = DB::Connection('mysql2')->table('purchase_return_data')->insertGetId($PurchaseReturnData);
 
 
-                $whare_hosue = CommonHelper::generic('grn_data', array('id' => $request->input('grn_data_id')[$row]), array('warehouse_id', 'description'))->first();
-                if (!$whare_hosue) {
-                    $whare_hosue = (object) [
-                        'warehouse_id' => $request->input('WarehouseId')[$row] ?? 0,
-                        'description' => $request->input('item_desc')[$row] ?? '',
-                    ];
-                }
+                $warehouseId = $request->input('WarehouseId')[$row] ?? 0;
+                $itemDescription = $request->input('item_desc')[$row] ?? '';
 
                 $stock = array
                 (
@@ -3484,7 +3507,7 @@ class PurchaseAddDetailControler extends Controller
                     'rate' => $request->input('Rate')[$row],
                     'sub_item_id' => $request->input('SubItemId')[$row],
                     'batch_code' => $request->input('BatchCode')[$row],
-                    'qty' => $request->input('ReturnQty')[$row],
+                    'qty' => $requestedReturnQty,
 
 
                     'amount_before_discount' => $amount,
@@ -3494,8 +3517,8 @@ class PurchaseAddDetailControler extends Controller
 
 
                     'status' => 1,
-                    'warehouse_id' => $whare_hosue->warehouse_id,
-                    'description' => $whare_hosue->description,
+                    'warehouse_id' => $warehouseId,
+                    'description' => $itemDescription,
                     'username' => Auth::user()->username,
                     'created_date' => date('Y-m-d'),
                     'created_date' => date('Y-m-d'),
@@ -3539,7 +3562,7 @@ class PurchaseAddDetailControler extends Controller
                 inner join
                 new_purchase_voucher_data b
                 on
-                a.grn_data_id=b.grn_data_id
+                a.grn_data_id=b.id
                 inner join
                 subitem as c
                 on

@@ -958,16 +958,23 @@ function addDirectgrn()
             ->first();
 
         $DataDetail = DB::connection('mysql2')->table('new_purchase_voucher_data as npvd')
-            ->leftJoin('grn_data as gd', 'gd.id', '=', 'npvd.grn_data_id')
             ->where('npvd.staus', 1)
             ->where('npvd.master_id', $InvoiceId)
             ->select(
-                'npvd.*',
-                DB::raw('COALESCE(npvd.grn_data_id, 0) as purchase_grn_data_id'),
-                DB::raw('COALESCE(gd.warehouse_id, 0) as warehouse_id'),
-                DB::raw('COALESCE(gd.batch_code, "") as batch_code'),
-                DB::raw('COALESCE(npvd.qty, gd.purchase_recived_qty) as purchase_recived_qty'),
-                DB::raw('COALESCE(gd.description, "") as grn_description')
+                'npvd.id as purchase_grn_data_id',
+                'npvd.sub_item',
+                'npvd.bag_qty as qty',
+                'npvd.rate',
+                'npvd.amount',
+                'npvd.do_no',
+                'npvd.godown_no',
+                DB::raw('0 as discount_percent'),
+                DB::raw('0 as discount_amount'),
+                DB::raw('npvd.amount as net_amount'),
+                DB::raw('0 as warehouse_id'),
+                DB::raw('"" as batch_code'),
+                DB::raw('npvd.bag_qty as purchase_recived_qty'),
+                DB::raw('"" as grn_description')
             )
             ->get();
 
