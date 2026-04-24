@@ -2450,17 +2450,21 @@ class SalesController extends Controller
                             'so_data_id' => '',
                         );
                         DB::Connection('mysql2')->table('stock')->insert($stock);
+
                     endforeach;
                 endif;
             endif;
-            if ($so_id != 0):
-                $voucher_no = $gi_no;
-                $dept_and_type = NotificationHelper::get_dept_id('sales_order', 'id', $so_id)->select('department', 'p_type')->first();
-                $dept_id = $dept_and_type->department;
-                $p_type = $dept_and_type->p_type;
-                $subject = 'Sales Tax Invoice Approved For ' . $so_no;
-                NotificationHelper::send_email('Sales tax Invoice', $behavior, $dept_id, $voucher_no, $subject, $p_type);
-            endif;
+            // if ($so_id != 0):
+            //     $voucher_no = $gi_no;
+            //     $dept_and_type = NotificationHelper::get_dept_id('sales_order', 'id', $so_id)->select('department', 'p_type')->first();
+            //     $dept_id = $dept_and_type->department;
+            //     $p_type = $dept_and_type->p_type;
+            //     $subject = 'Sales Tax Invoice Approved For ' . $so_no;
+            //     NotificationHelper::send_email('Sales tax Invoice', $behavior, $dept_id, $voucher_no, $subject, $p_type);
+            // endif;
+
+            // dd('Successsffullly Done');
+
             DB::Connection('mysql2')->commit();
         } catch (Exception $ex) {
 

@@ -93,6 +93,15 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
                                                                     <span class="rflabelsteric"><strong>*</strong></span>
                                                                     <input id="Customer_name" name="customer_name" type="text" class="form-control requiredField" required value="">
                                                                 </div>
+                                                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                                                                    <label>&nbsp;</label>
+                                                                    <div class="checkbox" style="margin-top: 6px;">
+                                                                        <label>
+                                                                            <input type="checkbox" name="mark_as_supplier" value="1">
+                                                                            Mark as supplier also
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
 
                                                                 <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                     <label>Tel</label>

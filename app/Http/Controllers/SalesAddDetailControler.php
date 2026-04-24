@@ -47,6 +47,7 @@ use App\Models\SalesTaxInvoiceData;
 use App\Models\Invoice;
 use App\Models\InvoiceData;
 use App\Models\Survey;
+use App\Models\Supplier;
 use App\Models\ClientJob;
 use App\Models\ComplaintDocument;
 use App\Models\Stock;
@@ -325,16 +326,18 @@ class SalesAddDetailControler extends Controller
         ]);
 
         CommonHelper::companyDatabaseConnection($_GET['m']);
+        DB::connection('mysql2')->beginTransaction();
 
-        $account_head = Input::get('account_head');
-        $customer_code = SalesHelper::generateCustomerCode();
-        $customer_name = Input::get('customer_name');
-        $country = Input::get('country');
-        $state = Input::get('state');
-        $city = Input::get('city');
-        $creditLimit = Input::get('creditLimit');
-        $remarks = Input::get('remarks');
-        $no_of_days = Input::get('no_of_days');
+        try {
+            $account_head = Input::get('account_head');
+            $customer_code = SalesHelper::generateCustomerCode();
+            $customer_name = Input::get('customer_name');
+            $country = Input::get('country');
+            $state = Input::get('state');
+            $city = Input::get('city');
+            $creditLimit = Input::get('creditLimit');
+            $remarks = Input::get('remarks');
+            $no_of_days = Input::get('no_of_days');
 
 
 
@@ -358,6 +361,7 @@ class SalesAddDetailControler extends Controller
         $customer_type = '3';
         $ntn = Input::get('ntn');
         $strn = Input::get('strn');
+        $mark_as_supplier = (int) Input::get('mark_as_supplier', 0);
 
 
 
@@ -442,6 +446,96 @@ class SalesAddDetailControler extends Controller
         $data3['action'] = 'create';
         DB::table('transactions')->insert($data3);
 
+        if ($mark_as_supplier === 1) {
+            $vendor_code = Supplier::UniqueNo();
+            // $supplier_account_head = '2-2-4';
+            // $supplierMaxId = DB::connection('mysql2')->selectOne(
+            //     'SELECT max(`id`) as id  FROM `accounts` WHERE `parent_code` LIKE \'' . $supplier_account_head . '\''
+            // )->id;
+
+            // if ($supplierMaxId == '') {
+            //     $supplierCode = $supplier_account_head . '-1';
+            // } else {
+            //     $supplierMaxCode = DB::connection('mysql2')->selectOne(
+            //         'SELECT `code` FROM `accounts` WHERE `id` LIKE \'' . $supplierMaxId . '\''
+            //     )->code;
+            //     $supplierMaxParts = explode('-', $supplierMaxCode);
+            //     $supplierCode = $supplier_account_head . '-' . (end($supplierMaxParts) + 1);
+            // }
+
+            // $supplierLevels = explode('-', $supplierCode);
+            // $supplierCounter = 1;
+            // $supplierAccData = [];
+            // foreach ($supplierLevels as $level) {
+            //     $supplierAccData['level' . $supplierCounter] = strip_tags($level);
+            //     $supplierCounter++;
+            // }
+
+            // $supplierAccData['code'] = strip_tags($supplierCode);
+            // $supplierAccData['name'] = strip_tags($customer_name);
+            // $supplierAccData['parent_code'] = strip_tags($supplier_account_head);
+            // $supplierAccData['username'] = Auth::user()->name;
+            // $supplierAccData['date'] = date("Y-m-d");
+            // $supplierAccData['time'] = date("H:i:s");
+            // $supplierAccData['action'] = 'create';
+            // $supplierAccData['type'] = 1;
+            // $supplierAccData['operational'] = 1;
+            // $supplierAccId = DB::Connection('mysql2')->table('accounts')->insertGetId($supplierAccData);
+
+            $supplierData['acc_id'] = $acc_id;
+            $supplierData['resgister_income_tax'] = 0;
+            $supplierData['business_type'] = 0;
+            $supplierData['cnic'] = $ntn ?? '';
+            $supplierData['ntn'] = $ntn ?? '';
+            $supplierData['register_sales_tax'] = $regd_in_sales_tax ?? 0;
+            $supplierData['strn'] = $strn ?? '';
+            $supplierData['register_srb'] = 0;
+            $supplierData['srb'] = '';
+            $supplierData['register_pra'] = 0;
+            $supplierData['pra'] = '';
+            $supplierData['vendor_code'] = $vendor_code;
+            $supplierData['name'] = $customer_name;
+            $supplierData['company_name'] = $customer_name;
+            $supplierData['country'] = $country ?? 0;
+            $supplierData['province'] = $state ?? 0;
+            $supplierData['city'] = $city ?? 0;
+            $supplierData['email'] = $email ?? '';
+            $supplierData['username'] = Auth::user()->name;
+            $supplierData['date'] = date("Y-m-d");
+            $supplierData['time'] = date("H:i:s");
+            $supplierData['action'] = 'create';
+            $supplierData['company_id'] = $_GET['m'];
+            $supplierData['company_status'] = '';
+            $supplierData['print_check_as'] = '';
+            $supplierData['vendor_type'] = $vendor_code;
+            $supplierData['website'] = '';
+            $supplierData['credit_limit'] = $creditLimit ?? '';
+            $supplierData['acc_no'] = '';
+            $supplierData['bank_name'] = '';
+            $supplierData['bank_address'] = '';
+            $supplierData['swift_code'] = '';
+            $supplierData['branch_name'] = '';
+            $supplierData['terms_of_payment'] = Input::get('term') ?? 0;
+            $supplierData['opening_bal_date'] = date('Y-m-d');
+            $supplierData['contact_person'] = $contact_person ?? '';
+            $supplierData['mobile_no'] = $contact_no ?? '';
+            $supplierData['address'] = $address ?? '';
+            $supplierData['registration_no'] = '';
+            $supplierData['product_services_provided'] = '';
+            $supplierData['contact_person_no'] = $contact_person_no ?? '';
+            $supplierData['contact_person_email'] = $contact_person_email ?? '';
+            $supplierData['account_representative_name'] = '';
+            $supplierData['account_representative_no'] = '';
+            $supplierData['account_representative_email'] = '';
+            $supplierData['no_of_days'] = $no_of_days ?? '';
+            $supplierData['account_title'] = '';
+            $supplierData['account_no'] = '';
+            $supplierData['ibn'] = '';
+            $supplierData['status'] = 1;
+
+            DB::Connection('mysql2')->table('supplier')->insertGetId($supplierData);
+        }
+
         $contact_person_more = Input::get('contact_person_more');
         $contact_no_more = Input::get('contact_no_more');
         $fax_more = Input::get('fax_more');
@@ -458,8 +552,14 @@ class SalesAddDetailControler extends Controller
                 }
             }
         endif;
+        DB::connection('mysql2')->commit();
         CommonHelper::reconnectMasterDatabase();
         return Redirect::to('sales/viewCreditCustomerList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . $_GET['m']);
+        } catch (\Throwable $e) {
+            DB::connection('mysql2')->rollBack();
+            CommonHelper::reconnectMasterDatabase();
+            throw $e;
+        }
     }
 
     public function updateCreditCustomerDetail(Request $request)
