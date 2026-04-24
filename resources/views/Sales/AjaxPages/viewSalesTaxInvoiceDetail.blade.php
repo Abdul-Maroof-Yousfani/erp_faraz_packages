@@ -756,7 +756,17 @@ $AmountInWordsMain =0;
                         return;
                     }
                     $('#stat'+id).html(response);
+                    if (typeof window.parent.showSalesSuccessMessage === 'function') {
+                        window.parent.showSalesSuccessMessage('Sales invoice approved successfully.');
+                    } else if (typeof showSalesSuccessMessage === 'function') {
+                        showSalesSuccessMessage('Sales invoice approved successfully.');
+                    } else {
+                        alert('Sales invoice approved successfully.');
+                    }
                     $('#showDetailModelOneParamerter').modal('hide');
+                    if (typeof viewRangeWiseDataFilter === 'function') {
+                        viewRangeWiseDataFilter();
+                    }
 
                 }
             })

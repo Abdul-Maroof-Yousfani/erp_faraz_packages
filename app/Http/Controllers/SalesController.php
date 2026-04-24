@@ -2381,78 +2381,79 @@ class SalesController extends Controller
             $behavior = '';
             $si_data = DB::Connection('mysql2')->table('sales_tax_invoice')->where('id', $id)->first();
 
+            if (empty($si_data)) {
+                DB::Connection('mysql2')->rollBack();
+                return 0;
+            }
+
             $so_type = $si_data->si_status;
             $gi_no = $si_data->gi_no;
             $so_id = $si_data->so_id;
             $so_no = $si_data->so_no;
 
-            if ($so_type == 0):
-                DB::Connection('mysql2')->table('sales_tax_invoice')
-                    ->where('id', $id)
-                    ->update(['approve_user_1' => Auth::user()->name, 'si_status' => 2]);
-                $approve = '1st Approved';
-                $behavior = 'Approve 1';
-            else:
-                DB::Connection('mysql2')->table('sales_tax_invoice')
-                    ->where('id', $id)
-                    ->update(['approve_user_2' => Auth::user()->name, 'si_status' => 3]);
+            if ((int) $so_type === 3) {
+                DB::Connection('mysql2')->commit();
+                return 'Approved';
+            }
 
+            DB::Connection('mysql2')->table('sales_tax_invoice')
+                ->where('id', $id)
+                ->update([
+                    'approve_user_1' => Auth::user()->name,
+                    'approve_user_2' => Auth::user()->name,
+                    'si_status' => 3
+                ]);
 
-                DB::Connection('mysql2')->table('transactions')
-                    ->where('voucher_no', $gi_no)
-                    ->where('status', 100)
-                    ->update(['status' => 1]);
-                $approve = 'Approved';
-                $behavior = 'Approve 2';
+            DB::Connection('mysql2')->table('transactions')
+                ->where('voucher_no', $gi_no)
+                ->where('status', 100)
+                ->update(['status' => 1]);
+            $approve = 'Approved';
+            $behavior = 'Approve';
 
-                $sales_tax_invoice_data = new SalesTaxInvoiceData();
-                $sales_tax_invoice_data = $sales_tax_invoice_data->SetConnection('mysql2');
-                $sales_tax_invoice_data = $sales_tax_invoice_data->where('status', 1)->where('master_id', $id)->get();
-                if ($si_data->so_no == ''):
-                    foreach ($sales_tax_invoice_data as $key => $row):
+            $sales_tax_invoice_data = DB::Connection('mysql2')->table('sales_tax_invoice_data')
+                ->where('status', 1)
+                ->where('master_id', $id)
+                ->get();
 
-                        $qty = ReuseableCode::get_stock($row->item_id, $row->warehouse_id, $row->qty, 0);
-                        if ($qty < 0):
-                            DB::rollBack();
-                            return 0;
-                        endif;
+            if ($si_data->so_no == ''):
+                foreach ($sales_tax_invoice_data as $key => $row):
 
-                        $average_cost = ReuseableCode::average_cost_sales(
-                            $row->item_id,
-                            $row->warehouse_id,
-                            0
-                        );
+                    $average_cost = ReuseableCode::average_cost_sales(
+                        $row->item_id,
+                        $row->warehouse_id,
+                        0
+                    );
 
 
 
-                        $stock = array
-                        (
-                            'main_id' => $row->master_id,
-                            'master_id' => $row->id,
-                            'voucher_no' => $row->gi_no,
-                            'voucher_date' => $si_data->gi_date,
-                            'supplier_id' => 0,
-                            'customer_id' => $row->buyers_id,
-                            'voucher_type' => 5,
-                            'rate' => $row->rate,
-                            'sub_item_id' => $row->item_id,
-                            'batch_code' => 0,
-                            'qty' => $row->qty,
-                            'discount_percent' => '',
-                            'discount_amount' => '',
-                            'amount' => $row->qty * $average_cost,
-                            'status' => 1,
-                            'warehouse_id' => $row->warehouse_id,
-                            'username' => Auth::user()->username,
-                            'created_date' => date('Y-m-d'),
-                            'created_date' => date('Y-m-d'),
-                            'opening' => 0,
-                            'so_data_id' => '',
-                        );
-                        DB::Connection('mysql2')->table('stock')->insert($stock);
+                    $stock = array
+                    (
+                        'main_id' => $row->master_id,
+                        'master_id' => $row->id,
+                        'voucher_no' => $row->gi_no,
+                        'voucher_date' => $si_data->gi_date,
+                        'supplier_id' => 0,
+                        'customer_id' => $si_data->buyers_id,
+                        'voucher_type' => 5,
+                        'rate' => $row->rate,
+                        'sub_item_id' => $row->item_id,
+                        'batch_code' => 0,
+                        'qty' => $row->qty,
+                        'discount_percent' => '',
+                        'discount_amount' => '',
+                        'amount' => $row->qty * $average_cost,
+                        'status' => 1,
+                        'warehouse_id' => $row->warehouse_id,
+                        'username' => Auth::user()->username,
+                        'created_date' => date('Y-m-d'),
+                        'created_date' => date('Y-m-d'),
+                        'opening' => 0,
+                        'so_data_id' => '',
+                    );
+                    DB::Connection('mysql2')->table('stock')->insert($stock);
 
-                    endforeach;
-                endif;
+                endforeach;
             endif;
             // if ($so_id != 0):
             //     $voucher_no = $gi_no;
@@ -2468,7 +2469,7 @@ class SalesController extends Controller
             DB::Connection('mysql2')->commit();
         } catch (Exception $ex) {
 
-            DB::rollBack();
+            DB::Connection('mysql2')->rollBack();
             echo $ex->getLine();
 
         }

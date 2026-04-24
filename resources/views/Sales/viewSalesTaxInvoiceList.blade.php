@@ -44,6 +44,7 @@ $export=ReuseableCode::check_rights(257);
                     </div>
 
                     <hr style="border-color: #ccc">
+                    <div id="salesInvoiceSuccessAlert" class="alert alert-success" style="display:none; margin-bottom: 15px;"></div>
 
                     <div class="row">
 
@@ -181,6 +182,15 @@ $export=ReuseableCode::check_rights(257);
             return dl ?
                     XLSX.write(wb, { bookType: type, bookSST: true, type: 'base64' }) :
                     XLSX.writeFile(wb, fn || ('Sales Tax Invoice <?php echo date('d-M-Y')?>.' + (type || 'xlsx')));
+        }
+    </script>
+    <script>
+        function showSalesSuccessMessage(message)
+        {
+            $('#salesInvoiceSuccessAlert').stop(true, true).hide().text(message).fadeIn('fast');
+            setTimeout(function () {
+                $('#salesInvoiceSuccessAlert').fadeOut('slow');
+            }, 3000);
         }
     </script>
     <script>
