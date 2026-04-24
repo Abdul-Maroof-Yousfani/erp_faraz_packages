@@ -40,7 +40,7 @@ $m=Input::get('m');
             <?php echo CommonHelper::get_company_logo(Session::get('run_company'));?>
         </div>
         <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
-            <h3 style="text-align: center;">Ledger Report</h3>
+            <h3 class="hide" style="text-align: center;">Ledger Report</h3>
         </div>
         <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-right">
             <label style="border-bottom:2px solid #000 !important;">Printed On Date&nbsp;:&nbsp;</label><label style="border-bottom:2px solid #000 !important;"><?php echo CommonHelper::changeDateFormat(date('Y-m-d'));$x = date('Y-m-d');
@@ -165,52 +165,92 @@ $m=Input::get('m');
         <thead>
 
 
+<div class="container" style="border:1px solid #e0c9c9; padding:10px; font-family:Arial;width:100%;">
 
-        <tr>
-            <td colspan="9" style="background-color:#ffffff; color:black;">
+    <!-- Header -->
+    <div class="text-center">
+        <h2 style="margin:0; font-weight:bold;">Faraz Packages</h2>
+        <p style="margin:0;">F-98, S.I.T.E., Karachi</p>
+        <p style="margin:0; font-size:13px;">
+            Tel No. 0213-2584444, 0321-2254444, Fax No. 0213-2584444,
+            email: farazpackages@gmail.com
+        </p>
+    </div>
 
-            </td>
-        </tr>
-        <tr>
-            <td colspan="9" style="font-size: 20px;" class="text-center"><b>Company Name:   (<?php echo FinanceHelper::getCompanyName(Session::get('run_company'));?>)</b></td>
-        </tr>
-        <tr>
-            <td colspan="9" style="font-size: 20px;" class="text-center"><b>Account Name:   (<?php echo CommonHelper::get_account_code($acc_id).'---'.CommonHelper::get_account_name($acc_id);?>)</b></td>
-        </tr>
-        <tr>
-            <td colspan="9" style="font-size: 16px;" class="text-center">
-                <b>Tax Filter:</b>
-                <?php
-                    if ($tax_mode === 'with_tax') {
-                        $taxName = DB::Connection('mysql2')->table('gst')->where('status', 1)->where('acc_id', $tax_filter)->select('percent', 'rate')->first();
-                        if (!empty($tax_filter) && $tax_filter != '0') {
-                            echo $taxName ? e($taxName->percent) . ' (' . e($taxName->rate) . '%)' : 'Selected Tax';
-                        } else {
-                            echo 'All Taxes';
-                        }
-                    } elseif ($tax_mode === 'non_tax') {
-                        echo 'Non Tax';
-                    } else {
-                        echo 'All Taxes';
-                    }
-                ?>
-            </td>
-        </tr>
-        <tr>
-            <td style="font-size: 20px;" class="text-center" colspan="9"><b>From Date: (<?php echo date_format(date_create($from), 'd-m-Y');?>)==========To Date: (<?php echo date_format(date_create($to), 'd-m-Y');?>)</b></td>
+    <hr style="border-top:1px solid #000; margin:5px 0;">
 
-        </tr>
+    <!-- Ledger + Date Row -->
+    <div class="row" style="font-size:13px;">
+        <div class="col-xs-6">
+            <b>Ledger Report of:</b>
+            <?php echo CommonHelper::get_account_name($acc_id); ?>
+        </div>
+        <div class="col-xs-6 text-right">
+            <b>From:</b> <?php echo date('d-M-Y', strtotime($from)); ?>
+            <b>To:</b> <?php echo date('d-M-Y', strtotime($to)); ?>
+        </div>
+    </div>
 
+    <hr style="border-top:1px solid #000; margin:5px 0;">
+
+    <!-- Company Name -->
+    <div class="text-center hide" style="font-size:18px;">
+        <b>Company Name: (<?php echo FinanceHelper::getCompanyName(Session::get('run_company')); ?>)</b>
+    </div>
+
+    <!-- Account Name -->
+    <div class="text-left" style="font-size:18px;">
+        <b>
+            Account Name:
+            (<?php echo CommonHelper::get_account_code($acc_id).' --- '.CommonHelper::get_account_name($acc_id); ?>)
+        </b>
+    </div>
+
+    <!-- Tax Filter -->
+    <div class="text-center hide" style="font-size:15px; margin-top:5px;">
+        <b>Tax Filter:</b>
+        <?php
+            if ($tax_mode === 'with_tax') {
+                $taxName = DB::connection('mysql2')->table('gst')
+                    ->where('status', 1)
+                    ->where('acc_id', $tax_filter)
+                    ->select('percent', 'rate')->first();
+
+                if (!empty($tax_filter) && $tax_filter != '0') {
+                    echo $taxName ? $taxName->percent . ' (' . $taxName->rate . '%)' : 'Selected Tax';
+                } else {
+                    echo 'All Taxes';
+                }
+            } elseif ($tax_mode === 'non_tax') {
+                echo 'Non Tax';
+            } else {
+                echo 'All Taxes';
+            }
+        ?>
+    </div>
+
+    <!-- Date Range -->
+    <div class="text-center hide" style="font-size:16px; margin-top:5px;">
+        <b>
+            From Date:
+            (<?php echo date('d-m-Y', strtotime($from)); ?>)
+            &nbsp;&nbsp;==========
+            &nbsp;&nbsp;To Date:
+            (<?php echo date('d-m-Y', strtotime($to)); ?>)
+        </b>
+    </div>
+
+</div>
 
         <tr>
             <th style="width: 100px" class="text-center">Voucher No</th>
-            <th style="width: 220px" class="text-center">Item Details</th>
             <th style="width: 120px" class="text-center">Date</th>
-            <th style="width: 120px" class="text-center">V Type</th>
-            <th style="width: 120px" class="text-center">Cheque No</th>
-            <th style="width: 120px" class="text-center">Description</th>
-            <th class="text-center" style="width:100px;">Dr</th>
-            <th class="text-center" style="width:100px;">Cr.</th>
+            <th style="width: 220px" class="text-center">Description</th>
+            <th style="width: 120px" class="text-center hide">V Type</th>
+            <th style="width: 120px" class="text-center hide">Cheque No</th>
+            <th style="width: 120px" class="text-center hide">Description</th>
+            <th class="text-center" style="width:100px;">Debit</th>
+            <th class="text-center" style="width:100px;">Credit</th>
             <th class="text-center" style="width:100px;">Balance</th>
         </tr>
         </thead>
@@ -227,8 +267,7 @@ $m=Input::get('m');
         ?>
         <tr>
             <td></td>
-            <td></td>
-            <td class="text-left" colspan="4">Opening Balance</td>
+            <td class="text-left" colspan="2">Opening Balance</td>
             <td class="text-right"><?php if ($amount>=0): echo number_format($amount,2); $balance=$amount;  endif; ?></td>
             <td class="text-right"><?php if ($amount < 0): $balance=$amount;     $amount=$amount*-1;  echo number_format($amount,2);   endif; ?></td>
             <td class="text-right">
@@ -391,7 +430,9 @@ $m=Input::get('m');
 
         <tr  title="<?php echo $trow->voucher_type ?>"  class="hov" >
             <td><?php echo strtoupper($trow->voucher_no) ?></td>
-            <td class="text-left" style="white-space: nowrap !important;font-size: 11px;">
+            
+                <td class="text-center"> <a onclick="showDetailModelOneParamerter('<?php echo $detail?>','<?php echo 'other'.','.$trow->voucher_no;?>','<?php echo $PageTitle?>','<?php echo $_GET['m']?>','')" class="btn btn-xs btn-success"><?php echo  date_format(date_create($trow->v_date), 'd-M-Y'); ?></a></td>
+                <td class="text-left" style="white-space: nowrap !important;font-size: 11px;">
                 <?php
                     $itemDetails = [];
 
@@ -407,13 +448,12 @@ $m=Input::get('m');
                         }
                     }
 
-                    echo implode('<br>', $itemDetails);
+                    echo  !empty($itemDetails) ? implode('<br>', $itemDetails) : $trow->particulars;
                     ?>
             </td>
-                <td class="text-center"> <a onclick="showDetailModelOneParamerter('<?php echo $detail?>','<?php echo 'other'.','.$trow->voucher_no;?>','<?php echo $PageTitle?>','<?php echo $_GET['m']?>','')" class="btn btn-xs btn-success"><?php echo  date_format(date_create($trow->v_date), 'd-M-Y'); ?></a></td>
-            <td class="text-center">{{$type}}</td>
-            <td class="text-left"><?php echo $cheque_no.'</br>';if ($cheque_date!='0000-00-00' && $cheque_date!=''): date_format(date_create($cheque_date), 'd-m-Y');endif; ?></td>
-            <td class="text-left">
+            <td class="text-center hide">{{$type}}</td>
+            <td class="text-left hide"><?php echo $cheque_no.'</br>';if ($cheque_date!='0000-00-00' && $cheque_date!=''): date_format(date_create($cheque_date), 'd-m-Y');endif; ?></td>
+            <td class="text-left hide">
                 <?php 
                 echo $description."--";
                     // if($trow->voucher_type == 4):
@@ -451,10 +491,10 @@ $m=Input::get('m');
 
         <?php endforeach; ?>
         <tr>
-            <td class="text-center" colspan="6"><b style="font-size: large;">TOTAL</b></td>
+            <td class="text-center" colspan="3"><b style="font-size: large;">TOTAL</b></td>
             <td class="text-right" colspan="1"><b style="font-size: large;"><?php echo  number_format($total_debit,2) ?></b></td>
             <td class="text-right" colspan="1"><b style="font-size: large;"><?php echo  number_format($total_credit,2) ?></b></td>
-            <td  class="text-center" colspan="1"><b style="font-size: large;color: #ff9999"><?php // echo  number_format($total_debit-$total_credit) ?></b></td>
+            <td  class="text-center" colspan="1"><b style="font-size: large;color: #ff9999"><?php  echo  number_format($total_debit-$total_credit) ?></b></td>
 
         </tr>
 
