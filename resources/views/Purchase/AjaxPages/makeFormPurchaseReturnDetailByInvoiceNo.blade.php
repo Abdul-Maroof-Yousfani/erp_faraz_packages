@@ -22,9 +22,9 @@ $InvoiceDate = $makeGetValue[2] ?? '';
                     <th class="text-center hide">Batch Code</th>
                     <th class="text-center">Purchase Qty</th>
                     <th class="text-center">Return Qty Sum Total</th>
-                    <th style="display: none" class="text-center">Rate</th>
-                    <th style="display: none" class="text-center">Amount</th>
-                    <th class="text-center hide">Purchase Remaining Qty</th>
+                    <th class="text-center">Price</th>
+                    <th class="text-center">Amount</th>
+                    <th class="text-center">Purchase Remaining Qty</th>
                     <th class="text-center">Return Qty</th>
                     <th class="text-center">Enable/Disable</th>
                 </thead>
@@ -75,11 +75,11 @@ $InvoiceDate = $makeGetValue[2] ?? '';
                         <td class="text-center"><?php echo number_format($reurn,2); ?></td>
                         <input type="hidden" id="return_<?php echo $lineKey; ?>" value="<?php echo $reurn; ?>"/>
 
-                        <td style="display: none" class="text-center"><?php echo number_format($rate,2);?>
+                        <td class="text-center"><?php echo number_format($rate,2);?>
                             <input value="<?php echo $rate?>" type="hidden" name="Rate[]" id="rate_<?php echo $lineKey; ?>"/>
                         </td>
-                        <td style="display: none" class="text-center"><?php echo number_format($amount,2);?>
-                            <input value="<?php echo $amount?>" type="hidden" name="Amount[]" id="amount_<?php echo $lineKey; ?>"/>
+                        <td class="text-center">
+                            <input type="number" step="0.01" class="form-control" readonly name="Amount[]" id="amount_<?php echo $lineKey; ?>" data-base-amount="<?php echo number_format($amount,2,'.',''); ?>" value="<?php echo number_format($amount,2,'.',''); ?>"/>
                         </td>
 
                         <td>
@@ -149,10 +149,13 @@ $InvoiceDate = $makeGetValue[2] ?? '';
 
         ActualQty=ActualQty - returnn;
 
+        update_line_amount(Id);
+
         if(ReturnQty > ActualQty)
         {
             alert('Please Correct Your Return Qty....!');
             $('#return_qty_'+Id).val('');
+            $('#amount_'+Id).val('0.00');
         }
         else
         {
@@ -160,17 +163,33 @@ $InvoiceDate = $makeGetValue[2] ?? '';
            {
                alert('Please Correct Your Return Qty....!');
                $('#return_qty_'+Id).val('');
+               $('#amount_'+Id).val('0.00');
            }
         }
+    }
+
+    function update_line_amount(Id)
+    {
+        var qty = parseFloat($('#return_qty_' + Id).val());
+        var rate = parseFloat($('#rate_' + Id).val());
+        if (isNaN(qty)) {
+            qty = 0;
+        }
+        if (isNaN(rate)) {
+            rate = 0;
+        }
+        $('#amount_' + Id).val((qty * rate).toFixed(2));
     }
 
     function ChkUnChk(Id) {
         if ($('#enable_disable_' + Id).prop("checked") == true) {
             $('#return_qty_' + Id).prop('readonly', false).addClass('requiredField');
             $('#return_qty_' + Id).val('');
+            $('#amount_' + Id).val($('#amount_' + Id).data('base-amount'));
         } else {
             $('#return_qty_' + Id).prop('readonly', true).removeClass('requiredField');
             $('#return_qty_' + Id).val('0.00');
+            $('#amount_' + Id).val($('#amount_' + Id).data('base-amount'));
         }
     }
 

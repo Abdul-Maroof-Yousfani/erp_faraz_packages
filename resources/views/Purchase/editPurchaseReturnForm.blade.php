@@ -38,7 +38,7 @@ $m = $_GET['m'];
                                                         <th class="text-center">Batch Code</th>
                                                         <th class="text-center"> Received Qty</th>
                                                         <th class="text-center"> Return Qty Sum Total</th>
-                                                        <th class="text-center">Rate</th>
+                                                        <th class="text-center">Price</th>
                                                         <th class="text-center">Amount</th>
                                                         <th class="text-center">Stock Qty</th>
                                                         <th class="text-center">Return Qty</th>
@@ -84,8 +84,8 @@ $m = $_GET['m'];
                                                             <td class="text-center"><?php echo number_format($Fil->rate,2);?>
                                                                 <input value="<?php echo $Fil->rate?>" type="hidden" name="Rate[]" id="rate_<?php echo $Fil->grn_data_id; ?>"/>
                                                             </td>
-                                                            <td class="text-center"><?php echo number_format($Fil->amount,2);?>
-                                                                <input value="<?php echo $Fil->amount?>" type="hidden" name="Amount[]" id="amount_<?php echo $Fil->grn_data_id; ?>"/>
+                                                            <td class="text-center">
+                                                                <input type="number" step="0.01" class="form-control" readonly name="Amount[]" id="amount_<?php echo $Fil->grn_data_id; ?>" value="<?php echo number_format($Fil->amount, 2, '.', ''); ?>"/>
                                                             </td>
                                                             <td>
                                                                 <input type="number" class="form-control" id="stock_qty<?php echo $Fil->grn_data_id?>" name="stock_qty[]" value="<?php echo number_format($remainingQty, 2, '.', ''); ?>" readonly>
@@ -177,10 +177,13 @@ $m = $_GET['m'];
         var returnn = parseFloat($('#return_'+Id).val());
         ActualQty=ActualQty - returnn;
 
+        update_line_amount(Id);
+
         if(ReturnQty > ActualQty)
         {
             alert('Please Correct Your Return Qty....!');
             $('#return_qty_'+Id).val('');
+            $('#amount_'+Id).val('0.00');
         }
         else
         {
@@ -188,8 +191,22 @@ $m = $_GET['m'];
             {
                 alert('Please Correct Your Return Qty....!');
                 $('#return_qty_'+Id).val('');
+                $('#amount_'+Id).val('0.00');
             }
         }
+    }
+
+    function update_line_amount(Id)
+    {
+        var qty = parseFloat($('#return_qty_' + Id).val());
+        var rate = parseFloat($('#rate_' + Id).val());
+        if (isNaN(qty)) {
+            qty = 0;
+        }
+        if (isNaN(rate)) {
+            rate = 0;
+        }
+        $('#amount_' + Id).val((qty * rate).toFixed(2));
     }
 
     function ChkUnChk(Id)
@@ -199,11 +216,13 @@ $m = $_GET['m'];
         {
             $('#return_qty_'+Id).prop('readonly',false);
             $('#return_qty_'+Id).val('');
+            $('#amount_'+Id).val('0.00');
         }
         else
         {
             $('#return_qty_'+Id).prop('readonly',true);
             $('#return_qty_'+Id).val('0.00');
+            $('#amount_'+Id).val('0.00');
         }
     }
 </script>

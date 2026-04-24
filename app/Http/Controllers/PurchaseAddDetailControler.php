@@ -3194,7 +3194,11 @@ class PurchaseAddDetailControler extends Controller
                 return Redirect::back()->withInput();
             }
 
-            $amount = $request->input('Rate')[$row] * $requestedReturnQty;
+            $computedAmount = (float) $request->input('Rate')[$row] * $requestedReturnQty;
+            $amount = (float) ($request->input('Amount')[$row] ?? $computedAmount);
+            if ($amount <= 0 && $requestedReturnQty > 0) {
+                $amount = $computedAmount;
+            }
             $dicount_percent = $request->input('discount_percent')[$row];
             $dicount_amount = ($amount / 100) * $dicount_percent;
             $batchCode = trim((string) ($request->input('BatchCode')[$row] ?? ''));
@@ -3455,7 +3459,11 @@ class PurchaseAddDetailControler extends Controller
                 throw new \Exception('Return qty exceeds remaining qty for item ' . $request->input('SubItemId')[$row]);
             }
 
-            $amount = $request->input('Rate')[$row] * $requestedReturnQty;
+            $computedAmount = (float) $request->input('Rate')[$row] * $requestedReturnQty;
+            $amount = (float) ($request->input('Amount')[$row] ?? $computedAmount);
+            if ($amount <= 0 && $requestedReturnQty > 0) {
+                $amount = $computedAmount;
+            }
             $dicount_percent = $request->input('discount_percent')[$row];
             $dicount_amount = ($amount / 100) * $dicount_percent;
             $batchCode = trim((string) ($request->input('BatchCode')[$row] ?? ''));
