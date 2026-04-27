@@ -10,6 +10,32 @@ $InvoiceDate = $makeGetValue[2] ?? '';
 ?>
 @include('number_formate')
 @include('select2')
+<div class="row">
+    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+        <?php
+        $str = DB::Connection('mysql2')->selectOne("select max(convert(substr(`pr_no`,3,length(substr(`pr_no`,3))-4),signed integer)) reg from `purchase_return` where substr(`pr_no`,-4,2) = " . date('m') . " and substr(`pr_no`,-2,2) = " . date('y') . "")->reg;
+        $PurchaseReturnNo = 'dr' . ($str + 1) . date('my');
+        ?>
+        <label for="">Purchase Return No</label>
+        <input type="text" class="form-control" id="" value="<?php echo strtoupper($PurchaseReturnNo)?>" readonly>
+    </div>
+    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+        <label for="">Purchase Return Date</label>
+        <input type="date" id="PurchaseReturnDate" name="PurchaseReturnDate" value="<?php echo date('Y-m-d')?>" class="form-control">
+    </div>
+    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+        <label for="">Purchase Invoice Date</label>
+        <input type="date" id="InvoiceDate" name="InvoiceDate" value="<?php echo $InvoiceDate?>" class="form-control" readonly>
+        <input type="hidden" id="PurchaseInvoiceNo" name="PurchaseInvoiceNo" value="<?php echo $InvoiceNo?>" class="form-control" readonly>
+        <input type="hidden" id="PurchaseInvoiceId" name="PurchaseInvoiceId" value="<?php echo $InvoiceId?>" class="form-control" readonly>
+        <input type="hidden" id="PurchaseInvoiceDate" name="PurchaseInvoiceDate" value="<?php echo $InvoiceDate?>" class="form-control" readonly>
+    </div>
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <label for="">Remarks</label>
+        <span class="rflabelsteric"><strong>*</strong></span>
+        <textarea name="Remarks" id="Remarks" cols="30" rows="3" class="form-control requiredField"></textarea>
+    </div>
+</div>
 
 <div class="row">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
@@ -102,30 +128,77 @@ $InvoiceDate = $makeGetValue[2] ?? '';
         </div>
     </div>
 </div>
-<div class="row">
-    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
-        <?php
-        $str = DB::Connection('mysql2')->selectOne("select max(convert(substr(`pr_no`,3,length(substr(`pr_no`,3))-4),signed integer)) reg from `purchase_return` where substr(`pr_no`,-4,2) = " . date('m') . " and substr(`pr_no`,-2,2) = " . date('y') . "")->reg;
-        $PurchaseReturnNo = 'dr' . ($str + 1) . date('my');
-        ?>
-        <label for="">Purchase Return No</label>
-        <input type="text" class="form-control" id="" value="<?php echo strtoupper($PurchaseReturnNo)?>" readonly>
+
+<div class="row" style="margin-top: 15px;">
+    <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+        <table class="table table-bordered sf-table-list hide" style="background:#fff;">
+            <thead>
+                <tr>
+                    <th colspan="2" class="text-center">Purchase Invoice Summary</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Total Amount Before Tax</td>
+                    <td>
+                        <input type="text" class="form-control text-right" id="original_before_tax" value="{{ number_format($originalBeforeTaxAmount,2,'.','') }}" readonly>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Sales Tax %</td>
+                    <td>
+                        <input type="text" class="form-control text-right" id="original_sales_tax_percent" value="{{ number_format($originalTaxPercent,2,'.','') }}" readonly>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Sales Tax Amount</td>
+                    <td>
+                        <input type="text" class="form-control text-right" id="original_sales_tax" value="{{ number_format($originalTaxAmount,2,'.','') }}" readonly>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Total Amount After Tax</td>
+                    <td>
+                        <input type="text" class="form-control text-right" id="original_after_tax" value="{{ number_format($originalAfterTaxAmount,2,'.','') }}" readonly>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
-        <label for="">Purchase Return Date</label>
-        <input type="date" id="PurchaseReturnDate" name="PurchaseReturnDate" value="<?php echo date('Y-m-d')?>" class="form-control">
-    </div>
-    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
-        <label for="">Purchase Invoice Date</label>
-        <input type="date" id="InvoiceDate" name="InvoiceDate" value="<?php echo $InvoiceDate?>" class="form-control" readonly>
-        <input type="hidden" id="PurchaseInvoiceNo" name="PurchaseInvoiceNo" value="<?php echo $InvoiceNo?>" class="form-control" readonly>
-        <input type="hidden" id="PurchaseInvoiceId" name="PurchaseInvoiceId" value="<?php echo $InvoiceId?>" class="form-control" readonly>
-        <input type="hidden" id="PurchaseInvoiceDate" name="PurchaseInvoiceDate" value="<?php echo $InvoiceDate?>" class="form-control" readonly>
-    </div>
-    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-        <label for="">Remarks</label>
-        <span class="rflabelsteric"><strong>*</strong></span>
-        <textarea name="Remarks" id="Remarks" cols="30" rows="3" class="form-control requiredField"></textarea>
+    <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+        <table class="table table-bordered sf-table-list" style="background:#fff;">
+            <thead>
+                <tr class="hide">
+                    <th colspan="2" class="text-center">Current Return Summary</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Return Amount Before Tax</td>
+                    <td>
+                        <input type="text" class="form-control text-right" id="return_before_tax" value="0.00" readonly>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Adjusted Sales Tax %</td>
+                    <td>
+                        <input type="text" class="form-control text-right" id="return_sales_tax_percent" value="{{ number_format($originalTaxPercent,2,'.','') }}" readonly>
+                    </td>
+                </tr>
+                <tr class="hide">
+                    <td>Adjusted Sales Tax Amount</td>
+                    <td>
+                        <input type="text" class="form-control text-right" id="return_sales_tax" value="0.00" readonly>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Total Return Amount After Tax</td>
+                    <td>
+                        <input type="text" class="form-control text-right" id="return_after_tax" value="0.00" readonly>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 <script !src="">
@@ -156,6 +229,7 @@ $InvoiceDate = $makeGetValue[2] ?? '';
             alert('Please Correct Your Return Qty....!');
             $('#return_qty_'+Id).val('');
             $('#amount_'+Id).val('0.00');
+            calculate_return_summary();
         }
         else
         {
@@ -164,6 +238,7 @@ $InvoiceDate = $makeGetValue[2] ?? '';
                alert('Please Correct Your Return Qty....!');
                $('#return_qty_'+Id).val('');
                $('#amount_'+Id).val('0.00');
+               calculate_return_summary();
            }
         }
     }
@@ -179,18 +254,38 @@ $InvoiceDate = $makeGetValue[2] ?? '';
             rate = 0;
         }
         $('#amount_' + Id).val((qty * rate).toFixed(2));
+        calculate_return_summary();
     }
 
     function ChkUnChk(Id) {
         if ($('#enable_disable_' + Id).prop("checked") == true) {
             $('#return_qty_' + Id).prop('readonly', false).addClass('requiredField');
-            $('#return_qty_' + Id).val('');
-            $('#amount_' + Id).val($('#amount_' + Id).data('base-amount'));
+            $('#return_qty_' + Id).val('0.00');
+            $('#amount_' + Id).val('0.00');
         } else {
             $('#return_qty_' + Id).prop('readonly', true).removeClass('requiredField');
             $('#return_qty_' + Id).val('0.00');
-            $('#amount_' + Id).val($('#amount_' + Id).data('base-amount'));
+            $('#amount_' + Id).val('0.00');
         }
+        calculate_return_summary();
+    }
+
+    function calculate_return_summary()
+    {
+        var originalSalesTaxPercent = parseFloat($('#original_sales_tax_percent').val()) || 0;
+        var returnBeforeTax = 0;
+
+        $('input[name="enable_disable[]"]:checked').each(function () {
+            var rowId = $(this).val();
+            returnBeforeTax += parseFloat($('#amount_' + rowId).val()) || 0;
+        });
+
+        var returnSalesTax = (returnBeforeTax * originalSalesTaxPercent) / 100;
+
+        $('#return_before_tax').val(returnBeforeTax.toFixed(2));
+        $('#return_sales_tax_percent').val(originalSalesTaxPercent.toFixed(2));
+        $('#return_sales_tax').val(returnSalesTax.toFixed(2));
+        $('#return_after_tax').val((returnBeforeTax + returnSalesTax).toFixed(2));
     }
 
     function validateForm(event) {
@@ -204,6 +299,7 @@ $InvoiceDate = $makeGetValue[2] ?? '';
 
     $(document).ready(function () {
         $('#addPurchaseReturnDetail').on('submit', validateForm);
+        calculate_return_summary();
     });
 
 </script>

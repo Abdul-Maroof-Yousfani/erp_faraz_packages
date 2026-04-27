@@ -978,6 +978,13 @@ function addDirectgrn()
             )
             ->get();
 
+        $originalBeforeTaxAmount = (float) $DataDetail->sum('amount');
+        $originalTaxAmount = (float) ($DataMaster->sales_tax_amount ?? 0);
+        $originalTaxPercent = $originalBeforeTaxAmount > 0
+            ? round(($originalTaxAmount / $originalBeforeTaxAmount) * 100, 2)
+            : 0;
+        $originalAfterTaxAmount = $originalBeforeTaxAmount + $originalTaxAmount;
+
         CommonHelper::reconnectMasterDatabase();
 
         return view('Purchase.AjaxPages.makeFormPurchaseReturnDetailByInvoiceNo', compact(
@@ -986,7 +993,11 @@ function addDirectgrn()
             'InvoiceId',
             'InvoiceNo',
             'InvoiceDate',
-            'm'
+            'm',
+            'originalBeforeTaxAmount',
+            'originalTaxAmount',
+            'originalTaxPercent',
+            'originalAfterTaxAmount'
         ));
     }
 

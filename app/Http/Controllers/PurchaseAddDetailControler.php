@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\Demand;
 use App\Models\DemandData;
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Support\Facades\Schema;
 use App\Http\Requests;
 use Illuminate\Http\Request;
 use App\Helpers\SalesHelper;
@@ -3175,6 +3176,7 @@ class PurchaseAddDetailControler extends Controller
         $master_id = DB::Connection('mysql2')->table('purchase_return')->insertGetId($PurchaseReturnInsert);
 
         $data = $request->enable_disable;
+        $total = 0;
 
         foreach ($data as $key => $row):
 
@@ -3205,7 +3207,6 @@ class PurchaseAddDetailControler extends Controller
             if ($batchCode === '') {
                 $batchCode = 'NA';
             }
-            $total = 0;
             $dataa = array
             (
                 'master_id' => $master_id,
@@ -3298,6 +3299,8 @@ class PurchaseAddDetailControler extends Controller
 
 
         $count_invoice = DB::Connection('mysql2')->table('new_purchase_voucher')->where('id', $PurchaseInvoiceId)->count();
+        $returnSalesTaxAmount = 0;
+        $sales_tax_acc_id = 0;
         if ($count_invoice > 0):
 
             $dataa = DB::Connection('mysql2')->select('select sum(a.net_amount)net_amount,b.category_id ,d.acc_id
@@ -3342,12 +3345,19 @@ class PurchaseAddDetailControler extends Controller
                 ->where('id', $PurchaseInvoiceId)
                 ->select('sales_tax_acc_id', 'sales_tax_amount')
                 ->first();
+            $purchaseInvoiceBeforeTaxAmount = (float) DB::Connection('mysql2')->table('new_purchase_voucher_data')
+                ->where('staus', 1)
+                ->where('master_id', $PurchaseInvoiceId)
+                ->sum('amount');
             $sales_tax_amount = (float) ($purchaseInvoiceMaster->sales_tax_amount ?? 0);
             $sales_tax_acc_id = (int) ($purchaseInvoiceMaster->sales_tax_acc_id ?? 0);
+            $returnSalesTaxAmount = $purchaseInvoiceBeforeTaxAmount > 0
+                ? round(($total / $purchaseInvoiceBeforeTaxAmount) * $sales_tax_amount, 2)
+                : 0;
 
 
             if ($sales_tax_amount > 0 && $sales_tax_acc_id != 0):
-                $sales_tax_amount = ($total / 100) * 17;
+                $sales_tax_amount = $returnSalesTaxAmount;
                 $transaction = new Transactions();
                 $transaction = $transaction->SetConnection('mysql2');
                 $transaction->voucher_no = $PurchaseReturnNo;
@@ -3383,6 +3393,17 @@ class PurchaseAddDetailControler extends Controller
             $transaction->save();
 
         endif;
+
+        if (Schema::connection('mysql2')->hasColumn('purchase_return', 'before_tax_amount')) {
+            DB::Connection('mysql2')->table('purchase_return')
+                ->where('id', $master_id)
+                ->update([
+                    'sales_tax_acc_id' => $sales_tax_acc_id,
+                    'before_tax_amount' => round($total, 2),
+                    'sales_tax_amount' => round($returnSalesTaxAmount, 2),
+                    'after_tax_amount' => round($total + $returnSalesTaxAmount, 2),
+                ]);
+        }
 
         
 
@@ -3439,7 +3460,7 @@ class PurchaseAddDetailControler extends Controller
 
 
             $data = $request->LoopVal;
-            //            print_r($data);
+//            print_r($data);
 //            die();
             $total = 0;
         foreach ($data as $key => $row):
@@ -3561,6 +3582,8 @@ class PurchaseAddDetailControler extends Controller
 
 
             $count_invoice = DB::Connection('mysql2')->table('transactions')->where('voucher_no', $PurchaseReturnNo)->count();
+            $returnSalesTaxAmount = 0;
+            $sales_tax_acc_id = 0;
             if ($count_invoice > 0):
 
                 $data_delete['status'] = 0;
@@ -3606,12 +3629,19 @@ class PurchaseAddDetailControler extends Controller
                     ->where('id', $PurchaseInvoiceId)
                     ->select('sales_tax_acc_id', 'sales_tax_amount')
                     ->first();
+                $purchaseInvoiceBeforeTaxAmount = (float) DB::Connection('mysql2')->table('new_purchase_voucher_data')
+                    ->where('staus', 1)
+                    ->where('master_id', $PurchaseInvoiceId)
+                    ->sum('amount');
                 $sales_tax_amount = (float) ($purchaseInvoiceMaster->sales_tax_amount ?? 0);
                 $sales_tax_acc_id = (int) ($purchaseInvoiceMaster->sales_tax_acc_id ?? 0);
+                $returnSalesTaxAmount = $purchaseInvoiceBeforeTaxAmount > 0
+                    ? round(($total / $purchaseInvoiceBeforeTaxAmount) * $sales_tax_amount, 2)
+                    : 0;
 
 
                 if ($sales_tax_amount > 0 && $sales_tax_acc_id != 0):
-                    $sales_tax_amount = ($total / 100) * 17;
+                    $sales_tax_amount = $returnSalesTaxAmount;
                     $transaction = new Transactions();
                     $transaction = $transaction->SetConnection('mysql2');
                     $transaction->voucher_no = $PurchaseReturnNo;
@@ -3647,6 +3677,17 @@ class PurchaseAddDetailControler extends Controller
                 $transaction->save();
 
             endif;
+
+            if (Schema::connection('mysql2')->hasColumn('purchase_return', 'before_tax_amount')) {
+                DB::Connection('mysql2')->table('purchase_return')
+                    ->where('id', $EditId)
+                    ->update([
+                        'sales_tax_acc_id' => $sales_tax_acc_id,
+                        'before_tax_amount' => round($total, 2),
+                        'sales_tax_amount' => round($returnSalesTaxAmount, 2),
+                        'after_tax_amount' => round($total + $returnSalesTaxAmount, 2),
+                    ]);
+            }
 
 
 
