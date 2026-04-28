@@ -448,7 +448,13 @@ $m=Input::get('m');
                         }
                     }
 
-                    echo  !empty($itemDetails) ? implode('<br>', $itemDetails) : $trow->particulars;
+                    if (!empty($itemDetails)) {
+                        echo implode('<br>', $itemDetails) ?? '';
+                    } elseif (!empty($description)) {
+                        echo e($description) ?? '';
+                    } else {
+                        echo $trow->particulars ?? '';
+                    }
                     ?>
             </td>
             <td class="text-center hide">{{$type}}</td>
