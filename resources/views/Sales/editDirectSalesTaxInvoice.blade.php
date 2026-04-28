@@ -416,7 +416,8 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 														<td>
 															<select style="width: 100% !important;"
 																onchange="get_item_name({{ $rowNo }})" name="item_id[]" id="item_id{{ $rowNo }}"
-																class="form-control requiredField select2">
+																class="form-control requiredField select2"
+																data-selected-item="{{ (int) $detail->item_id }}">
 																<option value="">Select</option>
 																@if($itemDetail)
 																	<option selected value="{{ (int) $detail->item_id }}">
@@ -425,6 +426,7 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 																@endif
 															</select>
 														</td>
+														
 														<td>
 															<input type="text" name="bag_qty[]" id="bag_qty{{ $rowNo }}"
 																class="form-control" oninput="bag_qq({{ $rowNo }})"
@@ -750,6 +752,46 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 
 
 		<script>
+			function populateEditRowItems(rowNo) {
+				var categoryId = $('#category_id' + rowNo).val();
+				var selectedItemId = ($('#item_id' + rowNo).data('selected-item') || '').toString();
+				if (!categoryId) {
+					return;
+				}
+
+				$.ajax({
+					url: '{{ url("/pdc/get_sub_category2") }}',
+					type: 'GET',
+					data: { category: categoryId },
+					success: function(response) {
+						var $itemDropdown = $('#item_id' + rowNo);
+						$itemDropdown.html('');
+						$itemDropdown.append(new Option('Select', ''));
+
+						$.each(response, function(index, element) {
+							var optionValue = element['id'] + '@' + element['uom_name'] + '@' + element['uom_name2'] + '@' + element['sub_ic'] + '@' + element['pack_size'] + '@' + element['secondary_pack_size'];
+							var option = new Option(cleanItemName(element['sub_ic']), optionValue);
+							$itemDropdown.append(option);
+						});
+
+						if (selectedItemId !== '') {
+							var selectedOption = $itemDropdown.find('option').filter(function() {
+								var optionValue = ($(this).val() || '').toString();
+								return optionValue.split('@')[0] === selectedItemId;
+							}).first();
+
+							if (selectedOption.length) {
+								$itemDropdown.val(selectedOption.val()).trigger('change.select2');
+								get_item_name(rowNo);
+								return;
+							}
+						}
+
+						$itemDropdown.trigger('change.select2');
+					}
+				});
+			}
+
 			var CounterExpense = {{ $expenseRowCount }};
 			function AddMoreExpense() {
 				CounterExpense++;
@@ -1556,6 +1598,7 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 		total_cal();
 
 		for (let i = 1; i <= Counter; i++) {
+			populateEditRowItems(i);
 			if ($('#warehouse' + i).val() && $('#item_id' + i).val()) {
 				get_stock_qty('warehouse' + i, i);
 			}
