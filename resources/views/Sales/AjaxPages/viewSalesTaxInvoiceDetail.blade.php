@@ -270,7 +270,6 @@ $AmountInWordsMain =0;
                                     {{-- <th class="text-center" style="border:1px solid black;">Tax Amount</th> --}}
                                     <th class="text-center hide" style="border:1px solid black;">Further Tax %</th>
                                     <th class="text-center hide" style="border:1px solid black;">Further Tax Amount</th>
-                                    <th class="text-center" style="border:1px solid black;">Net Amount</th>
                                     <!-- <th class="text-center printHide" style="border:1px solid black;">View</th> -->
 
 
@@ -310,7 +309,6 @@ $AmountInWordsMain =0;
                                             {{-- <td class="text-right" style="border:1px solid black;">{{ number_format($row->tax_amount,2) }}</td> --}}
                                             <td class="text-right hide" style="border:1px solid black;">{{ $row->sales_tax_further_per }}</td>
                                             <td class="text-right hide" style="border:1px solid black;">{{ number_format($row->sales_tax_further,2) }}</td>
-                                            <td class="text-right" style="border:1px solid black;">{{ number_format($row->rate * $row->qty,2) }}</td>
                                         @php
                                             $total_tax_amount += $row->tax_amount;
                                             $total_bags += $bags;
@@ -324,7 +322,7 @@ $AmountInWordsMain =0;
                                         <td class="text-right" colspan="1" style="border:1px solid black;"> {{ number_format($total_bags,2) }} </td>
                                         <td></td>
                                         <td class="text-right" colspan="1" style="border:1px solid black;"> {{ number_format($total_qty,2) }} </td>
-                                        <td colspan="2"></td>
+                                        <td colspan="1"></td>
 
                                         <!-- <td class="text-right hide" colspan="1" style="border:1px solid black;"> {{ number_format($total_before_tax) }} </td>
                                         <td></td>
@@ -333,11 +331,11 @@ $AmountInWordsMain =0;
                                     </tr>
 
                                     <tr class="text-center" style="font-weight: bold">
-                                        <td colspan="7" style="border:1px solid black;">Advance Tax</td>
+                                        <td colspan="6" style="border:1px solid black;">Advance Tax</td>
                                         <td class="text-right" style="border:1px solid black;"> {{ number_format($sales_tax_invoice->advance_tax_amount,2) }} </td>
                                     </tr>
                                     <tr class="text-center" style="font-weight: bold">
-                                        <td colspan="7" style="border:1px solid black;">Cartage Amount</td>
+                                        <td colspan="6" style="border:1px solid black;">Cartage Amount</td>
                                         <td class="text-right" style="border:1px solid black;"> {{ number_format($sales_tax_invoice->cartage_amount,2) }} </td>
                                     </tr>
                                     <?php
@@ -360,7 +358,7 @@ $AmountInWordsMain =0;
                                     @endif
 
                                     <tr class="text-center" style="font-weight: bold">
-                                        <td colspan="7" style="border:1px solid black;">Grand Total</td>
+                                        <td colspan="6" style="border:1px solid black;">Grand Total</td>
                                         <td class="text-right" style="border:1px solid black;"> {{ number_format($total_after_tax + $total_expense + $sales_tax_invoice->cartage_amount + $sales_tax_invoice->advance_tax_amount,2) }} </td>
                                     </tr>
 
