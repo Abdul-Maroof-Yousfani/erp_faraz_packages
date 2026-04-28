@@ -309,7 +309,7 @@ $m=Input::get('m');
         $PageTitle = 'View Journal Voucher Detail';
 
         $jvs = DB::Connection('mysql2')->table('new_jvs')->where('jv_no','=',$trow->voucher_no)->first();
-        $description = $jvs->description;
+        $description = $jvs->description ?? '';
         endif;
 
         if ($trow->voucher_type==4):
@@ -322,7 +322,7 @@ $m=Input::get('m');
             ->where('npv.pv_no','=',$trow->voucher_no)
             ->first();
         
-        $description = $pvs->description;
+        $description = $pvs->description ?? '';
 
 
         endif;
@@ -336,7 +336,7 @@ $m=Input::get('m');
         $type='Receipt Voucher';
         $ref_no=  DB::Connection('mysql2')->table('new_rvs')->where('status',1)->where('rv_no',$trow->voucher_no)->select('ref_bill_no')->value('ref_bill_no');
 
-        $description = DB::Connection('mysql2')->table('new_rvs')->where('status',1)->where('rv_no',$trow->voucher_no)->select('description')->value('description');
+        $description = DB::Connection('mysql2')->table('new_rvs')->where('status',1)->where('rv_no',$trow->voucher_no)->select('description')->value('description') ?? '';
 
 
         $ref_no='('.$ref_no.')';
