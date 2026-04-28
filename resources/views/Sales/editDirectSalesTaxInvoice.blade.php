@@ -358,7 +358,7 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 											<table class="table table-bordered table-compact">
 												<thead>
 													<tr class="text-center">
-														<th colspan="12" class="text-center">Sales Invoice Detail</th>
+														<th colspan="11" class="text-center">Sales Invoice Detail</th>
 														<th class="text-center">
 															<span class="badge badge-success" id="span">1</span>
 														</th>
@@ -375,7 +375,7 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 																class="rflabelsteric"><strong>*</strong></span></th>
 														<th class="text-center" style="width: 11%;">Warehouse<span
 																class="rflabelsteric"><strong>*</strong></span></th>
-														<th class="text-center col-narrow">In Stock</th>
+														<th class="text-center col-narrow hide">In Stock</th>
 														<th class="text-center col-narrow">Commission Rate</th>
 														<th class="text-center col-narrow">Rate<span
 																class="rflabelsteric"><strong>*</strong></span></th>
@@ -475,7 +475,7 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 																</option>
 															</select>
 														</td>
-														<td class="">
+														<td class="hide">
 															<input readonly class="form-control instock zerovalidate"
 																name="instock[]" type="text" value="" id="instock{{ $rowNo }}" />
 														</td>
@@ -587,7 +587,7 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 																</option>
 															</select>
 														</td>
-														<td class="">
+														<td class="hide">
 															<input readonly class="form-control instock zerovalidate"
 																name="instock[]" type="text" value="" id="instock1" />
 														</td>
@@ -931,7 +931,7 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 															<option value="">Select&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
 														</select>
 													</td>
-													<td class="">
+													<td class="hide">
 														<input readonly   class="form-control instock"  type="text" name="instock[]" id="instock${Counter}"/>
 													</td>
 														<td>

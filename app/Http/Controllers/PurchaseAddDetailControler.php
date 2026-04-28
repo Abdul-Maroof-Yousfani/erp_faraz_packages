@@ -620,6 +620,8 @@ class PurchaseAddDetailControler extends Controller
         return Redirect::to('purchase/viewSupplierList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . $_GET['m'] . '#SFR');
     }
 
+
+
     public function addCategoryDetail(Request $request)
     {
 
