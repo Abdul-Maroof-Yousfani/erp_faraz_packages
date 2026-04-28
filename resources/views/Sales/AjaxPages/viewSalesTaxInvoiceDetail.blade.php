@@ -310,7 +310,7 @@ $AmountInWordsMain =0;
                                             {{-- <td class="text-right" style="border:1px solid black;">{{ number_format($row->tax_amount,2) }}</td> --}}
                                             <td class="text-right hide" style="border:1px solid black;">{{ $row->sales_tax_further_per }}</td>
                                             <td class="text-right hide" style="border:1px solid black;">{{ number_format($row->sales_tax_further,2) }}</td>
-                                            <td class="text-right" style="border:1px solid black;">{{ number_format($row->amount,2) }}</td>
+                                            <td class="text-right" style="border:1px solid black;">{{ number_format($row->rate * $row->qty,2) }}</td>
                                         @php
                                             $total_tax_amount += $row->tax_amount;
                                             $total_bags += $bags;

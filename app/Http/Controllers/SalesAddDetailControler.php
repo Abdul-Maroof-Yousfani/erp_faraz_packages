@@ -2305,7 +2305,7 @@ class SalesAddDetailControler extends Controller
                 $sales_tax_invoice_data->bag_qty = $request->bag_qty[$key] ?? null;
                 $qty = $request->actual_qty[$key];
                 $rate = $request->rate[$key];
-                $amount = $request->amount[$key];
+                $amount = $qty * $rate;
                 $commission_amount = $request->commission[$key] * $rate;
                 $sales_tax_invoice_data->qty = $qty;
                 $sales_tax_invoice_data->uom = CommonHelper::get_uom_id($request->uom_id[$key]);
