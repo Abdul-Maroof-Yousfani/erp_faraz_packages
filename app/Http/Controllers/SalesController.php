@@ -2486,6 +2486,7 @@ class SalesController extends Controller
         $sale_tax_invoice_data = DB::Connection('mysql2')->table('sales_tax_invoice_data')->where('master_id', $id)->where('status', 1)->get();
 
         $additional_expense = DB::Connection('mysql2')->table('addional_expense_sales_tax_invoice')->where('main_id', $id)->get();
+     
         return view('Sales.editDirectSalesTaxInvoice', compact('sale_tax_invoice', 'sale_tax_invoice_data', 'additional_expense'));
 
     }

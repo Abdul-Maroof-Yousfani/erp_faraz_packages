@@ -2563,256 +2563,542 @@ class SalesAddDetailControler extends Controller
     }
 
 
-    function updateDirectSalesTaxInvoice(Request $request, $id)
-    {
-        // dd($request->all(),$id);
+    // function updateDirectSalesTaxInvoice(Request $request, $id)
+    // {
+    //     dd($request->all(),$id);
 
-        DB::Connection('mysql2')->beginTransaction();
-        try {
-            $byers_id = $request->buyers_id;
-            $byers_id = explode('*', $byers_id);
-            $byers_id = $byers_id[0];
-
-
-
-
-            $sales_tax_invoice = new SalesTaxInvoice();
-            $sales_tax_invoice = $sales_tax_invoice->SetConnection('mysql2')->find($id);
-
-            // for invoice no and invoice date
-
-            //    $sales_tax_invoice->gi_no = $request->gi_no;
-            $gi_no = $sales_tax_invoice->gi_no;
-            $sales_tax_invoice->gi_date = $request->gi_date;
-            $sales_tax_invoice->model_terms_of_payment = $request->model_terms_of_payment;
-            $sales_tax_invoice->order_date = $request->order_date;
-            $sales_tax_invoice->other_refrence = $request->other_refrence;
-            $sales_tax_invoice->despacth_document_no = $request->despacth_document_no;
-            $sales_tax_invoice->despacth_document_date = $request->despacth_document_date;
-            $sales_tax_invoice->despacth_through = $request->despacth_through;
-            $sales_tax_invoice->destination = $request->destination;
-            ;
-            $sales_tax_invoice->terms_of_delivery = $request->terms_of_delivery;
-            ;
-            $sales_tax_invoice->due_date = $request->due_date;
-            $sales_tax_invoice->status = 1;
-            $sales_tax_invoice->username = Auth::user()->name;
-            $sales_tax_invoice->amount_in_words = $request->amount_in_words;
-            $sales_tax_invoice->order_no = $request->order_no;
-            $sales_tax_invoice->date = date('Y-m-d');
-            $sales_tax_invoice->buyers_id = $byers_id;
-            $sales_tax_invoice->description = $request->description;
-
-            //    $sales_tax_data = SalesHelper::get_sales_tax_by_sales_order_id($request->sales_order_id);
-            $sales_tax_invoice->sales_tax = CommonHelper::check_str_replace($request->sales_tax);
-            $sales_tax_invoice->sales_tax_further = CommonHelper::check_str_replace($request->sales_tax_further);
-            $sales_tax_invoice->acc_id = $request->acc_id;
-            $sales_tax_invoice->currency = $request->curren;
-            $sales_tax_invoice->currency_rate = $request->currency_rate;
-            $sales_tax_invoice->save();
-            $id = $sales_tax_invoice->id;
-
-            $sales_tax_invoice_data_delete = new SalesTaxInvoiceData();
-            $sales_tax_invoice_data_delete = $sales_tax_invoice_data_delete->SetConnection('mysql2')->where('master_id', $id)->delete();
+    //     DB::Connection('mysql2')->beginTransaction();
+    //     try {
+    //         $buyersIdInput = (string) ($request->buyers_id ?? '');
+    //         $buyersIdParts = $buyersIdInput !== '' ? explode('*', $buyersIdInput) : [];
+    //         $byers_id = $buyersIdParts[0] ?? 0;
+    //         $walkinCustomerName = trim($request->walkin_customer_name ?? '');
+    //         $walkinCustomer = $walkinCustomerName !== '' ? 1 : 0;
 
 
 
-            $total_amount = 0;
-            foreach ($request->sub_ic_des as $key => $value) {
-                # code...
 
-                $sales_tax_invoice_data = new SalesTaxInvoiceData();
-                $sales_tax_invoice_data = $sales_tax_invoice_data->SetConnection('mysql2');
-                $sales_tax_invoice_data->master_id = $id;
-                $sales_tax_invoice_data->groupby = 1;
-                $sales_tax_invoice_data->gi_no = $gi_no;
-                $sales_tax_invoice_data->item_id = $request->sub_ic_des[$key];
-                $sales_tax_invoice_data->description = $request->uom_id[$key] ?? '0';
-                $sales_tax_invoice_data->bag_qty = $request->bag_qty[$key] ?? null;
-                $qty = $request->actual_qty[$key];
-                $rate = $request->rate[$key];
-                $amount = $request->amount[$key];
-                $sales_tax_invoice_data->qty = $qty;
-                $sales_tax_invoice_data->rate = $rate;
-                $sales_tax_invoice_data->tax = $request->tax[$key];
-                $sales_tax_invoice_data->tax_amount = $request->tax_amount[$key];
-                $sales_tax_invoice_data->amount = $amount;
-                $sales_tax_invoice_data->warehouse_id = $request->warehouse[$key];
-                //    $sales_tax_invoice_data->bundles_id = $request->input('bundles_id' . $i);
-                $sales_tax_invoice_data->status = 1;
-                $sales_tax_invoice_data->date = date('Y-m-d');
-                $sales_tax_invoice_data->username = Auth::user()->name;
-                $sales_tax_invoice_data->save();
-                $total_amount += $qty * $rate;
-            }
+    //         $sales_tax_invoice = new SalesTaxInvoice();
+    //         $sales_tax_invoice = $sales_tax_invoice->SetConnection('mysql2')->find($id);
 
-            $transactionfordelete = new Transactions();
-            $transactionfordelete = $transactionfordelete->SetConnection('mysql2')
-                ->where('voucher_no', $gi_no)->delete();
+    //         // for invoice no and invoice date
 
-            $t_data = DB::Connection('mysql2')->table('sales_tax_invoice as a')
-                ->join('sales_tax_invoice_data as b', 'a.id', '=', 'b.master_id')
-                ->join('subitem as c', 'b.item_id', '=', 'c.id')
-                ->join('category as d', 'd.id', '=', 'c.main_ic_id')
-                ->select(DB::raw('SUM(b.rate*b.qty) as amount'), 'b.item_id', 'a.gi_date', 'd.revenue_acc_id')
-                ->where('a.gi_no', $gi_no)
-                ->where('a.status', 1)
-                ->groupBy('d.id')
-                ->get();
+    //         //    $sales_tax_invoice->gi_no = $request->gi_no;
+    //         $gi_no = $sales_tax_invoice->gi_no;
+    //         $sales_tax_invoice->gi_date = $request->gi_date;
+    //         $sales_tax_invoice->model_terms_of_payment = $request->model_terms_of_payment;
+    //         $sales_tax_invoice->order_date = $request->order_date;
+    //         $sales_tax_invoice->other_refrence = $request->other_refrence;
+    //         $sales_tax_invoice->despacth_document_no = $request->despacth_document_no;
+    //         $sales_tax_invoice->commission_buyer = $request->commission_buyer;
+    //         $sales_tax_invoice->despacth_document_date = $request->despacth_document_date;
+    //         $sales_tax_invoice->despacth_through = $request->despacth_through;
+    //         $sales_tax_invoice->destination = $request->destination;
+    //         ;
+    //         $sales_tax_invoice->terms_of_delivery = $request->terms_of_delivery;
+    //         ;
+    //         $sales_tax_invoice->due_date = $request->due_date;
+    //         $sales_tax_invoice->status = 1;
+    //         $sales_tax_invoice->username = Auth::user()->name;
+    //         $sales_tax_invoice->amount_in_words = $request->amount_in_words;
+    //         $sales_tax_invoice->order_no = $request->order_no;
+    //         $sales_tax_invoice->date = date('Y-m-d');
+    //         $sales_tax_invoice->buyers_id = $byers_id;
+    //         $sales_tax_invoice->walkin_customer = $walkinCustomer;
+    //         $sales_tax_invoice->walkin_customer_name = $walkinCustomerName;
+    //         $sales_tax_invoice->customer_type = $walkinCustomer;
+    //         $sales_tax_invoice->description = $request->description;
 
-            foreach ($t_data as $revenue):
-                $transaction = new Transactions();
-                $transaction = $transaction->SetConnection('mysql2');
-                $transaction->voucher_no = $gi_no;
-                $transaction->v_date = $request->gi_date;
-                $transaction->acc_id = $request->acc_id;
-                $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($request->acc_id);
-                $transaction->particulars = $request->description;
-                $transaction->opening_bal = 0;
-                $transaction->debit_credit = 0;
-                $transaction->amount = $revenue->amount;
-                $transaction->username = Auth::user()->name;
-                ;
-                $transaction->status = 100;
-                $transaction->voucher_type = 6;
-                $transaction->save();
-            endforeach;
+    //         //    $sales_tax_data = SalesHelper::get_sales_tax_by_sales_order_id($request->sales_order_id);
+    //         $sales_tax_invoice->sales_tax = CommonHelper::check_str_replace($request->sales_tax);
+    //         $sales_tax_invoice->sales_tax_further = CommonHelper::check_str_replace($request->sales_tax_further);
+    //         $sales_tax_invoice->acc_id = $request->acc_id;
+    //         $sales_tax_invoice->currency = $request->curren;
+    //         $sales_tax_invoice->currency_rate = $request->currency_rate;
+    //         $sales_tax_invoice->save();
+    //         $id = $sales_tax_invoice->id;
 
-            $sales_tax = DB::Connection('mysql2')->table('sales_tax_invoice_data')
-                ->where('status', 1)
-                ->where('master_id', $id)
-                ->sum('tax_amount');
-
-            if ($sales_tax > 0):
+    //         $sales_tax_invoice_data_delete = new SalesTaxInvoiceData();
+    //         $sales_tax_invoice_data_delete = $sales_tax_invoice_data_delete->SetConnection('mysql2')->where('master_id', $id)->delete();
 
 
-                $sales_tac_acc_id = DB::Connection('mysql2')->table('accounts')->where('status', 1)->where('name', 'like', '%' . 'Sales Tax Output FBR' . '%')->select('id')->first();
 
-                $transaction = new Transactions();
-                $transaction = $transaction->SetConnection('mysql2');
-                $transaction->voucher_no = $gi_no;
-                $transaction->v_date = $request->gi_date;
-                $transaction->acc_id = 152;
-                $transaction->acc_code = FinanceHelper::getAccountCodeByAccId(152);
-                $transaction->particulars = $request->description;
-                $transaction->opening_bal = 0;
-                $transaction->debit_credit = 0;
-                $transaction->amount = $sales_tax;
-                $transaction->username = Auth::user()->name;
-                $transaction->status = 100;
-                $transaction->voucher_type = 6;
-                $transaction->save();
-                $total_amount += $sales_tax;
+    //         $total_amount = 0;
+    //         // Backward compatible: older edit form used `sub_ic_des[]`, newer/create-like UI uses `item_id[]`.
+    //         $itemIds = $request->item_id ?? $request->sub_ic_des ?? [];
+    //         foreach ($itemIds as $key => $value) {
+    //             # code...
 
-            endif;
+    //             $sales_tax_invoice_data = new SalesTaxInvoiceData();
+    //             $sales_tax_invoice_data = $sales_tax_invoice_data->SetConnection('mysql2');
+    //             $sales_tax_invoice_data->master_id = $id;
+    //             $sales_tax_invoice_data->groupby = 1;
+    //             $sales_tax_invoice_data->gi_no = $gi_no;
+    //             $sales_tax_invoice_data->item_id = $value;
+    //             $sales_tax_invoice_data->description = '';
+    //             $sales_tax_invoice_data->bag_qty = $request->bag_qty[$key] ?? null;
+    //             $qty = $request->actual_qty[$key];
+    //             $rate = $request->rate[$key];
+    //             $amount = $request->amount[$key];
+    //             $sales_tax_invoice_data->qty = $qty;
+    //             $sales_tax_invoice_data->rate = $rate;
+    //             $sales_tax_invoice_data->commission = $request->commission[$key] ?? 0;
+    //             if (isset($request->uom_id[$key])) {
+    //                 $sales_tax_invoice_data->uom = CommonHelper::get_uom_id($request->uom_id[$key]);
+    //             }
+    //             $sales_tax_invoice_data->tax = $request->tax[$key];
+    //             $sales_tax_invoice_data->tax_amount = $request->tax_amount[$key];
+    //             $sales_tax_invoice_data->amount = $amount;
+    //             $sales_tax_invoice_data->warehouse_id = $request->warehouse[$key];
+    //             //    $sales_tax_invoice_data->bundles_id = $request->input('bundles_id' . $i);
+    //             $sales_tax_invoice_data->status = 1;
+    //             $sales_tax_invoice_data->date = date('Y-m-d');
+    //             $sales_tax_invoice_data->username = Auth::user()->name;
+    //             $sales_tax_invoice_data->save();
+    //             $total_amount += $qty * $rate;
+    //         }
 
-            $sales_tax_further = CommonHelper::check_str_replace($request->sales_tax_further);
+    //         $transactionfordelete = new Transactions();
+    //         $transactionfordelete = $transactionfordelete->SetConnection('mysql2')
+    //             ->where('voucher_no', $gi_no)->delete();
 
-            if ($sales_tax_further > 0):
+    //         DB::Connection('mysql2')->table('addional_expense_sales_tax_invoice')->where('main_id', $id)->delete();
+
+    //         $t_data = DB::Connection('mysql2')->table('sales_tax_invoice as a')
+    //             ->join('sales_tax_invoice_data as b', 'a.id', '=', 'b.master_id')
+    //             ->join('subitem as c', 'b.item_id', '=', 'c.id')
+    //             ->join('category as d', 'd.id', '=', 'c.main_ic_id')
+    //             ->select(DB::raw('SUM(b.rate*b.qty) as amount'), 'b.item_id', 'a.gi_date', 'd.revenue_acc_id')
+    //             ->where('a.gi_no', $gi_no)
+    //             ->where('a.status', 1)
+    //             ->groupBy('d.id')
+    //             ->get();
+
+    //         foreach ($t_data as $revenue):
+    //             $transaction = new Transactions();
+    //             $transaction = $transaction->SetConnection('mysql2');
+    //             $transaction->voucher_no = $gi_no;
+    //             $transaction->v_date = $request->gi_date;
+    //             $transaction->acc_id = $request->acc_id;
+    //             $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($request->acc_id);
+    //             $transaction->particulars = $request->description;
+    //             $transaction->opening_bal = 0;
+    //             $transaction->debit_credit = 0;
+    //             $transaction->amount = $revenue->amount;
+    //             $transaction->username = Auth::user()->name;
+    //             ;
+    //             $transaction->status = 100;
+    //             $transaction->voucher_type = 6;
+    //             $transaction->save();
+    //         endforeach;
+
+    //         $sales_tax = DB::Connection('mysql2')->table('sales_tax_invoice_data')
+    //             ->where('status', 1)
+    //             ->where('master_id', $id)
+    //             ->sum('tax_amount');
+
+    //         if ($sales_tax > 0):
 
 
-                $sales_tac_acc_id_further = DB::Connection('mysql2')->table('accounts')->where('status', 1)->where('name', 'Additional Sales Tax Receivable (3%)')->select('id')->first();
-                $transaction = new Transactions();
-                $transaction = $transaction->SetConnection('mysql2');
-                $transaction->voucher_no = $gi_no;
-                $transaction->v_date = $request->gi_date;
-                $transaction->acc_id = $sales_tac_acc_id_further;
-                $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($sales_tac_acc_id_further);
-                $transaction->particulars = $request->description;
-                $transaction->opening_bal = 0;
-                $transaction->debit_credit = 0;
-                $transaction->amount = $sales_tax_further;
-                $transaction->username = Auth::user()->name;
-                ;
-                $transaction->status = 100;
-                $transaction->voucher_type = 6;
-                $transaction->save();
-                $total_amount += $sales_tax_further;
+    //             $sales_tac_acc_id = DB::Connection('mysql2')->table('accounts')->where('status', 1)->where('name', 'like', '%' . 'Sales Tax Output FBR' . '%')->select('id')->first();
 
-            endif;
-            $Loop = Input::get('account_id');
-            if ($Loop != "") {
-                $Counta = 0;
-                foreach ($Loop as $LoopFil) {
-                    $ExpData['voucher_no'] = $request->gi_no;
-                    $ExpData['main_id'] = $id;
-                    $ExpData['acc_id'] = Input::get('account_id')[$Counta];
-                    $ExpData['amount'] = Input::get('expense_amount')[$Counta];
-                    $ExpData['created_date'] = date('Y-m-d');
-                    $ExpData['username'] = Auth::user()->name;
+    //             $transaction = new Transactions();
+    //             $transaction = $transaction->SetConnection('mysql2');
+    //             $transaction->voucher_no = $gi_no;
+    //             $transaction->v_date = $request->gi_date;
+    //             $transaction->acc_id = 152;
+    //             $transaction->acc_code = FinanceHelper::getAccountCodeByAccId(152);
+    //             $transaction->particulars = $request->description;
+    //             $transaction->opening_bal = 0;
+    //             $transaction->debit_credit = 0;
+    //             $transaction->amount = $sales_tax;
+    //             $transaction->username = Auth::user()->name;
+    //             $transaction->status = 100;
+    //             $transaction->voucher_type = 6;
+    //             $transaction->save();
+    //             $total_amount += $sales_tax;
 
-                    DB::Connection('mysql2')->table('addional_expense_sales_tax_invoice')->insert($ExpData);
-                    $transaction = new Transactions();
-                    $transaction = $transaction->SetConnection('mysql2');
-                    $transaction->voucher_no = $gi_no;
-                    $transaction->v_date = $request->gi_date;
-                    $transaction->acc_id = Input::get('account_id')[$Counta];
-                    $transaction->acc_code = FinanceHelper::getAccountCodeByAccId(Input::get('account_id')[$Counta]);
-                    $transaction->particulars = $request->description;
-                    $transaction->opening_bal = 0;
-                    $transaction->debit_credit = 0;
-                    $transaction->amount = Input::get('expense_amount')[$Counta];
-                    $transaction->username = Auth::user()->name;
-                    ;
-                    $transaction->status = 100;
-                    $transaction->voucher_type = 6;
-                    $transaction->save();
-                    $total_amount += Input::get('expense_amount')[$Counta];
-                    $Counta++;
-                }
-            }
+    //         endif;
 
-            $customer_acc_id = SalesHelper::get_customer_acc_id($byers_id);
-            ;
+    //         $sales_tax_further = CommonHelper::check_str_replace($request->sales_tax_further);
+
+    //         if ($sales_tax_further > 0):
+
+
+    //             $sales_tac_acc_id_further = DB::Connection('mysql2')->table('accounts')->where('status', 1)->where('name', 'Additional Sales Tax Receivable (3%)')->select('id')->first();
+    //             $transaction = new Transactions();
+    //             $transaction = $transaction->SetConnection('mysql2');
+    //             $transaction->voucher_no = $gi_no;
+    //             $transaction->v_date = $request->gi_date;
+    //             $transaction->acc_id = $sales_tac_acc_id_further;
+    //             $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($sales_tac_acc_id_further);
+    //             $transaction->particulars = $request->description;
+    //             $transaction->opening_bal = 0;
+    //             $transaction->debit_credit = 0;
+    //             $transaction->amount = $sales_tax_further;
+    //             $transaction->username = Auth::user()->name;
+    //             ;
+    //             $transaction->status = 100;
+    //             $transaction->voucher_type = 6;
+    //             $transaction->save();
+    //             $total_amount += $sales_tax_further;
+
+    //         endif;
+    //         $Loop = Input::get('account_id');
+    //         if ($Loop != "") {
+    //             $Counta = 0;
+    //             foreach ($Loop as $LoopFil) {
+    //                 $ExpData['voucher_no'] = $request->gi_no;
+    //                 $ExpData['main_id'] = $id;
+    //                 $ExpData['acc_id'] = Input::get('account_id')[$Counta];
+    //                 $ExpData['amount'] = Input::get('expense_amount')[$Counta];
+    //                 $ExpData['created_date'] = date('Y-m-d');
+    //                 $ExpData['username'] = Auth::user()->name;
+
+    //                 DB::Connection('mysql2')->table('addional_expense_sales_tax_invoice')->insert($ExpData);
+    //                 $transaction = new Transactions();
+    //                 $transaction = $transaction->SetConnection('mysql2');
+    //                 $transaction->voucher_no = $gi_no;
+    //                 $transaction->v_date = $request->gi_date;
+    //                 $transaction->acc_id = Input::get('account_id')[$Counta];
+    //                 $transaction->acc_code = FinanceHelper::getAccountCodeByAccId(Input::get('account_id')[$Counta]);
+    //                 $transaction->particulars = $request->description;
+    //                 $transaction->opening_bal = 0;
+    //                 $transaction->debit_credit = 0;
+    //                 $transaction->amount = Input::get('expense_amount')[$Counta];
+    //                 $transaction->username = Auth::user()->name;
+    //                 ;
+    //                 $transaction->status = 100;
+    //                 $transaction->voucher_type = 6;
+    //                 $transaction->save();
+    //                 $total_amount += Input::get('expense_amount')[$Counta];
+    //                 $Counta++;
+    //             }
+    //         }
+
+    //         $customer_acc_id = SalesHelper::get_customer_acc_id($byers_id);
+    //         ;
+
+    //         $transaction = new Transactions();
+    //         $transaction = $transaction->SetConnection('mysql2');
+    //         $transaction->voucher_no = $gi_no;
+    //         $transaction->v_date = $request->gi_date;
+    //         $transaction->acc_id = $customer_acc_id;
+    //         $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($customer_acc_id);
+    //         $transaction->particulars = $request->description;
+    //         $transaction->opening_bal = 0;
+    //         $transaction->debit_credit = 1;
+    //         $transaction->amount = $total_amount;
+    //         $transaction->username = Auth::user()->name;
+    //         ;
+    //         $transaction->status = 100;
+    //         $transaction->voucher_type = 6;
+    //         $transaction->save();
+    //         $data['sales_tax_invoice_id'] = $id;
+    //         $data['sales_tax_invoice'] = 1;
+
+    //         SalesHelper::sales_activity($gi_no, $request->gi_date, $total_amount, 3, 'Insert');
+
+    //         $voucher_no = $gi_no;
+
+    //         $subject = 'Sales Tax Invoice For ' . $request->so_no;
+    //         //  NotificationHelper::send_email('Sales tax Invoice','Create', $dept_id,$voucher_no,$subject,$p_type);
+
+    //         DB::Connection('mysql2')->commit();
+    //     } catch (Exception $ex) {
+
+    //         DB::rollBack();
+    //         echo $ex->getLine();
+
+    //     }
+    //     $SavePrintVal = Input::get('SavePrintVal');
+
+
+
+    //     $m = Session::get('company_run');
+    //     if ($SavePrintVal == 1) {
+    //         $Url = url('sales/PrintSalesTaxInvoice?id=' . $id . 'pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . $m . '#SFR');
+    //         //echo "<script type='text/javascript'>window.open('".$Url."', '_blank')</script>";
+    //         return Redirect::to($Url);
+    //         return Redirect::to('sales/CreateSalesTaxInvoiceList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . $m . '#SFR');
+    //     } else {
+    //         return Redirect::to('sales/CreateSalesTaxInvoiceList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . $m . '#SFR');
+    //     }
+
+
+    // }
+
+
+    public function updateDirectSalesTaxInvoice(Request $request, $id)
+{
+    // dd($request->all(), $id);  // Remove in production
+
+    DB::connection('mysql2')->beginTransaction();
+
+    try {
+        $buyersIdInput = (string) ($request->buyers_id ?? '');
+        $buyersIdParts = $buyersIdInput !== '' ? explode('*', $buyersIdInput) : [];
+        $buyer_id = $buyersIdParts[0] ?? 0;
+
+        $walkinCustomerName = trim($request->walkin_customer_name ?? '');
+        $walkinCustomer = $walkinCustomerName !== '' ? 1 : 0;
+
+        // Fetch existing invoice
+        $sales_tax_invoice = SalesTaxInvoice::on('mysql2')->findOrFail($id);
+
+        $gi_no = $sales_tax_invoice->gi_no;   // Keep original GI No
+
+        // === Update Master Record ===
+        $sales_tax_invoice->gi_date                = $request->gi_date;
+        $sales_tax_invoice->model_terms_of_payment = $request->model_terms_of_payment;
+        $sales_tax_invoice->other_refrence        = $request->other_refrence;
+        $sales_tax_invoice->order_no               = $request->order_no;
+        $sales_tax_invoice->order_date             = $request->order_date;
+        $sales_tax_invoice->despacth_document_no   = $request->despacth_document_no;
+        $sales_tax_invoice->despacth_document_date = $request->despacth_document_date;
+        $sales_tax_invoice->despacth_through       = $request->despacth_through;
+        $sales_tax_invoice->destination            = $request->destination;
+        $sales_tax_invoice->terms_of_delivery      = $request->terms_of_delivery;
+        $sales_tax_invoice->due_date               = $request->due_date;
+        $sales_tax_invoice->buyers_id              = $buyer_id;
+        $sales_tax_invoice->walkin_customer        = $walkinCustomer;
+        $sales_tax_invoice->walkin_customer_name   = $walkinCustomerName;
+        $sales_tax_invoice->customer_type          = $walkinCustomer;
+        $sales_tax_invoice->description            = $request->description;
+        $sales_tax_invoice->commission_buyer       = $request->commission_buyer;
+        $sales_tax_invoice->sales_tax              = CommonHelper::check_str_replace($request->sales_tax ?? 0);
+        $sales_tax_invoice->sales_tax_further      = CommonHelper::check_str_replace($request->sales_tax_further ?? 0);
+        $sales_tax_invoice->acc_id                 = $request->acc_id;
+        $sales_tax_invoice->currency               = $request->curren ?? 0;
+        $sales_tax_invoice->currency_rate          = $request->currency_rate ?? 1.00;
+        $sales_tax_invoice->amount_in_words        = $request->rupeess ?? $request->amount_in_words;
+        $sales_tax_invoice->status                 = 1;
+        $sales_tax_invoice->username               = Auth::user()->name;
+        $sales_tax_invoice->date                   = now()->toDateString();
+
+        $sales_tax_invoice->save();
+
+        // === Delete Old Details ===
+        SalesTaxInvoiceData::on('mysql2')
+            ->where('master_id', $id)
+            ->delete();
+
+        // Delete old transactions and additional expenses
+        Transactions::on('mysql2')
+            ->where('voucher_no', $gi_no)
+            ->delete();
+
+        DB::connection('mysql2')
+            ->table('addional_expense_sales_tax_invoice')
+            ->where('main_id', $id)
+            ->delete();
+
+        // === Insert New Detail Lines ===
+        $itemIds = $request->item_id ?? [];   // Main array to loop on
+        $total_amount = 0;
+
+        foreach ($itemIds as $key => $item_id) {
+            if (empty($item_id)) continue;
+
+            $qty   = $request->actual_qty[$key] ?? 0;
+            $rate  = $request->rate[$key] ?? 0;
+            $amount = $request->amount[$key] ?? ($qty * $rate);
+
+            $detail = new SalesTaxInvoiceData();
+            $detail->setConnection('mysql2');
+
+            $detail->master_id     = $id;
+            $detail->groupby       = 1;
+            $detail->gi_no         = $gi_no;
+            $detail->item_id       = $item_id;
+            $detail->bag_qty       = $request->bag_qty[$key] ?? null;
+            $detail->qty           = $qty;
+            $detail->rate          = $rate;
+            $detail->amount        = $amount;
+            $detail->commission    = $request->commission[$key] ?? 0;
+            $detail->tax           = $request->tax[$key] ?? 0;
+            $detail->tax_amount    = $request->tax_amount[$key] ?? 0;
+            $detail->warehouse_id  = $request->warehouse[$key] ?? null;
+            $detail->uom           = isset($request->uom_id[$key]) 
+                                     ? CommonHelper::get_uom_id($request->uom_id[$key]) 
+                                     : null;
+            $detail->status        = 1;
+            $detail->date          = now()->toDateString();
+            $detail->username      = Auth::user()->name;
+
+            $detail->save();
+
+            $total_amount += $amount;
+        }
+
+        // === Revenue Transactions (grouped by category) ===
+        $t_data = DB::connection('mysql2')
+            ->table('sales_tax_invoice as a')
+            ->join('sales_tax_invoice_data as b', 'a.id', '=', 'b.master_id')
+            ->join('subitem as c', 'b.item_id', '=', 'c.id')
+            ->join('category as d', 'd.id', '=', 'c.main_ic_id')
+            ->select(
+                DB::raw('SUM(b.rate * b.qty) as amount'),
+                'd.revenue_acc_id'
+            )
+            ->where('a.gi_no', $gi_no)
+            ->where('a.status', 1)
+            ->groupBy('d.id', 'd.revenue_acc_id')
+            ->get();
+
+        foreach ($t_data as $revenue) {
+            if (empty($revenue->revenue_acc_id)) continue;
 
             $transaction = new Transactions();
-            $transaction = $transaction->SetConnection('mysql2');
-            $transaction->voucher_no = $gi_no;
-            $transaction->v_date = $request->gi_date;
-            $transaction->acc_id = $customer_acc_id;
-            $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($customer_acc_id);
-            $transaction->particulars = $request->description;
-            $transaction->opening_bal = 0;
-            $transaction->debit_credit = 1;
-            $transaction->amount = $total_amount;
-            $transaction->username = Auth::user()->name;
-            ;
-            $transaction->status = 100;
-            $transaction->voucher_type = 6;
+            $transaction->setConnection('mysql2');
+            $transaction->voucher_no    = $gi_no;
+            $transaction->v_date        = $request->gi_date;
+            $transaction->acc_id        = $revenue->revenue_acc_id;
+            $transaction->acc_code      = FinanceHelper::getAccountCodeByAccId($revenue->revenue_acc_id);
+            $transaction->particulars   = $request->description;
+            $transaction->debit_credit  = 0;        // Credit Revenue
+            $transaction->amount        = $revenue->amount;
+            $transaction->status        = 100;
+            $transaction->voucher_type  = 6;
+            $transaction->username      = Auth::user()->name;
             $transaction->save();
-            $data['sales_tax_invoice_id'] = $id;
-            $data['sales_tax_invoice'] = 1;
-
-            SalesHelper::sales_activity($gi_no, $request->gi_date, $total_amount, 3, 'Insert');
-
-            $voucher_no = $gi_no;
-
-            $subject = 'Sales Tax Invoice For ' . $request->so_no;
-            //  NotificationHelper::send_email('Sales tax Invoice','Create', $dept_id,$voucher_no,$subject,$p_type);
-
-            DB::Connection('mysql2')->commit();
-        } catch (Exception $ex) {
-
-            DB::rollBack();
-            echo $ex->getLine();
-
         }
-        $SavePrintVal = Input::get('SavePrintVal');
 
+        // === Sales Tax ===
+        $sales_tax = DB::connection('mysql2')
+            ->table('sales_tax_invoice_data')
+            ->where('master_id', $id)
+            ->where('status', 1)
+            ->sum('tax_amount');
 
+        if ($sales_tax > 0) {
+            $transaction = new Transactions();
+            $transaction->setConnection('mysql2');
+            $transaction->voucher_no    = $gi_no;
+            $transaction->v_date        = $request->gi_date;
+            $transaction->acc_id        = 152;   // Sales Tax Output FBR
+            $transaction->acc_code      = FinanceHelper::getAccountCodeByAccId(152);
+            $transaction->particulars   = $request->description;
+            $transaction->debit_credit  = 0;
+            $transaction->amount        = $sales_tax;
+            $transaction->status        = 100;
+            $transaction->voucher_type  = 6;
+            $transaction->username      = Auth::user()->name;
+            $transaction->save();
 
+            $total_amount += $sales_tax;
+        }
+
+        // === Further Sales Tax ===
+        $sales_tax_further = CommonHelper::check_str_replace($request->sales_tax_further ?? 0);
+        if ($sales_tax_further > 0) {
+            $furtherTaxAcc = DB::connection('mysql2')
+                ->table('accounts')
+                ->where('status', 1)
+                ->where('name', 'like', '%Additional Sales Tax Receivable (3%)%')
+                ->value('id');
+
+            if ($furtherTaxAcc) {
+                $transaction = new Transactions();
+                $transaction->setConnection('mysql2');
+                $transaction->voucher_no    = $gi_no;
+                $transaction->v_date        = $request->gi_date;
+                $transaction->acc_id        = $furtherTaxAcc;
+                $transaction->acc_code      = FinanceHelper::getAccountCodeByAccId($furtherTaxAcc);
+                $transaction->particulars   = $request->description;
+                $transaction->debit_credit  = 0;
+                $transaction->amount        = $sales_tax_further;
+                $transaction->status        = 100;
+                $transaction->voucher_type  = 6;
+                $transaction->username      = Auth::user()->name;
+                $transaction->save();
+
+                $total_amount += $sales_tax_further;
+            }
+        }
+
+        // === Additional Expenses ===
+        $accountIds = $request->input('account_id', []);
+        $expenseAmounts = $request->input('expense_amount', []);
+
+        foreach ($accountIds as $index => $accId) {
+            $expAmount = $expenseAmounts[$index] ?? 0;
+            if ($expAmount <= 0) continue;
+
+            // Save additional expense
+            DB::connection('mysql2')->table('addional_expense_sales_tax_invoice')->insert([
+                'voucher_no'   => $gi_no,
+                'main_id'      => $id,
+                'acc_id'       => $accId,
+                'amount'       => $expAmount,
+                'created_date' => now()->toDateString(),
+                'username'     => Auth::user()->name,
+            ]);
+
+            // Transaction for expense
+            $transaction = new Transactions();
+            $transaction->setConnection('mysql2');
+            $transaction->voucher_no    = $gi_no;
+            $transaction->v_date        = $request->gi_date;
+            $transaction->acc_id        = $accId;
+            $transaction->acc_code      = FinanceHelper::getAccountCodeByAccId($accId);
+            $transaction->particulars   = $request->description;
+            $transaction->debit_credit  = 0;
+            $transaction->amount        = $expAmount;
+            $transaction->status        = 100;
+            $transaction->voucher_type  = 6;
+            $transaction->username      = Auth::user()->name;
+            $transaction->save();
+
+            $total_amount += $expAmount;
+        }
+
+        // === Customer Receivable (Debit) ===
+        $customer_acc_id = SalesHelper::get_customer_acc_id($buyer_id);
+
+        $transaction = new Transactions();
+        $transaction->setConnection('mysql2');
+        $transaction->voucher_no    = $gi_no;
+        $transaction->v_date        = $request->gi_date;
+        $transaction->acc_id        = $customer_acc_id;
+        $transaction->acc_code      = FinanceHelper::getAccountCodeByAccId($customer_acc_id);
+        $transaction->particulars   = $request->description;
+        $transaction->debit_credit  = 1;        // Debit Customer
+        $transaction->amount        = $total_amount;
+        $transaction->status        = 100;
+        $transaction->voucher_type  = 6;
+        $transaction->username      = Auth::user()->name;
+        $transaction->save();
+
+        // Log Activity
+        SalesHelper::sales_activity($gi_no, $request->gi_date, $total_amount, 3, 'Update');
+
+        DB::connection('mysql2')->commit();
+
+        // === Redirect Logic ===
         $m = Session::get('company_run');
+        $pageType   = $request->pageType;
+        $parentCode = $request->parentCode;
+        $SavePrintVal = $request->SavePrintVal;
+
         if ($SavePrintVal == 1) {
-            $Url = url('sales/PrintSalesTaxInvoice?id=' . $id . 'pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . $m . '#SFR');
-            //echo "<script type='text/javascript'>window.open('".$Url."', '_blank')</script>";
-            return Redirect::to($Url);
-            return Redirect::to('sales/CreateSalesTaxInvoiceList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . $m . '#SFR');
-        } else {
-            return Redirect::to('sales/CreateSalesTaxInvoiceList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . $m . '#SFR');
+            $url = url("sales/PrintSalesTaxInvoice?id={$id}&pageType={$pageType}&parentCode={$parentCode}&m={$m}#SFR");
+            return redirect()->to($url);
         }
 
+        return redirect()->to("sales/CreateSalesTaxInvoiceList?pageType={$pageType}&parentCode={$parentCode}&m={$m}#SFR");
 
+    } catch (\Exception $ex) {
+        dd([$ex, $ex->getMessage(), $ex->getLine()]);  // Remove in production
+        DB::connection('mysql2')->rollBack();
+        \Log::error($ex);
+        return back()->with('error', 'Update failed: ' . $ex->getMessage());
     }
+}
+
+
+
+
     function addeSalesTaxInvoice(Request $request)
     {
 // dd($request->all());

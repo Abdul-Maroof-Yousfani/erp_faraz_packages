@@ -410,10 +410,10 @@ use App\Helpers\ReuseableCode;
 														</td>
 														<td>
 															<input class="form-control requiredField"
-																onchange="claculation(1)" type="number" name="actual_qty[]"
-																id="actual_qty1" step="any" oninput="bag_qq(1); claculation(1)" />
+																onchange="bag_qq(1)" type="number" name="actual_qty[]"
+																id="actual_qty1" step="any" oninput="bag_qq(1)" />
 															<input type="hidden" class="PackQty" name="pack_qty[]"
-																id="pack_qty">
+																id="pack_qty1">
 														</td>
 														<td>
 															<input class="form-control requiredField" type="number"
@@ -666,9 +666,9 @@ use App\Helpers\ReuseableCode;
 													</td>
 													<td>
 									<input class="form-control requiredField"
-										onchange="claculation(${Counter})" type="number" name="actual_qty[]"
-										id="actual_qty${Counter}" step="any" oninput="bag_qq(${Counter}); claculation(${Counter})" />
-									<input type="hidden" name="pack_qty[]" id="pack_qty">
+										onchange="bag_qq(${Counter})" type="number" name="actual_qty[]"
+										id="actual_qty${Counter}" step="any" oninput="bag_qq(${Counter})" />
+									<input type="hidden" name="pack_qty[]" id="pack_qty${Counter}">
 								</td>
 								<td>
 									<input class="form-control requiredField"
@@ -870,7 +870,7 @@ use App\Helpers\ReuseableCode;
 				} else {
 					console.log('Other UOM matched');
 					// Other UOMs: Auto-calculate based on pack_qty
-					$('#pack_qty').val(pack_qty);
+					$('#pack_qty' + index).val(pack_qty);
 					$('#actual_qty' + index).val(pack_qty);
 					$('#qty_lbs' + index).val((pack_qty * 2.2).toFixed(2));
 					$('#actual_qty' + index).prop('readonly', true);
@@ -886,14 +886,13 @@ use App\Helpers\ReuseableCode;
 
 			function bag_qq(counter) {
 				var bags_qty = parseFloat($('#bag_qty' + counter).val()) || 1;
-				var pack_qty = parseFloat($('#pack_qty').val()) || 0;
+				var pack_qty = parseFloat($('#pack_qty' + counter).val()) || 0;
 				var actual_qty = parseFloat($('#actual_qty' + counter).val()) || 0;
-				var selectedUom = $('#uom_id' + counter).val();
+				var selectedUom = ($('#uom_id' + counter).val() || '').toString();
 
 				// For Bundle: keep actual_qty editable and multiply it by pack_size
 				if (selectedUom.toLowerCase().includes('bundle')) {
 					var total_qty = (actual_qty).toFixed(2);
-					alert(total_qty);
 					$('#qty_lbs' + counter).val((total_qty * 2.2).toFixed(2));
 				}
 				// For Pcs: actual_qty is manually entered, auto-calculate lbs
@@ -905,6 +904,9 @@ use App\Helpers\ReuseableCode;
 					$('#actual_qty' + counter).val(total_qty);
 					$('#qty_lbs' + counter).val((total_qty * 2.2).toFixed(2));
 				}
+
+				// Keep amount/net totals in sync with the latest qty
+				claculation(counter);
 			}
 		</script>
 		<script>
@@ -1052,11 +1054,12 @@ use App\Helpers\ReuseableCode;
 
 
 			function claculation(number) {
-				var qty = $('#actual_qty' + number).val();
+				var qty = ($('#actual_qty' + number).val() || '').toString().replace(/,/g, '');
 				var packSize = parseFloat($('#pack_size' + number).val()) || 1;
 				var selectedUom = $('#uom_id' + number).val() || '';
-				var rate = $('#rate' + number).val();
+				var rate = ($('#rate' + number).val() || '').toString().replace(/,/g, '');
 				var totalQty = parseFloat(qty) || 0;
+				rate = parseFloat(rate) || 0;
 
 				if (selectedUom.toLowerCase().includes('bundle')) {
 					totalQty = totalQty * packSize;
