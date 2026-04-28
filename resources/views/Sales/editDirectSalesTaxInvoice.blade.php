@@ -434,7 +434,8 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 														</td>
 														<td>
 															<select name="uom_id[]" id="uom_id{{ $rowNo }}"
-																class="form-control requiredField select2">
+																class="form-control requiredField select2"
+																data-selected-uom="{{ $selectedUom }}">
 																<option value="">Select UOM</option>
 																@if($selectedUom)
 																	<option selected value="{{ $selectedUom }}">{{ $selectedUom }}</option>
@@ -445,6 +446,7 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 															<input class="form-control requiredField"
 																onchange="bag_qq({{ $rowNo }})" type="number" name="actual_qty[]"
 																id="actual_qty{{ $rowNo }}" step="any" oninput="bag_qq({{ $rowNo }})"
+																data-saved-value="{{ $detail->qty }}"
 																value="{{ $detail->qty }}" />
 															<input type="hidden" class="PackQty" name="pack_qty[]"
 																id="pack_qty{{ $rowNo }}">
@@ -457,7 +459,8 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 														<td class="">
 															<select onchange="get_stock_qty(this.id,'{{ $rowNo }}');ApplyAll('{{ $rowNo }}')"
 																class="form-control  ClsAll ShowOn{{ $rowNo }}" name="warehouse[]"
-																id="warehouse{{ $rowNo }}">
+																id="warehouse{{ $rowNo }}"
+																data-selected-warehouse="{{ $detail->warehouse_id }}">
 																<option value="">Select</option>
 																@foreach(CommonHelper::get_all_warehouse() as $row)
 																	<option @if((string) $detail->warehouse_id === (string) $row->id) selected @endif value="{{$row->id}}">{{$row->name}}</option>
@@ -479,12 +482,14 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 														
 														<td>
 															<input type="text" class="form-control" placeholder=""
-																name="commission[]" id="commission{{ $rowNo }}" value="{{ $detail->commission }}" />
+																name="commission[]" id="commission{{ $rowNo }}"
+																data-saved-value="{{ $detail->commission }}" value="{{ $detail->commission }}" />
 														</td>
 														<td>
 															<input type="text" onkeyup="claculation('{{ $rowNo }}')"
 																onblur="claculation('{{ $rowNo }}')" class="form-control requiredField"
-																name="rate[]" id="rate{{ $rowNo }}" min="1" value="{{ $detail->rate }}">
+																name="rate[]" id="rate{{ $rowNo }}" min="1"
+																data-saved-value="{{ $detail->rate }}" value="{{ $detail->rate }}">
 														</td>
 														<td>
 															<input type="text" class="form-control amount" name="amount[]"
@@ -783,6 +788,7 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 							if (selectedOption.length) {
 								$itemDropdown.val(selectedOption.val()).trigger('change.select2');
 								get_item_name(rowNo);
+								applySavedRowValues(rowNo);
 								return;
 							}
 						}
@@ -790,6 +796,49 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 						$itemDropdown.trigger('change.select2');
 					}
 				});
+			}
+
+			function applySavedRowValues(rowNo) {
+				var $uom = $('#uom_id' + rowNo);
+				var $qty = $('#actual_qty' + rowNo);
+				var $rate = $('#rate' + rowNo);
+				var $commission = $('#commission' + rowNo);
+				var $warehouse = $('#warehouse' + rowNo);
+
+				var savedUom = ($uom.data('selected-uom') || '').toString();
+				var savedQty = ($qty.data('saved-value') || '').toString();
+				var savedRate = ($rate.data('saved-value') || '').toString();
+				var savedCommission = ($commission.data('saved-value') || '').toString();
+				var savedWarehouse = ($warehouse.data('selected-warehouse') || '').toString();
+
+				if (savedUom !== '') {
+					var matchedUomOption = $uom.find('option').filter(function() {
+						return ($(this).val() || '').toString().toLowerCase() === savedUom.toLowerCase();
+					}).first();
+
+					if (matchedUomOption.length) {
+						$uom.val(matchedUomOption.val()).trigger('change.select2');
+					}
+				}
+				if (savedQty !== '') {
+					$qty.val(savedQty);
+				}
+				if (savedRate !== '') {
+					$rate.val(savedRate);
+				}
+				if (savedCommission !== '') {
+					$commission.val(savedCommission);
+				}
+				if (savedWarehouse !== '') {
+					$warehouse.val(savedWarehouse).trigger('change.select2');
+				}
+
+				var numericQty = parseFloat(savedQty);
+				if (!isNaN(numericQty)) {
+					$('#qty_lbs' + rowNo).val((numericQty * 2.2).toFixed(2));
+				}
+
+				claculation(rowNo);
 			}
 
 			var CounterExpense = {{ $expenseRowCount }};
@@ -1082,6 +1131,19 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 				var pack_qty = parseFloat($('#pack_qty' + counter).val()) || 0;
 				var actual_qty = parseFloat($('#actual_qty' + counter).val()) || 0;
 				var selectedUom = ($('#uom_id' + counter).val() || '').toString();
+				var firstUom = ($('#uom_id' + counter + ' option:eq(1)').text() || '').toString();
+				var qty1 = parseFloat($('#uom_id' + counter).data('qty1')) || 0;
+				var qty2 = parseFloat($('#uom_id' + counter).data('qty2')) || 0;
+
+				// Re-derive pack qty after reload/edit when hidden pack field is empty
+				if (pack_qty <= 0 && selectedUom !== '') {
+					var selectedNormalized = selectedUom.toLowerCase();
+					var firstNormalized = firstUom.toLowerCase();
+					pack_qty = (selectedNormalized === firstNormalized) ? qty1 : qty2;
+					if (pack_qty > 0) {
+						$('#pack_qty' + counter).val(pack_qty);
+					}
+				}
 
 				// For Bundle: keep actual_qty editable and multiply it by pack_size
 				if (selectedUom.toLowerCase().includes('bundle')) {
@@ -1173,11 +1235,9 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 			function net_amount() {
 				var amount = 0;
 				$('.amount').each(function (i, obj) {
-
-					amount += +$('#' + obj.id).val();
-					console.log(obj.id);
+					amount += parseFloat($('#' + obj.id).val()) || 0;
 				});
-				amount = parseFloat(amount).toFixed(3);
+				amount = (parseFloat(amount) || 0).toFixed(3);
 
 
 				$('#net').val(amount);
@@ -1186,10 +1246,9 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 
 				var net_amount = 0;
 				$('.net_amount_dis').each(function (i, obj) {
-
-					net_amount += +$('#' + obj.id).val();
+					net_amount += parseFloat($('#' + obj.id).val()) || 0;
 				});
-				net_amount = parseFloat(net_amount).toFixed(3);
+				net_amount = (parseFloat(net_amount) || 0).toFixed(3);
 				$('#total_after_sales_tax').val(net_amount);
 
 			}
@@ -1259,20 +1318,10 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 				}
 
 				var qty_lbs = parseFloat(totalQty) * 2.2 || 0;
+				$('#qty_lbs' + number).val(qty_lbs.toFixed(2));
 
 				var total = parseFloat(totalQty * rate).toFixed(2);
 				$('#amount' + number).val(total);
-
-				var amount = 0;
-				count = 1;
-				$('.net_amount_dis').each(function (i, obj) {
-
-					amount += +$('#' + obj.id).val();
-
-					count++;
-				});
-				amount = parseFloat(amount);
-
 
 				tax_percent('tax_percent' + number);
 				net_amount();
@@ -1361,12 +1410,12 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 
 			function tax_percent(id) {
 				var number = id.replace("tax_percent", "");
-				var amount = parseFloat($('#amount' + number).val());
+				var amount = parseFloat($('#amount' + number).val()) || 0;
 
-				var x = $('#' + id).val();
+				var x = ($('#' + id).val() || '0,0').toString();
 
 				x = x.split(',');
-				x = parseFloat(x[1]);
+				x = parseFloat(x[1]) || 0;
 
 
 				if (x > 100) {
@@ -1379,7 +1428,7 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 				var tax_amount = parseFloat(x / 100).toFixed(2);
 				$('#tax_amount' + number).val(tax_amount);
 
-				var tax_amount = parseFloat($('#tax_amount' + number).val());
+				var tax_amount = parseFloat($('#tax_amount' + number).val()) || 0;
 
 
 				if (isNaN(tax_amount)) {
