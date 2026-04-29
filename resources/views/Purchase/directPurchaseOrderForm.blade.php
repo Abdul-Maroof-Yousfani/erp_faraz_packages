@@ -168,7 +168,7 @@ endif;
                                                 </select>
                                             </div>
 
-                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 hide">
                                                 <label class="sf-label"> <a href="#"
                                                         onclick="showDetailModelOneParamerter('pdc/createCurrencyTypeForm')"
                                                         class="">Currency</a></label>
@@ -179,27 +179,22 @@ endif;
                                                     <option value=""> Select Currency</option>
 
                                                     @foreach(CommonHelper::get_all_currency_with_current_rate() as $row)
-                                                        <option value="{{$row->id . ',' . $row->rate}}">{{$row->name}}</option>
+                                                        <option value="{{$row->id . ',' . $row->rate}}" @if(strtoupper($row->name) == 'PKR') selected @endif>{{$row->name}}</option>
                                                     @endforeach;
 
                                                 </select>
 
                                             </div>
 
-                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 hide">
                                                 <label class="sf-label"> Currency Rate</label>
                                                 <span class="rflabelsteric"></span>
                                                 <input class="form-control" type="text" name="currency_rate"
-                                                    id="currency_rate" />
+                                                    id="currency_rate" value="1" />
 
                                             </div>
 
                                             <input type="hidden" name="curren_rate" id="curren_rate" value="1" />
-
-                                        </div>
-
-                                        <div class="lineHeight">&nbsp;</div>
-                                        <div class="row">
                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                 <label class="sf-label">Mode/ Terms Of Payment <span
                                                         class="rflabelsteric"></span></label>
@@ -213,20 +208,18 @@ endif;
                                                 <input type="date" class="form-control" placeholder="" name="due_date"
                                                     id="due_date" value="" readonly />
                                             </div>
+                                        </div>
+
+                                        <div class="lineHeight">&nbsp;</div>
+                                        <div class="row">
+                                          
                                             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                                                 <label class="sf-label">Supplier's Address</label>
                                                 <input style="text-transform: capitalize;" readonly type="text"
                                                     class="form-control" placeholder="" name="address" id="addresss"
                                                     value="" />
                                             </div>
-                                        </div>
-                                        <div class="lineHeight">&nbsp;</div>
-
-                                        <div class="row">
-
-
-
-                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+                                              <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
                                                 <label class="sf-label">Supplier's NTN</label>
                                                 <input readonly type="text" class="form-control" placeholder="Ntn"
                                                     name="ntn" id="ntn_id" value="" />
@@ -238,6 +231,14 @@ endif;
                                                     placeholder="Remarks"></textarea>
                                             </div>
 
+                                        </div>
+                                        <div class="lineHeight">&nbsp;</div>
+
+                                        <div class="row">
+
+
+
+                                          
                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" hidden>
                                                 <label class="sf-label">Agent</label>
                                                 <span class="rflabelsteric"></span>
@@ -299,7 +300,7 @@ endif;
                                             <table class="table table-bordered">
                                                 <thead>
                                                     <tr class="text-center">
-                                                        <th colspan="9" class="text-center">Purchase Order Detail</th>
+                                                        <th colspan="8" class="text-center">Purchase Order Detail</th>
                                                         <th colspan="2" class="text-center">
                                                             <input type="button" class="btn btn-sm btn-primary"
                                                                 onclick="AddMoreDetails()" value="Add More Rows" />
@@ -312,9 +313,9 @@ endif;
                                                         <th class="text-center" style="width: 25%;">Item</th>
                                                         <th class="text-center">Uom<span
                                                                 class="rflabelsteric"><strong>*</strong></span></th>
-                                                        <th class="text-center">HS Code<span
+                                                        <th class="text-center" style="display:none;">HS Code<span
                                                                 class="rflabelsteric"><strong>*</strong></span></th>
-                                                        <th class="text-center">Bugs Qty<span
+                                                        <th class="text-center">Bags Qty<span
                                                                 class="rflabelsteric"><strong>*</strong></span></th>
                                                         <th class="text-center">Actual Qty in KG<span
                                                                 class="rflabelsteric"><strong>*</strong></span></th>
@@ -331,7 +332,8 @@ endif;
                                                         <th class="text-center">Net Amount(PKR)<span
                                                                 class="rflabelsteric"><strong>*</strong></span></th>
                                                         <th class="text-center">DO No.</th>
-                                                        <th class="text-center">Godown No.</th>
+                                                        <th class="text-center">Godown No.<span
+                                                                class="rflabelsteric"><strong>*</strong></span></th>
                                                         <th class="text-center">Delete<span
                                                                 class="rflabelsteric"><strong>*</strong></span></th>
                                                     </tr>
@@ -357,7 +359,7 @@ endif;
                                                             <input readonly type="text" class="form-control" name="uom_id[]"
                                                                 id="uom_id1">
                                                         </td>
-                                                        <td>
+                                                        <td style="display:none;">
                                                             <input readonly type="text" class="form-control"
                                                                 name="hs_code_id[]" id="hs_code_id1">
                                                         </td>
@@ -410,7 +412,7 @@ endif;
                                                             <input type="text" class="form-control" name="do_no[]" id="do_no1" placeholder="DO No." />
                                                         </td>
                                                         <td>
-                                                            <input type="text" class="form-control" name="godown_no[]" id="godown_no1" placeholder="Godown No." />
+                                                            <input type="text" class="form-control requiredField" name="godown_no[]" id="godown_no1" placeholder="Godown No." required />
                                                         </td>
                                                         <td style="background-color: #ccc">
                                                             <input onclick="view_history(1)" type="checkbox"
@@ -534,11 +536,11 @@ endif;
                 '<td>' +
                 '<input readonly type="text" class="form-control" name="uom_id[]" id="uom_id' + Counter + '" >' +
                 '</td>' +
-                '<td>' +
+                '<td style="display:none;">' +
                 '<input readonly type="text" class="form-control" name="hs_code_id[]" id="hs_code_id' + Counter + '" >' +
                 '</td>' +
                 '<td>' +
-                '<input type="text" onkeyup="bag_qq(' + Counter + ')" class="form-control requiredField BagsQty" name="bags_qty[]" id="bags_qty' + Counter + '" placeholder="BAGS QTY">' +
+                '<input type="text" onkeyup="bag_qq(' + Counter + ')" class="form-control requiredField BagsQty" name="bags_qty[]" id="bags_qty' + Counter + '" placeholder="Bags Qty">' +
                 '</td>' +
                 '<td>' +
                 '<input type="text" onchange="claculation(' + Counter + ')" class="form-control requiredField ActualQty" name="actual_qty[]" id="actual_qty' + Counter + '" placeholder="ACTUAL QTY" readonly>' +
@@ -568,7 +570,7 @@ endif;
                 '<input type="text" class="form-control" name="do_no[]" id="do_no' + Counter + '" placeholder="DO No." />' +
                 '</td>' +
                 '<td>' +
-                '<input type="text" class="form-control" name="godown_no[]" id="godown_no' + Counter + '" placeholder="Godown No." />' +
+                '<input type="text" class="form-control requiredField" name="godown_no[]" id="godown_no' + Counter + '" placeholder="Godown No." required />' +
                 '</td>' +
                 '<td class="text-center">' +
                 '<input onclick="view_history(' + Counter + ')" type="checkbox" id="view_history' + Counter + '">&nbsp;' +
@@ -912,10 +914,14 @@ endif;
         function get_rate() {
             var currency_id = $('#curren').val();
             currency_id = currency_id.split(',');
-            console.log(currency_id);
-            $('#currency_rate').val(currency_id[1]);
-            $('#curren_rate').val(currency_id[1]);
+            var rate = currency_id[1] ? currency_id[1] : 1;
+            $('#currency_rate').val(rate);
+            $('#curren_rate').val(rate);
         }
+
+        $(document).ready(function () {
+            get_rate();
+        });
     </script>
     <script>
         function open_sales_tax(id) {
