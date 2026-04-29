@@ -27,6 +27,41 @@
                             <div class="lineHeight">&nbsp;</div>
 
                             {!! Form::open(['url' => 'pad/updatePurchaseReturnDetail?m='.$m, 'id' => 'addPurchaseReturnDetail']) !!}
+             <!-- Header Fields -->
+                                        <div class="row mt-4">
+                                            <div class="col-lg-4 col-md-4">
+                                                <label>Purchase Return No</label>
+                                                <input name="PrNo" type="text" class="form-control" 
+                                                       value="{{ strtoupper($Master->pr_no) }}" readonly>
+                                            </div>
+
+                                            <div class="col-lg-4 col-md-4">
+                                                <label>Purchase Return Date</label>
+                                                <input type="date" id="PurchaseReturnDate" name="PurchaseReturnDate" 
+                                                       value="{{ $Master->pr_date }}" class="form-control">
+                                            </div>
+
+                                            <div class="col-lg-4 col-md-4">
+                                                <label>Purchase Invoice Date</label>
+                                                <input type="hidden" name="EditId" value="{{ $Master->id }}">
+                                                <input type="hidden" name="supplier" value="{{ $Master->supplier_id }}">
+
+                                                <input type="date" id="InvoiceDate" name="InvoiceDate" 
+                                                       value="{{ $PurchaseInvoiceData->pv_date ?? $Master->grn_date ?? '' }}" 
+                                                       class="form-control" readonly>
+
+                                                <input type="hidden" id="PurchaseInvoiceNo" name="PurchaseInvoiceNo" 
+                                                       value="{{ $PurchaseInvoiceData->pv_no ?? $Master->grn_no ?? '' }}">
+                                                <input type="hidden" id="PurchaseInvoiceId" name="PurchaseInvoiceId" 
+                                                       value="{{ $PurchaseInvoiceData->id ?? $Master->grn_id }}">
+                                            </div>
+
+                                            <div class="col-lg-12 mt-3">
+                                                <label>Remarks <span class="text-danger">*</span></label>
+                                                <textarea name="Remarks" id="Remarks" rows="3" 
+                                                    class="form-control requiredField">{{ $Master->remarks }}</textarea>
+                                            </div>
+                                        </div>
 
                             <div class="row">
                                 <div class="panel">
@@ -42,7 +77,7 @@
                                                                 <th>Sr.No</th>
                                                                 <th>Item Name</th>
                                                                 <th>Location</th>
-                                                                <th>Batch Code</th>
+                                                                <th class="hide">Batch Code</th>
                                                                 <th>Received Qty</th>
                                                                 <th>Return Qty Sum Total</th>
                                                                 <th>Price</th>
@@ -88,7 +123,7 @@
                                                                         <input type="hidden" name="WarehouseId[]" id="warehouse_id_{{ $Fil->grn_data_id }}" value="{{ $Fil->warehouse_id }}">
                                                                     </td>
 
-                                                                    <td>
+                                                                    <td class="hide">
                                                                         {{ $Fil->batch_code }}
                                                                         <input type="hidden" name="BatchCode[]" id="BatchCode{{ $Fil->grn_data_id }}" value="{{ $Fil->batch_code }}">
                                                                     </td>
@@ -136,42 +171,7 @@
                                             </div>
                                         </div>
 
-                                        <!-- Header Fields -->
-                                        <div class="row mt-4">
-                                            <div class="col-lg-4 col-md-4">
-                                                <label>Purchase Return No</label>
-                                                <input name="PrNo" type="text" class="form-control" 
-                                                       value="{{ strtoupper($Master->pr_no) }}" readonly>
-                                            </div>
-
-                                            <div class="col-lg-4 col-md-4">
-                                                <label>Purchase Return Date</label>
-                                                <input type="date" id="PurchaseReturnDate" name="PurchaseReturnDate" 
-                                                       value="{{ $Master->pr_date }}" class="form-control">
-                                            </div>
-
-                                            <div class="col-lg-4 col-md-4">
-                                                <label>Purchase Invoice Date</label>
-                                                <input type="hidden" name="EditId" value="{{ $Master->id }}">
-                                                <input type="hidden" name="supplier" value="{{ $Master->supplier_id }}">
-
-                                                <input type="date" id="InvoiceDate" name="InvoiceDate" 
-                                                       value="{{ $PurchaseInvoiceData->pv_date ?? $Master->grn_date ?? '' }}" 
-                                                       class="form-control" readonly>
-
-                                                <input type="hidden" id="PurchaseInvoiceNo" name="PurchaseInvoiceNo" 
-                                                       value="{{ $PurchaseInvoiceData->pv_no ?? $Master->grn_no ?? '' }}">
-                                                <input type="hidden" id="PurchaseInvoiceId" name="PurchaseInvoiceId" 
-                                                       value="{{ $PurchaseInvoiceData->id ?? $Master->grn_id }}">
-                                            </div>
-
-                                            <div class="col-lg-12 mt-3">
-                                                <label>Remarks <span class="text-danger">*</span></label>
-                                                <textarea name="Remarks" id="Remarks" rows="3" 
-                                                    class="form-control requiredField">{{ $Master->remarks }}</textarea>
-                                            </div>
-                                        </div>
-
+                           
                                         <!-- Tax Summary Section -->
                                         <div class="row mt-4">
                                             <div class="col-lg-6">
