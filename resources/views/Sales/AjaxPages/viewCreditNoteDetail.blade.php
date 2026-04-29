@@ -150,19 +150,16 @@ $currentDate = date('Y-m-d');
                                 <tr>
                                     <th class="text-center">S.NO</th>
                                     <th class="text-center">Item</th>
+                                    <th class="text-center">Bag Qty</th>
                                     <?php if($creit_note->type == 1):?>
                                     <th class="text-center" id="Heading" style="display: none;">Delivery Not Qty</th>
                                     <?php else:?>
                                     <th class="text-center" id="Heading">Sales Tax Invoice Qty</th>
                                     <?php endif;?>
-                                    <th class="text-center" >Batch Code </th>
                                     <th class="text-center" >Location </th>
                                     <th class="text-center" >QTY. </th>
                                     <th class="text-center">Rate</th>
                                     <th class="text-center">Amount</th>
-                                    <th class="text-center">Tax %</th>
-                                    <th class="text-center">Tax Amount</th>
-                                    <th class="text-center">Net Amount</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -192,15 +189,13 @@ $currentDate = date('Y-m-d');
                                         <a target="_blank"
                                      href="<?php echo url('store/fullstockReportView?sub_item_id='.$row1->item.'&&m='.Session::get('run_company').'&&warehouse_id='.$Stock->warehouse_id)?>">
                                      <?php echo CommonHelper::get_item_name($row1->item);?></a></td>
+                                    <td class="text-center"><?php echo number_format((float)($VoucherQty->bag_qty ?? 0), 2);?></td>
                                     <td class="ShowHide" style=""><?php echo $VoucherQty->qty?></td>
-                                    <td class="text-center"><?php echo $Stock->batch_code?></td>
                                     <td class="text-center"><?php echo CommonHelper::get_name_warehouse($Stock->warehouse_id)?></td>
                                     <td> <?php echo number_format($row1->qty)?></td>
                                     <td class="text-right"><?php echo number_format($row1->rate,2);?></td>
                                     <td class="text-right"><?php echo number_format($row1->amount,2); $TotalAmount+=$row1->amount;?></td>
-                                    <td class="text-right"><?php echo number_format($row1->discount_percent,2);?></td>
-                                    <td class="text-right"><?php echo number_format($row1->discount_amount,2); $TotalDisAmount+=$row1->discount_amount?></td>
-                                    <td class="text-right"><?php echo number_format($row1->net_amount,2); $TotalNetAmount+=$row1->net_amount?></td>
+                                    <?php $TotalNetAmount+=$row1->net_amount; ?>
                                 </tr>
 
                                 <?php
@@ -213,9 +208,6 @@ $currentDate = date('Y-m-d');
 
                                     <td style="background-color: darkgray" class="text-center" colspan="7" id="TotalSpan">Total</td>
                                     <td  style="background-color: darkgray" class="text-right" >{{number_format($TotalAmount,2)}}</td>
-                                    <td style="background-color: darkgray" class="text-center" colspan="1"></td>
-                                    <td  style="background-color: darkgray" class="text-right" >{{number_format($TotalDisAmount,2)}}</td>
-                                    <td  style="background-color: darkgray" class="text-right" >{{number_format($TotalNetAmount,2)}}</td>
                                 </tr>
 
 
@@ -239,7 +231,7 @@ $currentDate = date('Y-m-d');
 
                                 <tr>
 
-                                    <td style="background-color: darkgray" class="text-center" colspan="10" id="GrandTotalSpan">Grand Total</td>
+                                    <td style="background-color: darkgray" class="text-center" colspan="7" id="GrandTotalSpan">Grand Total</td>
                                     <td style="background-color: darkgray"  class="text-right" colspan="1">{{number_format($TotalNetAmount,2)}}</td>
 
                                 </tr>
@@ -389,19 +381,19 @@ $currentDate = date('Y-m-d');
             {
                 $('#Heading').fadeIn();
                 $('.ShowHide').fadeIn();
-                $("#TotalSpan").attr('colspan',5);
-                $("#SalesTaxSpan").attr('colspan',8);
-                $("#FurtherTaxSpan").attr('colspan',8);
-                $("#GrandTotalSpan").attr('colspan',8);
+                $("#TotalSpan").attr('colspan',7);
+                $("#SalesTaxSpan").attr('colspan',7);
+                $("#FurtherTaxSpan").attr('colspan',7);
+                $("#GrandTotalSpan").attr('colspan',7);
 
             }
             else{
                 $('#Heading').fadeOut();
                 $('.ShowHide').fadeOut();
-                $("#TotalSpan").attr('colspan',4);
-                $("#SalesTaxSpan").attr('colspan',7);
-                $("#FurtherTaxSpan").attr('colspan',7);
-                $("#GrandTotalSpan").attr('colspan',7);
+                $("#TotalSpan").attr('colspan',6);
+                $("#SalesTaxSpan").attr('colspan',6);
+                $("#FurtherTaxSpan").attr('colspan',6);
+                $("#GrandTotalSpan").attr('colspan',6);
             }
         }
 

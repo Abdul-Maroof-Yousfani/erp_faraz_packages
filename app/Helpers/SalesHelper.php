@@ -474,12 +474,12 @@ class SalesHelper
                 ->sum('qty');
 
 
-            else:
+        else:
 
      return   DB::Connection('mysql2')->table('credit_note_data')->where('status',1)
             ->where('type',$type)
-            ->where('voucher_data_id',$voucher_no)
-         ->where('voucher_no',$id)
+            ->where('voucher_data_id',$id)
+         ->where('voucher_no',$voucher_no)
              ->sum('qty');
                 endif;
     }
@@ -501,6 +501,82 @@ class SalesHelper
                 ->where('voucher_no',$id)
                 ->sum('qty');
         endif;
+    }
+
+    public static function get_credit_note_so_no($creditNote)
+    {
+        if (($creditNote->type ?? 0) == 3) {
+            return DB::Connection('mysql2')->table('credit_note_data')
+                ->where('master_id', $creditNote->id)
+                ->where('status', 1)
+                ->value('voucher_no') ?? '';
+        }
+
+        if (!empty($creditNote->so_id)) {
+            $soNo = DB::Connection('mysql2')->table('sales_order')
+                ->where('id', $creditNote->so_id)
+                ->value('so_no');
+
+            if (!empty($soNo)) {
+                return $soNo;
+            }
+        }
+
+        $detail = DB::Connection('mysql2')->table('credit_note_data')
+            ->where('master_id', $creditNote->id)
+            ->where('status', 1)
+            ->select('so_data_id', 'voucher_no')
+            ->first();
+
+        if (empty($detail)) {
+            return '';
+        }
+
+        if (!empty($detail->so_data_id)) {
+            $soNo = DB::Connection('mysql2')->table('sales_order_data as sod')
+                ->join('sales_order as so', 'so.id', '=', 'sod.master_id')
+                ->where('sod.id', $detail->so_data_id)
+                ->value('so.so_no');
+
+            if (!empty($soNo)) {
+                return $soNo;
+            }
+        }
+
+        $invoice = DB::Connection('mysql2')->table('sales_tax_invoice')
+            ->where('gi_no', $detail->voucher_no)
+            ->select('so_id', 'so_no')
+            ->first();
+
+        if (!empty($invoice)) {
+            if (!empty($invoice->so_id)) {
+                $soNo = DB::Connection('mysql2')->table('sales_order')
+                    ->where('id', $invoice->so_id)
+                    ->value('so_no');
+
+                if (!empty($soNo)) {
+                    return $soNo;
+                }
+            }
+
+            if (!empty($invoice->so_no)) {
+                return $invoice->so_no;
+            }
+        }
+
+        $deliveryNoteSoNo = DB::Connection('mysql2')->table('delivery_note')
+            ->where('gd_no', $detail->voucher_no)
+            ->value('so_no');
+
+        return $deliveryNoteSoNo ?? '';
+    }
+
+    public static function get_credit_note_source_no($creditNote)
+    {
+        return DB::Connection('mysql2')->table('credit_note_data')
+            ->where('master_id', $creditNote->id)
+            ->where('status', 1)
+            ->value('voucher_no') ?? '';
     }
 
     public static function get_batch_code($id,$type)

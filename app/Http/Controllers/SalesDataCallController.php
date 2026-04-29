@@ -2928,48 +2928,73 @@ class SalesDataCallController extends Controller
         DB::Connection('mysql2')->beginTransaction();
 
         try {
-            $id=  $request->id;
-             $cr_on=$request->cr_no;
-            $data= DB::Connection('mysql2')->table('credit_note as a')
-            ->join('credit_note_data as b','a.id','=','b.master_id')
-            ->join('stock as c','a.cr_no','=','c.voucher_no')
-            ->where('a.status',1)
-            ->where('a.id',$id)
-            ->select('b.item','b.qty','c.batch_code','c.warehouse_id','b.qty')
-            ->get();
+            $id = $request->id;
+            $cr_no = $request->cr_no;
 
-        $validation=1;
-        foreach($data as $row):
+            $creditNote = DB::Connection('mysql2')->table('credit_note')
+                ->where('id', $id)
+                ->where('cr_no', $cr_no)
+                ->where('status', 1)
+                ->first();
 
-            $row->qty;
+            if (empty($creditNote)) {
+                DB::Connection('mysql2')->rollBack();
+                return response('0');
+            }
 
-          $qty=  ReuseableCode::get_stock($row->item,$row->warehouse_id,$row->qty,$row->batch_code);
-           if ($qty<0):
-          $validation=0;
-           endif;
-        endforeach;
+            $stockRows = DB::Connection('mysql2')->table('stock')
+                ->where('main_id', $id)
+                ->where('voucher_no', $cr_no)
+                ->where('voucher_type', 6)
+                ->where('status', 1)
+                ->select('sub_item_id', 'warehouse_id', 'qty', 'batch_code')
+                ->get();
 
-        if ($validation==1):
+            foreach ($stockRows as $row) {
+                $availableQtyAfterDelete = ReuseableCode::get_stock(
+                    $row->sub_item_id,
+                    $row->warehouse_id,
+                    $row->qty,
+                    $row->batch_code
+                );
 
+                if ($availableQtyAfterDelete < 0) {
+                    DB::Connection('mysql2')->rollBack();
+                    return response('0');
+                }
+            }
 
-         $dataa['status']=0;
+            $data = [
+                'status' => 0,
+            ];
 
-        DB::Connection('mysql2')->table('credit_note')->where('id',$id)->update($dataa);
-        DB::Connection('mysql2')->table('credit_note_data')->where('master_id',$id)->update($dataa);
-        DB::Connection('mysql2')->table('stock')->where('voucher_no',$cr_on)->update($dataa);
-        DB::Connection('mysql2')->table('transactions')->where('voucher_no',$cr_on)->update($dataa);
-          echo $id;
-            else:
-             echo '0';
-            endif;
+            DB::Connection('mysql2')->table('credit_note')
+                ->where('id', $id)
+                ->where('cr_no', $cr_no)
+                ->update($data);
+
+            DB::Connection('mysql2')->table('credit_note_data')
+                ->where('master_id', $id)
+                ->update($data);
+
+            DB::Connection('mysql2')->table('stock')
+                ->where('main_id', $id)
+                ->where('voucher_no', $cr_no)
+                ->where('voucher_type', 6)
+                ->update($data);
+
+            DB::Connection('mysql2')->table('transactions')
+                ->where('voucher_no', $cr_no)
+                ->update($data);
 
             DB::Connection('mysql2')->commit();
+            return response((string) $id);
+
         }
         catch(\Exception $e)
         {
             DB::Connection('mysql2')->rollback();
-            echo "EROOR"; //die();
-            dd($e->getMessage());
+            return response('0');
 
         }
 

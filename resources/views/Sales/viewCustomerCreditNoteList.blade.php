@@ -73,11 +73,11 @@ $export=ReuseableCode::check_rights(258);
                                             <thead>
                                             <th class="text-center col-sm-1">S.No</th>
                                             <th class="text-center col-sm-1">SO No</th>
+                                            <th class="text-center col-sm-1">SI No</th>
                                             <th class="text-center col-sm-1">Type</th>
                                             <th class="text-center col-sm-1">CR No</th>
                                             <th class="text-center col-sm-1">CR Date</th>
                                             <th class="text-center col-sm-2">Buyer</th>
-                                            <th class="text-center col-sm-2">Amount</th>
                                             <th class="text-center col-sm-1">View</th>
 
                                             {{--<th class="text-center">Edit</th>--}}
@@ -92,30 +92,23 @@ $export=ReuseableCode::check_rights(258);
                                             @foreach($credit_note as $row)
                                                 <?php $customer=CommonHelper::byers_name($row->buyers_id);
                                                 $data=SalesHelper::get_total_amount_for_sales_order_by_id($row->so_id);
-                                                        $SoNo = "";
-                                                        if($row->so_id > 0):
-                                                        $SoData = CommonHelper::get_single_row('sales_order','id',$row->so_id);
-                                                        $SoNo = $SoData->so_no;
-                                                        else:
-                                                        $SoNo = "";
-                                                        endif;
-                                                        $NetAmount = DB::Connection('mysql2')->table('credit_note_data')->where('master_id',$row->id)->select('net_amount')->sum('net_amount');
+                                                        $SoNo = SalesHelper::get_credit_note_so_no($row);
+                                                        $SiNo = SalesHelper::get_credit_note_source_no($row);
                                                          if ($row->type==3):
 
                                                     $pos_no = DB::Connection('mysql2')->table('credit_note_data')->where('master_id',$row->id)->select('voucher_no')->value('voucher_no');
                                                         endif;
-                                                $OverAllTotal+=$NetAmount;
                                                 ?>
                                                 <tr @if($row->type==3) style="background-color: lavenderblush" @endif title="" id="{{$row->id}}">
                                                     <td class="text-center">{{$counter++}}</td>
-                                                    <td class="text-center"><?php if($row->type==3): echo strtoupper($pos_no); else: echo strtoupper($SoNo); endif?></td>
+                                                    <td class="text-center"><?php echo strtoupper($SoNo); ?></td>
+                                                    <td class="text-center"><?php echo strtoupper($SiNo); ?></td>
                                                     <td class="text-center">@if($row->type==1) DN @elseif($row->type==2) SI @else POS @endif</td>
                                                     <td title="{{$row->id}}" class="text-center">{{strtoupper($row->cr_no)}}</td>
                                                     <td class="text-center"><?php  echo CommonHelper::changeDateFormat($row->cr_date);?></td>
                                                     <td class="text-center"><?php   $customer=CommonHelper::byers_name($row->buyer_id);
                                                       echo   $customer->name ?? '';
                                                         ?></td>
-                                                    <td class="text-center"><?php echo number_format($NetAmount,2);?></td>
 
 
 
@@ -152,10 +145,6 @@ $export=ReuseableCode::check_rights(258);
 
 
                                             @endforeach
-                                            <tr>
-                                                <td colspan="6"><strong>TOTAL</strong></td>
-                                                <td class="text-center"><?php echo number_format($OverAllTotal,2)?></td>
-                                            </tr>
 
 
 
@@ -193,6 +182,7 @@ $export=ReuseableCode::check_rights(258);
                 type: 'GET',
                 data: {id: id,cr_no:cr_no},
                 success: function (response) {
+                    response = $.trim(response);
 
                     if (response=='0')
                     {
@@ -207,6 +197,10 @@ $export=ReuseableCode::check_rights(258);
 
 
 
+                }
+                ,
+                error: function () {
+                    alert('Can not Deleted');
                 }
             });
         }

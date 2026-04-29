@@ -66,18 +66,10 @@ $type = $credit_note->type;
                                                         <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 panel">
                                                             <label class="sf-label">Buyer's Name</label>
                                                             <input readonly class="form-control" type="text" name="customer" id="customer" value="{{ $credit_note->customer->name ?? '' }}"/>
-                                                            <input type="hidden" name="buyer_id" value="{{$credit_note->customer->id}}">
+                                                            <input type="hidden" name="buyer_id" value="{{$credit_note->buyer_id}}">
                                                         </div>
 
-                                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                                            <label class="sf-label">Cr Account<span class="rflabelsteric requiredField"><strong>*</strong></span></label>
-                                                            <select readonly class="form-control" id="acc_id" name="acc_id">
-                                                                <option>Select</option>
-                                                                @foreach(CommonHelper::get_accounts_by_parent_code('5-1') as $row)
-                                                                    <option @if($row->id==814) selected @endif   value="{{$row->id}}">{{$row->name}}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
+                                                        <input type="hidden" id="acc_id" name="acc_id" value="814">
 
                                                     </div>
                                                 </div>
@@ -102,7 +94,7 @@ $type = $credit_note->type;
 
                                                                         $invoice_data=SalesHelper::get_data_from_invoice($row->voucher_data_id,$credit_note->type);
                                                                         // dd($invoice_data, $credit_note->type, $row->so_data_id);
-                                                                          $so_id=$invoice_data->so_id;
+                                                                          $so_id=$invoice_data->so_id ?? 0;
 
                                                                             if ($type==1):
 
@@ -113,6 +105,9 @@ $type = $credit_note->type;
                                                                                 $return_qty=SalesHelper::return_qty($credit_note->type,$row->voucher_data_id,$row->voucher_no);                                                                                                                                                             
                                                                             endif;
 
+                                                                            $previous_return_qty = max((float)$return_qty - (float)$row->qty, 0);
+                                                                            $balance_qty = max((float)$invoice_data->qty - $previous_return_qty, 0);
+
 
                                                                         ?>
 
@@ -120,7 +115,7 @@ $type = $credit_note->type;
                                                                     <div class="">
 
                                                                         <input type="hidden" name="item_id{{$counter}}" value="{{$row->item}}"/>
-                                                                        <input type="hidden" name="invoice_data_id{{$counter}}" value="{{$invoice_data->so_data_id}}"/>
+                                                                        <input type="hidden" name="invoice_data_id{{$counter}}" value="{{$row->voucher_data_id}}"/>
                                                                         @if($type==1)
 
 
@@ -146,7 +141,7 @@ $type = $credit_note->type;
                                                                         <input type="hidden" name="gi_date{{$counter}}" value="{{$invoice_data->gi_date}}"/>
 
 
-                                                                        <input type="hidden" id="actual_qty{{$counter}}" value="{{$invoice_data->qty}}" name="actual_qty{{$counter}}">
+                                                                        <input type="hidden" id="actual_qty{{$counter}}" value="{{$balance_qty}}" name="actual_qty{{$counter}}">
 
                                                                         <h5>   <span></span><strong>(<?php echo $counter ?>). GI No. : </strong> {{$invoice_data->gi_no}}
                                                                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -154,13 +149,13 @@ $type = $credit_note->type;
                                                                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                                             <strong>QTY. : </strong>{{number_format($invoice_data->qty,2)}}
                                                                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                                            <strong>Previous Return QTY. : </strong>{{number_format($return_qty,2)}}
+                                                                            <strong>Previous Return QTY. : </strong>{{number_format($previous_return_qty,2)}}
+                                                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                                            <strong>Balance QTY. : </strong>{{number_format($balance_qty,2)}}
                                                                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                                             <strong>Rate : </strong>{{number_format($invoice_data->rate,2)}}
                                                                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                                             <strong>Amount : </strong>{{number_format($invoice_data->amount,2)}}
-                                                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                                            <strong>SO Data ID : </strong>{{$invoice_data->so_data_id}}
                                                                         </h5>
                                                                     </div>
 
@@ -170,38 +165,47 @@ $type = $credit_note->type;
                                                                         <tr>
                                                                             <th class="text-center hidden-print">Item</th>
 
+                                                                            <th class="text-center" style="">Bag Qty</th>
                                                                             <th class="text-center" style="">UOM</th>
+                                                                            <th class="text-center" style="">Invoice Qty</th>
+                                                                            <th class="text-center" style="">Prev Return Qty</th>
+                                                                            <th class="text-center" style="">Balance Qty</th>
                                                                             <th class="text-center" style="">QTY</th>
                                                                             <th class="text-center" style="">Rate</th>
                                                                             <th class="text-center" style="">Amount</th>
-                                                                            <th class="text-center" style="">Tax %</th>
-                                                                            <th class="text-center" style="">Tax Amount</th>
-                                                                            <th class="text-center" style="">Net Amount</th>
 
                                                                         </tr>
                                                                         </thead>
                                                                          <tbody>
                                                                     <tr>
                                                                         <td class="text-center">{{CommonHelper::get_item_name($row->item)}}</td>
+                                                                        <td class="text-center">{{ number_format((float)($invoice_data->bag_qty ?? 0), 2) }}</td>
 
 
-                                                                        <?php $uom_data=CommonHelper::get_subitem_detail($row->item);
-                                                                              $uom_data=explode(',',$uom_data);
-                                                                               $uom_id=$uom_data[0];
+                                                                        <?php
+                                                                              if (!empty($invoice_data->uom)) {
+                                                                                  $uomName = CommonHelper::get_uom_name($invoice_data->uom) ?: $invoice_data->uom;
+                                                                              } else {
+                                                                                  $uom_data=CommonHelper::get_subitem_detail($row->item);
+                                                                                  $uom_data=explode(',',$uom_data);
+                                                                                  $uom_id=$uom_data[0] ?? 0;
+                                                                                  $uomName = CommonHelper::get_uom_name($uom_id);
+                                                                              }
                                                                         ?>
-                                                                        <td class="text-center">{{CommonHelper::get_uom_name($uom_id)}}</td>
+                                                                        <td class="text-center">{{ $uomName }}</td>
+                                                                        <td class="text-center">{{ number_format((float)$invoice_data->qty, 2) }}</td>
+                                                                        <td class="text-center">{{ number_format((float)$previous_return_qty, 2) }}</td>
+                                                                        <td class="text-center">{{ number_format((float)$balance_qty, 2) }}</td>
                                                                         <td><input onkeyup="calc('<?php echo $counter ?>');check_qty(this.id,'{{$counter}}')"  onblur="calc('<?php echo $counter ?>');check_qty(this.id,'{{$counter}}')" type="text" class="form-control number zerovalidate" name="itemQty[]" id="qty{{$counter}}" value="{{ $row->qty }}"/> </td>
                                                                         <td><input readonly type="text" class="form-control number" name="rate[]" value="{{$invoice_data->rate}}" id="rate{{$counter}}"/> </td>
                                                                         <td><input readonly type="text" value="{{ $row->amount }}" class="form-control number amount" name="amount[]" id="amount{{$counter}}"/> </td>
-
-
-                                                                        <td><input readonly type="text" value="{{$invoice_data->tax}}" class="form-control number amount" name="discount_percent[]" id="discount_percent{{$counter}}"/></td>
-                                                                        <td><input readonly type="text" value="{{$invoice_data->tax_amount}}" class="form-control number amount" name="discount_amount[]" id="discount_amount{{$counter}}"/></td>
-                                                                        <td><input readonly type="text" value="{{ $row->net_amount }}" class="form-control number net_amount zerovalidate requiredField" name="net_amount[]" id="net_amount{{$counter}}"/></td>
+                                                                        <input type="hidden" value="0" name="discount_percent[]" id="discount_percent{{$counter}}"/>
+                                                                        <input type="hidden" value="0" name="discount_amount[]" id="discount_amount{{$counter}}"/>
+                                                                        <input readonly type="hidden" value="{{ $row->net_amount }}" class="net_amount" name="net_amount[]" id="net_amount{{$counter}}"/>
                                                                     </tr>
                                                                          </tbody>
                                                                     </table>
-                                                                    <input type="hidden"name="warehouse{{$counter}}" id="type" value="{{$invoice_data->warehouse_id}}"/>
+                                                                    <input type="hidden" name="warehouse{{$counter}}" value="{{$invoice_data->warehouse_id}}"/>
                                                                     <?php $counter++; ?>
                                                                     @endforeach
                                                                     <input type="hidden" name="so_id" value="{{$so_id}}"/>
@@ -378,11 +382,13 @@ $type = $credit_note->type;
 
         if (qty>sales_qty)
         {
-            alert('Returned QTY can not greater than actual qty');
-            $('#'+id).val(0);
-            $('#amount'+number).val(0);
+            alert('Returned QTY cannot be greater than Balance Qty');
+            $('#'+id).val(sales_qty.toFixed(2));
+            var rate = parseFloat($('#rate'+number).val()) || 0;
+            var total=(sales_qty*rate).toFixed(2);
+            $('#amount'+number).val(total);
             $('#discount_amount'+number).val(0);
-            $('#net_amount'+number).val(0);
+            $('#net_amount'+number).val(total);
             appliy('applyfurther','sales_tax_further',1);
             appliy('apply17','sales_tax',0);
 
