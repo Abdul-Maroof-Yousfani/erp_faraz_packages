@@ -434,7 +434,22 @@ class SalesHelper
 
             return $acc_id = DB::Connection('mysql2')->table('sales_tax_invoice_data as a')
                 ->join('sales_tax_invoice as b', 'a.master_id', '=', 'b.id')
-                ->select('b.gi_no', 'a.id', 'b.gi_date', 'a.qty', 'a.rate', 'a.tax', 'a.tax_amount', 'a.amount', 'a.item_id', 'a.so_id', 'a.warehouse_id', 'a.so_data_id')
+                ->select(
+                    'b.gi_no',
+                    'a.id',
+                    'b.gi_date',
+                    'a.qty',
+                    'a.bag_qty',
+                    'a.uom',
+                    'a.rate',
+                    'a.tax',
+                    'a.tax_amount',
+                    'a.amount',
+                    'a.item_id',
+                    'a.so_id',
+                    'a.warehouse_id',
+                    'a.so_data_id'
+                )
                 ->where('a.id', $id)
                 ->first();
         endif;

@@ -51,14 +51,34 @@ endif;
        </td>
         <td class="text-center">{{$counter++}}</td>
         <?php
-        $sub_ic_data=CommonHelper::get_subitem_detail($data->item_id);
-        $sub_ic_data=explode(',',$sub_ic_data);
+        $sub_ic_data = CommonHelper::get_subitem_detail($data->item_id);
+        $sub_ic_data = explode(',', $sub_ic_data);
+        $displayUom = '';
+        if (!empty($data->uom)) {
+            $displayUom = CommonHelper::get_uom_name($data->uom);
+            if (empty($displayUom)) {
+                $displayUom = $data->uom;
+            }
+        }
+        if (empty($displayUom)) {
+            $displayUom = CommonHelper::get_uom_name($sub_ic_data[0] ?? 0);
+        }
+
+        $lineQty = (float) ($data->qty ?? 0);
+        $lineAmount = (float) ($data->amount ?? 0);
+        $lineRate = (float) ($data->rate ?? 0);
+        if ($lineRate <= 0 && $lineQty > 0 && $lineAmount > 0) {
+            $lineRate = $lineAmount / $lineQty;
+        }
+
+        $lineBagQty = isset($data->bag_qty) ? (float) $data->bag_qty : 0;
         ?>
         <td title="{{$row->id}}" class="text-center">{{$sub_ic_data[4]}}</td>
 
-        <td class="text-center">{{CommonHelper::get_uom_name($sub_ic_data[0])}}</td>
+        <td class="text-center">{{ $displayUom }}</td>
         <td class="text-center"><?php  echo number_format($data->qty,2);?></td>
-        <td class="text-center">{{number_format($data->rate,2)}}</td>
+        <td class="text-center">{{ number_format($lineBagQty,2) }}</td>
+        <td class="text-center">{{ number_format($lineRate,2) }}</td>
         <td class="text-right">{{$data->tax}}</td>
         <td class="text-center">{{number_format($data->amount,2)}}</td>
       

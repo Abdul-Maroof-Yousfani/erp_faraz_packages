@@ -169,35 +169,47 @@ else
                                                                         <thead>
                                                                         <tr>
                                                                             <th class="text-center hidden-print">Item</th>
-
+                                                                            <th class="text-center" style="">Bag Qty</th>
                                                                             <th class="text-center" style="">UOM</th>
+                                                                            <th class="text-center" style="">Invoice Qty</th>
+                                                                            <th class="text-center" style="">Prev Return Qty</th>
+                                                                            <th class="text-center" style="">Balance Qty</th>
                                                                             <th class="text-center" style="">QTY</th>
                                                                             <th class="text-center" style="">Rate</th>
                                                                             <th class="text-center" style="">Amount</th>
-                                                                            <th class="text-center" style="">Tax %</th>
-                                                                            <th class="text-center" style="">Tax Amount</th>
-                                                                            <th class="text-center" style="">Net Amount</th>
+                                                                            <th class="text-center hide" style="">Tax Amount</th>
 
                                                                         </tr>
                                                                         </thead>
                                                                          <tbody>
                                                                     <tr>
                                                                         <td class="text-center">{{CommonHelper::get_item_name($invoice_data->item_id)}}</td>
+                                                                        <td class="text-center">{{ number_format((float)($invoice_data->bag_qty ?? 0), 2) }}</td>
 
 
-                                                                        <?php $uom_data=CommonHelper::get_subitem_detail($invoice_data->item_id);
-                                                                              $uom_data=explode(',',$uom_data);
-                                                                               $uom_id=$uom_data[0];
+                                                                        <?php
+                                                                            $uomName = '';
+                                                                            if (!empty($invoice_data->uom)):
+                                                                                $uomName = CommonHelper::get_uom_name($invoice_data->uom);
+                                                                                if (empty($uomName)):
+                                                                                    $uomName = $invoice_data->uom;
+                                                                                endif;
+                                                                            else:
+                                                                                $uom_data=CommonHelper::get_subitem_detail($invoice_data->item_id);
+                                                                                $uom_data=explode(',',$uom_data);
+                                                                                $uom_id=$uom_data[0] ?? 0;
+                                                                                $uomName = CommonHelper::get_uom_name($uom_id);
+                                                                            endif;
                                                                         ?>
-                                                                        <td class="text-center">{{CommonHelper::get_uom_name($uom_id)}}</td>
-                                                                        <td><input onkeyup="calc('<?php echo $counter ?>');check_qty(this.id,'{{$counter}}')"  onblur="calc('<?php echo $counter ?>');check_qty(this.id,'{{$counter}})" type="text" class="form-control number zerovalidate" name="qty{{$counter}}" id="qty{{$counter}}"/> </td>
+                                                                        <td class="text-center">{{ $uomName }}</td>
+                                                                        <td class="text-center">{{ number_format((float)$invoice_data->qty, 2) }}</td>
+                                                                        <td class="text-center">{{ number_format((float)$return_qty, 2) }}</td>
+                                                                        <td class="text-center">{{ number_format((float)($invoice_data->qty-$return_qty), 2) }}</td>
+                                                                        <td><input onkeyup="calc('<?php echo $counter ?>');check_qty(this.id,'{{$counter}}')"  onblur="calc('<?php echo $counter ?>');check_qty(this.id,'{{$counter}})" type="text" class="form-control number zerovalidate" name="qty{{$counter}}" id="qty{{$counter}}" value="{{ number_format((float)($invoice_data->qty-$return_qty), 2, '.', '') }}"/> </td>
                                                                         <td><input readonly type="text" class="form-control number" name="rate{{$counter}}" value="{{$invoice_data->rate}}" id="rate{{$counter}}"/> </td>
                                                                         <td><input readonly type="text" value="" class="form-control number amount" name="amount{{$counter}}" id="amount{{$counter}}"/> </td>
 
 
-                                                                        <td><input readonly type="text" value="{{$invoice_data->tax}}" class="form-control number amount" name="discount_percent{{$counter}}" id="discount_percent{{$counter}}"/></td>
-                                                                        <td><input readonly type="text" value="" class="form-control number amount" name="discount_amount{{$counter}}" id="discount_amount{{$counter}}"/></td>
-                                                                        <td><input readonly type="text" value="" class="form-control number net_amount zerovalidate requiredField" name="net_amount{{$counter}}" id="net_amount{{$counter}}"/></td>
                                                                     </tr>
                                                                          </tbody>
                                                                     </table>
@@ -307,7 +319,13 @@ else
     $(document).ready(function()
     {
         $('.number').number(true,2);
-
+        $('[id^=qty]').each(function () {
+            var rowNo = this.id.replace('qty', '');
+            if (rowNo) {
+                calc(rowNo);
+                check_qty(this.id, rowNo);
+            }
+        });
 
     });
 

@@ -1,152 +1,265 @@
-<?php
-use App\Helpers\CommonHelper;
-use App\Helpers\PurchaseHelper;
-use App\Helpers\ReuseableCode;
-$m = $_GET['m'];
+@php
+    use App\Helpers\CommonHelper;
+    use Illuminate\Support\Facades\DB;
 
-?>
+    // Fix: Get 'm' from request safely
+    $m = request()->get('m') ?? $_GET['m'] ?? '';
+@endphp
+
 @extends('layouts.default')
 
 @section('content')
 @include('number_formate')
 @include('select2')
+
 <div class="well_N">
     <div class="dp_sdw">    
         <div class="panel">
             <div class="panel-body">
                 <div class="row">
-                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="col-lg-12">
                         <div class="well">
                             <div class="row">
-                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                <div class="col-lg-12">
                                     <span class="subHeadingLabelClass">Edit Purchase Return Form</span>
                                 </div>
                             </div>
                             <div class="lineHeight">&nbsp;</div>
-                            <?php echo Form::open(array('url' => 'pad/updatePurchaseReturnDetail?m='.$m.'','id'=>'addPurchaseReturnDetail'));?>
+
+                            {!! Form::open(['url' => 'pad/updatePurchaseReturnDetail?m='.$m, 'id' => 'addPurchaseReturnDetail']) !!}
+
                             <div class="row">
                                 <div class="panel">
                                     <div class="panel-body">
+
+                                        <!-- Table -->
                                         <div class="row">
-                                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                            <div class="col-12">
                                                 <div class="table-responsive">
                                                     <table class="table table-bordered sf-table-list">
                                                         <thead>
-                                                        <th class="text-center">Sr.No</th>
-                                                        <th class="text-center">Item Name</th>
-                                                        <th class="text-center">Location</th>
-                                                        <th class="text-center">Batch Code</th>
-                                                        <th class="text-center"> Received Qty</th>
-                                                        <th class="text-center"> Return Qty Sum Total</th>
-                                                        <th class="text-center">Price</th>
-                                                        <th class="text-center">Amount</th>
-                                                        <th class="text-center">Stock Qty</th>
-                                                        <th class="text-center">Return Qty</th>
+                                                            <tr class="text-center">
+                                                                <th>Sr.No</th>
+                                                                <th>Item Name</th>
+                                                                <th>Location</th>
+                                                                <th>Batch Code</th>
+                                                                <th>Received Qty</th>
+                                                                <th>Return Qty Sum Total</th>
+                                                                <th>Price</th>
+                                                                <th>Amount</th>
+                                                                <th>Stock Qty</th>
+                                                                <th>Return Qty</th>
+                                                            </tr>
                                                         </thead>
                                                         <tbody>
-                                                        <?php
-                                                        $Counter = 1;
-                                                        $Count = 0;
-                                                        foreach($Detail as $Fil):
-                                                        ?>
-                                                        <input type="hidden" name="grn_data_id[]" value="{{$Fil->grn_data_id}}"/>
-                                                        <tr class="text-center">
-                                                            <td><?php echo $Counter++;?></td>
+                                                            @php 
+                                                                $Counter = 1; 
+                                                            @endphp
+                                                            @foreach($Detail as $Fil)
+                                                                @php
+                                                                    $currentInvoiceId = $Master->purchase_invoice_id ?? $Master->grn_id;
+                                                                    $alreadyReturned = (float) DB::connection('mysql2')
+                                                                        ->table('purchase_return_data')
+                                                                        ->where('status', 1)
+                                                                        ->where('purchase_invoice_id', $currentInvoiceId)
+                                                                        ->where('sub_item_id', $Fil->sub_item_id)
+                                                                        ->where('id', '!=', $Fil->id)
+                                                                        ->sum('return_qty');
 
-                                                            <input type="hidden" name="GrnDataId[]" readonly  value="<?php echo $Fil->grn_data_id;?>" class="form-control" />
-                                                            <td>
-                                                                <?php //echo  $Fil->description;//echo CommonHelper::getCompanyDatabaseTableValueById($m,'subitem','sub_ic',$Fil->sub_item_id);?>
-                                                                <input type="hidden" name="SubItemId[]" readonly id="subItemId_<?php echo $Fil->grn_data_id;?>" value="<?php echo $Fil->sub_item_id;?>" class="form-control" />
-                                                                <textarea  name="item_desc[]" readonly id="item_desc<?php echo $Fil->grn_data_id;?>"  class="form-control" style="margin: 0px 221.973px 0px 0px; resize: none; height: 90px;"><?php echo $Fil->description;?></textarea>
-                                                            </td>
-                                                            <td><?php echo CommonHelper::getCompanyDatabaseTableValueById($m,'warehouse','name',$Fil->warehouse_id);?>
-                                                                <input value="<?php echo $Fil->warehouse_id?>" type="hidden" name="WarehouseId[]" id="warehouse_id_<?php echo $Fil->grn_data_id; ?>"/>
-                                                            </td>
-                                                            <td><?php echo $Fil->batch_code;?>
-                                                                <input type="hidden" name="BatchCode[]" id="BatchCode<?php echo $Fil->grn_data_id?>" value="<?php echo $Fil->batch_code?>">
-                                                            </td>
-                                                            <td class="text-center"><?php echo number_format($Fil->recived_qty,2);?>
-                                                                <input value="<?php echo $Fil->recived_qty?>" type="hidden" name="PurchaseRecQty[]" id="purchase_recived_qty_<?php echo $Fil->grn_data_id; ?>"/>
-                                                            </td>
-                                                            <?php
-                                                                $currentInvoiceId = $Master->purchase_invoice_id ?? $Master->grn_id;
-                                                                $reurn = (float) DB::Connection('mysql2')->table('purchase_return_data')
-                                                                    ->where('status', 1)
-                                                                    ->where('purchase_invoice_id', $currentInvoiceId)
-                                                                    ->where('sub_item_id', $Fil->sub_item_id)
-                                                                    ->where('id', '!=', $Fil->id)
-                                                                    ->sum('return_qty');
-                                                                $remainingQty = max(((float) $Fil->recived_qty) - $reurn, 0);
-                                                            ?>
-                                                            <td class="text-center"><?php echo number_format($reurn, 2); ?></td>
-                                                            <input type="hidden" id="return_<?php echo $Fil->id; ?>" value="{{$reurn}}"/>
+                                                                    $remainingQty = max((float)$Fil->recived_qty - $alreadyReturned, 0);
+                                                                @endphp
 
-                                                            <td class="text-center"><?php echo number_format($Fil->rate,2);?>
-                                                                <input value="<?php echo $Fil->rate?>" type="hidden" name="Rate[]" id="rate_<?php echo $Fil->grn_data_id; ?>"/>
-                                                            </td>
-                                                            <td class="text-center">
-                                                                <input type="number" step="0.01" class="form-control" readonly name="Amount[]" id="amount_<?php echo $Fil->grn_data_id; ?>" value="<?php echo number_format($Fil->amount, 2, '.', ''); ?>"/>
-                                                            </td>
-                                                            <td>
-                                                                <input type="number" class="form-control" id="stock_qty<?php echo $Fil->grn_data_id?>" name="stock_qty[]" value="<?php echo number_format($remainingQty, 2, '.', ''); ?>" readonly>
-                                                            </td>
-                                                            <td>
-                                                                <input type="number" class="form-control ReturnQty" id="return_qty_<?php echo $Fil->grn_data_id?>" name="ReturnQty[]" value="<?php echo $Fil->return_qty?>" onkeyup="check_val('<?php echo $Fil->grn_data_id?>')">
-                                                                <input type="hidden" name="LoopVal[]" value="<?php echo $Count;?>">
-                                                            </td>
-                                                            <input type="hidden" name="discount_percent[]" value="{{$Fil->discount_percent}}"/>
-                                                        </tr>
-                                                        <?php
-                                                        $Count++;
-                                                        endforeach;?>
+                                                                <tr class="text-center">
+                                                                    <td>{{ $Counter++ }}</td>
+
+                                                                    <input type="hidden" name="grn_data_id[]" value="{{ $Fil->grn_data_id }}">
+                                                                    <input type="hidden" name="GrnDataId[]" value="{{ $Fil->grn_data_id }}">
+
+                                                                    <td>
+                                                                        <input type="hidden" name="SubItemId[]" id="subItemId_{{ $Fil->grn_data_id }}" value="{{ $Fil->sub_item_id }}">
+                                                                        <textarea name="item_desc[]" readonly id="item_desc{{ $Fil->grn_data_id }}" 
+                                                                            class="form-control" style="resize:none; height:90px;">
+                                                                            {{ $Fil->description }}
+                                                                        </textarea>
+                                                                    </td>
+
+                                                                    <td>
+                                                                        {{ CommonHelper::getCompanyDatabaseTableValueById($m, 'warehouse', 'name', $Fil->warehouse_id) }}
+                                                                        <input type="hidden" name="WarehouseId[]" id="warehouse_id_{{ $Fil->grn_data_id }}" value="{{ $Fil->warehouse_id }}">
+                                                                    </td>
+
+                                                                    <td>
+                                                                        {{ $Fil->batch_code }}
+                                                                        <input type="hidden" name="BatchCode[]" id="BatchCode{{ $Fil->grn_data_id }}" value="{{ $Fil->batch_code }}">
+                                                                    </td>
+
+                                                                    <td class="text-center">
+                                                                        {{ number_format($Fil->recived_qty, 2) }}
+                                                                        <input type="hidden" name="PurchaseRecQty[]" id="purchase_recived_qty_{{ $Fil->grn_data_id }}" value="{{ $Fil->recived_qty }}">
+                                                                    </td>
+
+                                                                    <td class="text-center">{{ number_format($alreadyReturned, 2) }}</td>
+                                                                    <input type="hidden" id="return_{{ $Fil->id }}" value="{{ $alreadyReturned }}">
+
+                                                                    <td class="text-center">
+                                                                        {{ number_format($Fil->rate, 2) }}
+                                                                        <input type="hidden" name="Rate[]" id="rate_{{ $Fil->grn_data_id }}" value="{{ $Fil->rate }}">
+                                                                    </td>
+
+                                                                    <td>
+                                                                        <input type="number" step="0.01" class="form-control text-end" readonly 
+                                                                               name="Amount[]" id="amount_{{ $Fil->grn_data_id }}" 
+                                                                               value="{{ number_format($Fil->amount, 2, '.', '') }}">
+                                                                    </td>
+
+                                                                    <td>
+                                                                        <input type="number" class="form-control text-end" readonly 
+                                                                               id="stock_qty{{ $Fil->grn_data_id }}" name="stock_qty[]" 
+                                                                               value="{{ number_format($remainingQty, 2, '.', '') }}">
+                                                                    </td>
+
+                                                                    <td>
+                                                                        <input type="number" step="any" class="form-control text-end ReturnQty" 
+                                                                               id="return_qty_{{ $Fil->grn_data_id }}" 
+                                                                               name="ReturnQty[]" 
+                                                                               value="{{ $Fil->return_qty ?? 0 }}" 
+                                                                               onkeyup="check_val('{{ $Fil->grn_data_id }}')">
+                                                                        <input type="hidden" name="LoopVal[]" value="{{ $loop->index }}">
+                                                                    </td>
+
+                                                                    <input type="hidden" name="discount_percent[]" value="{{ $Fil->discount_percent }}">
+                                                                </tr>
+                                                            @endforeach
                                                         </tbody>
                                                     </table>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="row">
-                                            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
-                                                <?php
 
-                                                $PurchaseReturnNo = $Master->pr_no;
-                                                $PurchaseInvoiceData = DB::Connection('mysql2')->table('new_purchase_voucher')
-                                                    ->where('status', 1)
-                                                    ->where('id', $Master->grn_id)
-                                                    ->select('id', 'pv_no', 'pv_date')
-                                                    ->first();
-                                                ?>
-                                                <label for="">Purchase Return No</label>
-                                                <input name="PrNo" type="text" class="form-control" id="" value="<?php echo strtoupper($PurchaseReturnNo)?>" readonly>
+                                        <!-- Header Fields -->
+                                        <div class="row mt-4">
+                                            <div class="col-lg-4 col-md-4">
+                                                <label>Purchase Return No</label>
+                                                <input name="PrNo" type="text" class="form-control" 
+                                                       value="{{ strtoupper($Master->pr_no) }}" readonly>
                                             </div>
-                                            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
-                                                <label for="">Purchase Return Date</label>
-                                                <input type="date" id="PurchaseReturnDate" name="PurchaseReturnDate" value="<?php echo $Master->pr_date?>" class="form-control">
+
+                                            <div class="col-lg-4 col-md-4">
+                                                <label>Purchase Return Date</label>
+                                                <input type="date" id="PurchaseReturnDate" name="PurchaseReturnDate" 
+                                                       value="{{ $Master->pr_date }}" class="form-control">
                                             </div>
-                                            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
-                                                <label for="">Purchase Invoice Date</label>
-                                                <input type="hidden" name="EditId" value="<?php echo $Master->id?>">
-                                                <input type="hidden" name="supplier" value="<?php echo $Master->supplier_id?>">
-                                                <input type="date" id="InvoiceDate" name="InvoiceDate" value="<?php echo $PurchaseInvoiceData->pv_date ?? $Master->grn_date?>" class="form-control" readonly>
-                                                <input type="hidden" id="PurchaseInvoiceNo" name="PurchaseInvoiceNo" value="<?php echo $PurchaseInvoiceData->pv_no ?? $Master->grn_no?>" class="form-control" readonly>
-                                                <input type="hidden" id="PurchaseInvoiceId" name="PurchaseInvoiceId" value="<?php echo $PurchaseInvoiceData->id ?? $Master->grn_id?>" class="form-control" readonly>
-                                                <input type="hidden" id="PurchaseInvoiceDate" name="PurchaseInvoiceDate" value="<?php echo $PurchaseInvoiceData->pv_date ?? $Master->grn_date?>" class="form-control" readonly>
+
+                                            <div class="col-lg-4 col-md-4">
+                                                <label>Purchase Invoice Date</label>
+                                                <input type="hidden" name="EditId" value="{{ $Master->id }}">
+                                                <input type="hidden" name="supplier" value="{{ $Master->supplier_id }}">
+
+                                                <input type="date" id="InvoiceDate" name="InvoiceDate" 
+                                                       value="{{ $PurchaseInvoiceData->pv_date ?? $Master->grn_date ?? '' }}" 
+                                                       class="form-control" readonly>
+
+                                                <input type="hidden" id="PurchaseInvoiceNo" name="PurchaseInvoiceNo" 
+                                                       value="{{ $PurchaseInvoiceData->pv_no ?? $Master->grn_no ?? '' }}">
+                                                <input type="hidden" id="PurchaseInvoiceId" name="PurchaseInvoiceId" 
+                                                       value="{{ $PurchaseInvoiceData->id ?? $Master->grn_id }}">
                                             </div>
-                                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                                <label for="">Remarks</label>
-                                                <span class="rflabelsteric"><strong>*</strong></span>
-                                                <textarea name="Remarks" id="Remarks" cols="30" rows="3" class="form-control requiredField" placeholder="REMARKS"><?php echo $Master->remarks;?></textarea>
+
+                                            <div class="col-lg-12 mt-3">
+                                                <label>Remarks <span class="text-danger">*</span></label>
+                                                <textarea name="Remarks" id="Remarks" rows="3" 
+                                                    class="form-control requiredField">{{ $Master->remarks }}</textarea>
                                             </div>
                                         </div>
+
+                                        <!-- Tax Summary Section -->
+                                        <div class="row mt-4">
+                                            <div class="col-lg-6">
+                                                <table class="table table-bordered sf-table-list hide">
+                                                    <thead>
+                                                        <tr><th colspan="2" class="text-center">Purchase Invoice Summary</th></tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>Total Amount Before Tax</td>
+                                                            <td class="text-end">
+                                                                <input type="text" class="form-control text-end" id="original_before_tax" 
+                                                                       value="{{ number_format($originalBeforeTaxAmount ?? 0, 2, '.', '') }}" readonly>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Sales Tax %</td>
+                                                            <td class="text-end">
+                                                                <input type="text" class="form-control text-end" id="original_sales_tax_percent" 
+                                                                       value="{{ number_format($originalTaxPercent ?? 0, 2, '.', '') }}" readonly>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Sales Tax Amount</td>
+                                                            <td class="text-end">
+                                                                <input type="text" class="form-control text-end" id="original_sales_tax" 
+                                                                       value="{{ number_format($originalTaxAmount ?? 0, 2, '.', '') }}" readonly>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Total Amount After Tax</td>
+                                                            <td class="text-end">
+                                                                <input type="text" class="form-control text-end" id="original_after_tax" 
+                                                                       value="{{ number_format($originalAfterTaxAmount ?? 0, 2, '.', '') }}" readonly>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <div class="col-lg-6">
+                                                <table class="table table-bordered sf-table-list" style="background:#fff;">
+                                                    <thead>
+                                                        <tr class="hide"><th colspan="2" class="text-center">Current Return Summary</th></tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>Return Amount Before Tax</td>
+                                                            <td class="text-end">
+                                                                <input type="text" class="form-control text-end" id="return_before_tax" value="0.00" readonly>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Adjusted Sales Tax %</td>
+                                                            <td class="text-end">
+                                                                <input type="text" class="form-control text-end" id="return_sales_tax_percent" 
+                                                                       value="{{ number_format($originalTaxPercent ?? 0, 2, '.', '') }}" readonly>
+                                                            </td>
+                                                        </tr>
+                                                        <tr class="hide">
+                                                            <td>Adjusted Sales Tax Amount</td>
+                                                            <td class="text-end">
+                                                                <input type="text" class="form-control text-end" id="return_sales_tax" value="0.00" readonly>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong>Total Return Amount After Tax</strong></td>
+                                                            <td class="text-end">
+                                                                <input type="text" class="form-control text-end" id="return_after_tax" value="0.00" readonly>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-right">
-                                    {{ Form::submit('Submit', ['class' => 'btn btn-success','id'=> 'BtnSubmit']) }}
-                                    <button type="reset" id="reset" class="btn btn-primary">Clear Form</button>
+
+                            <div class="row mt-3">
+                                <div class="col-lg-12 text-right">
+                                    {!! Form::submit('Update Return', ['class' => 'btn btn-success', 'id' => 'BtnSubmit']) !!}
+                                    <button type="reset" class="btn btn-primary">Reset</button>
                                 </div>
                             </div>
-                            <?php echo Form::close();?>
+
+                            {!! Form::close() !!}
                         </div>
                     </div>
                 </div>
@@ -155,76 +268,57 @@ $m = $_GET['m'];
     </div>
 </div>
 
+<script>
+    function check_val(Id) {
+        const stockQty     = parseFloat($('#stock_qty' + Id).val()) || 0;
+        const returnQty    = parseFloat($('#return_qty_' + Id).val()) || 0;
+        const actualQty    = parseFloat($('#purchase_recived_qty_' + Id).val()) || 0;
+        const alreadyRet   = parseFloat($('#return_' + Id).val()) || 0;
 
-<script !src="">
-
-    $('.ReturnQty').on('keypress', function (event) {
-        var regex = new RegExp("^[a-zA-Z0-9]+$");
-        var key = String.fromCharCode(!event.charCode ? event.which : event.charCode);
-        if (!regex.test(key)) {
-            event.preventDefault();
-            return false;
-        }
-    });
-
-
-    function check_val(Id)
-    {
-        var stock_qty=parseFloat($('#stock_qty'+Id).val());
-        var ReturnQty = parseFloat($('#return_qty_'+Id).val());
-
-        var ActualQty = parseFloat($('#purchase_recived_qty_'+Id).val());
-        var returnn = parseFloat($('#return_'+Id).val());
-        ActualQty=ActualQty - returnn;
+        const maxAllowed = actualQty - alreadyRet;
 
         update_line_amount(Id);
 
-        if(ReturnQty > ActualQty)
-        {
-            alert('Please Correct Your Return Qty....!');
-            $('#return_qty_'+Id).val('');
-            $('#amount_'+Id).val('0.00');
-        }
-        else
-        {
-            if (ReturnQty >stock_qty)
-            {
-                alert('Please Correct Your Return Qty....!');
-                $('#return_qty_'+Id).val('');
-                $('#amount_'+Id).val('0.00');
-            }
+        if (returnQty > maxAllowed || returnQty > stockQty) {
+            alert('Return quantity cannot exceed remaining stock!');
+            $('#return_qty_' + Id).val(0);
+            $('#amount_' + Id).val('0.00');
+            calculate_return_summary();
         }
     }
 
-    function update_line_amount(Id)
-    {
-        var qty = parseFloat($('#return_qty_' + Id).val());
-        var rate = parseFloat($('#rate_' + Id).val());
-        if (isNaN(qty)) {
-            qty = 0;
-        }
-        if (isNaN(rate)) {
-            rate = 0;
-        }
+    function update_line_amount(Id) {
+        const qty  = parseFloat($('#return_qty_' + Id).val()) || 0;
+        const rate = parseFloat($('#rate_' + Id).val()) || 0;
         $('#amount_' + Id).val((qty * rate).toFixed(2));
+        calculate_return_summary();
     }
 
-    function ChkUnChk(Id)
-    {
+    function calculate_return_summary() {
+        const taxPercent = parseFloat($('#original_sales_tax_percent').val()) || 0;
+        let returnBeforeTax = 0;
 
-        if($('#enable_disable_'+Id).prop("checked") == true)
-        {
-            $('#return_qty_'+Id).prop('readonly',false);
-            $('#return_qty_'+Id).val('');
-            $('#amount_'+Id).val('0.00');
-        }
-        else
-        {
-            $('#return_qty_'+Id).prop('readonly',true);
-            $('#return_qty_'+Id).val('0.00');
-            $('#amount_'+Id).val('0.00');
-        }
+        // Sum amount of all rows (since this is edit mode, all rows are active)
+        $('input[name="Amount[]"]').each(function() {
+            returnBeforeTax += parseFloat($(this).val()) || 0;
+        });
+
+        const returnTaxAmount = (returnBeforeTax * taxPercent) / 100;
+
+        $('#return_before_tax').val(returnBeforeTax.toFixed(2));
+        $('#return_sales_tax').val(returnTaxAmount.toFixed(2));
+        $('#return_after_tax').val((returnBeforeTax + returnTaxAmount).toFixed(2));
     }
+
+    $(document).ready(function() {
+        calculate_return_summary();
+
+        // Recalculate when any return qty changes
+        $('.ReturnQty').on('keyup change', function() {
+            calculate_return_summary();
+        });
+    });
 </script>
-<script src="{{ URL::asset('assets/js/select2/js_tabindex.js') }}"></script>
+
+<script src="{{ asset('assets/js/select2/js_tabindex.js') }}"></script>
 @endsection

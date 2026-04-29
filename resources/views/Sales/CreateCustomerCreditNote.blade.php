@@ -92,6 +92,7 @@ use App\Helpers\CommonHelper;
                                           
                                                     <th class="text-center col-sm-1">UOM</th>
                                                     <th class="text-center col-sm-1">QTY.</th>
+                                                    <th class="text-center col-sm-1">Bag QTY.</th>
                                                     <th class="text-center col-sm-1">Rate</th>
                                                     <th class="text-center col-sm-1">Discount</th>
                                                     <th class="text-center col-sm-1">Amount</th>
