@@ -940,10 +940,10 @@ use App\Helpers\ReuseableCode;
 
             $('#total_amount').val(amount);
 
-            var sales_tax_per = numVal('#sales_tax_rate');
-            var sales_tax_further_per = numVal('#sales_tax_further_per');
-            var advance_tax_rate = numVal('#advance_tax_rate');
-            var cartage_amount = numVal('#cartage_amount');
+            var sales_tax_per = $('#sales_tax_rate').val() || 0;
+            var sales_tax_further_per = $('#sales_tax_further_per').val() || 0;
+            var advance_tax_rate = $('#advance_tax_rate').val() || 0;
+            var cartage_amount = $('#cartage_amount').val() || 0;
 
             var sales_tax = (amount / 100) * sales_tax_per;
             var sales_tax_further = (amount / 100) * sales_tax_further_per;
