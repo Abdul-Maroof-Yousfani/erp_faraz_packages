@@ -44,7 +44,7 @@ use App\Helpers\ReuseableCode;
         $id=$row;
         $good_recipt_note=CommonHelper::get_goodreciptnotedata($row,0);
         $purchase_reqiest=CommonHelper::get_goodreciptnotedata($row,1);
-        $currency = $purchase_reqiest->currency_rate;
+        $currency = $purchase_reqiest->currency_rate ?? 1;
         $po_no = $good_recipt_note->po_no;
         if($good_recipt_note->type==0):
             $po_date=CommonHelper::changeDateFormat($purchase_reqiest->purchase_request_date);

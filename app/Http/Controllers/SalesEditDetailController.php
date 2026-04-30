@@ -61,10 +61,24 @@ class SalesEditDetailController extends Controller
 
     function updateDeliveryNote(Request $request)
     {
-        // dd($request->all());
-        $grand_send_qty = 0;
         DB::Connection('mysql2')->beginTransaction();
         try {
+            $count = (int) $request->input('count', 0);
+            if ($count < 1) {
+                throw new \Exception('No items provided in the delivery note.');
+            }
+
+            $buyers_id = $request->input('buyers_id');
+            $buyers_id = explode('*', $buyers_id)[0] ?? $buyers_id;
+
+            $salesTaxRate = (float) CommonHelper::check_str_replace($request->input('sales_tax_rate', 0));
+            $salesTaxAmount = (float) CommonHelper::check_str_replace($request->input('sales_tax', 0));
+            $furtherTaxRate = (float) CommonHelper::check_str_replace($request->input('sales_tax_further_per', 0));
+            $furtherTaxAmount = (float) CommonHelper::check_str_replace($request->input('sales_tax_further', 0));
+            $advanceTaxRate = (float) CommonHelper::check_str_replace($request->input('advance_tax_rate', 0));
+            $advanceTaxAmount = (float) CommonHelper::check_str_replace($request->input('advance_tax_amount', 0));
+            $cartageAmount = (float) CommonHelper::check_str_replace($request->input('cartage_amount', 0));
+
             $delivery_note = new DeliveryNote();
             $delivery_note = $delivery_note->SetConnection('mysql2');
             $delivery_note = $delivery_note->find($request->edit_id);
@@ -82,19 +96,15 @@ class SalesEditDetailController extends Controller
             $delivery_note->despacth_through = $request->despacth_through ?? '';
             $delivery_note->destination = $request->destination ?? '';
             $delivery_note->terms_of_delivery = $request->terms_of_delivery ?? '';
-            $delivery_note->buyers_id = $request->buyers_id;
+            $delivery_note->buyers_id = $buyers_id;
             $delivery_note->due_date = $request->due_date;
-            $delivery_note->sales_tax_amount = CommonHelper::check_str_replace($request->sales_tax_apply);
-            $delivery_note->sales_tax_rate = $request->sales_tax_rate;
-
-            $delivery_note->sales_tax_further_per =$request->sales_tax_further_per;
-            $delivery_note->sales_tax_further = $request->sales_tax_further;
-
-            $delivery_note->advance_tax_amount =$request->advance_tax_amount;
-            $delivery_note->advance_tax_rate = $request->advance_tax_rate;
-            $delivery_note->cartage_amount = $request->cartage_amount;
-            
-            $SalesTaxAmount = CommonHelper::check_str_replace($request->sales_tax_apply);
+            $delivery_note->sales_tax_amount = $salesTaxAmount;
+            $delivery_note->sales_tax_rate = $salesTaxRate;
+            $delivery_note->sales_tax_further_per = $furtherTaxRate;
+            $delivery_note->sales_tax_further = $furtherTaxAmount;
+            $delivery_note->advance_tax_amount = $advanceTaxAmount;
+            $delivery_note->advance_tax_rate = $advanceTaxRate;
+            $delivery_note->cartage_amount = $cartageAmount;
             $delivery_note->description = $request->description;
             $delivery_note->status = 1;
             $delivery_note->date = date('Y-m-d');
@@ -104,198 +114,137 @@ class SalesEditDetailController extends Controller
 
             DB::Connection('mysql2')->table('delivery_note_data')->where('master_id', $request->edit_id)->delete();
             DB::Connection('mysql2')->table('stock')->where('main_id', $request->edit_id)->where('voucher_no', $request->gd_no)->where('voucher_type', 5)->delete();
-            
-            $count = $request->count;
-            $Actualsend_qty = 0;
-            $countOfGroupBy = 1;
 
-            for ($i = 1; $i <= $count; $i++):
+            $stock_rows = [];
+            $group_counter = 1;
+            $total_grand_qty = 0;
+            $total_grand_amount = 0;
 
-                $batch_codes = $request->input('batch_codes' . $i);
-                $out_qtys = $request->input('out_qtys' . $i);
+            for ($i = 1; $i <= $count; $i++) {
+                $item_id = $request->input("item_id{$i}");
+                if (!$item_id) {
+                    continue;
+                }
 
-                $total_send_qty = 0;
-                $total_amount = 0;
-                $actual_qty = 0;
-                $batch_code_string = [];
-                $out_qty_string = [];
-                $stock_rows = [];
+                $qty = (float) CommonHelper::check_str_replace($request->input("send_qty{$i}", 0));
+                $send_rate = (float) CommonHelper::check_str_replace($request->input("send_rate{$i}", 0));
+                $send_discount = (float) CommonHelper::check_str_replace($request->input("send_discount{$i}", 0));
+                $send_amount = $qty * $send_rate;
+                if ($send_discount > 0) {
+                    $send_amount += ($send_amount * $send_discount) / 100;
+                }
 
-                // foreach ($batch_codes as $index => $batch_code) {
-                    $qty = CommonHelper::check_str_replace($request->input('send_qty' . $i));
-                    $amount = CommonHelper::check_str_replace($request->input('send_amount' . $i));
-                    $rate = CommonHelper::check_str_replace($request->input('send_rate' . $i));
+                $warehouse_id = $request->input("warehouse{$i}", 1);
+                $desc = $request->input("desc{$i}", '');
+                $data_id = $request->input("data_id{$i}");
+                $bundles_id = $request->input("bundles_id{$i}", 0);
 
-                    // $send_qty = CommonHelper::check_str_replace($out_qtys[$index]);
-                    $stock_qty = ReuseableCode::get_stock(
-                        $request->input('item_id' . $i),
-                        $request->input('warehouse' . $i),
-                        $qty,
-                        0);
+                if ($qty <= 0) {
+                    continue;
+                }
 
-                    if ($stock_qty < 0) {
-                        DB::rollBack();
-                        die("Stock not available for batch 0");
-                    }
+                $in = DB::Connection('mysql2')->table('stock')->where('status', 1)
+                    ->whereIn('voucher_type', [1, 4, 6, 3, 10, 11])
+                    ->where('sub_item_id', $item_id)
+                    ->where('warehouse_id', $warehouse_id)
+                    ->select('stock.*', DB::raw('SUM(qty) As qty'), DB::raw('SUM(amount) As amount'))
+                    ->first();
 
-                    $average_cost = ReuseableCode::average_cost_sales(
-                        $request->input('item_id' . $i),
-                        $request->input('warehouse' . $i),
-                        0);
+                $out = DB::Connection('mysql2')->table('stock')->where('status', 1)
+                    ->whereIn('voucher_type', [2, 5, 9, 8])
+                    ->where('sub_item_id', $item_id)
+                    ->where('warehouse_id', $warehouse_id)
+                    ->select('stock.*', DB::raw('SUM(qty) As qty'), DB::raw('SUM(amount) As amount'))
+                    ->first();
 
-                    
-                    $actual_qty += $qty;
-                    $total_send_qty += $qty;
-                    $grand_send_qty += $qty;
-                    $total_amount += $amount;
+                $available_qty = (float) (($in->qty ?? 0) - ($out->qty ?? 0));
+                if ($available_qty < $qty) {
+                    throw new \Exception("Insufficient stock for item ID {$item_id} (requested: {$qty}, available: {$available_qty})");
+                }
 
-                    $batch_code_string[] = 0;
-                    $out_qty_string[] = $qty;
+                $average_cost = ReuseableCode::average_cost_sales($item_id, $warehouse_id, 0);
 
-                    $stock_rows[] = [
-                        'main_id' => $id,
-                        'master_id' => 0,
-                        'voucher_no' => $request->gd_no,
-                        'voucher_date' => $request->gd_date,
-                        'supplier_id' => 0,
-                        'customer_id' => $request->buyers_id,
-                        'voucher_type' => 5,
-                        'rate' => $rate,
-                        'sub_item_id' => $request->input('item_id' . $i),
-                        'batch_code' => 0,
-                        'qty' => $qty,
-                        'discount_percent' => $request->input('send_discount' . $i) ?? 0,
-                        'discount_amount' => 0,
-                        'amount' => $qty * $average_cost,
-                        //'amount' => $amount,
-                        'status' => 1,
-                        'warehouse_id' => $request->input('warehouse' . $i),
-                        'username' => Auth::user()->username,
-                        'created_date' => date('Y-m-d'),
-                        'opening' => 0,
-                        'so_data_id' => $request->input('data_id' . $i)
-                    ];
-                // }
+                $stock_rows[] = [
+                    'main_id' => $id,
+                    'master_id' => 0,
+                    'voucher_no' => $request->gd_no,
+                    'voucher_date' => $request->gd_date,
+                    'supplier_id' => 0,
+                    'customer_id' => $buyers_id,
+                    'voucher_type' => 5,
+                    'rate' => $send_rate,
+                    'sub_item_id' => $item_id,
+                    'batch_code' => '',
+                    'qty' => $qty,
+                    'discount_percent' => $send_discount,
+                    'discount_amount' => 0,
+                    'amount' => $qty * $average_cost,
+                    'status' => 1,
+                    'warehouse_id' => $warehouse_id,
+                    'username' => Auth::user()->username ?? Auth::user()->name,
+                    'created_date' => date('Y-m-d'),
+                    'opening' => 0,
+                    'so_data_id' => $data_id,
+                ];
+
+                $lineSalesTaxAmount = ($send_amount * $salesTaxRate) / 100;
+                $lineFurtherTaxAmount = ($send_amount * $furtherTaxRate) / 100;
+                $lineAdvanceTaxAmount = ($send_amount * $advanceTaxRate) / 100;
 
                 $delivery_note_data = new DeliveryNoteData();
                 $delivery_note_data = $delivery_note_data->SetConnection('mysql2');
                 $delivery_note_data->master_id = $id;
                 $delivery_note_data->so_id = $request->master_id;
-                $delivery_note_data->desc = $request->input('desc' . $i);
-                $delivery_note_data->so_data_id = $request->input('data_id' . $i);
+                $delivery_note_data->desc = $desc;
+                $delivery_note_data->so_data_id = $data_id;
                 $delivery_note_data->gd_no = $request->gd_no;
-                $delivery_note_data->gd_date = $request->input('gd_date');
-                $delivery_note_data->item_id = $request->input('item_id' . $i);
-                $delivery_note_data->warehouse_id = $request->input('warehouse' . $i);
-                $delivery_note_data->groupby =  $countOfGroupBy;//$request->input('groupby' . $i);
-                $delivery_note_data->bundles_id = $request->input('bundles_id' . $i);
-                $delivery_note_data->tax = $request->input('send_discount' . $i);
-                $delivery_note_data->tax_amount = $request->input('send_discount_amount' . $i);
+                $delivery_note_data->gd_date = $request->gd_date;
+                $delivery_note_data->item_id = $item_id;
+                $delivery_note_data->warehouse_id = $warehouse_id;
+                $delivery_note_data->groupby = $group_counter;
+                $delivery_note_data->bundles_id = $bundles_id;
+                $delivery_note_data->tax = $salesTaxRate;
+                $delivery_note_data->tax_amount = $lineSalesTaxAmount;
+                $delivery_note_data->batch_code = '';
+                $delivery_note_data->out_qty_details = (string) $qty;
+                $delivery_note_data->rate = $send_rate;
+                $delivery_note_data->amount = $send_amount;
+                $delivery_note_data->qty = $qty;
+                $delivery_note_data->sales_tax_further_per = $furtherTaxRate;
+                $delivery_note_data->sales_tax_further = $lineFurtherTaxAmount;
+                $delivery_note_data->advance_tax_rate = $advanceTaxRate;
+                $delivery_note_data->advance_tax_amount = $lineAdvanceTaxAmount;
                 $delivery_note_data->status = 1;
                 $delivery_note_data->date = date('Y-m-d');
                 $delivery_note_data->username = Auth::user()->name;
-
-                $delivery_note_data->batch_code = implode(',', $batch_codes);
-                $delivery_note_data->out_qty_details = implode(',', $out_qtys);
-                
-                $delivery_note_data->rate = $rate;
-                $delivery_note_data->amount = $amount;
-                $delivery_note_data->qty = $qty;
                 $delivery_note_data->save();
-                $master_data_id = $delivery_note_data->id;
 
-                foreach ($stock_rows as &$row) {
-                    $row['main_id'] = $id;
-                    $row['master_id'] = $master_data_id;
-                }
+                $stock_rows[count($stock_rows) - 1]['master_id'] = $delivery_note_data->id;
 
-                unset($row);
-                DB::connection('mysql2')->table('stock')->insert($stock_rows);
-                $countOfGroupBy++;
-            endfor;
-
-                // $delivery_note_data = new DeliveryNoteData();
-                // $delivery_note_data = $delivery_note_data->SetConnection('mysql2');
-                // $delivery_note_data->master_id = $request->edit_id;
-                // $delivery_note_data->so_id = $request->master_id;
-                // $delivery_note_data->so_data_id = $request->input('data_id' . $i);
-                // $delivery_note_data->gd_no = $request->gd_no;
-                // $delivery_note_data->gd_date = $request->input('gd_date');
-                // $delivery_note_data->item_id = $request->input('item_id' . $i);
-                // $delivery_note_data->batch_code = $request->input('batch_code' . $i);
-
-                // $qty = CommonHelper::check_str_replace($request->input('qty' . $i));
-                // $actual_qty += DB::Connection('mysql2')->table('sales_order_data')->where('id', $request->input('data_id' . $i))->first()->qty;
-                // $send_qty = CommonHelper::check_str_replace($request->input('send_qty' . $i));
-
-                // $rate = CommonHelper::check_str_replace($request->input('send_rate' . $i));
-                // $amount = CommonHelper::check_str_replace($request->input('send_amount' . $i));
-
-                // $delivery_note_data->qty = $send_qty;
-
-                // $delivery_note_data->rate = $rate;
-                // $delivery_note_data->tax = $request->input('send_discount' . $i);
-                // $delivery_note_data->tax_amount = $request->input('send_discount_amount' . $i);
-                // $delivery_note_data->amount = $amount;
-                // $total_amount += $amount;
-
-
-                // $delivery_note_data->warehouse_id = $request->input('warehouse' . $i);
-                // $delivery_note_data->groupby = $request->input('groupby' . $i);
-                // $delivery_note_data->bundles_id = $request->input('bundles_id' . $i);
-                // $delivery_note_data->status = 1;
-                // $delivery_note_data->date = date('Y-m-d');
-                // $delivery_note_data->username = Auth::user()->name;
-
-                // $delivery_note_data->save();
-                // $master_data_id = $delivery_note_data->id;
-                // //$Actualsend_qty += DB::Connection('mysql2')->table('delivery_note_data')->where('so_data_id',$request->input('data_id' . $i))->first()->qty;
-                // $Actualsend_qty = DB::Connection('mysql2')->table('delivery_note_data')->where('so_data_id', $request->input('data_id' . $i))->sum('qty');
-                // $total_send_qty += $Actualsend_qty;
-
-                // $stock = array
-                // (
-                //     'main_id' => $request->edit_id,
-                //     'master_id' => $master_data_id,
-                //     'voucher_no' => $request->gd_no,
-                //     'voucher_date' => $request->gd_date,
-                //     'supplier_id' => 0,
-                //     'customer_id' => $request->buyers_id,
-                //     'voucher_type' => 5,
-                //     'rate' => $rate,
-                //     'sub_item_id' => $request->input('item_id' . $i),
-                //     'batch_code' => $request->input('batch_code' . $i),
-                //     'qty' => $send_qty,
-                //     'amount' => $rate * $send_qty,
-                //     'status' => 1,
-                //     'warehouse_id' => $request->input('warehouse' . $i),
-                //     'username' => Auth::user()->username,
-                //     'created_date' => date('Y-m-d'),
-                //     'created_date' => date('Y-m-d'),
-                //     'opening' => 0,
-                //     'so_data_id' => $request->input('data_id' . $i)
-                // );
-                // DB::Connection('mysql2')->table('stock')->insert($stock);
-
-
-            if ($grand_send_qty == $actual_qty) {
-                $sale_order = new Sales_Order();
-                $sale_order = $sale_order->SetConnection('mysql2');
-                $sale_order = $sale_order->find($request->master_id);
-                $sale_order->delivery_note_status = 1;
-                $sale_order->save();
-            } else {
-                $sale_order = new Sales_Order();
-                $sale_order = $sale_order->SetConnection('mysql2');
-                $sale_order = $sale_order->find($request->master_id);
-                $sale_order->delivery_note_status = 0;
-                $sale_order->save();
+                $total_grand_qty += $qty;
+                $total_grand_amount += $send_amount;
+                $group_counter++;
             }
 
-            SalesHelper::sales_activity($request->gd_no, $request->gd_date, $total_amount + $SalesTaxAmount, 2, 'Update');
+            if (empty($stock_rows)) {
+                throw new \Exception('Please enter delivery quantity for at least one item.');
+            }
+
+            DB::connection('mysql2')->table('stock')->insert($stock_rows);
+
+            if ($request->master_id) {
+                $sale_order = Sales_Order::on('mysql2')->find($request->master_id);
+                if ($sale_order) {
+                    $sale_order->delivery_note_status = 1;
+                    $sale_order->save();
+                }
+            }
+
+            SalesHelper::sales_activity($request->gd_no, $request->gd_date, $total_grand_amount + $salesTaxAmount, 2, 'Update');
             DB::Connection('mysql2')->commit();
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             DB::rollBack();
+            return back()->withErrors(['error' => $ex->getMessage()]);
         }
 
         return Redirect::to('sales/viewDeliveryNoteList?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . $_GET['m']);

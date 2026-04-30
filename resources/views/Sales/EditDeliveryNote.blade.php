@@ -105,12 +105,12 @@ use App\Helpers\CommonHelper;
                                     </div>
                                     <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
                                         <label class="sf-label">Despatched through</label>
-                                        <input readonly type="text" class="form-control" placeholder="" name="despacth_through" id="despacth_through" value="{{$delivery_note->despacth_through}}" />
+                                        <input type="text" class="form-control" placeholder="" name="despacth_through" id="despacth_through" value="{{$delivery_note->despacth_through}}" />
                                     </div>
 
                                     <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
                                         <label class="sf-label">Destination</label>
-                                        <input readonly type="text" class="form-control" placeholder="" name="destination" id="destination" value="{{$delivery_note->destination}}" />
+                                        <input type="text" class="form-control" placeholder="" name="destination" id="destination" value="{{$delivery_note->destination}}" />
                                     </div>
                                 </div>
 
@@ -172,13 +172,12 @@ use App\Helpers\CommonHelper;
                                                 <tr>
                                                     <th class="text-center">S.NO</th>
                                                     <th class="text-center">Item</th>
-                                                    <th class="text-center">Bags</th>
+                                                    <th class="text-center">Pack Type</th>
                                                     {{-- <th class="text-center">Color</th> --}}
-                                                    <th class="text-center" >QTY. <span class="rflabelsteric"><strong>*</strong></span></th>
-                                                    <th class="text-center" >WareHouse. <span class="rflabelsteric"><strong>*</strong></span></th>
-                                                    <!-- <th style="width: 150px" class="text-center" >Batch Code <span class="rflabelsteric"><strong>*</strong></span></th>
-                                                    <th class="text-center" >In Stock<span class="rflabelsteric"><strong>*</strong></span></th> -->
-                                                    <th class="text-center">Rate</th>
+                                                    <th class="text-center" >QTY (KG) <span class="rflabelsteric"><strong>*</strong></span></th>
+                                                    <th class="text-center" >WareHouse <span class="rflabelsteric"><strong>*</strong></span></th>
+                                                    <th class="text-center">Available Stock</th>
+                                                    <th class="text-center hidee">Rate</th>
                                                     <!-- <th class="text-center hidee">Tax%</th>
                                                     <th class="text-center hidee">Tax Amount</th> -->
                                                     <th class="text-center">Net Amount</th>
@@ -219,8 +218,10 @@ use App\Helpers\CommonHelper;
 
                                                 <tr>
                                                     <td class="text-center" class="text-center"><?php echo $counter;?></td>
-                                                    <td id="{{$row1->item_id}}" class="text-left">{{ $row1->item_code .' -- '. $row1->sub_ic }}</td>
-                                                    <td>{{ $row1->qty/$row1->pack_size }}</td>
+                                                    <td id="{{$row1->item_id}}" class="text-left">
+                                                        <textarea readonly class="form-control" name="desc{{$id_count}}" style="margin: 0px 221.973px 0px 0px; resize: none; height: 90px;">{{$row1->sub_ic}}</textarea>
+                                                    </td>
+                                                    <td>{{ $row1->pack_size.' '.$row1->uom_name.' '.$row1->type }}</td>
                                                     {{-- <td>{{ $row1->color }}</td> --}}
 
                                                     <?php $sub_ic_detail=CommonHelper::get_subitem_detail($row1->item_id);
@@ -230,13 +231,14 @@ use App\Helpers\CommonHelper;
 
                                                     <?php $total_qty+=$row1->qty; ?>
                                                     <td class="text-right">
-                                                        <input onkeyup="calc('{{$id_count}}')" onblur="calc('{{$id_count}}')" class="form-control qty" type="text" name="send_qty{{$id_count}}" id="send_qty{{$id_count}}" value="{{$row1->qty}}"/>
+                                                        <input onkeyup="calc('{{$id_count}}')" onblur="calc('{{$id_count}}')" class="form-control qty {{'item'.$row1->item_id}}" type="text" name="send_qty{{$id_count}}" id="send_qty{{$id_count}}" value="{{$row1->qty}}"/>
                                                         <?php
                                                         $actual_qty = DB::Connection('mysql2')->table('sales_order_data')->where('id',$row1->so_data_id)->first()->qty;
-                                                        $dn_qty = DB::Connection('mysql2')->table('delivery_note_data')->where('so_data_id',$row1->so_data_id)->sum('qty');
+                                                        $dn_qty = DB::Connection('mysql2')->table('delivery_note_data')->where('so_data_id',$row1->so_data_id)->where('status', 1)->sum('qty');
                                                         ?>
                                                         <input type="hidden" name="qty{{$id_count}}" id="qty{{$id_count}}" value="{{($actual_qty-$dn_qty)+$row1->qty}}"/>
                                                         <input type="hidden" id="aterCalcQty<?php echo $id_count?>" value="<?php echo $row1->qty?>">
+                                                        <small id="qty_msg{{$id_count}}" class="text-danger"></small>
                                                     </td>
 
                                                     <td><select onchange="get_stock(this.id,'{{$id_count}}')" class="form-control requiredField ClsAll ShowOn<?php echo $id_count?>" name="warehouse{{$id_count}}" id="warehouse{{$id_count}}">
@@ -255,17 +257,14 @@ use App\Helpers\CommonHelper;
                                                             <option value="<?php echo $bfil->batch_code?>" <?php if($row1->batch_code == $bfil->batch_code):echo "selected"; endif;?>><?php echo $bfil->batch_code?></option>
                                                             <?php endforeach;?>
                                                         </select></td> -->
-                                                    <!-- <td id="instock<?php echo $id_count?>">
-                                                        <?php
-                                                        $pizza = CommonHelper::in_stock_edit($row1->item_id,$row1->warehouse_id,$row1->batch_code);
-
-                                                    
-                                                        ?>
-
-                                                    </td> -->
+                                                    <td>
+                                                        <?php $available_stock = CommonHelper::in_stock_edit($row1->item_id, $row1->warehouse_id, $row1->batch_code) + $row1->qty; ?>
+                                                        <input readonly class="form-control instock {{$row1->item_id}}" type="text" value="{{$available_stock}}" id="instock{{$id_count}}"/>
+                                                        <small id="stock_msg{{$id_count}}" class="text-danger"></small>
+                                                    </td>
 
 
-                                                    <td class="text-right ">
+                                                    <td class="text-right hidee">
                                                         <input readonly class="form-control" type="text" name="send_rate{{$id_count}}" id="send_rate{{$id_count}}" value="{{$row1->rate}}"/>
 
                                                     </td>
@@ -279,7 +278,7 @@ use App\Helpers\CommonHelper;
 
                                                         <input readonly class="form-control" type="text" name="send_discount_amount{{$id_count}}" id="send_discount_amount{{$id_count}}" value="{{$row1->tax_amount}}"/>
                                                     </td>
-                                                    <td class="text-right ">
+                                                    <td class="text-right hidee">
                                                         <input readonly class="form-control amount comma_seprated" type="text" name="send_amount{{$id_count}}" id="send_amount{{$id_count}}" value="{{$row1->amount}}"/>
                                                     </td>
                                                     <td><input type="checkbox" class="" id="check{{$id_count}}" onclick="required_none('{{$id_count}}','{{$row1->qty}}')" ></td>
@@ -341,10 +340,11 @@ use App\Helpers\CommonHelper;
                                                     <td class="text-right">   <input onkeyup="calc('{{$id_count}}')" onblur="calc('{{$id_count}}')" class="form-control qty" type="text" name="send_qty{{$id_count}}" id="send_qty{{$id_count}}" value="{{$bundle_data->qty}}"/>
                                                         <?php
                                                         $actual_qty1 = DB::Connection('mysql2')->table('sales_order_data')->where('id',$bundle_data->so_data_id)->first()->qty;
-                                                        $dn_qty1 = DB::Connection('mysql2')->table('delivery_note_data')->where('so_data_id',$bundle_data->so_data_id)->sum('qty');
+                                                        $dn_qty1 = DB::Connection('mysql2')->table('delivery_note_data')->where('so_data_id',$bundle_data->so_data_id)->where('status', 1)->sum('qty');
                                                         ?>
                                                         <input type="hidden" name="qty{{$id_count}}" id="qty{{$id_count}}" value="{{($actual_qty1-$dn_qty1)+$bundle_data->qty}}"/>
                                                         <input type="hidden" id="aterCalcQty<?php echo $id_count?>" value="<?php echo $bundle_data->qty?>">
+                                                        <small id="qty_msg{{$id_count}}" class="text-danger"></small>
 
                                                     </td>
                                                     <td><select onchange="get_stock(this.id,'{{$working_counter}}');ApplyAll('<?php echo $id_count?>')" class="form-control requiredField ClsAll ShowOn<?php echo $counter?>" name="warehouse{{$working_counter}}" id="warehouse{{$working_counter}}">
@@ -364,11 +364,11 @@ use App\Helpers\CommonHelper;
                                                             <?php endforeach;?>
 
                                                         </select></td>
-                                                    <td id="instock<?php echo $working_counter?>">
-                                                        <?php
-                                                        $Stock = CommonHelper::in_stock_edit($bundle_data->item_id,$bundle_data->warehouse_id,$bundle_data->batch_code);
-                                                            echo $Stock;//;+$bundle_data->qty;
-                                                        ?></td>
+                                                    <td>
+                                                        <?php $bundleStock = CommonHelper::in_stock_edit($bundle_data->item_id, $bundle_data->warehouse_id, $bundle_data->batch_code) + $bundle_data->qty; ?>
+                                                        <input readonly class="form-control instock {{$bundle_data->item_id}}" type="text" value="{{$bundleStock}}" id="instock{{$id_count}}"/>
+                                                        <small id="stock_msg{{$id_count}}" class="text-danger"></small>
+                                                    </td>
 
 
                                                     <td class="text-right hidee">
@@ -416,12 +416,11 @@ use App\Helpers\CommonHelper;
 
 
                                                 <tr>
-
-                                                    <td id="total_" style="background-color: darkgray" class="text-center" colspan="8">Total</td>
-
-                                                    <td   style="background-color: darkgray" class="text-right hidee nett"  colspan="9"><input style="font-weight: bolder" class="form-control text-right comma_seprated" readonly type="text" id="total_amount" value="{{$FinalTot}}" /></td>
-
-
+                                                    <td id="total_" style="background-color: darkgray" class="text-center" colspan="3">Total</td>
+                                                    <td style="background-color: darkgray" class="text-right" colspan="1"><input style="font-weight: bolder" class="form-control" readonly type="text" id="total_qty" value="{{$total_qty}}" /></td>
+                                                    <td style="background-color: darkgray" class="text-right" colspan="2"></td>
+                                                    <td style="background-color: darkgray" class="text-right hidee nett" colspan="2"><input style="font-weight: bolder" class="form-control text-right comma_seprated" readonly type="text" id="total_amount" value="{{$FinalTot}}" /></td>
+                                                    <td style="background-color: darkgray" class="text-right" colspan="1"></td>
                                                 </tr>
 
 
@@ -441,9 +440,9 @@ use App\Helpers\CommonHelper;
                                                 @if($delivery_note->sales_tax_further > 0)
                                                     <tr>
                                                         <td  class="text-right" colspan="5"></td>
-                                                        <td class="text-right" colspan="2">Further Sales Tax {{ number_format($delivery_note->sales_tax_further,2) }}</td>
+                                                        <td class="text-right" colspan="2">Further Sales Tax {{ number_format($delivery_note->sales_tax_further_per,2) }}</td>
                                                         <td class="text-right" colspan="1">
-                                                            <input type="hidden" name="sales_tax_further_per" id="sales_tax_further_per" value="{{ $delivery_note->sales_tax_further }}" />
+                                                            <input type="hidden" name="sales_tax_further_per" id="sales_tax_further_per" value="{{ $delivery_note->sales_tax_further_per }}" />
                                                             
                                                             <input style="font-weight: bolder" class="form-control text-right comma_seprated" readonly type="text" name="sales_tax_further" id="sales_tax_further" value="{{ $delivery_note->sales_tax_further }}" />
                                                         </td>
@@ -1001,38 +1000,48 @@ use App\Helpers\CommonHelper;
             $('#total').val(net_amount);
         }
 
-        function sales_tax()
+        function recalculateTotals()
         {
-            var total =	$('#total_amount').val();
-            var sales_tax_per = $('#sales_tax_rate').val();
-            var sales_tax_further_per = $('#sales_tax_further_per').val();
+            var total = parseFloat($('#total_amount').val());
+            total = isNaN(total) ? 0 : total;
+
+            var sales_tax_per = parseFloat($('#sales_tax_rate').val());
+            sales_tax_per = isNaN(sales_tax_per) ? 0 : sales_tax_per;
+
+            var sales_tax_further_per = parseFloat($('#sales_tax_further_per').val());
+            sales_tax_further_per = isNaN(sales_tax_further_per) ? 0 : sales_tax_further_per;
+
+            var advance_tax_rate = parseFloat($('#advance_tax_rate').val());
+            advance_tax_rate = isNaN(advance_tax_rate) ? 0 : advance_tax_rate;
+
+            var cartage_amount = parseFloat($('#cartage_amount').val());
+            cartage_amount = isNaN(cartage_amount) ? 0 : cartage_amount;
+
             var sales_tax = (total / 100) * sales_tax_per;
             var sales_tax_further = (total / 100) * sales_tax_further_per;
-            var advance_tax_rate = $('#advance_tax_rate').val();
             var advance_tax = (total / 100) * advance_tax_rate;
-            var cartage_amount = parseFloat($('#cartage_amount').val());
 
             $('#sales_tax').val(sales_tax);
 
-            var strn= $('#buyers_sales').val();
-            if (strn == '')
-            {
+            var strn = $('#buyers_sales').val();
+            if (strn == '') {
                 $('#sales_tax_further').val(sales_tax_further);
-            }
-            else
-            {
+            } else {
                 sales_tax_further = 0;
                 $('#sales_tax_further').val(0);
             }
 
-            var total_tax = sales_tax + sales_tax_further + advance_tax;
+            $('#advance_tax_amount').val(advance_tax);
 
-            var total_amount = $('#total_amount').val();
-            var total_after_sales_tax = parseFloat(total_amount) + parseFloat(total_tax);
-            
-            $('#grand').val(total_after_sales_tax + cartage_amount);
-            $('#d_t_amount_1').val(total_after_sales_tax + cartage_amount);
+            var grandTotal = total + sales_tax + sales_tax_further + advance_tax + cartage_amount;
+            $('#grand').val(grandTotal);
+            $('#d_t_amount_1').val(grandTotal);
             toWords(1);
+        }
+
+        function sales_tax()
+        {
+            recalculateTotals();
         }
 
 
@@ -1091,17 +1100,30 @@ use App\Helpers\CommonHelper;
             var actual_qty=parseFloat($('#qty'+num).val());
             var aterCalcQty=parseFloat($('#aterCalcQty'+num).val());
 
+            if (isNaN(send_qty)) {
+                send_qty = 0;
+            }
 
+            if (isNaN(actual_qty)) {
+                actual_qty = aterCalcQty;
+            }
 
             if (send_qty > actual_qty)
             {
-                alert('amount can not greater than sales order QTY');
-                $('#send_qty'+num).val(aterCalcQty);
-                net();
-                return false;
+                send_qty = actual_qty;
+                $('#send_qty'+num).val(actual_qty);
+                $('#qty_msg'+num).text('Max allowed qty is ' + actual_qty);
+                $('#send_qty'+num).css('border-color', 'red');
+            }
+            else {
+                $('#qty_msg'+num).text('');
+                $('#send_qty'+num).css('border-color', '');
             }
 
             var rate=parseFloat($('#send_rate'+num).val());
+            if (isNaN(rate)) {
+                rate = 0;
+            }
             var total=send_qty*rate;
 
             // discount
@@ -1136,28 +1158,21 @@ use App\Helpers\CommonHelper;
         function net()
         {
             var amount = 0;
-            $('.amount').each(function (i, obj) {
-                amount += +parseFloat($('#'+obj.id).val());
+            $('.amount').each(function () {
+                let value = parseFloat($(this).val());
+                amount += isNaN(value) ? 0 : value;
             });
-            amount = parseFloat(amount);
+
             $('#total_amount').val(amount);
 
-            var sales_tax_per = $('#sales_tax_rate').val();
-            var sales_tax_further_per = $('#sales_tax_further_per').val();
-            var sales_tax = parseFloat((amount / 100) * sales_tax_per);
-            var sales_tax_further = parseFloat((amount / 100) * sales_tax_further_per);
-            var advance_tax_rate1 = $('#advance_tax_rate').val();
-            var advance_tax = parseFloat((amount / 100) * advance_tax_rate1);
-            var cartage_amount = parseFloat($('#cartage_amount').val());
-            // alert()
-
-            $('#grand').val(amount + sales_tax + sales_tax_further + advance_tax + cartage_amount);
             var qty = 0;
-            $('.qty').each(function (i, obj) {
-                qty += +parseFloat($('#'+obj.id).val());
+            $('.qty').each(function () {
+                let value = parseFloat($(this).val());
+                qty += isNaN(value) ? 0 : value;
             });
-            qty = parseFloat(qty);
+
             $('#total_qty').val(qty);
+            recalculateTotals();
         }
 
     </script>

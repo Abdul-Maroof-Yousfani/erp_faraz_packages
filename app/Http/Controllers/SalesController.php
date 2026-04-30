@@ -551,9 +551,9 @@ class SalesController extends Controller
         $delivery_note_data = DB::connection('mysql2')
             ->table('delivery_note_data as a')
             ->leftJoin('bundles as b', 'a.bundles_id', '=', 'b.id')
-            ->join('subitem as s', 's.id', '=', 'a.item_id')
-            ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
-            ->join('packaging_type as pt', 'pt.id', '=', 's.primary_pack_type')
+            ->leftJoin('subitem as s', 's.id', '=', 'a.item_id')
+            ->leftJoin(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
+            ->leftJoin('packaging_type as pt', 'pt.id', '=', 's.primary_pack_type')
             ->select(
                 'a.id',
                 'a.master_id',
