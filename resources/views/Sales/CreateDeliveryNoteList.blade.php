@@ -157,6 +157,7 @@ $AccYearTo = $AccYearDate->accyearto;
     <script>
         $(document).ready(function(){
             $('#BuyerId').select2();
+            viewRangeWiseDataFilter();
             $('.select2-container--default').css('width','100%');
         });
         function RadioChange()
