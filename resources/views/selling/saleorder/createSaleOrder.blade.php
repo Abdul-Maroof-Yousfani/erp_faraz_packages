@@ -120,7 +120,8 @@
                                             <div class="col-md-3">
                                                 <label for="">Cartage Amount</label>
                                                 <input type="number" class="form-control"
-                                                    name="cartage_amount" id="cartage_amount" />
+                                                    name="cartage_amount" id="cartage_amount"
+                                                    oninput="calculation_amount()" onkeyup="calculation_amount()" onchange="calculation_amount()" />
                                             </div>
                                             <div class="col-md-3 hide">
                                                 <label for="control-label">Currency</label>
@@ -558,13 +559,13 @@
                 var qty_lbs = parseFloat(qty) * 2.2 || 0;
                 row.find('[name="qty_lbs[]"]').val(qty_lbs.toFixed(2));
 
-                var total = parseFloat(actual_qty) * parseFloat(rate);
+                var total = (parseFloat(actual_qty) || 0) * (parseFloat(rate) || 0);
 
                 var sale_tax_amount = total / 100 * sale_tax;
                 var further_tax_amount = total / 100 * further_tax;
                 var advance_tax_amount = total / 100 * advance_tax;
 
-                grad_total += total + sale_tax_amount + advance_tax_amount + cartage_amount + further_tax_amount;
+                grad_total += total + sale_tax_amount + advance_tax_amount + further_tax_amount;
                 befor_tax += total;
                 all_tax += sale_tax_amount + advance_tax_amount + further_tax_amount;
 
@@ -572,8 +573,8 @@
             });
             $('#total_tax').val(Number(all_tax).toFixed(3));
             $('#grand_total').val(Number(befor_tax).toFixed(3));
-            $('#grand_total_with_tax').val(Number(grad_total).toFixed(3));
-            $('#d_t_amount_1').val(Number(grad_total).toFixed(3));
+            $('#grand_total_with_tax').val(Number(grad_total + cartage_amount).toFixed(3));
+            $('#d_t_amount_1').val(Number(grad_total + cartage_amount).toFixed(3));
 
             toWords(1);
         }
@@ -632,6 +633,9 @@
 
             $('#customer').select2();
             $('select').select2();
+            $('#cartage_amount').on('input keyup change', function () {
+                calculation_amount();
+            });
         })
 
         function getItemColors(id) {

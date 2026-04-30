@@ -436,7 +436,7 @@ use App\Helpers\ReuseableCode;
                                                         <td  class="text-right" colspan="5"></td>
                                                         <td class="text-right" colspan="2">Further Sales Tax {{ number_format($sales_order->sales_tax_further,2) }}</td>
                                                         <td class="text-right" colspan="1">
-                                                            <input type="text" name="sales_tax_further_per" id="sales_tax_further_per" value="{{ $sales_order->sales_tax_further ?? 0 }}" />
+                                                            <input type="hidden" name="sales_tax_further_per" id="sales_tax_further_per" value="{{ $sales_order->sales_tax_further ?? 0 }}" />
                                                             
                                                             <input style="font-weight: bolder" class="form-control text-right comma_seprated" readonly type="text" name="sales_tax_further" id="sales_tax_further" value="{{ $further_tax }}" />
                                                         </td>
@@ -450,7 +450,7 @@ use App\Helpers\ReuseableCode;
                                                         <td class="text-right" colspan="2">Advance Tax {{ number_format($sales_order->advance_tax,2) }}</td>
                                                         <td class="text-right" colspan="1">
                                                             
-                                                        <input type="hidden" name="advance_tax_rate" id="advance_tax_rate" value="{{ $sales_order->advance_tax }}" />
+                                                        <input type="hidden" name="advance_tax_rate" id="advance_tax_rate" value="{{ $sales_order->advance_tax ?? 0 }}" />
 
                                                         <input style="font-weight: bolder" class="form-control text-right comma_seprated" readonly type="text"   name="advance_tax_amount" id="advance_tax_amount" value="{{ $advance_tax }}" />
                                                         </td>
@@ -586,7 +586,7 @@ use App\Helpers\ReuseableCode;
             // alert(sales_tax_further_per);
             var sales_tax = (total / 100) * sales_tax_per;
             var sales_tax_further = (total / 100) * sales_tax_further_per;
-            var advance_tax_rate = $('#advance_tax_rate').val();
+            var advance_tax_rate = $('#advance_tax_rate').val() ?? 0;
             var advance_tax = (total / 100) * advance_tax_rate;
             var cartage_amount = parseFloat($('#cartage_amount').val());
 
@@ -605,6 +605,7 @@ use App\Helpers\ReuseableCode;
             }
 
 
+             $('#advance_tax_amount').val(advance_tax);
             var total_tax = sales_tax + sales_tax_further + advance_tax;
 
             var total_amount = $('#total_amount').val();
@@ -901,33 +902,63 @@ use App\Helpers\ReuseableCode;
             net();
         }
 
+        // function net()
+        // {
+        //     var amount = 0;
+        //     $('.amount').each(function (i, obj) {
+        //         amount += +parseFloat($('#'+obj.id).val());
+        //     });
+        //     amount = parseFloat(amount);
+        //     $('#total_amount').val(amount);
+
+        //     var sales_tax_per = $('#sales_tax_rate').val();
+        //     var sales_tax_further_per = $('#sales_tax_further_per').val() ?? 0;
+        //     var sales_tax = parseFloat((amount / 100) * sales_tax_per);
+        //     var sales_tax_further = parseFloat((amount / 100) * sales_tax_further_per);
+        //     var advance_tax_rate1 = $('#advance_tax_rate').val();
+        //     var advance_tax = parseFloat((amount / 100) * advance_tax_rate1);
+        //     var cartage_amount = parseFloat($('#cartage_amount').val());
+
+        //     // alert([amount, sales_tax, sales_tax_further, advance_tax, cartage_amount]);
+        //     $('#grand').val(amount + sales_tax + sales_tax_further + advance_tax + cartage_amount);
+        //     var qty = 0;
+        //     $('.qty').each(function (i, obj) {
+        //         qty += +parseFloat($('#'+obj.id).val());
+        //     });
+        //     qty = parseFloat(qty);
+        //     $('#total_qty').val(qty);
+        // }
+
         function net()
         {
             var amount = 0;
-            $('.amount').each(function (i, obj) {
-                amount += +parseFloat($('#'+obj.id).val());
+
+            $('.amount').each(function () {
+                let v = parseFloat($(this).val());
+                amount += isNaN(v) ? 0 : v;
             });
-            amount = parseFloat(amount);
+
             $('#total_amount').val(amount);
 
-            var sales_tax_per = $('#sales_tax_rate').val();
-            var sales_tax_further_per = $('#sales_tax_further_per').val() ?? 0;
-            var sales_tax = parseFloat((amount / 100) * sales_tax_per);
-            var sales_tax_further = parseFloat((amount / 100) * sales_tax_further_per);
-            var advance_tax_rate1 = $('#advance_tax_rate').val();
-            var advance_tax = parseFloat((amount / 100) * advance_tax_rate1);
-            var cartage_amount = parseFloat($('#cartage_amount').val());
+            var sales_tax_per = numVal('#sales_tax_rate');
+            var sales_tax_further_per = numVal('#sales_tax_further_per');
+            var advance_tax_rate = numVal('#advance_tax_rate');
+            var cartage_amount = numVal('#cartage_amount');
 
-            // alert([amount, sales_tax, sales_tax_further, advance_tax, cartage_amount]);
+            var sales_tax = (amount / 100) * sales_tax_per;
+            var sales_tax_further = (amount / 100) * sales_tax_further_per;
+            var advance_tax = (amount / 100) * advance_tax_rate;
+
             $('#grand').val(amount + sales_tax + sales_tax_further + advance_tax + cartage_amount);
+
             var qty = 0;
-            $('.qty').each(function (i, obj) {
-                qty += +parseFloat($('#'+obj.id).val());
+            $('.qty').each(function () {
+                let v = parseFloat($(this).val());
+                qty += isNaN(v) ? 0 : v;
             });
-            qty = parseFloat(qty);
+
             $('#total_qty').val(qty);
         }
-
 
         function required_none(number,qry)
         {

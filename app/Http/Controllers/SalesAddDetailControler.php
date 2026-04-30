@@ -1179,7 +1179,7 @@ class SalesAddDetailControler extends Controller
 
     public function addeDeliveryNote(Request $request)
     {
-        // dd($request->all()); // uncomment for debugging
+        //  dd($request->all()); // uncomment for debugging
 
         DB::connection('mysql2')->beginTransaction();
 
@@ -1248,19 +1248,47 @@ class SalesAddDetailControler extends Controller
                 if (!$item_id)
                     continue;
 
-                $qty = (float) CommonHelper::check_str_replace($request->input("qty{$i}", 0));
+                $qty = (float) CommonHelper::check_str_replace($request->input("send_qty{$i}", 0));
                 $send_rate = (float) CommonHelper::check_str_replace($request->input("send_rate{$i}", 0));
-                $send_amount = (float) CommonHelper::check_str_replace($request->input("send_amount{$i}", 0));
+                $send_discount = (float) CommonHelper::check_str_replace($request->input("send_discount{$i}", 0));
+                $send_amount = $qty * $send_rate;
+                if ($send_discount > 0) {
+                    $send_amount += ($send_amount * $send_discount) / 100;
+                }
                 $warehouse_id = $request->input("warehouse{$i}", 1);
                 $desc = $request->input("desc{$i}", '');
                 $data_id = $request->input("data_id{$i}");
                 $bundles_id = $request->input("bundles_id{$i}", 0);
 
-                // Stock availability check
-                $available_stock = ReuseableCode::get_stock($item_id, $warehouse_id, $qty, 0);
-                if ($available_stock < 0) {
-                    throw new Exception("Insufficient stock for item ID {$item_id} (requested: {$qty})");
+                if ($qty <= 0) {
+                    continue;
                 }
+
+                // Stock availability check
+                // $available_stock = ReuseableCode::get_stock($item_id, $warehouse_id, $qty, 0); 
+                
+                // if ($available_stock < 0) {
+                //     throw new Exception("Insufficient stock for item ID {$item_id} (requested: {$qty})");
+                // }
+
+                    $available_stock = DB::connection('mysql2')->table('stock')
+                        ->where('status', 1)
+                        ->where('sub_item_id', $item_id)
+                        ->selectRaw('
+                            COALESCE(SUM(CASE WHEN voucher_type = 1 THEN qty ELSE 0 END), 0) -
+                            COALESCE(SUM(CASE WHEN voucher_type IN (2, 3, 5) THEN qty ELSE 0 END), 0)
+                            AS net_qty
+                        ')
+                        ->value('net_qty');
+
+                    // Ensure null safety
+                    $available_qty = $available_stock ?? 0;
+
+                    // Validate stock
+                    if ($available_qty < $qty) {
+                        throw new Exception("Insufficient stock for item ID {$item_id} (requested: {$qty}, available: {$available_qty})");
+                    }
+
 
                 $average_cost = ReuseableCode::average_cost_sales($item_id, $warehouse_id, 0);
 
@@ -1277,7 +1305,7 @@ class SalesAddDetailControler extends Controller
                     'sub_item_id' => $item_id,
                     'batch_code' => '', // extend later when supporting batches
                     'qty' => $qty,
-                    'discount_percent' => $request->input("send_discount{$i}", 0),
+                    'discount_percent' => $send_discount,
                     'discount_amount' => 0,
                     'amount' => $qty * $average_cost,
                     'status' => 1,
@@ -1324,6 +1352,11 @@ class SalesAddDetailControler extends Controller
                 $group_counter++;
             }
 
+
+            if (empty($stock_rows)) {
+                throw new Exception("Please enter delivery quantity for at least one item.");
+            }
+
             // Bulk insert stock movements
             if (!empty($stock_rows)) {
                 DB::connection('mysql2')->table('stock')->insert($stock_rows);
@@ -1356,6 +1389,7 @@ class SalesAddDetailControler extends Controller
                 ->with('success', 'Delivery Note #' . $gd_no . ' created successfully.');
 
         } catch (Exception $ex) {
+            dd(['exception_message' => $ex->getMessage(), 'line' => $ex->getLine(), 'file' => $ex->getFile()]);
             DB::connection('mysql2')->rollBack();
             // For debugging:
             // dd($ex->getMessage(), $ex->getTraceAsString());

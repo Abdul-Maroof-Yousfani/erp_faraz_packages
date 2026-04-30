@@ -2734,16 +2734,23 @@ class PurchaseAddDetailControler extends Controller
 
             $purchase_date = $request->input('po_date', date('Y-m-d')); // fallback to today
             $supplier_raw = $request->input('supplier_id');           // "3@#@#913100005774314000@#3"
-            $supplier_id = explode('@#@#', $supplier_raw)[0] ?? null;
+            $supplier_id = explode('@#', (string) $supplier_raw)[0] ?? null;
 
-            $supp_acc_id = CommonHelper::get_supplier_acc_id($supplier_raw);
+            if (empty($supplier_id)) {
+                throw new \Exception('Please select vendor.');
+            }
+
+            $supp_acc_id = DB::connection('mysql2')->table('supplier')
+                ->where('status', 1)
+                ->where('id', $supplier_id)
+                ->value('acc_id') ?? 0;
 
             // Sales tax handling
             $sales_tax_code = $request->input('sales_taxx');           // e.g. "4.000@139"
-            $sales_tax_amount = $request->input('sales_amount_td', 0);   // e.g. 8.00
+            $sales_tax_amount = CommonHelper::check_str_replace($request->input('sales_amount_td', 0));   // e.g. 8.00
             $sales_tax_acc_id = 0;
 
-            if ($sales_tax_code && str_contains($sales_tax_code, '@')) {
+            if ($sales_tax_code && strpos($sales_tax_code, '@') !== false) {
                 $parts = explode('@', $sales_tax_code);
                 $sales_tax_rate = floatval($parts[0] ?? 0);
                 $sales_tax_acc_id = $parts[1] ?? 0;   // assuming 139 = account id
@@ -2756,9 +2763,10 @@ class PurchaseAddDetailControler extends Controller
             $NewPurchaseVoucher->pv_no = $pv_no;
             $NewPurchaseVoucher->pv_date = $purchase_date;
             $NewPurchaseVoucher->bill_date = $purchase_date;       // or separate field if you have it
+            $NewPurchaseVoucher->purchase_date = $purchase_date;
             $NewPurchaseVoucher->due_date = $request->input('due_date');
             $NewPurchaseVoucher->purchase_type = $request->input('po_type', 1);
-            $NewPurchaseVoucher->supplier = $supplier_raw;
+            $NewPurchaseVoucher->supplier = $supplier_id;
             // $NewPurchaseVoucher->supplier_acc_id = $supp_acc_id;         // if your model has this field
 
             $NewPurchaseVoucher->sales_tax_acc_id = $sales_tax_acc_id;
@@ -2766,6 +2774,8 @@ class PurchaseAddDetailControler extends Controller
 
             $NewPurchaseVoucher->description = $request->input('Remarks');
             $NewPurchaseVoucher->slip_no = $request->input('slip_no');
+            $NewPurchaseVoucher->term_of_del = $request->input('term_of_del');
+            $NewPurchaseVoucher->destination = $request->input('destination');
             $NewPurchaseVoucher->username = Auth::user()->name;
             $NewPurchaseVoucher->status = 1;
             $NewPurchaseVoucher->pv_status = 1;                    // adjust as per your logic
@@ -2789,7 +2799,7 @@ class PurchaseAddDetailControler extends Controller
             $bags_qtys = $request->input('bags_qty', []);
             $kg_actual_qtys = $request->input('actual_qty', []);
             $qtys_lbs = $request->input('qty_lbs', []);
-            $rate_cal_by = $request->input('rate_cal_by', []);
+            $rate_cal_bys = $request->input('rate_cal_by', []);
             $rates = $request->input('rate', []);
             $amounts = $request->input('amount', []);           // may be gross
             $net_amounts = $request->input('after_dis_amount', $request->input('actual_amount', []));
@@ -2801,17 +2811,33 @@ class PurchaseAddDetailControler extends Controller
 
             $totalNet = 0;
 
+            $savedDetails = 0;
+
             foreach ($item_ids as $index => $item_id) {
-                if (empty($item_id))
+                if (empty($item_id) || $item_id === 'Select')
                     continue;
 
+                $item_id = explode('@', (string) $item_id)[0];
+                if (!is_numeric($item_id)) {
+                    continue;
+                }
                 $bag_qty = floatval($bags_qtys[$index] ?? 0);
                 $kg_qty = floatval($kg_actual_qtys[$index] ?? 0);
                 $lbs_qty = floatval($qtys_lbs[$index] ?? 0);
-                $rate_cal_by = $rate_cal_by[$index] ?? 0;
+                $rate_cal_by = $rate_cal_bys[$index] ?? 0;
                 $category = floatval($categorys[$index] ?? 0);
                 $rate = floatval($rates[$index] ?? 0);
-                $amount = floatval($net_amounts[$index]);
+                $amount = (float) CommonHelper::check_str_replace($net_amounts[$index] ?? 0);
+                $warehouse = $warehouse_id[$index] ?? null;
+                $godown_no = $godown_nos[$index] ?? null;
+
+                if (empty($warehouse)) {
+                    throw new \Exception('Please select location for every item.');
+                }
+
+                if (empty($godown_no)) {
+                    throw new \Exception('Please enter godown no for every item.');
+                }
 
                 $detail = new NewPurchaseVoucherData();
                 $detail->setConnection('mysql2');
@@ -2826,11 +2852,11 @@ class PurchaseAddDetailControler extends Controller
                 $detail->lbs_qty = $lbs_qty;
                 $detail->rate_cal_by = $rate_cal_by;
                 $detail->rate = $rate;
-                $detail->warehouse_id = $warehouse_id[$index];
+                $detail->warehouse_id = $warehouse;
                 $detail->do_no = $do_nos[$index] ?? null;
-                $detail->godown_no = $godown_nos[$index] ?? null;
-                $detail->amount =  CommonHelper::check_str_replace($amounts[$index]);
-                $detail->net_amount = CommonHelper::check_str_replace($net_amounts[$index]);
+                $detail->godown_no = $godown_no;
+                $detail->amount = CommonHelper::check_str_replace($amounts[$index] ?? 0);
+                $detail->net_amount = $amount;
                 $detail->discount_amount = floatval($request->input('discount_amount')[$index] ?? 0);
 
                 $detail->staus = 1;
@@ -2839,6 +2865,7 @@ class PurchaseAddDetailControler extends Controller
                 $detail->date = date('Y-m-d');
 
                 $detail->save();
+                $savedDetails++;
 
                 $totalNet += $amount;
 
@@ -2859,8 +2886,13 @@ class PurchaseAddDetailControler extends Controller
                         'status' => 1,
                         'username' => Auth::user()->name,
                         'voucher_type' => 1,                   // adjust code for direct purchase
+                        'voucher_date' => $purchase_date,
                     ]);
                 }
+            }
+
+            if ($savedDetails === 0) {
+                throw new \Exception('Please enter at least one item.');
             }
             
             // ───────────────────────────────────────────────
@@ -2880,12 +2912,16 @@ class PurchaseAddDetailControler extends Controller
             $p_type = $request->input('po_type', 1);
             $pr_no = null; // no PR in direct purchase — or leave blank
 
-            $subject = 'Direct Purchase Invoice Created - ' . $pv_no;
-            NotificationHelper::send_email('Purchase Invoice', 'Create', $dept_id, $pv_no, $subject, $p_type);
-
             CommonHelper::inventory_activity($pv_no, $purchase_date, $totalNet, 5, 'Insert'); // type 5 = direct purchase?
 
             DB::connection('mysql2')->commit();
+
+            try {
+                $subject = 'Direct Purchase Invoice Created - ' . $pv_no;
+                NotificationHelper::send_email('Purchase Invoice', 'Create', $dept_id, $pv_no, $subject, $p_type);
+            } catch (\Exception $notificationException) {
+                \Log::warning('Direct Purchase Voucher notification failed: ' . $notificationException->getMessage());
+            }
 
             return Redirect::to('purchase/viewPurchaseVoucherListThroughGrn?pageType=viewlist&parentCode=82&m=1#SFR')
                 ->with('success', 'Direct Purchase Voucher created successfully: ' . $pv_no);
@@ -2894,7 +2930,6 @@ class PurchaseAddDetailControler extends Controller
             DB::connection('mysql2')->rollback();
             \Log::error('Direct Purchase Voucher Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Error creating voucher: ' . $e->getMessage());
-            // or dd($e->getMessage());
         }
     }
 

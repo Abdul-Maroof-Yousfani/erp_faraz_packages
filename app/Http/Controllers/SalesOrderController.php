@@ -170,13 +170,14 @@ class SalesOrderController extends Controller
 
             $count = 1;
             foreach ($data as $key => $row):
+                $item_id = explode('@', (string) $request->item_id[$key])[0];
 
                 $sales_order_data = new Sales_Order_Data();
                 $sales_order_data = $sales_order_data->SetConnection('mysql2');
                 $sales_order_data->master_id = $master_id;
                 $sales_order_data->so_no = $so_no;
-                $sales_order_data->item_id = $request->item_id[$key];
-                $sales_order_data->desc = $request->item_id[$key];
+                $sales_order_data->item_id = $item_id;
+                $sales_order_data->desc = $item_id;
                 $sales_order_data->thickness = 0;
                 $sales_order_data->diameter = 0;
                 $sales_order_data->item_description = $request->item_description[$key] ?? '';
@@ -188,7 +189,7 @@ class SalesOrderController extends Controller
                 $sales_order_data->delivery_date = $request->delivery_date[$key] ?? '';
                 $sales_order_data->amount = $request->total[$key];
 
-                $sales_order_data->length_bundle = $request->length_bundle[$key] ?? '';
+                $sales_order_data->length_bundle = $request->pack_size[$key] ?? ($request->length_bundle[$key] ?? '');
                 // $sales_order_data->delivery_type=$request->total[$key];   Delivery type
                 $sales_order_data->tax = $request->sale_tax_rate;
                 $sales_order_data->further_tax = $request->further_tax;
@@ -298,6 +299,15 @@ class SalesOrderController extends Controller
             ->where('sales_order_data.status', 1)
             ->get();
 
+        $selected_item_ids = $sales_order_data->pluck('item_id')
+            ->map(function ($item_id) {
+                return (int) explode('@', (string) $item_id)[0];
+            })
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
         $sub_item = DB::Connection('mysql2')->table('category as c')
             ->join('sub_category as sc', 'c.id', '=', 'sc.category_id')
             ->join('subitem as s', 'sc.id', '=', 's.sub_category_id')
@@ -307,7 +317,12 @@ class SalesOrderController extends Controller
             ->where('c.status', '=', 1)
             ->where('s.status', '=', 1)
             ->where('u.status', '=', 1)
-            ->where('s.main_ic_id', '=', 8)
+            ->where(function ($query) use ($selected_item_ids) {
+                $query->where('s.main_ic_id', '=', 8);
+                if (!empty($selected_item_ids)) {
+                    $query->orWhereIn('s.id', $selected_item_ids);
+                }
+            })
             ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id','pt.type','s.pack_size','s.primary_pack_type','s.color')
             // ->groupBy('s.item_code')
             ->orderBy('s.id')
@@ -394,13 +409,14 @@ class SalesOrderController extends Controller
             $data = $request->item_id;
             $count = 1;
             foreach ($data as $key => $row):
+                $item_id = explode('@', (string) $request->item_id[$key])[0];
 
                 $sales_order_data = new Sales_Order_Data();
                 $sales_order_data = $sales_order_data->SetConnection('mysql2');
                 $sales_order_data->master_id = $master_id;
                 $sales_order_data->so_no = $request->sale_order_no;
-                $sales_order_data->item_id = $request->item_id[$key];
-                $sales_order_data->desc = $request->item_id[$key];
+                $sales_order_data->item_id = $item_id;
+                $sales_order_data->desc = $item_id;
                 $sales_order_data->thickness = 0;
                 $sales_order_data->diameter = 0;
                 $sales_order_data->item_description = $request->item_description[$key] ?? null;
@@ -411,7 +427,7 @@ class SalesOrderController extends Controller
                 $sales_order_data->special_instruction = $request->special_ins[$key] ?? null;
                 $sales_order_data->delivery_date = $request->delivery_date[$key] ?? null;
                 $sales_order_data->amount = $request->total[$key];
-                $sales_order_data->length_bundle = $request->length_bundle[$key] ?? null;
+                $sales_order_data->length_bundle = $request->pack_size[$key] ?? ($request->length_bundle[$key] ?? null);
 
                 $sales_order_data->tax = $request->sale_tax_rate;
                 $sales_order_data->further_tax = $request->further_tax;

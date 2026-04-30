@@ -261,15 +261,7 @@ endif;
                                                 <input type="date" class="form-control" placeholder="" name="due_date"
                                                     id="due_date" value="" readonly />
                                             </div>
-                                           
-                                        </div>
-                                        <div class="lineHeight">&nbsp;</div>
-
-                                        <div class="row">
-
-
-
-                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+                                                       <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
                                                 <label class="sf-label">Supplier's NTN</label>
                                                 <input readonly type="text" class="form-control" placeholder="Ntn"
                                                     name="ntn" id="ntn_id" value="" />
@@ -280,6 +272,14 @@ endif;
                                                 <textarea name="Remarks" id="terms_and_condition" class="form-control"
                                                     placeholder="Remarks"></textarea>
                                             </div>
+                                        </div>
+                                        <div class="lineHeight">&nbsp;</div>
+
+                                        <div class="row">
+
+
+
+                                
 
                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" hidden>
                                                 <label class="sf-label">Agent</label>
@@ -378,7 +378,8 @@ endif;
                                                             Net Amount (PKR)<span
                                                                 class="rflabelsteric"><strong>*</strong></span></th>
                                                         <th class="text-center nowrap col-narrow" style="font-size:0.85rem;">DO No.</th>
-                                                        <th class="text-center nowrap col-narrow" style="font-size:0.85rem;">Godown No.</th>
+                                                        <th class="text-center nowrap col-narrow" style="font-size:0.85rem;">Godown No.<span
+                                                                class="rflabelsteric"><strong>*</strong></span></th>
                                                         <th class="text-center nowrap"
                                                             style="width: 11%; font-size:0.9rem;">Location<span
                                                                 class="rflabelsteric"><strong>*</strong></span></th>
@@ -442,7 +443,7 @@ endif;
                                                                 name="actual_qty[]" id="actual_qty1"
                                                                 placeholder="ACTUAL QTY" min="1" value="" readonly>
                                                             <input type="hidden" class="PackQty" name="pack_qty[]"
-                                                                id="pack_qty">
+                                                                id="pack_qty1">
                                                         </td>
                                                         <td>
                                                             <input class="form-control requiredField" type="number"
@@ -493,12 +494,11 @@ endif;
                                                             <input type="text" class="form-control" name="do_no[]" id="do_no_1" placeholder="DO No." />
                                                         </td>
                                                         <td>
-                                                            <input type="text" class="form-control" name="godown_no[]" id="godown_no_1" placeholder="Godown No." />
+                                                            <input type="text" class="form-control requiredField" name="godown_no[]" id="godown_no_1" placeholder="Godown No." required />
                                                         </td>
                                                         <td>
                                                             <select required class="form-control select2"
                                                                 name="warehouse_id[]" id="warehouse_1">
-                                                                <option value="">Select</option>
                                                                 @foreach(CommonHelper::get_all_warehouse() as $row)
                                                                     <option value="{{ $row->id }}">{{ $row->name }}</option>
                                                                 @endforeach
@@ -660,14 +660,14 @@ endif;
                 '<input type="hidden" ' +
                 'class="PackQty" ' +
                 'name="pack_qty[]" ' +
-                'id="pack_qty">' +
+                'id="pack_qty' + Counter + '">' +
                 '</td>' +
                 '<td>' +
                 '<input type="text" class="form-control requiredField" name="qty_lbs[]" id="qty_lbs' + Counter + '" placeholder="QTY LBS">' +
                 '</td>' +
                 '<td>' +
                 '<select name="rate_cal_by[]" id="rate_cal_by_' + Counter + '"' +
-                'class="form-control select2 rate-cal-by">' +
+                'class="form-control select2 rate-cal-by" onchange="calculateLineAmount(this)">' +
                 '<option value="1">By BAGS</option>' +
                 '<option value="2">By KGS</option>' +
                 '<option value="3">By LBS</option>' +
@@ -694,12 +694,11 @@ endif;
                 '<input type="text" class="form-control" name="do_no[]" id="do_no_' + Counter + '" placeholder="DO No." />' +
                 '</td>' +
                 '<td>' +
-                '<input type="text" class="form-control" name="godown_no[]" id="godown_no_' + Counter + '" placeholder="Godown No." />' +
+                '<input type="text" class="form-control requiredField" name="godown_no[]" id="godown_no_' + Counter + '" placeholder="Godown No." required />' +
                 '</td>' +
                 '<td>' +
                 '<select name="warehouse_id[]" id="warehouse_' + Counter + '"' +
                 'class="form-control select2">' +
-                '<option value="">Select</option>' +
                 '@foreach (CommonHelper::get_all_warehouse() as $row)' +
                     '<option value="{{ $row->id }}">' +
                     '{{ $row->name }}' +
@@ -958,11 +957,12 @@ endif;
 
         function bag_qq(counter) {
             var bags_qty = parseFloat($('#bags_qty' + counter).val()) || 1;
-            var pack_qty = parseFloat($('#pack_qty').val()) || 0;
+            var pack_qty = parseFloat($('#pack_qty' + counter).val()) || 0;
 
             var total_qty = (bags_qty * pack_qty).toFixed(2);
             $('#actual_qty' + counter).val(total_qty);
             $('#qty_lbs' + counter).val(total_qty * 2.2);
+            claculation(counter);
 
         }
 
@@ -1074,7 +1074,7 @@ endif;
             $('#item_code' + index).val(uom[2]);
             $('#actual_qty' + index).val(uom[3]);
             $('#qty_lbs' + index).val(uom[3] * 2.2);
-            $('#pack_qty').val(uom[3]);
+            $('#pack_qty' + index).val(uom[3]);
 
             if (!$('#bags_qty' + index).val()) {
                 $('#bags_qty' + index).val(1);
@@ -1334,7 +1334,7 @@ endif;
             $('#hs_code_id' + id).val($('#item_' + id).find(':selected').data("hscode"));
             $('#actual_qty' + id).val($('#item_' + id).find(':selected').data("pack_size"));
             var packSize = $('#item_' + id).find(':selected').data('pack_size') || 0;
-            $('#pack_qty').val(packSize);
+            $('#pack_qty' + id).val(packSize);
 
             // Default bags qty to 1
             if (!$('#bags_qty' + id).val()) {

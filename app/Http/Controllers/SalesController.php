@@ -1333,7 +1333,6 @@ class SalesController extends Controller
         // $sale_order_data = $sale_order_data->whereIn('dispatches.id', $request->checkbox)->orderBy('dispatches.id', 'ASC')->get();
 
         $ids = implode(',', $request->checkbox);
-
         $sale_order_data = DB::Connection('mysql2')->select('select a.item_id,a.groupby,a.id,b.master_id,b.bundles_id,a.id as so_data_id,a.desc,
         b.gd_no,sum(b.qty) as qty,a.master_id as so_id,b.warehouse_id,b.rate,b.tax,c.product_name,c.bundle_unit,c.qty as bqty,
         c.rate as bundle_rate,c.amount as bundle_amount ,c.discount_percent as b_percent,c.discount_amount as b_dis_amount,c.net_amount as b_net, s.hs_code_id,pt.type,s.pack_size,s.primary_pack_type,s.color
@@ -1351,8 +1350,8 @@ class SalesController extends Controller
         bundles c
         on
         a.bundles_id=c.id
-        JOIN subitem AS s ON s.id = a.item_id
-        JOIN packaging_type AS pt ON pt.id = s.primary_pack_type
+        LEFT JOIN subitem AS s ON s.id = a.item_id
+        LEFT JOIN packaging_type AS pt ON pt.id = s.primary_pack_type
         where a.status=1
         and b.status=1
 

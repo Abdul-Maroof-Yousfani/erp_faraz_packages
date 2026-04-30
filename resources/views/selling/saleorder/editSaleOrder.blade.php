@@ -116,7 +116,8 @@ $count = 1;
                                             <div class="col-md-3">
                                                 <label for="">Cartage Amount</label>
                                                 <input type="number" class="form-control"
-                                                    name="cartage_amount" id="cartage_amount" value="{{ $sale_orders->cartage_amount }}" />
+                                                    name="cartage_amount" id="cartage_amount" value="{{ $sale_orders->cartage_amount }}"
+                                                    oninput="calculation_amount()" onkeyup="calculation_amount()" onchange="calculation_amount()" />
                                             </div>
                                         </div>
                                         <div class="row">
@@ -169,47 +170,63 @@ $count = 1;
                                                 
                                                     <tbody id="more_details">
                                                         @foreach($sales_order_data as $key => $value)
+                                                            @php
+                                                                $packQty = (float) ($value->pack_size ?: 1);
+                                                                $savedLengthBundle = (float) ($value->length_bundle ?? 0);
+                                                                $savedBagsQty = $savedLengthBundle > 0
+                                                                    ? $value->length_bundle
+                                                                    : ((strtolower($value->uom_name) === 'bundle' || strtolower($value->uom_name) === 'pcs')
+                                                                        ? number_format($value->qty / 10, 2, '.', '')
+                                                                        : number_format($value->qty / ($packQty ?: 1), 2, '.', ''));
+                                                                $selectedItemId = explode('@', (string) $value->item_id)[0];
+                                                                $selectedItemExists = $sub_item->contains('id', (int) $selectedItemId);
+                                                            @endphp
                                                             <tr id="RemoveRows{{$count}}" class="m-tab main">
                                                                 <td style="width: 18%">
-                                                                    <select onchange="get_item_name1({{$count}})" class="form-control select2 item_id itemsclass " name="item_id[]" id="item_id{{$count}}">
+                                                                    <select onchange="get_item_name({{$count}})" class="form-control select2 item_id itemsclass " name="item_id[]" id="item_id{{$count}}">
                                                                         <option value="">Select</option>
+                                                                        @if(!$selectedItemExists && $selectedItemId)
+                                                                            <option selected value="{{ $selectedItemId . '@' . $value->uom_name . '@' . $value->sub_ic . '@' . $value->pack_size . '@@' . $value->color }}">
+                                                                                {{ $value->item_code . ' -- ' . $value->sub_ic . ' ' . $value->pack_size . ' ' . $value->uom_name . ' ' . $value->color }}
+                                                                            </option>
+                                                                        @endif
                                                                         @foreach($sub_item as $val)
-                                                                            <option @if($value->item_id == $val->id) selected @endif
+                                                                            <option @if($selectedItemId == $val->id) selected @endif
                                                                                 value="{{ $val->id . '@' . $val->uom_name . '@' . $val->sub_ic. '@' . $val->pack_size . '@' . $val->type. '@' . $val->color }}">
                                                                                 {{ $val->item_code . ' -- ' . $val->sub_ic . ' ' . $val->pack_size . ' ' . $val->uom_name . ' ' . $val->type. ' ' . $val->color }}
                                                                             </option>
                                                                         @endforeach
                                                                     </select>                  
                                                                 </td>
-                                                                    <input style="display: none" class="form-control" type="text" name="item_code[]" id="item_code" value="{{$value->item_code}}">
-                                                                    <input style="display: none" class="form-control" type="text" name="thickness[]" id="thickness" value="{{$value->thickness}}">
-                                                                    <input style="display: none" class="form-control" type="text" name="diameter[]" id="diameter" value="{{$value->diameter}}">
+                                                                    <input style="display: none" class="form-control" type="text" name="item_code[]" id="item_code{{ $count }}" value="{{$value->item_code}}">
+                                                                    <input style="display: none" class="form-control" type="text" name="thickness[]" id="thickness{{ $count }}" value="{{$value->thickness}}">
+                                                                    <input style="display: none" class="form-control" type="text" name="diameter[]" id="diameter{{ $count }}" value="{{$value->diameter}}">
                                                                 <td>
-                                                                    <input type="text" name="pack_size[]" id="pack_size{{ $count }}" class="form-control" value="{{ number_format($value->qty / ($value->pack_size ?: 1), 2) }}" oninput="bag_qq({{ $count }})" />
+                                                                    <input type="text" name="pack_size[]" id="pack_size{{ $count }}" class="form-control" value="{{ $savedBagsQty }}" oninput="bag_qq({{ $count }})" />
                                                                 </td>
                                                                 <td>
                                                                     <input readonly id="uom_id{{ $count }}" type="text"
                                                                         name="uom[]"
-                                                                        class="form-control uom">
+                                                                        class="form-control uom" value="{{ $value->uom_name }}">
                                                                 </td>
                                                                 {{-- <td>
                                                                     <input readonly type="text" name="color[]" id="color{{ $count }}" class="form-control" />
                                                                 </td> --}}
                                                                 <td>
                                                                     <input readonly class="form-control" onkeyup="calculation_amount()" type="text" name="qty[]" id="qty{{ $count }}" value="{{$value->qty}}">
-                                                                    <input type="hidden" class="PackQty" name="pack_qty[]" id="pack_qty" value="{{ $value->pack_size }}">
+                                                                    <input type="hidden" class="PackQty" name="pack_qty[]" id="pack_qty{{ $count }}" value="{{ $value->pack_size }}">
                                                                 </td>
                                                                 <td>
                                                                     <input class="form-control requiredField"
-                                                                        type="number" id="qty_lbs1" value="{{$value->qty_lbs}}"
+                                                                        type="number" id="qty_lbs{{ $count }}" value="{{$value->qty_lbs}}"
                                                                         name="qty_lbs[]" step="any" readonly />
                                                                 </td>
                                                                 <td>
-                                                                    <input class="form-control" onkeyup="calculation_amount()" type="text" name="rate[]" id="rate" value="{{$value->rate}}">
+                                                                    <input class="form-control" onkeyup="calculation_amount()" type="text" name="rate[]" id="rate{{ $count }}" value="{{$value->rate}}">
                                                                 </td>
                                                                 
                                                                 <td>
-                                                                    <input class="form-control" type="text" name="total[]" id="total" value="">
+                                                                    <input class="form-control" type="text" name="total[]" id="total{{ $count }}" value="{{$value->amount}}" readonly>
                                                                 </td>
                                                                 <td style="width: 5%;">
                                                                     <a href="#" class="btn btn-sm btn-danger" onclick="RemoveSection('{{ $count }}')">
@@ -220,24 +237,21 @@ $count = 1;
                                                         
                                                             <script>
                                                                 $(document).ready(function(){
-                                                                    get_item_name1('{{ $count }}');
-
                                                                     calculation_amount();
-
                                                                 });
                                                             </script>
                                                             <?php $count++ ;?>
 
                                                         @endforeach
                                                     </tbody>
-                                                </table>`
+                                                </table>
                                             </div>
                                         </div>
                                         <div class="row">
                                             <div class="col-md-12 padtb">
                                                 <div class="col-md-8">
                                                     <div style="text-transform: capitalize;" id="rupees">Amount: in Words: {{ $sale_orders->amount_in_words }}</div>
-                                                    <input type="hidden" value="" name="rupeess" id="rupeess1" value="{{ $sale_orders->amount_in_words }}" />
+                                                    <input type="hidden" name="rupeess" id="rupeess1" value="{{ $sale_orders->amount_in_words }}" />
                                                 </div>    
                                                 <div class="col-md-4 my-lab">
                                                     <label for="">
@@ -296,6 +310,9 @@ $count = 1;
             });
 
             $('.select2').select2();
+            $('#cartage_amount').on('input keyup change', function () {
+                calculation_amount();
+            });
         });
       
         var Counter =0
@@ -315,9 +332,9 @@ $count = 1;
                             @endforeach
                         </select>                  
                     </td>
-                    <input style="display: none" class="form-control" type="text" name="item_code[]" id="item_code" value="">
-                    <input style="display: none" class="form-control" type="text" name="thickness[]" id="thickness">
-                    <input style="display: none" class="form-control" type="text" name="diameter[]" id="diameter">
+                    <input style="display: none" class="form-control" type="text" name="item_code[]" id="item_code${Counter}" value="">
+                    <input style="display: none" class="form-control" type="text" name="thickness[]" id="thickness${Counter}">
+                    <input style="display: none" class="form-control" type="text" name="diameter[]" id="diameter${Counter}">
                     <td>
                         <input type="text" name="pack_size[]" id="pack_size${Counter}" oninput="bag_qq(${Counter})" class="form-control" />
                     </td>
@@ -327,7 +344,7 @@ $count = 1;
                    
                     <td>
                         <input readonly class="form-control" onkeyup="calculation_amount()" type="text" name="qty[]" id="qty${Counter}" value="">
-                        <input type="hidden" name="pack_qty[]" id="pack_qty">
+                        <input type="hidden" name="pack_qty[]" id="pack_qty${Counter}">
                     </td>
                     <td>
                         <input class="form-control requiredField"
@@ -335,10 +352,10 @@ $count = 1;
                             name="qty_lbs[]" step="any" readonly />
                     </td>
                     <td>
-                        <input class="form-control" onkeyup="calculation_amount()" type="text" name="rate[]" id="rate" value="">
+                        <input class="form-control" onkeyup="calculation_amount()" type="text" name="rate[]" id="rate${Counter}" value="">
                     </td>
                     <td>
-                        <input class="form-control" type="text" name="total[]" id="total" value="">
+                        <input class="form-control" type="text" name="total[]" id="total${Counter}" value="" readonly>
                     </td>
                     <td class="text-center">
                         <a href="#" class="btn btn-sm btn-danger" onclick="RemoveSection(${Counter})">
@@ -416,7 +433,7 @@ $count = 1;
             $('#uom_id' + index).val(uom[1]);
             $('#item_code' + index).val(uom[2]);
             $('#qty' + index).val(uom[3]);
-            $('#pack_qty').val(uom[3]);
+            $('#pack_qty' + index).val(uom[3]);
             $('#qty_lbs' + index).val(uom[3]*2.2);
             $('#color' + index).val(uom[5]);
             $('#pack_size' + index).val(1);
@@ -433,23 +450,26 @@ $count = 1;
             console.log(uom);
             $('#uom_id' + index).val(uom[1]);
             $('#item_code' + index).val(uom[2]);
-            $('#qty' + index).val(uom[3]);
-            $('#pack_qty').val(uom[3]);
+            $('#pack_qty' + index).val(uom[3]);
             $('#color' + index).val(uom[5]);
             console.log(index);
-
-            bag_qq(index);
-
         }
 
         
         function bag_qq(counter) {
             var bags_qty = parseFloat($('#pack_size' + counter).val()) || 1;
             console.log(bags_qty);
-            var pack_qty = parseFloat($('#pack_qty').val()) || 0;
+            var pack_qty = parseFloat($('#pack_qty' + counter).val()) || 0;
             var total_qty = (bags_qty * pack_qty).toFixed(2);
+            var uom_val = $('#uom_id' + counter).val() || '';
+
+            if (uom_val.toLowerCase() === 'bundle' || uom_val.toLowerCase() === 'pcs') {
+                total_qty = (bags_qty * 10).toFixed(2);
+            }
+
             $('#qty' + counter).val(total_qty);
-            $('#qty_lbs' + counter).val(total_qty*2.2);
+            $('#qty_lbs' + counter).val((total_qty * 2.2).toFixed(2));
+            calculation_amount();
         }
 
 
@@ -547,13 +567,13 @@ function calculation_amount(index) {
                 var qty_lbs = parseFloat(qty) * 2.2 || 0;
                 row.find('[name="qty_lbs[]"]').val(qty_lbs.toFixed(2));
 
-                var total = parseFloat(actual_qty) * parseFloat(rate);
+                var total = (parseFloat(actual_qty) || 0) * (parseFloat(rate) || 0);
 
                 var sale_tax_amount = total / 100 * sale_tax;
                 var further_tax_amount = total / 100 * further_tax;
                 var advance_tax_amount = total / 100 * advance_tax;
 
-                grad_total += total + sale_tax_amount + advance_tax_amount + cartage_amount + further_tax_amount;
+                grad_total += total + sale_tax_amount + advance_tax_amount + further_tax_amount;
                 befor_tax += total;
                 all_tax += sale_tax_amount + advance_tax_amount + further_tax_amount;
 
@@ -567,8 +587,8 @@ function calculation_amount(index) {
 
             $('#total_tax').val(Number(all_tax).toFixed(3));
             $('#grand_total').val(Number(befor_tax).toFixed(3));
-            $('#grand_total_with_tax').val(Number(grad_total).toFixed(3));
-            $('#d_t_amount_1').val(Number(grad_total).toFixed(3));
+            $('#grand_total_with_tax').val(Number(grad_total + cartage_amount).toFixed(3));
+            $('#d_t_amount_1').val(Number(grad_total + cartage_amount).toFixed(3));
             // toWords(1);
         
 
