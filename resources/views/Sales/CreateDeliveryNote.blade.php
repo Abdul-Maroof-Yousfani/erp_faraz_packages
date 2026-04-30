@@ -578,49 +578,49 @@ use App\Helpers\ReuseableCode;
         });
 
 
-        function sales_tax()
+        function recalculateTotals()
         {
-            var total =	$('#total_amount').val();
-            var sales_tax_per = $('#sales_tax_rate').val();
-            var sales_tax_further_per = $('#sales_tax_further_per').val() ?? 0;
-            // alert(sales_tax_further_per);
+            var total = parseFloat($('#total_amount').val());
+            total = isNaN(total) ? 0 : total;
+
+            var sales_tax_per = parseFloat($('#sales_tax_rate').val());
+            sales_tax_per = isNaN(sales_tax_per) ? 0 : sales_tax_per;
+
+            var sales_tax_further_per = parseFloat($('#sales_tax_further_per').val());
+            sales_tax_further_per = isNaN(sales_tax_further_per) ? 0 : sales_tax_further_per;
+
+            var advance_tax_rate = parseFloat($('#advance_tax_rate').val());
+            advance_tax_rate = isNaN(advance_tax_rate) ? 0 : advance_tax_rate;
+
+            var cartage_amount = parseFloat($('#cartage_amount').val());
+            cartage_amount = isNaN(cartage_amount) ? 0 : cartage_amount;
+
             var sales_tax = (total / 100) * sales_tax_per;
             var sales_tax_further = (total / 100) * sales_tax_further_per;
-            var advance_tax_rate = $('#advance_tax_rate').val() ?? 0;
             var advance_tax = (total / 100) * advance_tax_rate;
-            var cartage_amount = parseFloat($('#cartage_amount').val());
 
             $('#sales_tax').val(sales_tax);
 
-
-            var strn= $('#buyers_sales').val();
-            if (strn == '')
-            {
+            var strn = $('#buyers_sales').val();
+            if (strn == '') {
                 $('#sales_tax_further').val(sales_tax_further);
-            }
-            else
-            {
+            } else {
                 sales_tax_further = 0;
                 $('#sales_tax_further').val(0);
             }
 
+            $('#advance_tax_amount').val(advance_tax);
 
-             $('#advance_tax_amount').val(advance_tax);
-            var total_tax = sales_tax + sales_tax_further + advance_tax;
+            var grandTotal = total + sales_tax + sales_tax_further + advance_tax + cartage_amount;
+            $('#grand').val(grandTotal);
+            $('#d_t_amount_1').val(grandTotal);
 
-            var total_amount = $('#total_amount').val();
-            var total_after_sales_tax = parseFloat(total_amount) + parseFloat(total_tax);
-            $('#grand').val(total_after_sales_tax + cartage_amount);
-            $('#d_t_amount_1').val(total_after_sales_tax + cartage_amount);
-
-            // var sales_tax=parseFloat($('#sales_tax').val());
-            // var amount=parseFloat($('#total_amount').val());
-            // if (isNaN(sales_tax))
-            // {
-            //     sales_tax=0;
-            // }
-            //$('#grand').val(sales_tax+amount);
             toWords(1);
+        }
+
+        function sales_tax()
+        {
+            recalculateTotals();
         }
 
         $("form").submit(function(e){
@@ -940,17 +940,6 @@ use App\Helpers\ReuseableCode;
 
             $('#total_amount').val(amount);
 
-            var sales_tax_per = $('#sales_tax_rate').val() || 0;
-            var sales_tax_further_per = $('#sales_tax_further_per').val() || 0;
-            var advance_tax_rate = $('#advance_tax_rate').val() || 0;
-            var cartage_amount = $('#cartage_amount').val() || 0;
-
-            var sales_tax = (amount / 100) * sales_tax_per;
-            var sales_tax_further = (amount / 100) * sales_tax_further_per;
-            var advance_tax = (amount / 100) * advance_tax_rate;
-
-            $('#grand').val(amount + sales_tax + sales_tax_further + advance_tax + cartage_amount);
-
             var qty = 0;
             $('.qty').each(function () {
                 let v = parseFloat($(this).val());
@@ -958,6 +947,7 @@ use App\Helpers\ReuseableCode;
             });
 
             $('#total_qty').val(qty);
+            recalculateTotals();
         }
 
         function required_none(number,qry)

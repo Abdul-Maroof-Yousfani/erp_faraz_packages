@@ -204,12 +204,11 @@ $currentDate = date('Y-m-d');
                                         {{-- <th class="text-center" style="border:1px solid black;">Color</th> --}}
                                         <th class="text-center" style="border:1px solid black;">QTY. (KG)<span
                                                 class="rflabelsteric"><strong>*</strong></span></th>
-                                        <th class="text-center hide" style="border:1px solid black;">Rate</th>
-                                        <th class="text-center hide" style="border:1px solid black;">Amount</th>
+                                        <th class="text-center" style="border:1px solid black;">Rate</th>
+                                        <th class="text-center" style="border:1px solid black;">Amount</th>
                                         <th class="text-center hide" style="border:1px solid black;">Tax %</th>
                                         <th class="text-center hide" style="border:1px solid black;">Tax Amount</th>
-                                        <th class="text-center hide" style="border:1px solid black;">Net Amount</th>
-                                        <th class="text-center hide printHide" style="border:1px solid black;">View</th>
+                                        <th class="text-center" style="border:1px solid black;">Net Amount</th>
                                         {{-- <th class="text-center" style="border:1px solid black;">Batch Codes</th> --}}
                                     </tr>
                                 </thead>
@@ -232,35 +231,158 @@ $currentDate = date('Y-m-d');
                                         ?>
                                        @foreach ($batch_codes as $key => $batch_code)
                                             <tr>
+                                                @php
+                                                    $batchQty = (float) ($out_qty[$key] ?? 0);
+                                                    $rate = (float) ($row->rate ?? 0);
+                                                    $amountBeforeTax = $batchQty * $rate;
+                                                    $taxPercent = (float) ($row->tax ?? 0);
+                                                    $taxAmount = ($row->qty ?? 0) ? ((float) $row->tax_amount * $batchQty / (float) $row->qty) : ($amountBeforeTax * $taxPercent / 100);
+                                                    $netAmount = ($row->qty ?? 0) ? ((float) $row->amount * $batchQty / (float) $row->qty) : ($amountBeforeTax + $taxAmount);
+                                                    $packSize = (float) ($row->pack_size ?? 0);
+                                                    $bags = $packSize > 0 ? ($batchQty / $packSize) : 0;
+                                                @endphp
                                                 <td style="text-align: center; border:1px solid black;">{{ $count++ }}</td>
                                                 <td style="border:1px solid black;">{{ $row->sub_ic }}</td>
-                                                <td style="border:1px solid black;">{{ $row->qty/$row->pack_size }}</td>
+                                                <td style="border:1px solid black;">{{ number_format($bags, 3) }}</td>
                                                 {{-- <td style="border:1px solid black;">{{ $row->color }}</td> --}}
-                                                <td class="text-right" style="border:1px solid black;">{{ $out_qty[$key] }}</td>
+                                                <td class="text-right" style="border:1px solid black;">{{ number_format($batchQty, 3) }}</td>
                                                 <!-- <td class="text-right" style="border:1px solid black;">{{ $row->qty }}</td> -->
-                                                <td class="text-right hide" style="border:1px solid black;">{{ number_format($row->rate, 2) }}</td>
-                                                <td class="text-right hide" style="border:1px solid black;">{{ number_format($row->qty * $row->rate, 2) }}</td>
-                                                <td class="text-right hide" style="border:1px solid black;">{{ $row->tax }}</td>
-                                                <td class="text-right hide" style="border:1px solid black;">{{ number_format($row->tax_amount, 2) }}</td>
-                                                <td class="text-right hide" style="border:1px solid black;">{{ number_format($row->amount, 2) }}</td>
+                                                <td class="text-right" style="border:1px solid black;">{{ number_format($rate, 2) }}</td>
+                                                <td class="text-right" style="border:1px solid black;">{{ number_format($amountBeforeTax, 2) }}</td>
+                                                <td class="text-right hide" style="border:1px solid black;">{{ number_format($taxPercent, 2) }}</td>
+                                                <td class="text-right hide" style="border:1px solid black;">{{ number_format($taxAmount, 2) }}</td>
+                                                <td class="text-right" style="border:1px solid black;">{{ number_format($netAmount, 2) }}</td>
                                                 {{-- <td class="text-right" style="border:1px solid black;">{{ trim($batch_code) }}</td> --}}
                                             </tr>
                                         @endforeach
                                     @endforeach
 
-                                    <tr class="hide" style="font-size: large;font-weight: bold">
-                                        <td colspan="4" style="border:1px solid black;"> Total </td>
-                                        <td class="text-right" colspan="1" style="border:1px solid black;">
+                                    <tr style="font-size: large;font-weight: bold">
+                                        <td colspan="5" style="border:1px solid black;"> Total </td>
+                                        <td class="text-right" style="border:1px solid black;">
                                             {{ number_format($total_before_tax, 2) }} </td>
-                                        <td></td>
-                                        <td class="text-right" colspan="1" style="border:1px solid black;">
+                                        <td class="hide" style="border:1px solid black;"></td>
+                                        <td class="text-right hide" style="border:1px solid black;">
                                             {{ number_format($total_tax, 2) }} </td>
-                                        <td class="text-right" colspan="1" style="border:1px solid black;">
+                                        <td class="text-right" style="border:1px solid black;">
                                             {{ number_format($total_after_tax, 2) }} </td>
                                     </tr>
 
                                 </tbody>
                             </table>
+
+                            @php
+                                $dnSalesTax = (float) ($delivery_note->sales_tax_amount ?? $total_tax);
+                                $dnFurtherTax = (float) ($delivery_note->sales_tax_further ?? 0);
+                                $dnAdvanceTax = (float) ($delivery_note->advance_tax_amount ?? 0);
+                                $dnCartage = (float) ($delivery_note->cartage_amount ?? 0);
+                                $dnGrandTotal = $total_before_tax + $dnSalesTax + $dnFurtherTax + $dnAdvanceTax + $dnCartage;
+                            @endphp
+
+                            <table class="table table-bordered" style="margin-top: 15px;">
+                                <tbody>
+                                    <tr>
+                                        <td colspan="6" class="text-right"><strong>DN Amount</strong></td>
+                                        <td class="text-right">{{ number_format($total_before_tax, 2) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="6" class="text-right"><strong>Sales Tax</strong></td>
+                                        <td class="text-right">{{ number_format($dnSalesTax, 2) }}</td>
+                                    </tr>
+                                    @if($dnFurtherTax > 0)
+                                        <tr>
+                                            <td colspan="6" class="text-right"><strong>Further Tax</strong></td>
+                                            <td class="text-right">{{ number_format($dnFurtherTax, 2) }}</td>
+                                        </tr>
+                                    @endif
+                                    @if($dnAdvanceTax > 0)
+                                        <tr>
+                                            <td colspan="6" class="text-right"><strong>Advance Tax</strong></td>
+                                            <td class="text-right">{{ number_format($dnAdvanceTax, 2) }}</td>
+                                        </tr>
+                                    @endif
+                                    @if($dnCartage > 0)
+                                        <tr>
+                                            <td colspan="6" class="text-right"><strong>Cartage Amount</strong></td>
+                                            <td class="text-right">{{ number_format($dnCartage, 2) }}</td>
+                                        </tr>
+                                    @endif
+                                    <tr style="font-size: large; font-weight: bold; background-color: #f5f5f5;">
+                                        <td colspan="6" class="text-right"><strong>DN Grand Total</strong></td>
+                                        <td class="text-right">{{ number_format($dnGrandTotal, 2) }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            @if(isset($linkedInvoices) && $linkedInvoices->count() > 0)
+                                <table class="table table-bordered" style="margin-top: 15px;">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="8" class="text-center" style="border:1px solid black;">Generated Invoice Detail</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-center" style="border:1px solid black;">S.NO</th>
+                                            <th class="text-center" style="border:1px solid black;">Invoice No</th>
+                                            <th class="text-center" style="border:1px solid black;">Invoice Date</th>
+                                            <th class="text-center" style="border:1px solid black;">Sales Tax</th>
+                                            <th class="text-center" style="border:1px solid black;">Further Tax</th>
+                                            <th class="text-center" style="border:1px solid black;">Advance Tax</th>
+                                            <th class="text-center" style="border:1px solid black;">Cartage</th>
+                                            <th class="text-center printHide" style="border:1px solid black;">View</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @php
+                                            $invoiceCounter = 1;
+                                            $invoiceSalesTaxTotal = 0;
+                                            $invoiceFurtherTaxTotal = 0;
+                                            $invoiceAdvanceTaxTotal = 0;
+                                            $invoiceCartageTotal = 0;
+                                        @endphp
+                                        @foreach($linkedInvoices as $invoice)
+                                            @php
+                                                $invoiceSalesTaxTotal += (float) ($invoice->sales_tax ?? 0);
+                                                $invoiceFurtherTaxTotal += (float) ($invoice->sales_tax_further ?? 0);
+                                                $invoiceAdvanceTaxTotal += (float) ($invoice->advance_tax_amount ?? 0);
+                                                $invoiceCartageTotal += (float) ($invoice->cartage_amount ?? 0);
+                                            @endphp
+                                            <tr>
+                                                <td class="text-center">{{ $invoiceCounter++ }}</td>
+                                                <td class="text-center">{{ strtoupper($invoice->gi_no) }}</td>
+                                                <td class="text-center">{{ CommonHelper::changeDateFormat($invoice->gi_date) }}</td>
+                                                <td class="text-right">{{ number_format((float) ($invoice->sales_tax ?? 0), 2) }}</td>
+                                                <td class="text-right">{{ number_format((float) ($invoice->sales_tax_further ?? 0), 2) }}</td>
+                                                <td class="text-right">{{ number_format((float) ($invoice->advance_tax_amount ?? 0), 2) }}</td>
+                                                <td class="text-right">{{ number_format((float) ($invoice->cartage_amount ?? 0), 2) }}</td>
+                                                <td class="text-center printHide">
+                                                    <a onclick="showDetailModelOneParamerter('sales/viewSalesTaxInvoiceDetail','{{ $invoice->id }}','View Sales Tax Invoice')">
+                                                        View
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                        <tr style="font-weight: bold; background-color: #f5f5f5;">
+                                            <td colspan="3" class="text-right">Invoice Totals</td>
+                                            <td class="text-right">{{ number_format($invoiceSalesTaxTotal, 2) }}</td>
+                                            <td class="text-right">{{ number_format($invoiceFurtherTaxTotal, 2) }}</td>
+                                            <td class="text-right">{{ number_format($invoiceAdvanceTaxTotal, 2) }}</td>
+                                            <td class="text-right">{{ number_format($invoiceCartageTotal, 2) }}</td>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            @else
+                                <table class="table table-bordered" style="margin-top: 15px;">
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-center"><strong>Invoice Detail</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-center">No sales tax invoice generated against this delivery note yet.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            @endif
 
                             <table style="display: none;" class="table table-bordered tra">
                                 <thead>

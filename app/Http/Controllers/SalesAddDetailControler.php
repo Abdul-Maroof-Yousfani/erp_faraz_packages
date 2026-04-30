@@ -1219,13 +1219,21 @@ class SalesAddDetailControler extends Controller
             $delivery_note->terms_of_delivery = $request->input('terms_of_delivery', '');
             $delivery_note->buyers_id = $buyers_id;
             $delivery_note->due_date = $request->input('due_date');
-            $delivery_note->sales_tax_amount = CommonHelper::check_str_replace($request->input('sales_tax', 0));
-            $delivery_note->sales_tax_rate = $request->input('sales_tax_rate', 0);
-            $delivery_note->sales_tax_further_per = $request->input('sales_tax_further_per', 0);
-            $delivery_note->sales_tax_further = $request->input('sales_tax_further', 0);
-            $delivery_note->advance_tax_amount = $request->input('advance_tax_amount', 0);
-            $delivery_note->advance_tax_rate = $request->input('advance_tax_rate', 0);
-            $delivery_note->cartage_amount = $request->input('cartage_amount', 0);
+            $salesTaxRate = (float) CommonHelper::check_str_replace($request->input('sales_tax_rate', 0));
+            $salesTaxAmount = (float) CommonHelper::check_str_replace($request->input('sales_tax', 0));
+            $furtherTaxRate = (float) CommonHelper::check_str_replace($request->input('sales_tax_further_per', 0));
+            $furtherTaxAmount = (float) CommonHelper::check_str_replace($request->input('sales_tax_further', 0));
+            $advanceTaxRate = (float) CommonHelper::check_str_replace($request->input('advance_tax_rate', 0));
+            $advanceTaxAmount = (float) CommonHelper::check_str_replace($request->input('advance_tax_amount', 0));
+            $cartageAmount = (float) CommonHelper::check_str_replace($request->input('cartage_amount', 0));
+
+            $delivery_note->sales_tax_amount = $salesTaxAmount;
+            $delivery_note->sales_tax_rate = $salesTaxRate;
+            $delivery_note->sales_tax_further_per = $furtherTaxRate;
+            $delivery_note->sales_tax_further = $furtherTaxAmount;
+            $delivery_note->advance_tax_amount = $advanceTaxAmount;
+            $delivery_note->advance_tax_rate = $advanceTaxRate;
+            $delivery_note->cartage_amount = $cartageAmount;
             $delivery_note->description = $request->input('description');
             $delivery_note->status = 1;
             $delivery_note->date = date('Y-m-d');
@@ -1271,22 +1279,43 @@ class SalesAddDetailControler extends Controller
                 //     throw new Exception("Insufficient stock for item ID {$item_id} (requested: {$qty})");
                 // }
 
-                    $available_stock = DB::connection('mysql2')->table('stock')
-                        ->where('status', 1)
-                        ->where('sub_item_id', $item_id)
-                        ->selectRaw('
-                            COALESCE(SUM(CASE WHEN voucher_type = 1 THEN qty ELSE 0 END), 0) -
-                            COALESCE(SUM(CASE WHEN voucher_type IN (2, 3, 5) THEN qty ELSE 0 END), 0)
-                            AS net_qty
-                        ')
-                        ->value('net_qty');
+                    // $available_stock = DB::connection('mysql2')->table('stock')
+                    //     ->where('status', 1)
+                    //     ->where('sub_item_id', $item_id)
+                    //     ->selectRaw('
+                    //         COALESCE(SUM(CASE WHEN voucher_type = 1 THEN qty ELSE 0 END), 0) -
+                    //         COALESCE(SUM(CASE WHEN voucher_type IN (2, 5, 9, 8) THEN qty ELSE 0 END), 0)
+                    //         AS net_qty
+                    //     ')
+                    //     ->value('net_qty');
+
+
+                            $in = DB::Connection('mysql2')->table('stock')->where('status', 1)
+                            ->whereIn('voucher_type', [1, 4, 6, 3, 10, 11])
+                            ->where('sub_item_id', $item_id)
+                            ->where('warehouse_id', $warehouse_id)
+                            // ->where('batch_code', $bacth_code)
+                            ->select('stock.*', DB::raw('SUM(qty) As qty'), DB::raw('SUM(amount) As amount'))
+                            ->first();
+
+                        $out = DB::Connection('mysql2')->table('stock')->where('status', 1)
+                            ->whereIn('voucher_type', [2, 5, 9, 8])
+                            ->where('sub_item_id', $item_id)
+                            ->where('warehouse_id', $warehouse_id)
+                            // ->where('batch_code', $bacth_code)
+                            ->select('stock.*',DB::raw('SUM(qty) As qty'), DB::raw('SUM(amount) As amount'))
+                            ->first();
+
+                        $available_stock = $in->qty - $out->qty;
+                        // dd($available_stock);
 
                     // Ensure null safety
                     $available_qty = $available_stock ?? 0;
 
                     // Validate stock
                     if ($available_qty < $qty) {
-                        throw new Exception("Insufficient stock for item ID {$item_id} (requested: {$qty}, available: {$available_qty})");
+                        // throw new Exception("Insufficient stock for item ID {$item_id} (requested: {$qty}, available: {$available_qty})");
+                        return redirect()->back()->with('error', "Insufficient stock for item ID {$item_id} (requested: {$qty}, available: {$available_qty})");
                     }
 
 
@@ -1332,11 +1361,19 @@ class SalesAddDetailControler extends Controller
                 $detail->bundles_id = $bundles_id;
                 $detail->qty = $qty;
                 $detail->rate = $send_rate;
+                $lineSalesTaxAmount = ($send_amount * $salesTaxRate) / 100;
+                $lineFurtherTaxAmount = ($send_amount * $furtherTaxRate) / 100;
+                $lineAdvanceTaxAmount = ($send_amount * $advanceTaxRate) / 100;
+
                 $detail->amount = $send_amount;
-                $detail->tax = $request->input('sales_tax_rate', 0);
-                $detail->tax_amount = 0; // adjust if per-line tax is needed
+                $detail->tax = $salesTaxRate;
+                $detail->tax_amount = $lineSalesTaxAmount;
                 $detail->batch_code = '';
                 $detail->out_qty_details = (string) $qty;
+                $detail->sales_tax_further_per = $furtherTaxRate;
+                $detail->sales_tax_further = $lineFurtherTaxAmount;
+                $detail->advance_tax_rate = $advanceTaxRate;
+                $detail->advance_tax_amount = $lineAdvanceTaxAmount;
                 $detail->status = 1;
                 $detail->date = date('Y-m-d');
                 $detail->username = Auth::user()->name;
@@ -1372,7 +1409,7 @@ class SalesAddDetailControler extends Controller
             }
 
             // Activity log
-            $sales_tax_amount = CommonHelper::check_str_replace($request->input('sales_tax', 0));
+            $sales_tax_amount = $salesTaxAmount;
             SalesHelper::sales_activity(
                 $gd_no,
                 $request->input('gd_date'),

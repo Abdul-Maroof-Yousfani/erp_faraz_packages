@@ -6,14 +6,12 @@ use App\Helpers\ReuseableCode;
 $view=ReuseableCode::check_rights(111);
 $edit=ReuseableCode::check_rights(112);
 $delete=ReuseableCode::check_rights(113);
-$counter = 1;$total=0;
-$total_cost=0;
-$total_open_dn=0;
-$complete=0;
-$open=0;
-
-$total=0;
-$total_open=0;
+$counter = 1;
+$total = 0;
+$total_open = 0;
+$total_tax = 0;
+$complete = 0;
+$open = 0;
 ?>
 
 @foreach($delivery_note as $row)
@@ -22,6 +20,8 @@ $total_open=0;
 
     $data=SalesHelper::get_total_amount_for_delivery_not_by_id($row->id);
     $status='';
+    $salesTaxAmount = (float) ($row->sales_tax_amount ?? 0);
+    $grossAmount = (float) ($data->amount ?? 0);
     if ($row->sales_tax_invoice==0):
         $status='Open';
         $return_qty_data=SalesHelper::get_return_by_dn($row->gd_no);
@@ -40,6 +40,12 @@ $total_open=0;
         $status='Complete';
         $complete++;
     endif;
+
+    $total += $grossAmount;
+    $total_tax += $salesTaxAmount;
+    if ($status === 'Open') {
+        $total_open += $grossAmount;
+    }
     ?>
     <?php $customer=CommonHelper::byers_name($row->buyers_id); ?>
     <tr @if($status=='Open') style="background-color: #fdc8c8" @elseif($status=='partial') style="background-color: #c9d6ec"  @endif title="{{$row->id}}" id="{{$row->id}}">
@@ -52,7 +58,8 @@ $total_open=0;
         <td class="text-center">{{ CommonHelper::changeDateFormat($row->order_date) }}</td>
         <td class="text-center">{{$customer->name}}</td>
         <td class="text-right">{{number_format($data->qty,3)}}</td>
-        <td class="text-right">{{number_format($data->amount+$row->sales_tax_amount,3)}}</td>
+        <td class="text-right">{{number_format($grossAmount,3)}}</td>
+        <td class="text-right">{{number_format($salesTaxAmount,3)}}</td>
         <td class="text-center">{{$status}}</td>
         <td class="text-center">{{ $row->username }}</td>
         <td class="text-center">
@@ -88,7 +95,7 @@ $total_open=0;
 @endforeach
 <tr style="background-color: lightgrey">
     <td colspan="8">Total</td>
-    <td title="total cost">{{number_format($total,2)}}</td>
-    <td title="total open cost">{{number_format($total_open,2)}}</td>
-    <td colspan="2"></td>
+    <td class="text-right" title="total (incl tax)">{{number_format($total,3)}}</td>
+    <td class="text-right" title="total sales tax">{{number_format($total_tax,3)}}</td>
+    <td colspan="3"></td>
 </tr>

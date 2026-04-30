@@ -1058,7 +1058,25 @@ class SalesController extends Controller
 
         $delivery_note_data = $delivery_note_data_other;
 
-        return view('Sales.AjaxPages.viewDeliveryNoteDetail', compact('delivery_note', 'delivery_note_data', 'delivery_note_data_other', 'id'));
+        $linkedInvoices = DB::connection('mysql2')
+            ->table('sales_tax_invoice')
+            ->where('status', 1)
+            ->where('gd_no', $delivery_note->gd_no)
+            ->select(
+                'id',
+                'gi_no',
+                'gi_date',
+                'sales_tax',
+                'sales_tax_further',
+                'advance_tax_amount',
+                'cartage_amount',
+                'amount_in_words',
+                'si_status'
+            )
+            ->orderBy('id', 'ASC')
+            ->get();
+
+        return view('Sales.AjaxPages.viewDeliveryNoteDetail', compact('delivery_note', 'delivery_note_data', 'delivery_note_data_other', 'id', 'linkedInvoices'));
     }
 
     public function viewDeliveryChallanDetail($id)
