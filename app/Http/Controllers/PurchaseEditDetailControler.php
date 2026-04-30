@@ -53,7 +53,7 @@ class PurchaseEditDetailControler extends Controller
     public function editSupplierDetail(Request $request){
         $request->validate([
             'vendor_name' => 'required',
-            'mobile_no' => 'required',
+            // 'mobile_no' => 'required',
         ]);
 
         CommonHelper::companyDatabaseConnection($_GET['m']);

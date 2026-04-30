@@ -651,15 +651,25 @@ class PurchaseDataCallController extends Controller
                 <td><?php echo $row['color']; ?></td>
                 <td><?php echo $row['hs_code_id']; ?></td>
                 <td class="text-center col-sm-1">
-
-                    <?php if($edit == true):?>
-                        <a type="button" href="<?php echo url('purchase/editSubItemForm?id='.$row->id) ?>" class="btn btn-xs btn-info"><span class="glyphicon glyphicon-edit"></span></a>
-                    <?php endif;?>
-                    <?php if($delete == true):?>
-                        <a type="button" href="<?php echo url('purchase/deleteSubItemRecord?id='.$row->id.'&m='.Session::get('run_company')) ?>" class="btn btn-xs btn-danger"><span class="glyphicon glyphicon-trash"></span></a>
-                    <?php endif;?>
-                    <?php //echo CommonHelper::masterTableButtons($m, $row['status'], $row['id'], 'sub_ic', 'acc_id', 'subitem', 'purchase/editSubItemForm', 'Edit Sub-Item Detail Form', 'purchase/viewSubItemDetail', 'View Sub-Item Detail', 'purchase/deleteSubItemRecord', 'purchase/repostSubItemRecord') ?>
-
+                    <div class="dropdown">
+                        <button class="drop-bt dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <?php if($edit == true):?>
+                                    <a href="<?php echo url('purchase/editSubItemForm?id='.$row->id) ?>">
+                                        <i class="fa-solid fa-pencil"></i> Edit
+                                    </a>
+                                <?php endif;?>
+                                <?php if($delete == true):?>
+                                    <a href="<?php echo url('purchase/deleteSubItemRecord?id='.$row->id.'&m='.Session::get('run_company')) ?>">
+                                        <i class="fa-solid fa-trash"></i> Delete
+                                    </a>
+                                <?php endif;?>
+                            </li>
+                        </ul>
+                    </div>
                 </td>
 
 
@@ -704,7 +714,23 @@ class PurchaseDataCallController extends Controller
                 <td><?php echo CommonHelper::getCompanyDatabaseTableValueById($m, 'item_master', 'item_master_code', $row['item_master_id']); ?></td>
                 <td><?php echo $row['item_code']; ?></td>
                 <td><?php echo $row['sub_ic']; ?></td>
-                <td class="text-center"><?php echo CommonHelper::masterTableButtons($m, $row['status'], $row['id'], 'sub_ic', 'acc_id', 'subitem', 'purchase/editSubItemForm', 'Edit Sub-Item Detail Form', 'purchase/viewSubItemDetail', 'View Sub-Item Detail', 'purchase/deleteSubItemRecord', 'purchase/repostSubItemRecord') ?></td>
+                <td class="text-center">
+                    <div class="dropdown">
+                        <button class="drop-bt dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href="<?php echo url('purchase/editSubItemForm?id='.$row->id) ?>">
+                                    <i class="fa-solid fa-pencil"></i> Edit
+                                </a>
+                                <a href="<?php echo url('purchase/deleteSubItemRecord?id='.$row->id.'&m='.Session::get('run_company')) ?>">
+                                    <i class="fa-solid fa-trash"></i> Delete
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </td>
             </tr>
             <?php
         }

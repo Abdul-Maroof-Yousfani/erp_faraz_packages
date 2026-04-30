@@ -30,10 +30,130 @@ use App\Helpers\FinanceHelper;
         label {
             text-transform: capitalize;
         }
+        .sales-tax-invoice-page .well {
+            background: #ffffff;
+            border: 1px solid #d7dde5;
+            border-radius: 10px;
+            padding: 18px 18px 12px;
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+        }
+        .sales-tax-invoice-page .subHeadingLabelClass {
+            display: inline-block;
+            font-size: 18px !important;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 6px;
+        }
+        .sales-tax-invoice-page .panel,
+        .sales-tax-invoice-page .panel-body {
+            border: 0;
+            box-shadow: none;
+            background: transparent;
+            padding-left: 0;
+            padding-right: 0;
+        }
+        .sales-tax-invoice-page .form-control,
+        .sales-tax-invoice-page .select2-selection {
+            min-height: 36px;
+            border-radius: 6px !important;
+            border-color: #cdd6e1;
+            box-shadow: none;
+            background: #f8fafc;
+        }
+        .sales-tax-invoice-page textarea.form-control {
+            min-height: 60px;
+            background: #fbfdff;
+        }
+        .sales-tax-invoice-page .sf-label {
+            display: block;
+            font-weight: 600;
+            color: #526070;
+            margin-bottom: 6px;
+        }
+        .sales-tax-invoice-page .invoice-grid > div,
+        .sales-tax-invoice-page .invoice-meta-row > div,
+        .sales-tax-invoice-page .invoice-desc-row > div {
+            margin-bottom: 14px;
+        }
+        .sales-tax-invoice-page .invoice-table {
+            margin-bottom: 18px;
+            border: 1px solid #d9e1ea;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #fff;
+        }
+        .sales-tax-invoice-page .invoice-table thead th {
+            background: #dbe4ee;
+            color: #344256;
+            border-bottom: 1px solid #cbd5e1 !important;
+            font-weight: 700;
+            padding: 12px 10px !important;
+            white-space: nowrap;
+        }
+        .sales-tax-invoice-page .invoice-table tbody td {
+            padding: 8px 10px !important;
+            vertical-align: middle !important;
+            border-top: 1px solid #edf2f7 !important;
+        }
+        .sales-tax-invoice-page .invoice-table tbody tr:nth-child(even):not(.invoice-total-row):not(.invoice-grand-row) {
+            background: #fbfdff;
+        }
+        .sales-tax-invoice-page .invoice-summary-label {
+            font-weight: 600;
+            color: #425466;
+            background: #fff;
+        }
+        .sales-tax-invoice-page .invoice-total-row td {
+            background: #b7bcc3 !important;
+            color: #1f2937;
+            font-weight: 700;
+            border-top: 1px solid #a7afb8 !important;
+        }
+        .sales-tax-invoice-page .invoice-total-row input,
+        .sales-tax-invoice-page .invoice-grand-row input {
+            font-weight: 700;
+        }
+        .sales-tax-invoice-page .invoice-grand-row td {
+            background: #9fa5ad !important;
+            color: #111827;
+            font-weight: 700;
+            border-top: 1px solid #9098a3 !important;
+        }
+        .sales-tax-invoice-page .amount-words {
+            margin-top: 12px;
+            color: #5b6776;
+            font-size: 11px !important;
+        }
+        .sales-tax-invoice-page .invoice-actions {
+            margin-top: 18px;
+            padding-top: 6px;
+        }
+        .sales-tax-invoice-page .invoice-actions .btn {
+            min-width: 110px;
+            border-radius: 6px;
+            font-weight: 600;
+            padding: 8px 16px;
+        }
+        .sales-tax-invoice-page .btn-success {
+            background: #16a34a;
+            border-color: #16a34a;
+        }
+        .sales-tax-invoice-page .btn-info {
+            background: #06b6d4;
+            border-color: #06b6d4;
+        }
+        @media (max-width: 991px) {
+            .sales-tax-invoice-page .well {
+                padding: 14px 12px 10px;
+            }
+            .sales-tax-invoice-page .invoice-table {
+                border-radius: 6px;
+            }
+        }
     </style>
 
 
-    <div   class="row well_N" style="display: none;" id="main">
+    <div class="row well_N sales-tax-invoice-page" style="display: none;" id="main">
         <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12" style="display: none;">
 
         </div>
@@ -56,7 +176,7 @@ use App\Helpers\FinanceHelper;
 
                                 <div class="row">
                                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                        <div class="row">
+                                        <div class="row invoice-grid">
                                             <?php
 
                                             //$gi_no=$sales_order->so_no;
@@ -123,7 +243,7 @@ use App\Helpers\FinanceHelper;
                                             </div>
                                         </div>
 
-                                        <div class="row">
+                                        <div class="row invoice-meta-row">
 
                                             <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12 hide">
                                                 <label class="sf-label">Despatched through<span class="rflabelsteric"></span></label>
@@ -168,7 +288,7 @@ use App\Helpers\FinanceHelper;
 
                                         </div>
 
-                                        <div class="row">
+                                        <div class="row invoice-desc-row">
 
                                             <?php
                                             $accounts=DB::Connection('mysql2')->table('accounts')->where('status',1)->whereIn('id',array(266, 267))->get();
@@ -206,7 +326,7 @@ use App\Helpers\FinanceHelper;
                                 <div id="addMoreDemandsDetailRows_1" class="panel addMoreDemandsDetailRows_1">
                                     <div class="">
                                         <div class="table-responsive">
-                                            <table  class="table table-bordered table-striped table-condensed tableMargin">
+                                            <table  class="table table-bordered table-striped table-condensed tableMargin invoice-table">
                                                 <thead>
                                                 <tr>
                                                     <th class="text-center">S.NO</th>
@@ -222,13 +342,8 @@ use App\Helpers\FinanceHelper;
                                                     <th class="text-center" >DN QTY</th>
                                                     <th class="text-center" >Return QTY</th>
                                                     <th class="text-center" >QTY. <span class="rflabelsteric"><strong>*</strong></span></th>
-                                                    <th class="text-center hidee">Rate</th>
-                                                    <th class="text-center hidee">Tax %</th>
-                                                    <th class="text-center hidee">Tax Amount</th>
-                                                    <th class="text-center hidee">Further Tax %</th>
-                                                    <th class="text-center hidee">Further Tax Amount</th>
-                                                    {{-- <th class="text-center hidee">Discount Amount</th> --}}
-                                                    <th class="text-center hidee">Net Amount</th>
+                                                    <th class="text-center">Rate</th>
+                                                    <th class="text-center" colspan="3">Net Amount</th>
 
                                                 </tr>
                                                 </thead>
@@ -275,6 +390,27 @@ use App\Helpers\FinanceHelper;
                                                 <input type="hidden" name="item_id{{$id_count}}" id="item_id{{$id_count}}" value="{{$row1->item_id}}"/>
                                                 <input type="hidden" name="warehouse_id{{$id_count}}" id="warehouse_id{{$id_count}}" value="{{$row1->warehouse_id }}"/>
                                                 <input type="hidden" name="item_desc<?php echo $id_count?>" id="item_desc" value='<?php echo $row1->desc?>'/>
+                                                <?php
+                                                $line_qty = $dn_qty - $return_qty;
+                                                $amount = $dn_rate * $line_qty;
+                                                $discount_amount = 0;
+                                                $tax_amount = 0;
+                                                $further_tax_amount = 0;
+
+                                                if ($sales_order->sales_tax_rate != 0):
+                                                    $tax_amount = ($amount / 100) * $sales_order->sales_tax_rate;
+                                                endif;
+                                                if ($delivery_not->sales_tax_further_per != 0):
+                                                    $further_tax_amount = ($amount / 100) * $delivery_not->sales_tax_further_per;
+                                                elseif ($sales_order->sales_tax_further != 0):
+                                                    $further_tax_amount = ($amount / 100) * $sales_order->sales_tax_further;
+                                                endif;
+                                                $net_amount = $amount;
+                                                ?>
+                                                <input type="hidden" class="form-control" name="tax_percent{{$id_count}}" id="tax_percent{{$id_count}}" value="{{ $sales_order->sales_tax_rate }}"/>
+                                                <input type="hidden" class="form-control" name="tax_amount{{$id_count}}" id="tax_amount{{$id_count}}" value="{{$tax_amount}}"/>
+                                                <input type="hidden" class="form-control" name="sales_tax_further_per{{$id_count}}" id="sales_tax_further_per{{$id_count}}" value="{{ $delivery_not->sales_tax_further_per }}"/>
+                                                <input type="hidden" class="form-control" name="sales_tax_further{{$id_count}}" id="sales_tax_further{{$id_count}}" value="{{$further_tax_amount}}"/>
 
                                                 <tr>
                                                     <td class="text-center" class="text-center"><?php echo $counter ?></td>
@@ -295,44 +431,14 @@ use App\Helpers\FinanceHelper;
                                                     <td class="text-center">{{$dn_qty}}</td>
                                                     <td class="text-center">{{$return_qty}}</td>
 
-                                                    <?php  $total_qty+=$dn_qty-$return_qty;
-
-                                                    $amount = $dn_rate * $dn_qty;
-                                                    $discount_amount = 0;
-                                                    $tax_amount = 0;
-                                                    $further_tax_amount = 0;
-                                                    
-                                                    if ($sales_order->sales_tax_rate != 0):
-                                                        $tax_amount = ($amount / 100) * $sales_order->sales_tax_rate;
-                                                    endif;
-                                                    if ($delivery_not->sales_tax_further != 0):
-                                                        $further_tax_amount = $delivery_not->sales_tax_further;
-                                                    endif;
-                                                    $net_amount = $amount;
-
-
-                                                    ?>
+                                                    <?php  $total_qty+=$dn_qty-$return_qty; ?>
                                                     <td class="text-right">
-                                                        <input readonly type="text" class="form-control qty" name="qty{{$id_count}}" id="qty{{$id_count}}" value="{{$row1->qty-$return_qty}}"/>
+                                                        <input readonly type="text" class="form-control qty" name="qty{{$id_count}}" id="qty{{$id_count}}" value="{{$line_qty}}"/>
                                                     </td>
-                                                    <td class="text-right hidee">
+                                                    <td class="text-right">
                                                         <input readonly type="text" class="form-control" name="rate{{$id_count}}" id="rate{{$id_count}}" value="{{$row1->rate}}"/>
                                                     </td>
-                                                    <td class="text-right hidee" style="width: 10%">
-                                                        <input readonly type="text" class="form-control" name="tax_percent{{$id_count}}" id="tax_percent{{$id_count}}" value="{{ $sales_order->sales_tax_rate }}"/>
-
-                                                    </td>
-                                                    <td class="text-right hidee" style="width: 10%">
-                                                        <input readonly type="text" class="form-control" name="tax_amount{{$id_count}}" id="tax_amount{{$id_count}}" value="{{$tax_amount}}"/>
-                                                    </td>
-                                                    <td class="text-right hidee">
-                                                        <input readonly type="text" class="form-control" name="sales_tax_further_per{{$id_count}}" id="sales_tax_further_per{{$id_count}}" value="{{ $delivery_not->sales_tax_further_per }}"/>
-
-                                                    </td>
-                                                    <td class="text-right hidee">
-                                                        <input readonly type="text" class="form-control" name="sales_tax_further{{$id_count}}" id="sales_tax_further{{$id_count}}" value="{{$further_tax_amount}}"/>
-                                                    </td>
-                                                    <td class="text-right hidee">
+                                                    <td class="text-right" colspan="3">
                                                         <input readonly type="text" class="form-control amount comma_seprated" name="net_amount{{$id_count}}" id="net_amount{{$id_count}}" value="{{ $net_amount }}"/>
                                                     </td>
                                                 </tr>
@@ -372,15 +478,16 @@ use App\Helpers\FinanceHelper;
                                                 @if ($bundle_stop==1)
                                                     <tr  style="font-size: larger;font-weight: bold;background-color: lightyellow">
                                                         <td class="text-center" class="text-center"><?php echo $counter;?></td>
+                                                        <td class="text-center">{{ $row1->gd_no }}</td>
                                                         <td  id="" class="text-left"><?php echo $row1->product_name;?></td>
+                                                        <td style="display: none;"></td>
                                                         <td class="text-left"> <?php  echo CommonHelper::get_uom_name($row1->bundle_unit);   ?> </td>
                                                         <td class="text-right"> <?php echo number_format($row1->bqty,3)?></td>
-                                                        <td></td>
-                                                        <td class="text-right hidee"><?php echo number_format($row1->bundle_rate,2);?></td>
-                                                        <td class="text-right hidee"><?php echo number_format($row1->bundle_amount,2);?></td>
-                                                        <td class="text-right hidee"><?php echo number_format($row1->b_percent,2);?></td>
-                                                        <td class="text-right hidee"><?php echo number_format($row1->b_dis_amount,2);?></td>
-                                                        <td class="text-right hidee"><?php echo number_format($row1->b_net,2);?></td>
+                                                        <td class="text-center"></td>
+                                                        <td class="text-center"></td>
+                                                        <td class="text-center"></td>
+                                                        <td class="text-right"><?php echo number_format($row1->bundle_rate,2);?></td>
+                                                        <td class="text-right"><?php echo number_format($row1->bundle_amount,2);?></td>
 
                                                     </tr>
                                                     <?php $bundle_stop++ ?>
@@ -418,15 +525,34 @@ use App\Helpers\FinanceHelper;
                                                 <input type="hidden" name="sales_order_data_id" id="sales_order_data_id" value="{{$row1->so_data_id}}"/>
                                                 <input type="hidden" name="delivery_note_id" id="delivery_note_id" value="{{$delivery_note_id}}"/>
 
-                                                <input type="hidden" name="item_id{{$id_count}}" id="item_id{{$id_count}}" value="{{$row1->item_id}}"/>
-                                                <input type="hidden" name="warehouse_id{{$id_count}}" id="warehouse_id{{$id_count}}" value="{{$row1->warehouse_id }}"/>
-                                                <input type="hidden" name="item_desc<?php echo $id_count?>" id="item_desc" value="<?php echo $row1->desc?>"/>
+                                                <input type="hidden" name="item_id{{$id_count}}" id="item_id{{$id_count}}" value="{{$bundle_data->item_id}}"/>
+                                                <input type="hidden" name="warehouse_id{{$id_count}}" id="warehouse_id{{$id_count}}" value="{{$bundle_data->warehouse_id }}"/>
+                                                <input type="hidden" name="item_desc<?php echo $id_count?>" id="item_desc{{$id_count}}" value="<?php echo $bundle_data->desc?>"/>
+                                                <?php
+                                                $line_qty = $dn_qty - $return_qty;
+                                                $amount = $dn_rate * $line_qty;
+                                                $tax_amount = 0;
+                                                $further_tax_amount = 0;
+                                                if ($sales_order->sales_tax_rate != 0):
+                                                    $tax_amount = ($amount / 100) * $sales_order->sales_tax_rate;
+                                                endif;
+                                                if ($delivery_not->sales_tax_further_per != 0):
+                                                    $further_tax_amount = ($amount / 100) * $delivery_not->sales_tax_further_per;
+                                                elseif ($sales_order->sales_tax_further != 0):
+                                                    $further_tax_amount = ($amount / 100) * $sales_order->sales_tax_further;
+                                                endif;
+                                                ?>
+                                                <input type="hidden" class="form-control" name="tax_percent{{$id_count}}" id="tax_percent{{$id_count}}" value="{{ $sales_order->sales_tax_rate }}"/>
+                                                <input type="hidden" class="form-control" name="tax_amount{{$id_count}}" id="tax_amount{{$id_count}}" value="{{ $tax_amount }}"/>
+                                                <input type="hidden" class="form-control" name="sales_tax_further_per{{$id_count}}" id="sales_tax_further_per{{$id_count}}" value="{{ $delivery_not->sales_tax_further_per }}"/>
+                                                <input type="hidden" class="form-control" name="sales_tax_further{{$id_count}}" id="sales_tax_further{{$id_count}}" value="{{ $further_tax_amount }}"/>
 
                                                 {{--hidden data End --}}
 
 
                                                 <tr>
                                                     <td class="text-center" class="text-center"><?php echo $item_count;?></td>
+                                                    <td class="text-center"></td>
                                                     <td class="text-left"><?php echo $bundle_data->desc;//CommonHelper::get_item_name($bundle_data->item_id)?></td>
                                                     <td style="display: none">{{$bundle_data->so_data_id.' '.$bundle_data->groupby}}</td>
 
@@ -443,35 +569,20 @@ use App\Helpers\FinanceHelper;
 
                                                     $total_qty+=$dn_qty-$return_qty;
 
-
-
-                                                    $amount=$dn_rate*$dn_qty;
-                                                    $discount_amount=0;
-                                                    $net_amount=$amount=0;
-                                                    if ($row1->discount_percent!=0):
-                                                    $discount_amount=($amount/100)*$discount_percent;
-                                                    $net_amount=$amount-$discount_amount;
-                                                    endif;
+                                                    $net_amount = $amount;
 
 
                                                     ?>
                                                     <td class="text-right">
-                                                        <input readonly type="text" class="form-control qty" name="qty{{$id_count}}" id="qty{{$id_count}}" value="{{$dn_qty-$return_qty}}"/></td>
+                                                        <input readonly type="text" class="form-control qty" name="qty{{$id_count}}" id="qty{{$id_count}}" value="{{$line_qty}}"/></td>
 
 
-                                                    <td class="text-right hidee">
+                                                    <td class="text-right">
                                                         <input readonly type="text" class="form-control" name="rate{{$id_count}}" id="rate{{$id_count}}" value="{{$dn_rate}}"/>
                                                     </td>
-                                                    <td class="text-right hidee">
-                                                        <input readonly type="text" class="form-control" name="discount_percent{{$id_count}}" id="discount_percent{{$id_count}}" value="{{$discount_percent}}"/>
-
-                                                    </td>
-                                                    <td class="text-right hidee">
-                                                        <input readonly type="text" class="form-control" name="discount_amount{{$id_count}}" id="discount_amount{{$id_count}}" value="{{$discount_amount}}"/>
-                                                    </td>
-                                                    <td class="text-right hidee">
+                                                    <td class="text-right">
                                                         <input readonly type="text" class="form-control amount comma_seprated" name="net_amount{{$id_count}}" id="net_amount{{$id_count}}" value="{{$net_amount}}"/>
-
+                                                    </td>
 
                                                 </tr>
                                                 <?php endif;
@@ -484,40 +595,45 @@ use App\Helpers\FinanceHelper;
                                                 }
                                                 ?>
                                                 <input type="hidden" name="count" id="count" value="{{$id_count}}"/>
-                                                <tr>
+                                                <tr class="invoice-total-row">
 
-                                                    <td id="total_" style="background-color: darkgray" class="text-center" colspan="7">Total</td>
+                                                    <td id="total_" style="background-color: darkgray" class="text-center" colspan="8">Total</td>
                                                     <td style="font-weight: bolder" colspan="1"> <input readonly type="text" id="total_qty" class="form-control"  value=""/></td>
-                                                    <td colspan="4"></td>
-                                                    <td class="text-right" style="font-weight: bolder" colspan="2"> <input readonly type="text" id="total_amount" class="form-control text-right comma_seprated"  value=""/></td>
+                                                    <td colspan="1"></td>
+                                                    <td class="text-right" style="font-weight: bolder" colspan="1"> <input readonly type="text" id="total_amount" class="form-control text-right comma_seprated"  value=""/></td>
 
                                                 </tr>
 
 
                                                 </tbody>
-                                                @if($sales_order->sales_tax >0)
-                                                    <?php // $total+=$sales_order->sales_tax;
-
-                                                    $sales_order->sales_tax;
-                                                    $sales_tax; $sales_tax=($total / 100)*17;
-
-                                                    ?>
-                                                    <input type="hidden" name="sales_tax_value" value="{{$sales_tax}}" />
-                                                    <tr class="hidee" style="display:none;">
-                                                        <td class="text-center" colspan="6"></td>
-                                                        <td class="text-right" colspan="6"><b>(Sales Tax 17%)</b>
-
-                                                            <input readonly type="text" class="text-right comma_seprated" name="sales_tax" id="sales_tax"/>
+                                                @if(($sales_order->sales_tax_rate ?? 0) > 0)
+                                                    <tr>
+                                                        <td class="text-right invoice-summary-label" colspan="10">Sales Tax {{ number_format($sales_order->sales_tax_rate,2) }}</td>
+                                                        <td class="text-right" colspan="1">
+                                                            <input readonly type="text" class="form-control text-right comma_seprated" name="sales_tax" id="sales_tax" value="0" />
                                                         </td>
                                                     </tr>
+                                                @else
+                                                    <input type="hidden" name="sales_tax" id="sales_tax" value="0" />
+                                                @endif
+
+                                                <?php $furtherTaxPer = ($delivery_not->sales_tax_further_per ?? 0) > 0 ? $delivery_not->sales_tax_further_per : ($sales_order->sales_tax_further ?? 0); ?>
+                                                @if(($furtherTaxPer ?? 0) > 0)
+                                                    <tr>
+                                                        <td class="text-right invoice-summary-label" colspan="10">Further Sales Tax {{ number_format($furtherTaxPer,2) }}</td>
+                                                        <td class="text-right" colspan="1">
+                                                            <input readonly type="text" class="form-control text-right comma_seprated" name="sales_tax_further" id="sales_tax_further" value="0" />
+                                                        </td>
+                                                    </tr>
+                                                @else
+                                                    <input type="hidden" name="sales_tax_further" id="sales_tax_further" value="0" />
                                                 @endif
 
 
                                                 @if($delivery_not->advance_tax_amount > 0)
                                                     <tr>
-                                                        <td  class="text-right" colspan="10"></td>
-                                                        <td class="text-right" colspan="2">Advance Tax {{ number_format($delivery_not->advance_tax_rate,2) }}</td>
-                                                        <td class="text-right" colspan="2">
+                                                        <td class="text-right invoice-summary-label" colspan="10">Advance Tax {{ number_format($delivery_not->advance_tax_rate,2) }}</td>
+                                                        <td class="text-right" colspan="1">
                                                             
                                                         <input type="hidden" name="advance_tax_rate" id="advance_tax_rate" value="{{ $delivery_not->advance_tax_rate }}" />
 
@@ -527,18 +643,16 @@ use App\Helpers\FinanceHelper;
                                                 @endif
                                                 @if($delivery_not->cartage_amount >0)
                                                     <tr>
-                                                        <td  class="text-right" colspan="10"></td>
-                                                        <td class="text-right" colspan="2">Cartage Amount</td>
-                                                        
-                                                        <td colspan="2"> <input class="form-control text-right" type="text" name="cartage_amount" id="cartage_amount" value="{{ $delivery_not->cartage_amount }}" readonly />
+                                                        <td class="text-right invoice-summary-label" colspan="10">Cartage Amount</td>
+                                                        <td colspan="1"> <input class="form-control text-right" type="text" name="cartage_amount" id="cartage_amount" value="{{ $delivery_not->cartage_amount }}" readonly />
                                                         </td>
                                                     </tr>
                                                 @endif
 
-                                                <tr class="hidee">
+                                                <tr class="invoice-grand-row">
 
-                                                    <td  style="background-color: darkgray;font-weight: bolder;font-size: x-large" class="text-center" colspan="12">Grand Total</td>
-                                                    <td colspan="2" style="background-color: darkgray;font-weight: bolder;font-size: x-large"> <input disabled type="text" class="form-control text-right comma_seprated" name="" id="grand_total"/></td>
+                                                    <td class="text-center" colspan="10">Grand Total</td>
+                                                    <td colspan="1"> <input disabled type="text" class="form-control text-right comma_seprated" name="" id="grand_total"/></td>
                                                 </tr>
                                             </table>
 
@@ -546,7 +660,7 @@ use App\Helpers\FinanceHelper;
                                     </div>
                                 </div>
 
-                                <table>
+                                <table class="amount-words">
                                     <tr>
 
                                         <td style="text-transform: capitalize;" id="rupees"></td>
@@ -592,7 +706,7 @@ use App\Helpers\FinanceHelper;
                 </div>
                 <input type="hidden" id="SavePrintVal" name="SavePrintVal" value="0">
                 <div class="demandsSection"></div>
-                <div class="row">
+                <div class="row invoice-actions">
                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center">
                         {{ Form::submit('Submit', ['class' => 'btn btn-success']) }}
                         <button type="submit" id="BtnSaveAndPrint" class="btn btn-info" >Save & Print</button>
@@ -977,39 +1091,21 @@ use App\Helpers\FinanceHelper;
 
         function calc(num)
         {
-            var grand_total = 0;
-            var send_qty=parseFloat($('#qty'+num).val());
-            var rate=parseFloat($('#rate'+num).val());
-            var total=send_qty*rate;
+            var send_qty = parseNumber($('#qty'+num).val());
+            var rate = parseNumber($('#rate'+num).val());
+            var total = send_qty * rate;
 
-            var x = parseFloat($('#discount_percent'+num).val());
-            var tax = parseFloat($('#tax_amount'+num).val());
-            var sales_tax_further = parseFloat($('#sales_tax_further'+num).val());
-
-            if (isNaN(x)) {
-                x=0;
-            }
-
-            if(isNaN(tax)) {
-                tax = 0;
-            }
+            var x = parseNumber($('#discount_percent'+num).val());
 
             if (x > 0) {
-                x=x*total;
-                var discount_amount = parseFloat(x / 100);
+                x = x * total;
+                var discount_amount = parseNumber(x / 100);
 
                 $('#discount_amount'+num).val(discount_amount.toFixed(2));
                 total = total + discount_amount;
             }
-            grand_total += total + tax + sales_tax_further
 
-            $('#net_amount'+num).val(total + tax + sales_tax_further);
-
-            var cartage = parseFloat($('#cartage_amount').val());
-            var advance_tax = parseFloat($('#advance_tax_amount').val());
-
-            $('#grand_total').val(grand_total + cartage + advance_tax);
-            $('#d_t_amount_1').val(grand_total + cartage + advance_tax);
+            $('#net_amount'+num).val(total);
 
             net();
             toWords(1);
@@ -1018,23 +1114,51 @@ use App\Helpers\FinanceHelper;
         function net()
         {
 
-            var amount=0;
-            $('.amount').each(function (i, obj) {
+            var count = parseInt($('#count').val() || 0);
 
-                amount += +parseFloat($('#'+obj.id).val());
+            var baseTotal = 0;
+            var taxTotal = 0;
+            var furtherTaxTotal = 0;
 
-            });
-            amount=parseFloat(amount);
-            $('#total_amount').val(amount);
+            for (var i = 1; i <= count; i++) {
+                var tax = parseNumber($('#tax_amount' + i).val());
+                var furtherTax = parseNumber($('#sales_tax_further' + i).val());
+                var amount = parseNumber($('#net_amount' + i).val());
+
+                taxTotal += tax;
+                furtherTaxTotal += furtherTax;
+                baseTotal += amount;
+            }
+
+            $('#total_amount').val(baseTotal);
+            $('#sales_tax').val(taxTotal);
+            $('#sales_tax_further').val(furtherTaxTotal);
 
             var qty=0;
             $('.qty').each(function (i, obj) {
-
-                qty += +parseFloat($('#'+obj.id).val());
-
+                qty += parseNumber($('#'+obj.id).val());
             });
             qty=parseFloat(qty);
             $('#total_qty').val(qty);
+
+            var cartage = parseNumber($('#cartage_amount').val());
+            var advance_tax = parseNumber($('#advance_tax_amount').val());
+            var grand_total = baseTotal + taxTotal + furtherTaxTotal + cartage + advance_tax;
+            $('#grand_total').val(grand_total);
+            $('#d_t_amount_1').val(grand_total);
+        }
+
+        function parseNumber(val)
+        {
+            if (typeof val === 'undefined' || val === null) {
+                return 0;
+            }
+            val = ('' + val).replace(/,/g, '');
+            var num = parseFloat(val);
+            if (isNaN(num)) {
+                return 0;
+            }
+            return num;
         }
 
         // sales_tax

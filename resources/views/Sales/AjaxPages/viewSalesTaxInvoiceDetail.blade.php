@@ -292,7 +292,7 @@ $AmountInWordsMain =0;
                                         $total_expense = 0;
                                         $total_before_tax += $row->rate * $row->qty;
                                         $total_tax += $row->tax_amount;
-                                        $total_after_tax += $row->amount;
+                                        $total_after_tax += ($row->amount + $row->tax_amount + $row->sales_tax_further);
                                         $bags = $row->bag_qty ?? (($row->final_pack_size > 0) ? ($row->qty / $row->final_pack_size) : 0);
                                         ?>
                                         <tr>
@@ -327,8 +327,22 @@ $AmountInWordsMain =0;
                                         <!-- <td class="text-right hide" colspan="1" style="border:1px solid black;"> {{ number_format($total_before_tax) }} </td>
                                         <td></td>
                                         <td class="text-right hide" colspan="1" style="border:1px solid black;">  {{ number_format($total_tax,2) }} </td> -->
-                                        <td class="text-right" style="border:1px solid black;"> {{ number_format($total_after_tax+$total_expense,2) }} </td>
+                                        <td class="text-right" style="border:1px solid black;"> {{ number_format($total_before_tax,2) }} </td>
                                     </tr>
+
+                                    @if((float) ($sales_tax_invoice->sales_tax ?? 0) > 0)
+                                    <tr class="text-center" style="font-weight: bold">
+                                        <td colspan="6" style="border:1px solid black;">Sales Tax {{ number_format((float) (($sales_tax_invoice->sales_tax > 0 && $total_before_tax > 0) ? (($sales_tax_invoice->sales_tax / $total_before_tax) * 100) : 0),2) }}</td>
+                                        <td class="text-right" style="border:1px solid black;"> {{ number_format($sales_tax_invoice->sales_tax,2) }} </td>
+                                    </tr>
+                                    @endif
+
+                                    @if((float) ($sales_tax_invoice->sales_tax_further ?? 0) > 0)
+                                    <tr class="text-center" style="font-weight: bold">
+                                        <td colspan="6" style="border:1px solid black;">Further Sales Tax {{ number_format((float) (($sales_tax_invoice->sales_tax_further > 0 && $total_before_tax > 0) ? (($sales_tax_invoice->sales_tax_further / $total_before_tax) * 100) : 0),2) }}</td>
+                                        <td class="text-right" style="border:1px solid black;"> {{ number_format($sales_tax_invoice->sales_tax_further,2) }} </td>
+                                    </tr>
+                                    @endif
 
                                     <tr class="text-center" style="font-weight: bold">
                                         <td colspan="6" style="border:1px solid black;">Advance Tax</td>
@@ -359,7 +373,7 @@ $AmountInWordsMain =0;
 
                                     <tr class="text-center" style="font-weight: bold">
                                         <td colspan="6" style="border:1px solid black;">Grand Total</td>
-                                        <td class="text-right" style="border:1px solid black;"> {{ number_format($total_after_tax + $total_expense + $sales_tax_invoice->cartage_amount + $sales_tax_invoice->advance_tax_amount,2) }} </td>
+                                        <td class="text-right" style="border:1px solid black;"> {{ number_format($total_before_tax + $sales_tax_invoice->sales_tax + $sales_tax_invoice->sales_tax_further + $total_expense + $sales_tax_invoice->cartage_amount + $sales_tax_invoice->advance_tax_amount,2) }} </td>
                                     </tr>
 
                                 </tbody>

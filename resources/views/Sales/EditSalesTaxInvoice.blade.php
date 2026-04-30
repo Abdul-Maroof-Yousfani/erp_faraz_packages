@@ -1,41 +1,179 @@
 <?php
-
-
 $accType = Auth::user()->acc_type;
 $currentDate = date('Y-m-d');
-if($accType == 'client'){
+if ($accType == 'client') {
     $m = $_GET['m'];
-}else{
+} else {
     $m = Auth::user()->company_id;
 }
 
-use App\Helpers\PurchaseHelper;
-use App\Helpers\SalesHelper;
 use App\Helpers\CommonHelper;
-use App\Helpers\FinanceHelper;
+use App\Helpers\SalesHelper;
+
+$selectedCustomer = null;
+$selectedCustomerValue = '';
+if (!empty($sale_tax_invoice->buyers_id)) {
+    $selectedCustomer = DB::connection('mysql2')->table('customers')->where('id', $sale_tax_invoice->buyers_id)->first();
+    if ($selectedCustomer) {
+        $selectedCustomerValue = $selectedCustomer->id . '*' . ($selectedCustomer->cnic_ntn ?? '') . '*' . ($selectedCustomer->strn ?? '');
+    }
+}
+
+$dnIds = $sale_tax_invoice_data->pluck('dn_data_ids')->filter()->first() ?? '';
+$salesTaxRate = 0;
+$furtherSalesTaxRate = 0;
+foreach ($sale_tax_invoice_data as $taxRow) {
+    $rowTax = $taxRow->tax ?? 0;
+    if (is_string($rowTax) && strpos($rowTax, ',') !== false) {
+        $taxParts = explode(',', $rowTax);
+        $rowTax = $taxParts[1] ?? 0;
+    }
+    if ((float) $rowTax > 0) {
+        $salesTaxRate = (float) $rowTax;
+        break;
+    }
+}
+foreach ($sale_tax_invoice_data as $taxRow) {
+    if ((float) ($taxRow->sales_tax_further_per ?? 0) > 0) {
+        $furtherSalesTaxRate = (float) $taxRow->sales_tax_further_per;
+        break;
+    }
+}
 ?>
+
 @extends('layouts.default')
 
 @section('content')
+    @include('loader')
     @include('number_formate')
     @include('select2')
 
-
     <style>
         * {
-            font-size: 12px!important;
-
+            font-size: 12px !important;
         }
         label {
             text-transform: capitalize;
         }
+        .sales-tax-invoice-page .well {
+            background: #ffffff;
+            border: 1px solid #d7dde5;
+            border-radius: 10px;
+            padding: 18px 18px 12px;
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+        }
+        .sales-tax-invoice-page .subHeadingLabelClass {
+            display: inline-block;
+            font-size: 18px !important;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 6px;
+        }
+        .sales-tax-invoice-page .panel,
+        .sales-tax-invoice-page .panel-body {
+            border: 0;
+            box-shadow: none;
+            background: transparent;
+            padding-left: 0;
+            padding-right: 0;
+        }
+        .sales-tax-invoice-page .form-control,
+        .sales-tax-invoice-page .select2-selection {
+            min-height: 36px;
+            border-radius: 6px !important;
+            border-color: #cdd6e1;
+            box-shadow: none;
+            background: #f8fafc;
+        }
+        .sales-tax-invoice-page textarea.form-control {
+            min-height: 60px;
+            background: #fbfdff;
+        }
+        .sales-tax-invoice-page .sf-label {
+            display: block;
+            font-weight: 600;
+            color: #526070;
+            margin-bottom: 6px;
+        }
+        .sales-tax-invoice-page .invoice-grid > div,
+        .sales-tax-invoice-page .invoice-meta-row > div,
+        .sales-tax-invoice-page .invoice-desc-row > div {
+            margin-bottom: 14px;
+        }
+        .sales-tax-invoice-page .invoice-table {
+            margin-bottom: 18px;
+            border: 1px solid #d9e1ea;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #fff;
+        }
+        .sales-tax-invoice-page .invoice-table thead th {
+            background: #dbe4ee;
+            color: #344256;
+            border-bottom: 1px solid #cbd5e1 !important;
+            font-weight: 700;
+            padding: 12px 10px !important;
+            white-space: nowrap;
+        }
+        .sales-tax-invoice-page .invoice-table tbody td {
+            padding: 8px 10px !important;
+            vertical-align: middle !important;
+            border-top: 1px solid #edf2f7 !important;
+        }
+        .sales-tax-invoice-page .invoice-table tbody tr:nth-child(even):not(.invoice-total-row):not(.invoice-grand-row) {
+            background: #fbfdff;
+        }
+        .sales-tax-invoice-page .invoice-summary-label {
+            font-weight: 600;
+            color: #425466;
+            background: #fff;
+        }
+        .sales-tax-invoice-page .invoice-total-row td {
+            background: #b7bcc3 !important;
+            color: #1f2937;
+            font-weight: 700;
+            border-top: 1px solid #a7afb8 !important;
+        }
+        .sales-tax-invoice-page .invoice-total-row input,
+        .sales-tax-invoice-page .invoice-grand-row input {
+            font-weight: 700;
+        }
+        .sales-tax-invoice-page .invoice-grand-row td {
+            background: #9fa5ad !important;
+            color: #111827;
+            font-weight: 700;
+            border-top: 1px solid #9098a3 !important;
+        }
+        .sales-tax-invoice-page .amount-words {
+            margin-top: 12px;
+            color: #5b6776;
+            font-size: 11px !important;
+        }
+        .sales-tax-invoice-page .invoice-actions {
+            margin-top: 18px;
+            padding-top: 6px;
+        }
+        .sales-tax-invoice-page .invoice-actions .btn {
+            min-width: 110px;
+            border-radius: 6px;
+            font-weight: 600;
+            padding: 8px 16px;
+        }
+        .sales-tax-invoice-page .btn-success {
+            background: #16a34a;
+            border-color: #16a34a;
+        }
+        @media (max-width: 991px) {
+            .sales-tax-invoice-page .well {
+                padding: 14px 12px 10px;
+            }
+            .sales-tax-invoice-page .invoice-table {
+                border-radius: 6px;
+            }
+        }
     </style>
 
-
-    <div class="row">
-        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12" style="display: none;">
-
-        </div>
+    <div class="row well_N sales-tax-invoice-page" style="display: none;" id="main">
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <div class="well">
                 <div class="row">
@@ -44,659 +182,301 @@ use App\Helpers\FinanceHelper;
                     </div>
                 </div>
                 <div class="lineHeight">&nbsp;</div>
-                <div class="row">
-                    <?php echo Form::open(array('url' => 'sad/updateSalesTaxInvoice?m='.$m.'','id'=>'createSalesOrder'));?>
-                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                    <input type="hidden" name="pageType" value="<?php // echo $_GET['pageType']?>">
-                    <input type="hidden" name="parentCode" value="<?php // echo $_GET['parentCode']?>">
-                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                        <div class="panel">
-                            <div class="panel-body">
 
-                                <div class="row">
-                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                        <div class="row">
-                                            <?php
-                                            $gi_no=$sales_tax_invoice->so_no;
-                                            $so_date=$sales_tax_invoice->so_date;
-                                            $gi_no=str_replace("SO","GI",$gi_no);
-                                            ?>
-
-
-                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-                                                <label class="sf-label">Invoice No<span class="rflabelsteric"><strong>*</strong></span></label>
-                                                <input readonly type="text" class="form-control requiredField" placeholder="" name="gi_no" id="gi_no" value="{{strtoupper($gi_no)}}" />
-                                            </div>
-
-                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-                                                <label class="sf-label">Invoice Date<span class="rflabelsteric"><strong>*</strong></span></label>
-                                                <input  autofocus type="date" class="form-control requiredField" placeholder="" name="gi_date" id="gi_date" value="{{$so_date}}" />
-                                            </div>
-
-
-                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-                                                <label class="sf-label">Delivery Note No<span class="rflabelsteric"><strong>*</strong></span></label>
-                                                <input readonly type="text" class="form-control requiredField" placeholder="" name="gd_no" id="gd_no" value="{{strtoupper($sales_tax_invoice->gd_no)}}" />
-                                            </div>
-
-                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-                                                <label class="sf-label">Delivery Note Date<span class="rflabelsteric"><strong>*</strong></span></label>
-                                                <input readonly autofocus type="date" class="form-control requiredField" placeholder="" name="gd_date" id="gd_date" value="{{$sales_tax_invoice->gd_date}}" />
-                                            </div>
-
-
-
-                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-                                                <label class="sf-label">SO NO. <span class="rflabelsteric"><strong>*</strong></span></label>
-                                                <input readonly type="text" class="form-control requiredField" placeholder="" name="so_no" id="so_no" value="{{$sales_tax_invoice->so_no}}" />
-                                            </div>
-
-                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-                                                <label class="sf-label">SO Date <span class="rflabelsteric"><strong>*</strong></span></label>
-                                                <input readonly type="date" class="form-control requiredField" placeholder="" name="so_date" id="so_date" value="{{$sales_tax_invoice->so_date}}" />
-                                            </div>
-
-
-
-                                        </div>
-
-
-                                        <div class="row">
-
-                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-                                                <label  class="sf-label">Mode / Terms Of Payment <span class="rflabelsteric"><strong>*</strong></span></label>
-                                                <input readonly type="text" class="form-control requiredField" placeholder="" name="model_terms_of_payment" id="model_terms_of_payment" value="{{$sales_tax_invoice->model_terms_of_payment}}" />
-                                            </div>
-                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-                                                <label class="sf-label">Other Reference(s) <span class="rflabelsteric"><strong>*</strong></span></label>
-                                                <input readonly type="text" class="form-control requiredField" placeholder="" name="other_refrence" id="other_refrence" value="{{$sales_tax_invoice->other_refrence}}" />
-                                            </div>
-
-                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-                                                <label class="sf-label">Buyer's Order No<span class="rflabelsteric"><strong>*</strong></span></label>
-                                                <input readonly type="text" class="form-control requiredField" placeholder="" name="order_no" id="order_no" value="{{$sales_tax_invoice->order_no}}" />
-                                            </div>
-
-                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-                                                <label class="sf-label">Buyer's Order Date<span class="rflabelsteric"><strong>*</strong></span></label>
-                                                <input readonly type="date" class="form-control requiredField" placeholder="" name="order_date" id="order_date" value="{{$sales_tax_invoice->order_date}}" />
-                                            </div>
-
-                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-                                                <label class="sf-label">Despatched Document No<span class="rflabelsteric"><strong>*</strong></span></label>
-                                                <input readonly  type="text" class="form-control" placeholder="" name="despacth_document_no" id="despacth_document_no" value="{{$sales_tax_invoice->despacth_document_no}}" />
-                                            </div>
-
-                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-                                                <label class="sf-label">Despatched Document Date</label>
-                                                <input readonly  type="date" class="form-control" placeholder="" name="despacth_document_date"  id="despacth_document_date" value="{{$sales_tax_invoice->despacth_document_date}}" />
-                                            </div>
-
-
-
-
-                                        </div>
-
-                                        <div class="row">
-
-                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-                                                <label class="sf-label">Despatched through<span class="rflabelsteric"><strong>*</strong></span></label>
-                                                <input readonly type="text" class="form-control" placeholder="" name="despacth_through" id="despacth_through" value="{{$sales_tax_invoice->desptch_through}}" />
-                                            </div>
-
-                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-                                                <label class="sf-label">Destination<span class="rflabelsteric"><strong>*</strong></span></label>
-                                                <input readonly type="text" class="form-control requiredField" placeholder="" name="destination" id="destination" value="{{$sales_tax_invoice->destination}}" />
-                                            </div>
-
-
-                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-                                                <label class="sf-label">Terms Of Delivery<span class="rflabelsteric"><strong>*</strong></span></label>
-                                                <input readonly type="text" class="form-control requiredField" placeholder="" name="terms_of_delivery" id="terms_of_delivery" value="{{$sales_tax_invoice->terms_of_delivery}}" />
-                                            </div>
-
-                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                                <label class="sf-label">Buyer's Name <span class="rflabelsteric"><strong>*</strong></span></label>
-                                                <select disabled name="" id="ntn" onchange="get_ntn()" class="form-control select2">
-                                                    <option>Select</option>
-                                                    @foreach(SalesHelper::get_all_customer() as $row)
-                                                        <option @if($sales_tax_invoice->buyers_id==$row->id) selected @endif value="{{$row->id.'*'.$row->cnic_ntn.'*'.$row->strn}}">{{$row->name}}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                            <input type="hidden" name="buyers_id" value="{{$sales_tax_invoice->buyers_id}}"/>
-
-                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                                <label class="sf-label">Buyer's Ntn </label>
-                                                <input  readonly type="text" class="form-control" placeholder="" name="buyers_ntn" id="buyers_ntn" value="" />
-                                            </div>
-
-
-
-                                        </div>
-
-                                        <div class="row">
-
-                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-                                                <label class="sf-label">Buyer's Sales Tax No </label>
-                                                <input  readonly type="text" class="form-control" placeholder="" name="buyers_sales" id="buyers_sales" value="" />
-                                            </div>
-                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-                                                <label class="sf-label">Due Date <span class="rflabelsteric"><strong>*</strong></span></label>
-                                                <input readonly type="date" class="form-control requiredField" placeholder="" name="due_date" id="due_date" value="{{$sales_tax_invoice->due_date}}" />
-                                            </div>
-
-                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                                <label class="sf-label">Account<span class="rflabelsteric"><strong>*</strong></span></label>
-                                                <select class="form-control" id="acc_id" name="acc_id">
-                                                    @foreach(FinanceHelper::get_accounts() as $row)
-                                                        <option @if($row->id==$sales_tax_invoice->acc_id) selected @endif  value="{{$row->id}}">{{$row->name}}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <input type="hidden" name="demand_type" id="demand_type">
-                                        <div class="row">
-
-
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                        <div class="row">
-                                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                                <label class="sf-label">Description</label>
-                                                <span class="rflabelsteric"><strong>*</strong></span>
-                                                <textarea  name="description" id="description" rows="4" cols="50" style="resize:none;text-transform: capitalize" class="form-control requiredField">{{$sales_tax_invoice->description}}</textarea>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="lineHeight">&nbsp;</div>
-                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                    <span ondblclick="show()" class="subHeadingLabelClass">Sales Tax Invoice Data</span>
-                                    <!--
-                                    <input type="checkbox" id="amount_data" checked/>
-                                    <!-->
-
-                                </div>
-                                <div class="lineHeight">&nbsp;&nbsp;&nbsp;</div>
-
-
-                                <div id="addMoreDemandsDetailRows_1" class="panel addMoreDemandsDetailRows_1">
-
-                                    <input type="hidden" name="count" id="count" value="1">
-                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                        <div class="table-responsive">
-                                            <table  class="table table-bordered table-striped table-condensed tableMargin">
-                                                <thead>
-                                                <tr>
-                                                    <th class="text-center">S.NO</th>
-                                                    <th class="text-center">Item</th>
-                                                    <th class="text-center hidee">Batch</th>
-                                                    <th class="text-center" >Uom</th>
-                                                    <th class="text-center hidee" >Pack Size</th>
-                                                    <th class="text-center">Description</th>
-
-
-                                                    <th class="text-center" >QTY. <span class="rflabelsteric"><strong>*</strong></span></th>
-                                                    <th class="text-center hidee" >Per PCS item . <span class="rflabelsteric"><strong>*</strong></span></th>
-                                                    <th class="text-center hidee">Rate</th>
-                                                    <th class="text-center hidee">Discount%</th>
-                                                    <th class="text-center hidee">Discount Amount</th>
-                                                    <th class="text-center hidee">Net Amount</th>
-
-
-                                                </tr>
-                                                </thead>
-                                                <tbody>
-                                                <?php
-                                                $counter=1;
-                                                $total=0;
-                                                $total_qty=0;
-                                                foreach ($sales_tax_invoice_data as $row1)
-                                                {
-
-
-                                                ?>
-                                                {{--hidden data--}}
-                                                <input type="hidden" name="id" id="id" value="{{$sales_tax_invoice->id}}"/>
-
-                                                <?php
-
-                                                $sale_order_id=Input::get('sales_order_id');
-                                                $delivery_note_id=Input::get('delivery_note_id');
-                                                ?>
-                                                <input type="hidden" name="sales_order_id" id="sales_order_id" value="{{$sale_order_id}}"/>
-
-                                                <input type="hidden" name="delivery_note_id" id="delivery_note_id" value="{{$delivery_note_id}}"/>
-
-                                                <input type="hidden" name="item_id{{$counter}}" id="item_id{{$counter}}" value="{{$row1->item_id}}"/>
-                                                <input type="hidden" name="batch_id{{$counter}}" id="batch_id{{$counter}}" value="{{$row1->batch_id}}"/>
-                                                <input type="hidden" name="desc{{$counter}}" id="desc{{$counter}}" value="{{$row1->description}}"/>
-                                                <input type="hidden" name="qty{{$counter}}" id="qty{{$counter}}" value="{{$row1->qty}}"/>
-                                                <input type="hidden" name="per_pcs_item{{$counter}}" id="per_pcs_item{{$counter}}" value="{{$row1->per_pcs_item}}"/>
-                                                <input type="hidden" name="rate{{$counter}}" id="rate{{$counter}}" value="{{$row1->rate}}"/>
-                                                <input type="hidden" name="discount_percent{{$counter}}" id="discount_percent{{$counter}}" value="{{$row1->discount}}"/>
-                                                <input type="hidden" name="discount_amount{{$counter}}" id="discount_amount{{$counter}}" value="{{$row1->discount_amount}}"/>
-                                                <input type="hidden" name="amount{{$counter}}" id="amount{{$counter}}" value="{{$row1->amount}}"/>
-
-
-                                                {{--hidden data End --}}
-
-
-                                                <tr>
-                                                    <td class="text-center" class="text-center"><?php echo $counter;?></td>
-                                                    <td class="text-left"><?php echo CommonHelper::get_item_name($row1->item_id);?></td>
-                                                    <td class="text-left hidee" class="text-center"><?php echo  $row1->batch_id?></td>
-
-                                                    <?php $sub_ic_detail=CommonHelper::get_subitem_detail($row1->item_id);
-                                                    $sub_ic_detail= explode(',',$sub_ic_detail)
-                                                    ?>
-                                                    <td class="text-left"> <?php echo CommonHelper::get_uom_name($sub_ic_detail[0]);?></td>
-                                                    <td class="text-left hidee"> <?php echo $sub_ic_detail[1];?></td>
-                                                    <td class="text-center"><textarea name="descr{{$counter}}" id="descr{{$counter}}" class="resize"
-                                                                                      style="resize: none" rows="5" cols="50" >{{$row1->description}}</textarea></td>
-
-                                                    <?php $total_qty+=$row1->qty; ?>
-                                                    <td class="text-right"> <?php echo number_format($row1->qty,3)?></td>
-                                                    <td class="hidee"> <?php echo number_format($row1->per_pcs_item,3)?></td>
-
-                                                    <td class="text-right hidee"><?php echo number_format($row1->rate,2);?></td>
-                                                    <td class="text-right hidee"><?php echo number_format($row1->discount_percent,2);?></td>
-                                                    <td class="text-right hidee"><?php echo number_format($row1->discount_amount,2);?></td>
-                                                    <td class="text-right hidee"><?php echo number_format($row1->amount,2);?></td>
-
-                                                </tr>
-
-                                                <?php
-
-                                                $total+=$row1->amount;
-                                                $counter++;
-
-                                                }
-                                                ?>
-                                                <input type="hidden" name="count" value="{{$counter-1}}"/>
-                                                <tr>
-
-                                                    <td id="total_" style="background-color: darkgray" class="text-center" colspan="6">Total</td>
-                                                    <td  style="background-color: darkgray" class="text-right"  colspan="1">{{number_format($total_qty,3)}}</td>
-                                                    <td  style="background-color: darkgray" class="text-right hidee"  colspan="5">{{number_format($total,2)}}</td>
-
-                                                </tr>
-
-
-                                                </tbody>
-                                                @if($sales_tax_invoice->sales_tax >0)
-                                                    <?php  $total+=$sales_tax_invoice->sales_tax; ?>
-                                                    <tr class="hidee">
-                                                        <td class="text-center" colspan="8"></td>
-                                                        <td class="text-right" colspan="6"><b>(Sales Tax 17%)</b> {{   number_format($sales_tax_invoice->sales_tax,2)}}</td>
-                                                    </tr>
-                                                @endif
-
-
-                                                @if($sales_tax_invoice->sales_tax_further >0)
-                                                    <?php $total+=$sales_tax_invoice->sales_tax_further; ?>
-                                                    <tr class="hidee">
-                                                        <td class="text-center" colspan="8"></td>
-                                                        <td class="text-right" colspan="6"><b>(Sales Tax Further 3%)</b> {{   number_format($sales_tax_invoice->sales_tax_further,2)}}</td>
-                                                    </tr>
-                                                @endif
-
-                                                <tr class="hidee">
-
-                                                    <td style="background-color: darkgray" class="text-center" colspan="8"></td>
-                                                    <td style="background-color: darkgray"  class="text-right" colspan="5"><b>(Grand Total)</b> {{number_format($total,2)}}</td>
-
-
-                                                </tr>
-
-                                            </table>
-                                            <table>
-                                                <tr><td style="text-transform: capitalize;">Amount In Words : <?php echo $sales_tax_invoice->amount_in_words ?></td></tr>
-                                            </table>
-                                            <input type="hidden" name="amount_in_words" id="amount_in_words" value="{{$sales_tax_invoice->amount_in_words}}">
-
-                                        </div>
-                                    </div>
-
-
-                                </div>
-
-
-
-
-
-
-                                <table>
-                                    <tr>
-
-                                        <td style="text-transform: capitalize;" id="rupees"></td>
-                                        <input type="hidden" value="" name="rupeess" id="rupeess1"/>
-                                    </tr>
-                                </table>
-                                <input type="hidden" id="d_t_amount_1" >
-                                <!--
-                                        <div class="row">
-                                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-right">
-                                                <input type="button" class="btn btn-sm btn-primary" onclick="addMoreDemandsDetailRows('1')" value="Add More Demand's Rows" />
-                                                <input type="button" onclick="removeDemandsRows()" class="btn btn-sm btn-danger" name="Remove" value="Remove">
-
-                                            </div>
-                                            <!-->
+                <?php echo Form::open(array('url' => 'sad/updateSalesTaxInvoice?m=' . $m . '', 'id' => 'createSalesOrder'));?>
+                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="id" value="{{ $sale_tax_invoice->id }}">
+                <input type="hidden" name="sales_order_id" value="{{ $sale_tax_invoice->so_id }}">
+                <input type="hidden" name="dn_ids" value="{{ $dnIds }}">
+                <input type="hidden" name="gd_no" value="{{ $sale_tax_invoice->gd_no }}">
+                <input type="hidden" name="model_terms_of_payment" value="{{ $sale_tax_invoice->model_terms_of_payment }}">
+                <input type="hidden" name="other_refrence" value="{{ $sale_tax_invoice->other_refrence }}">
+                <input type="hidden" name="order_no" value="{{ $sale_tax_invoice->order_no }}">
+                <input type="hidden" name="order_date" value="{{ $sale_tax_invoice->order_date }}">
+                <input type="hidden" name="despacth_document_no" value="{{ $sale_tax_invoice->despacth_document_no }}">
+                <input type="hidden" name="despacth_document_date" value="{{ $sale_tax_invoice->despacth_document_date }}">
+                <input type="hidden" name="despacth_through" value="{{ $sale_tax_invoice->despacth_through }}">
+                <input type="hidden" name="destination" value="{{ $sale_tax_invoice->destination }}">
+                <input type="hidden" name="terms_of_delivery" value="{{ $sale_tax_invoice->terms_of_delivery }}">
+                <input type="hidden" name="due_date" value="{{ $sale_tax_invoice->due_date }}">
+                <input type="hidden" name="acc_id" value="{{ $sale_tax_invoice->acc_id ?: 16 }}">
+                <input type="hidden" name="advance_tax_rate" id="advance_tax_rate" value="{{ $sale_tax_invoice->advance_tax_rate ?? 0 }}">
+
+                <div class="panel">
+                    <div class="panel-body">
+                        <div class="row invoice-grid">
+                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                <label class="sf-label">Invoice No<span class="rflabelsteric"><strong>*</strong></span></label>
+                                <input readonly type="text" class="form-control" name="gi_no" id="gi_no" value="{{ strtoupper($sale_tax_invoice->gi_no) }}" />
+                            </div>
+
+                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                <label class="sf-label">Invoice Date<span class="rflabelsteric"><strong>*</strong></span></label>
+                                <input type="date" class="form-control requiredField" name="gi_date" id="gi_date" value="{{ old('gi_date', $sale_tax_invoice->gi_date) }}" />
+                            </div>
+
+                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                <label class="sf-label">SO NO.<span class="rflabelsteric"><strong>*</strong></span></label>
+                                <input readonly type="text" class="form-control" name="so_no" id="so_no" value="{{ $sale_tax_invoice->so_no }}" />
+                            </div>
+
+                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                <label class="sf-label">SO Date<span class="rflabelsteric"><strong>*</strong></span></label>
+                                <input readonly type="date" class="form-control" name="so_date" id="so_date" value="{{ $sale_tax_invoice->so_date }}" />
                             </div>
                         </div>
+
+                        <div class="row invoice-meta-row">
+                            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                                <label class="sf-label">Buyer's Name <span class="rflabelsteric"><strong>*</strong></span></label>
+                                <select style="width: 100%" name="buyers_id" id="ntn" class="form-control select2 requiredField">
+                                    <option value="">Select</option>
+                                    @foreach(SalesHelper::get_all_customer() as $row)
+                                        <option @if(old('buyers_id', $selectedCustomerValue) == ($row->id . '*' . $row->cnic_ntn . '*' . $row->strn)) selected @endif value="{{ $row->id . '*' . $row->cnic_ntn . '*' . $row->strn }}">
+                                            {{ $row->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                                <label class="sf-label">Buyer's Ntn</label>
+                                <input readonly type="text" class="form-control" name="buyers_ntn" id="buyers_ntn" value="{{ $selectedCustomer->cnic_ntn ?? '' }}" />
+                            </div>
+
+                            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                                <label class="sf-label">Buyer's Sales Tax No</label>
+                                <input readonly type="text" class="form-control" name="buyers_sales" id="buyers_sales" value="{{ $selectedCustomer->strn ?? '' }}" />
+                            </div>
+                        </div>
+
+                        <div class="row invoice-desc-row">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                <label class="sf-label">Description</label>
+                                <textarea name="description" id="description" rows="4" style="resize:none;text-transform: capitalize" class="form-control">{{ old('description', $sale_tax_invoice->description) }}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="lineHeight">&nbsp;&nbsp;&nbsp;</div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped table-condensed tableMargin invoice-table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">S.NO</th>
+                                    <th class="text-center">DN NO</th>
+                                    <th class="text-center">Item</th>
+                                    <th class="text-center">Uom</th>
+                                    <th class="text-center">Orderd QTY</th>
+                                    <th class="text-center">DN QTY</th>
+                                    <th class="text-center">Return QTY</th>
+                                    <th class="text-center">QTY. <span class="rflabelsteric"><strong>*</strong></span></th>
+                                    <th class="text-center">Rate</th>
+                                    <th class="text-center">Net Amount</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @php
+                                    $rowCount = 0;
+                                @endphp
+                                @foreach($sale_tax_invoice_data as $index => $detail)
+                                    @php
+                                        $rowCount++;
+                                        $orderedQtyObj = !empty($detail->so_data_id) ? CommonHelper::generic('sales_order_data', ['id' => $detail->so_data_id], ['qty'])->first() : null;
+                                        $orderedQty = $orderedQtyObj->qty ?? $detail->qty;
+                                        $returnQty = (!empty($detail->so_data_id) && !empty($detail->gd_no)) ? SalesHelper::return_qty(1, $detail->so_data_id, $detail->gd_no) : 0;
+                                        $dnQty = ((float) $detail->qty) + ((float) $returnQty);
+                                        $amount = (float) ($detail->amount ?? (((float) $detail->qty) * ((float) $detail->rate)));
+                                        $itemName = trim($detail->description ?: CommonHelper::get_item_name($detail->item_id));
+                                        $uomName = CommonHelper::get_uom_name($detail->uom);
+                                        $rowTax = $detail->tax ?? 0;
+                                        if (is_string($rowTax) && strpos($rowTax, ',') !== false) {
+                                            $taxParts = explode(',', $rowTax);
+                                            $rowTax = $taxParts[1] ?? 0;
+                                        }
+                                    @endphp
+                                    <input type="hidden" name="so_data_id{{ $rowCount }}" id="so_data_id{{ $rowCount }}" value="{{ $detail->so_data_id }}">
+                                    <input type="hidden" name="groupby{{ $rowCount }}" id="groupby{{ $rowCount }}" value="{{ $detail->groupby }}">
+                                    <input type="hidden" name="bundles_id{{ $rowCount }}" id="bundles_id{{ $rowCount }}" value="{{ $detail->bundles_id }}">
+                                    <input type="hidden" name="item_id{{ $rowCount }}" id="item_id{{ $rowCount }}" value="{{ $detail->item_id }}">
+                                    <input type="hidden" name="warehouse_id{{ $rowCount }}" id="warehouse_id{{ $rowCount }}" value="{{ $detail->warehouse_id }}">
+                                    <input type="hidden" name="item_desc{{ $rowCount }}" id="item_desc{{ $rowCount }}" value="{{ $itemName }}">
+                                    <input type="hidden" name="tax_percent{{ $rowCount }}" id="tax_percent{{ $rowCount }}" value="{{ (float) $rowTax }}">
+                                    <input type="hidden" name="tax_amount{{ $rowCount }}" id="tax_amount{{ $rowCount }}" value="{{ number_format((float) ($detail->tax_amount ?? 0), 3, '.', '') }}">
+                                    <input type="hidden" name="sales_tax_further_per{{ $rowCount }}" id="sales_tax_further_per{{ $rowCount }}" value="{{ (float) ($detail->sales_tax_further_per ?? 0) }}">
+                                    <input type="hidden" name="sales_tax_further{{ $rowCount }}" id="sales_tax_further{{ $rowCount }}" value="{{ number_format((float) ($detail->sales_tax_further ?? 0), 3, '.', '') }}">
+
+                                    <tr>
+                                        <td class="text-center">{{ $rowCount }}</td>
+                                        <td class="text-center">{{ strtoupper($detail->gd_no) }}</td>
+                                        <td>{{ $itemName }}</td>
+                                        <td>{{ $uomName }}</td>
+                                        <td class="text-center">{{ number_format((float) $orderedQty, 3, '.', '') }}</td>
+                                        <td class="text-center">{{ number_format((float) $dnQty, 3, '.', '') }}</td>
+                                        <td class="text-center">{{ number_format((float) $returnQty, 3, '.', '') }}</td>
+                                        <td>
+                                            <input type="text" class="form-control qty requiredField" name="qty{{ $rowCount }}" id="qty{{ $rowCount }}" value="{{ number_format((float) $detail->qty, 3, '.', '') }}" oninput="recalcRow({{ $rowCount }})" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control requiredField" name="rate{{ $rowCount }}" id="rate{{ $rowCount }}" value="{{ number_format((float) $detail->rate, 3, '.', '') }}" oninput="recalcRow({{ $rowCount }})" />
+                                        </td>
+                                        <td>
+                                            <input readonly type="text" class="form-control amount-row" name="after_dis_amount{{ $rowCount }}" id="after_dis_amount{{ $rowCount }}" value="{{ number_format($amount, 3, '.', '') }}" />
+                                        </td>
+                                    </tr>
+                                @endforeach
+
+                                <input type="hidden" name="count" id="count" value="{{ $rowCount }}">
+
+                                <tr class="invoice-total-row">
+                                    <td id="total_" class="text-center" colspan="7">Total</td>
+                                    <td><input readonly type="text" id="total_qty" class="form-control text-right" value="0.000" /></td>
+                                    <td></td>
+                                    <td><input readonly type="text" id="total_amount" class="form-control text-right" value="0.000" /></td>
+                                </tr>
+
+                                @if($salesTaxRate > 0)
+                                    <tr>
+                                        <td class="text-right invoice-summary-label" colspan="9">Sales Tax {{ number_format($salesTaxRate, 2) }}</td>
+                                        <td><input readonly type="text" class="form-control text-right" name="sales_tax" id="sales_tax" value="{{ number_format((float) ($sale_tax_invoice->sales_tax ?? 0), 3, '.', '') }}" /></td>
+                                    </tr>
+                                @else
+                                    <input type="hidden" name="sales_tax" id="sales_tax" value="0">
+                                @endif
+
+                                @if($furtherSalesTaxRate > 0)
+                                    <tr>
+                                        <td class="text-right invoice-summary-label" colspan="9">Further Sales Tax {{ number_format($furtherSalesTaxRate, 2) }}</td>
+                                        <td><input readonly type="text" class="form-control text-right" name="sales_tax_further" id="sales_tax_further" value="{{ number_format((float) ($sale_tax_invoice->sales_tax_further ?? 0), 3, '.', '') }}" /></td>
+                                    </tr>
+                                @else
+                                    <input type="hidden" name="sales_tax_further" id="sales_tax_further" value="0">
+                                @endif
+
+                                @if((float) ($sale_tax_invoice->advance_tax_amount ?? 0) > 0)
+                                    <tr>
+                                        <td class="text-right invoice-summary-label" colspan="9">Advance Tax {{ number_format((float) ($sale_tax_invoice->advance_tax_rate ?? 0), 2) }}</td>
+                                        <td><input readonly type="text" class="form-control text-right" name="advance_tax_amount" id="advance_tax_amount" value="{{ number_format((float) $sale_tax_invoice->advance_tax_amount, 3, '.', '') }}" /></td>
+                                    </tr>
+                                @else
+                                    <input type="hidden" name="advance_tax_amount" id="advance_tax_amount" value="0">
+                                @endif
+
+                                @if((float) ($sale_tax_invoice->cartage_amount ?? 0) > 0)
+                                    <tr>
+                                        <td class="text-right invoice-summary-label" colspan="9">Cartage Amount</td>
+                                        <td><input readonly type="text" class="form-control text-right" name="cartage_amount" id="cartage_amount" value="{{ number_format((float) $sale_tax_invoice->cartage_amount, 3, '.', '') }}" /></td>
+                                    </tr>
+                                @else
+                                    <input type="hidden" name="cartage_amount" id="cartage_amount" value="0">
+                                @endif
+
+                                <tr class="invoice-grand-row">
+                                    <td class="text-center" colspan="9">Grand Total</td>
+                                    <td><input readonly type="text" class="form-control text-right" id="grand_total" value="0.000" /></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <table class="amount-words">
+                            <tr>
+                                <td id="rupees" style="text-transform: capitalize;">Amount In Words : {{ $sale_tax_invoice->amount_in_words }}</td>
+                                <input type="hidden" value="{{ $sale_tax_invoice->amount_in_words }}" name="rupeess" id="rupeess1" />
+                            </tr>
+                        </table>
+                        <input type="hidden" id="d_t_amount_1" value="0">
                     </div>
                 </div>
-                <div class="demandsSection"></div>
-                <div class="row">
+
+                <div class="row invoice-actions">
                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center">
                         {{ Form::submit('Submit', ['class' => 'btn btn-success']) }}
-
-                                <!--
-                                        <button type="reset" id="reset" class="btn btn-primary">Clear Form</button>
-                                        <input type="button" class="btn btn-sm btn-primary addMoreDemands" value="Add More Demand's Section" />
-                                        <!-->
                     </div>
                 </div>
                 <?php echo Form::close();?>
             </div>
         </div>
     </div>
-    </div>
 
     <script>
-        $(document).ready(function() {
+        function parseNumber(value) {
+            if (typeof value === 'undefined' || value === null) {
+                return 0;
+            }
+            value = ('' + value).replace(/,/g, '');
+            var number = parseFloat(value);
+            return isNaN(number) ? 0 : number;
+        }
 
-            get_ntn();
-            $('#acc_id').select2();
-            //	$('.hidee').fadeOut();
+        function syncCustomerMeta() {
+            var customerValue = ($('#ntn').val() || '').toString();
+            var parts = customerValue ? customerValue.split('*') : [];
+            $('#buyers_ntn').val(parts[1] || '');
+            $('#buyers_sales').val(parts[2] || '');
+        }
 
+        function recalcRow(rowNo) {
+            var qty = parseNumber($('#qty' + rowNo).val());
+            var rate = parseNumber($('#rate' + rowNo).val());
+            var amount = qty * rate;
+            var taxRate = parseNumber($('#tax_percent' + rowNo).val());
+            var furtherRate = parseNumber($('#sales_tax_further_per' + rowNo).val());
 
-            var d = 1;
-            $('#qty_1').number(true,3);
-            $('#per_pcs_item_1').number(true,2);
-            $('#rate_1').number(true,2);
-            $('#discount_percent_1').number(true,2);
-            $('#discount_amount_1').number(true,2);
-            $('#amount_1').number(true,2);
-            $('#total').number(true,2);
-            $('#per_pcs_item_1').number(true,2);
-            $('#sales_tax').number(true);
-            $('#sales_tax_further').number(true);
-            $('#sales_total').number(true);
-            $('#total_after_sales_tax').number(true,2);
+            $('#after_dis_amount' + rowNo).val(amount.toFixed(3));
+            $('#tax_amount' + rowNo).val(((amount * taxRate) / 100).toFixed(3));
+            $('#sales_tax_further' + rowNo).val(((amount * furtherRate) / 100).toFixed(3));
 
+            recalcTotals();
+        }
 
-            $(".btn-success").click(function(e)
-            {
+        function recalcTotals() {
+            var count = parseInt($('#count').val() || 0, 10);
+            var totalQty = 0;
+            var totalAmount = 0;
+            var totalTax = 0;
+            var totalFurtherTax = 0;
 
-                var demands = new Array();
-                var val;
-                //	$("input[name='demandsSection[]']").each(function(){
-                demands.push($(this).val());
+            for (var i = 1; i <= count; i++) {
+                totalQty += parseNumber($('#qty' + i).val());
+                totalAmount += parseNumber($('#after_dis_amount' + i).val());
+                totalTax += parseNumber($('#tax_amount' + i).val());
+                totalFurtherTax += parseNumber($('#sales_tax_further' + i).val());
+            }
 
-                //});
-                var _token = $("input[name='_token']").val();
+            $('#total_qty').val(totalQty.toFixed(3));
+            $('#total_amount').val(totalAmount.toFixed(3));
 
-                for (val of demands)
-                {
+            if ($('#sales_tax').length) {
+                $('#sales_tax').val(totalTax.toFixed(3));
+            }
+            if ($('#sales_tax_further').length) {
+                $('#sales_tax_further').val(totalFurtherTax.toFixed(3));
+            }
 
-                    jqueryValidationCustom();
-                    if(validate == 0){
-                        //alert(response);
-                    }else{
-                        return false;
-                    }
-                }
+            var advanceTax = parseNumber($('#advance_tax_amount').val());
+            var cartageAmount = parseNumber($('#cartage_amount').val());
+            var grandTotal = totalAmount + totalTax + totalFurtherTax + advanceTax + cartageAmount;
 
-            });
+            $('#grand_total').val(grandTotal.toFixed(3));
+            $('#d_t_amount_1').val(grandTotal.toFixed(3));
+
+            if (typeof toWords === 'function') {
+                toWords(1);
+            }
+        }
+
+        $(document).ready(function () {
+            $('.select2').select2();
+            $('#ntn').on('change', syncCustomerMeta);
+            syncCustomerMeta();
+
+            var count = parseInt($('#count').val() || 0, 10);
+            for (var i = 1; i <= count; i++) {
+                recalcRow(i);
+            }
+            recalcTotals();
         });
-        var x = 1;
-        function addMoreDemandsDetailRows(id){
-            x++;
-
-            //alert(id+' ---- '+x);
-            var m = '<?php echo $_GET['m'];?>';
-
-            $.ajax({
-                url: '<?php echo url('/')?>/sdc/addSalesOrder',
-                type: "GET",
-                data: { counter:x,id:id,m:m},
-                success:function(data) {
-
-                    $('.addMoreDemandsDetailRows_'+id+'').append(data);
-                    $('#item_id_'+x).select2();
-                    $('#batch_id_'+x).select2();
-                    $('#item_id_'+x).focus();
-
-                    $('#qty_'+x).number(true,3);
-                    $('#per_pcs_item_'+x).number(true,2);
-                    $('#rate_'+x).number(true,2);
-                    $('#discount_percent_'+x).number(true,2);
-                    $('#discount_amount_'+x).number(true,2);
-                    $('#amount_'+x).number(true,2);
-                    $('#per_pcs_item_'+x).number(true,2);
-                    $('#discount_percent_'+x).number(true,2);
-
-                    $('#count').val(x);
-
-                }
-            });
-        }
-
-        function show()
-        {
-
-
-        }
-
-        $('#amount_data').change(function()
-        {
-
-            if($(this).is(':checked'))
-            {
-                $('.hidee').fadeOut();
-                $('#total_').attr('colspan',4);
-                $('.resize').attr("cols","50");
-            }
-            else
-            {
-                $('.hidee').fadeIn(1000);
-                $('.resize').attr("rows","5");
-                $('.resize').attr("cols","20");
-                $('#total_').attr('colspan',6);
-            }
-
-        });
-
-        function amount_calc(id,number)
-        {
-            var qty=parseFloat($('#qty_'+number).val());
-            var rate=parseFloat($('#rate_'+number).val());
-            var pack_size=parseFloat($('#pack_size_'+number).val());
-
-
-            // for amount
-            var total=qty * rate;
-            $('#amount_'+number).val(total);
-
-
-
-            // for per pcs qty
-            var pack_size=qty * pack_size;
-            $('#per_pcs_item_'+number).val(pack_size);
-
-
-
-            // for discount percentage
-
-            if (id=='discount_percent_'+number)
-            {
-
-
-                var discount=parseFloat($('#discount_percent_'+number).val());
-                if (discount<=100 && discount >0)
-                {
-                    var discount_amount = (total / 100) * discount;
-                    $('#discount_amount_' + number).val(discount_amount);
-                    var amount_total=total-discount_amount;
-                    $('#amount_'+number).val(amount_total);
-                }
-                else
-                {
-                    $('#discount_percent_'+number).val(0);
-                    $('#discount_amount_'+number).val(0);
-                }
-
-                // end discount percent
-            }
-            else
-            {
-                if (id=='discount_amount_'+number)
-                {
-                    // for discount amount
-                    var discount_amount =parseFloat($('#discount_amount_'+number).val());
-                    if (discount_amount>total)
-                    {
-                        discount_amount=0;
-                        $('#discount_amount_'+number).val(0)
-                    }
-
-                    var discount_percentage=(discount_amount / total)*100;
-                    $('#discount_percent_'+number).val(discount_percentage);
-                    var amount_total=total-discount_amount;
-                    $('#amount_'+number).val(amount_total);
-
-
-
-
-
-                }
-            }
-
-            net_amount_func();
-            sales_tax();
-
-        }
-
-
-        function net_amount_func(sales_tax_count)
-        {
-
-
-            var net_amount=0;
-            $('.amount').each(function (i, obj) {
-                var id=(obj.id);
-
-                net_amount += +$('#'+id).val();
-
-
-            });
-
-
-            $('#total').val(net_amount);
-        }
-
-        function sales_tax()
-        {
-            var total=	parseFloat($('#total').val());
-            var sales_tax=(total/100)*17;
-            $('#sales_tax').val(sales_tax);
-
-
-            var strn= $('#buyers_sales').val();
-            if (strn=='')
-            {
-
-                var sales_tax_further=(total/100)*3;
-                $('#sales_tax_further').val(sales_tax_further);
-
-            }
-            else
-            {
-                sales_tax_further=0;
-                $('#sales_tax_further').val(0);
-            }
-
-            var total=sales_tax+sales_tax_further;
-            $('#sales_total').val(total);
-
-            var total_amount=	parseFloat($('#total').val());
-            var total_after_sales_tax=total_amount+total;
-            $('#total_after_sales_tax').val(total_after_sales_tax);
-
-            $('#d_t_amount_1').val(total_after_sales_tax);
-            toWords(1);
-        }
-
-
-    </script>
-
-
-    <script>
-
-        function get_batch_detail(id,number) {
-
-
-            $("#batch_id_"+number).empty().trigger('change')
-
-
-            //	var number=id.replace("sub_item_id_", "");
-            //	number=number.split('_');
-            //	number=number[1];
-
-
-            id=$('#'+id).val();
-            var m = '<?php echo $_GET['m'];?>';
-            $.ajax({
-                url: '<?php echo url('/')?>/sdc/get_batch_details',
-                type: "GET",
-                data: { id:id},
-                success:function(data)
-                {
-
-                    data=data.split('*');
-                    $('#batch_id_'+number).html(data[0]);
-                    $('#pack_size_'+number).val(data[1]);
-                    $('#description_'+number).val(data[2]);
-                    $('#uom_'+number).val(data[2]);
-
-                }
-            });
-        }
-    </script>
-
-    <script>
-        function removeDemandsRows(){
-
-            var id=1;
-
-            if (x > 1)
-            {
-                $('#removeDemandsRows_'+id+'_'+x+'').remove();
-                x--;
-                $('#count').val(x);
-            }
-        }
-
-
-    </script>
-
-    <script>
-        function get_ntn()
-        {
-            var ntn=$('#ntn').val();
-            ntn=ntn.split('*');
-            $('#buyers_ntn').val(ntn[1]);
-            $('#buyers_sales').val(ntn[2]);
-            sales_tax();
-        }
-    </script>
-    <script type="text/javascript">
-
-        $('.select2').select2();
     </script>
 
     <script src="{{ URL::asset('assets/js/select2/js_tabindex.js') }}"></script>

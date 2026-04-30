@@ -266,7 +266,7 @@ $AmountInWordsMain =0;
                                         $total_expense = 0;
                                         $total_before_tax += $row->rate * $row->qty;
                                         $total_tax += $row->tax_amount;
-                                        $total_after_tax += $row->amount;
+                                        $total_after_tax += ($row->amount + $row->tax_amount + $row->sales_tax_further);
                                         ?>
                                         <tr>
                                             <td style="border:1px solid black;"> {{ $count++ }} </td>
@@ -282,7 +282,7 @@ $AmountInWordsMain =0;
                                             <td class="text-right" style="border:1px solid black;">{{ number_format($row->tax_amount,2) }}</td>
                                             <td class="text-right" style="border:1px solid black;">{{ $row->sales_tax_further_per }}</td>
                                             <td class="text-right" style="border:1px solid black;">{{ number_format($row->sales_tax_further,2) }}</td>
-                                            <td class="text-right" style="border:1px solid black;">{{ number_format($row->amount,2) }}</td>
+                                            <td class="text-right" style="border:1px solid black;">{{ number_format(($row->amount + $row->tax_amount + $row->sales_tax_further),2) }}</td>
                                             @php
                                             $total_tax_amount += $row->tax_amount;
                                             $total_qty += $row->qty;

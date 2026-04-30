@@ -349,40 +349,35 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 								</div>
 								<div class="lineHeight">&nbsp;</div>
 								<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-									<span class="subHeadingLabelClass">Direct Sale Details</span>
+									<span class="subHeadingLabelClass">Sales Tax Invoice Data</span>
 								</div>
 								<div class="lineHeight">&nbsp;&nbsp;&nbsp;</div>
 								<div class="row">
 									<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 										<div class="table-responsive">
-											<table class="table table-bordered table-compact">
+											<table class="table table-bordered table-compact invoice-table">
 												<thead>
-													<tr class="text-center">
-														<th colspan="11" class="text-center">Sales Invoice Detail</th>
-														<th class="text-center">
-															<span class="badge badge-success" id="span">1</span>
-														</th>
-													</tr>
 													<tr>
-														<th class="text-center nowrap" style="width: 9%;">Category</th>
-														<th class="text-center nowrap" style="width: 14%;">Item</th>
-														<th class="text-center col-narrow">Qty</th>
-														<th class="text-center col-narrow">UoM<span
+														<th class="text-center col-narrow">S.NO</th>
+														<th class="text-center col-narrow">DN NO</th>
+														<th class="text-center nowrap" style="width: 18%;">Item</th>
+														<th class="text-center col-narrow">Uom</th>
+														<th class="text-center col-narrow">Orderd QTY</th>
+														<th class="text-center col-narrow">DN QTY</th>
+														<th class="text-center col-narrow">Return QTY</th>
+														<th class="text-center col-narrow">QTY.<span
 																class="rflabelsteric"><strong>*</strong></span></th>
-														<th class="text-center col-narrow">Qty in UOM<span
-																class="rflabelsteric"><strong>*</strong></span></th>
-														<th class="text-center col-narrow">Qty (lbs)<span
-																class="rflabelsteric"><strong>*</strong></span></th>
-														<th class="text-center" style="width: 11%;">Warehouse<span
-																class="rflabelsteric"><strong>*</strong></span></th>
-														<th class="text-center col-narrow hide">In Stock</th>
-														<th class="text-center col-narrow">Commission Rate</th>
 														<th class="text-center col-narrow">Rate<span
 																class="rflabelsteric"><strong>*</strong></span></th>
-														<th class="text-center col-narrow">Amount</th>
-
 														<th class="text-center col-narrow">Net Amount</th>
-														<th class="text-center" style="width: 50px;">Action</th>
+														<th class="text-center nowrap hide" style="width: 9%;">Category</th>
+														<th class="text-center col-narrow hide">Bag Qty</th>
+														<th class="text-center col-narrow hide">Qty (lbs)</th>
+														<th class="text-center hide" style="width: 11%;">Warehouse</th>
+														<th class="text-center col-narrow hide">In Stock</th>
+														<th class="text-center col-narrow hide">Commission Rate</th>
+														<th class="text-center col-narrow hide">Amount</th>
+														<th class="text-center hide" style="width: 50px;">Action</th>
 													</tr>
 												</thead>
 												<tbody id="AppnedHtml">
@@ -396,11 +391,45 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 															$selectedUom = CommonHelper::get_uom_name($detail->uom);
 															$rowAmount = $detail->amount ?? (($detail->qty ?? 0) * ($detail->rate ?? 0));
 															$rowTaxAmount = $detail->tax_amount ?? 0;
-															$rowNetAmount = $rowAmount + $rowTaxAmount;
+															$rowNetAmount = $rowAmount;
 															$totalNet += $rowAmount;
+															$orderedQty = 0;
+															if (!empty($detail->so_data_id)) {
+																$orderedQtyObj = CommonHelper::generic('sales_order_data', ['id' => $detail->so_data_id], ['qty'])->first();
+																$orderedQty = $orderedQtyObj->qty ?? 0;
+															}
+															$returnQty = (!empty($detail->so_data_id) && !empty($detail->gd_no)) ? SalesHelper::return_qty(1, $detail->so_data_id, $detail->gd_no) : 0;
+															$dnQty = ((float) $detail->qty) + ((float) $returnQty);
 														@endphp
 													<tr class="cnt" title="{{ $rowNo }}" id="@if($rowNo > 1) RemoveRows{{ $rowNo }} @endif">
+														<td class="text-center">{{ $rowNo }}</td>
+														<td class="text-center">{{ strtoupper($detail->gd_no ?? '') }}</td>
+														<td class="text-left">{{ $itemDetail->sub_ic ?? CommonHelper::get_item_name($detail->item_id) }}</td>
+														<td class="text-left">{{ $selectedUom }}</td>
+														<td class="text-center">{{ number_format((float) $orderedQty, 3, '.', '') }}</td>
+														<td class="text-center">{{ number_format((float) $dnQty, 3, '.', '') }}</td>
+														<td class="text-center">{{ number_format((float) $returnQty, 3, '.', '') }}</td>
 														<td>
+															<input class="form-control requiredField"
+																onchange="bag_qq({{ $rowNo }})" type="number" name="actual_qty[]"
+																id="actual_qty{{ $rowNo }}" step="any" oninput="bag_qq({{ $rowNo }})"
+																data-saved-value="{{ $detail->qty }}"
+																value="{{ $detail->qty }}" />
+															<input type="hidden" class="PackQty" name="pack_qty[]"
+																id="pack_qty{{ $rowNo }}">
+														</td>
+														<td>
+															<input type="text" onkeyup="claculation('{{ $rowNo }}')"
+																onblur="claculation('{{ $rowNo }}')" class="form-control requiredField"
+																name="rate[]" id="rate{{ $rowNo }}" min="1"
+																data-saved-value="{{ $detail->rate }}" value="{{ $detail->rate }}">
+														</td>
+														<td>
+															<input type="text" class="form-control net_amount_dis"
+																name="after_dis_amount[]" id="after_dis_amount{{ $rowNo }}" min="1"
+																value="{{ number_format($rowNetAmount, 2, '.', '') }}" readonly>
+														</td>
+														<td class="hide">
 															<select style="width: 100% !important;"
 																onchange="get_sub_item2('category_id{{ $rowNo }}')" name="category[]"
 																id="category_id{{ $rowNo }}"
@@ -413,7 +442,7 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 																@endforeach
 															</select>
 														</td>
-														<td>
+														<td class="hide">
 															<select style="width: 100% !important;"
 																onchange="get_item_name({{ $rowNo }})" name="item_id[]" id="item_id{{ $rowNo }}"
 																class="form-control requiredField select2"
@@ -427,12 +456,12 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 															</select>
 														</td>
 														
-														<td>
+														<td class="hide">
 															<input type="text" name="bag_qty[]" id="bag_qty{{ $rowNo }}"
 																class="form-control" oninput="bag_qq({{ $rowNo }})"
 																value="{{ $detail->bag_qty }}" />
 														</td>
-														<td>
+														<td class="hide">
 															<select name="uom_id[]" id="uom_id{{ $rowNo }}"
 																class="form-control requiredField select2"
 																data-selected-uom="{{ $selectedUom }}">
@@ -442,21 +471,12 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 																@endif
 															</select>
 														</td>
-														<td>
-															<input class="form-control requiredField"
-																onchange="bag_qq({{ $rowNo }})" type="number" name="actual_qty[]"
-																id="actual_qty{{ $rowNo }}" step="any" oninput="bag_qq({{ $rowNo }})"
-																data-saved-value="{{ $detail->qty }}"
-																value="{{ $detail->qty }}" />
-															<input type="hidden" class="PackQty" name="pack_qty[]"
-																id="pack_qty{{ $rowNo }}">
-														</td>
-														<td>
+														<td class="hide">
 															<input class="form-control requiredField" type="number"
 																id="qty_lbs{{ $rowNo }}" name="qty_lbs[]" step="any" readonly
 																value="{{ number_format(((float) $detail->qty) * 2.2, 2, '.', '') }}" />
 														</td>
-														<td class="">
+														<td class="hide">
 															<select onchange="get_stock_qty(this.id,'{{ $rowNo }}');ApplyAll('{{ $rowNo }}')"
 																class="form-control  ClsAll ShowOn{{ $rowNo }}" name="warehouse[]"
 																id="warehouse{{ $rowNo }}"
@@ -480,18 +500,12 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 																name="instock[]" type="text" value="" id="instock{{ $rowNo }}" />
 														</td>
 														
-														<td>
+														<td class="hide">
 															<input type="text" class="form-control" placeholder=""
 																name="commission[]" id="commission{{ $rowNo }}"
 																data-saved-value="{{ $detail->commission }}" value="{{ $detail->commission }}" />
 														</td>
-														<td>
-															<input type="text" onkeyup="claculation('{{ $rowNo }}')"
-																onblur="claculation('{{ $rowNo }}')" class="form-control requiredField"
-																name="rate[]" id="rate{{ $rowNo }}" min="1"
-																data-saved-value="{{ $detail->rate }}" value="{{ $detail->rate }}">
-														</td>
-														<td>
+														<td class="hide">
 															<input type="text" class="form-control amount" name="amount[]"
 																id="amount{{ $rowNo }}" placeholder="AMOUNT" min="1" value="{{ number_format($rowAmount, 2, '.', '') }}"
 																readonly>
@@ -512,12 +526,7 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 																class="form-control requiredField tax_amount"
 																name="tax_amount[]" id="tax_amount{{ $rowNo }}" min="1" value="{{ number_format($rowTaxAmount, 2, '.', '') }}">
 														</td>
-														<td>
-															<input type="text" class="form-control net_amount_dis"
-																name="after_dis_amount[]" id="after_dis_amount{{ $rowNo }}" min="1"
-																value="{{ number_format($rowNetAmount, 2, '.', '') }}" readonly>
-														</td>
-														<td style="background-color: #ccc">
+														<td class="hide" style="background-color: #ccc">
 															@if($rowNo === 1)
 																<input type="button" class="btn btn-sm btn-primary"
 																	onclick="AddMoreDetails()" value="+" />
@@ -528,7 +537,31 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 													</tr>
 													@empty
 													<tr class="cnt" title="1">
+														<td class="text-center">1</td>
+														<td class="text-center"></td>
+														<td class="text-left"></td>
+														<td class="text-left"></td>
+														<td class="text-center">0.000</td>
+														<td class="text-center">0.000</td>
+														<td class="text-center">0.000</td>
 														<td>
+															<input class="form-control requiredField"
+																onchange="bag_qq(1)" type="number" name="actual_qty[]"
+																id="actual_qty1" step="any" oninput="bag_qq(1)" />
+															<input type="hidden" class="PackQty" name="pack_qty[]"
+																id="pack_qty1">
+														</td>
+														<td>
+															<input type="text" onkeyup="claculation('1')"
+																onblur="claculation('1')" class="form-control requiredField"
+																name="rate[]" id="rate1" min="1" value="">
+														</td>
+														<td>
+															<input type="text" class="form-control net_amount_dis"
+																name="after_dis_amount[]" id="after_dis_amount1" min="1"
+																value="0.00" readonly>
+														</td>
+														<td class="hide">
 															<select style="width: 100% !important;"
 																onchange="get_sub_item2('category_id1')" name="category[]"
 																id="category_id1"
@@ -541,35 +574,28 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 																@endforeach
 															</select>
 														</td>
-														<td>
+														<td class="hide">
 															<select style="width: 100% !important;"
 																onchange="get_item_name(1)" name="item_id[]" id="item_id1"
 																class="form-control requiredField select2">
 																<option>Select</option>
 															</select>
 														</td>
-														<td>
+														<td class="hide">
 															<input type="text" name="bag_qty[]" id="bag_qty1"
 																class="form-control" oninput="bag_qq(1)" />
 														</td>
-														<td>
+														<td class="hide">
 															<select name="uom_id[]" id="uom_id1"
 																class="form-control requiredField select2">
 																<option value="">Select UOM</option>
 															</select>
 														</td>
-														<td>
-															<input class="form-control requiredField"
-																onchange="bag_qq(1)" type="number" name="actual_qty[]"
-																id="actual_qty1" step="any" oninput="bag_qq(1)" />
-															<input type="hidden" class="PackQty" name="pack_qty[]"
-																id="pack_qty1">
-														</td>
-														<td>
+														<td class="hide">
 															<input class="form-control requiredField" type="number"
 																id="qty_lbs1" name="qty_lbs[]" step="any" readonly />
 														</td>
-														<td class="">
+														<td class="hide">
 															<select onchange="get_stock_qty(this.id,'1');ApplyAll('1')"
 																class="form-control  ClsAll ShowOn1" name="warehouse[]"
 																id="warehouse1">
@@ -591,16 +617,11 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 															<input readonly class="form-control instock zerovalidate"
 																name="instock[]" type="text" value="" id="instock1" />
 														</td>
-														<td>
+														<td class="hide">
 															<input type="text" class="form-control" placeholder=""
 																name="commission[]" id="commission1" value="" />
 														</td>
-														<td>
-															<input type="text" onkeyup="claculation('1')"
-																onblur="claculation('1')" class="form-control requiredField"
-																name="rate[]" id="rate1" min="1" value="">
-														</td>
-														<td>
+														<td class="hide">
 															<input type="text" class="form-control amount" name="amount[]"
 																id="amount1" placeholder="AMOUNT" min="1" value="0.00"
 																readonly>
@@ -621,12 +642,7 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 																class="form-control requiredField tax_amount"
 																name="tax_amount[]" id="tax_amount1" min="1" value="0.00">
 														</td>
-														<td>
-															<input type="text" class="form-control net_amount_dis"
-																name="after_dis_amount[]" id="after_dis_amount1" min="1"
-																value="0.00" readonly>
-														</td>
-														<td style="background-color: #ccc">
+														<td class="hide" style="background-color: #ccc">
 															<input type="button" class="btn btn-sm btn-primary"
 																onclick="AddMoreDetails()" value="+" />
 														</td>
@@ -634,11 +650,17 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 													@endforelse
 												</tbody>
 												<tbody>
-													<tr style="font-size:large;font-weight: bold">
+													<tr class="invoice-total-row">
 														<td class="text-center" colspan="9">Total</td>
-														<td id="" class="text-right" colspan="2"><input readonly
+														<td id="" class="text-right"><input readonly
 																class="form-control" type="text" id="net" value="{{ number_format($totalNet ?? 0, 3, '.', '') }}" /> </td>
-														<td></td>
+														<td class="hide"></td>
+														<td class="hide"></td>
+														<td class="hide"></td>
+														<td class="hide"></td>
+														<td class="hide"></td>
+														<td class="hide"></td>
+														<td class="hide"></td>
 													</tr>
 												</tbody>
 											</table>

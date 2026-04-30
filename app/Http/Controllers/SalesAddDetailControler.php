@@ -1299,7 +1299,7 @@ class SalesAddDetailControler extends Controller
                     'voucher_no' => $gd_no,
                     'voucher_date' => $request->input('gd_date'),
                     'supplier_id' => 0,
-                    'customer_id' => $buyers_id,
+                    'customer_id' => $buyer_id,
                     'voucher_type' => 5,
                     'rate' => $send_rate,
                     'sub_item_id' => $item_id,
@@ -2366,7 +2366,7 @@ class SalesAddDetailControler extends Controller
                     'voucher_no' => $request->gi_no,
                     'voucher_date' => $request->gi_date,
                     'supplier_id' => 0,
-                    'customer_id' => $buyers_id,
+                    'customer_id' => $buyer_id,
                     'voucher_type' => 5,
                     'rate' => $request->rate[$key],
                     'sub_item_id' => $request->item_id[$key],
@@ -3035,7 +3035,7 @@ class SalesAddDetailControler extends Controller
                     'voucher_no' => $request->gi_no,
                     'voucher_date' => $request->gi_date,
                     'supplier_id' => 0,
-                    'customer_id' => $buyers_id,
+                    'customer_id' => $buyer_id,
                     'voucher_type' => 5,
                     'rate' => $request->rate[$key],
                     'sub_item_id' => $request->item_id[$key],
@@ -3528,8 +3528,16 @@ class SalesAddDetailControler extends Controller
             $sales_tax_further = CommonHelper::check_str_replace($request->sales_tax_further);
             if ($sales_tax_further > 0):
 
+                // $acc_id = DB::Connection('mysql2')->table('sales_order as so')
+                //     ->join('further_taxes as ft', 'so.further_taxes_group', '=', 'ft.id')
+                //     ->where('ft.status', 1)
+                //     ->where('so.status', 1)
+                //     ->where('so.id', $request->sales_order_id)
+                //     ->select('ft.acc_id')
+                //     ->first()->acc_id;
+
                 $acc_id = DB::Connection('mysql2')->table('sales_order as so')
-                    ->join('further_taxes as ft', 'so.further_taxes_group', '=', 'ft.id')
+                    ->join('gst as ft', 'so.further_taxes_group', '=', 'ft.id')
                     ->where('ft.status', 1)
                     ->where('so.status', 1)
                     ->where('so.id', $request->sales_order_id)
@@ -3621,8 +3629,9 @@ class SalesAddDetailControler extends Controller
                 ->select(DB::raw('sum(a.amount) as amount'), 'c.cogs_acc_id', 'c.acc_id')
                 ->groupBy('c.id')
                 ->get();
-            $cogs_total = 0;
-            foreach ($cogs as $row):
+
+                $cogs_total = 0;
+               foreach ($cogs as $row):
 
                 $transaction = new Transactions();
                 $transaction = $transaction->SetConnection('mysql2');
