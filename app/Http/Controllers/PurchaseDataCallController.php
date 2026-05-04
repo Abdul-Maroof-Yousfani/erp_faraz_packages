@@ -4189,6 +4189,332 @@ echo "aa"; die;
         ));
     }
 
+    public function gatePassInForm(Request $request)
+    {
+        $m = $request->input('m', $_GET['m'] ?? Session::get('run_company'));
+        $pageType = trim((string) $request->input('pageType', ''));
+        $parentCode = trim((string) $request->input('parentCode', ''));
+        CommonHelper::companyDatabaseConnection($m);
+
+        $manualGatePassColumns = ['id', 'gate_pass_no', 'gate_pass_date', 'vehicle_no'];
+        if ($this->gatePassHasColumn('gate_pass_in_status')) {
+            $manualGatePassColumns[] = 'gate_pass_in_status';
+        }
+
+        $manualGatePasses = DB::connection('mysql2')->table('gate_pass')
+            ->where('status', 1)
+            ->where(function ($query) use ($m) {
+                $query->where('company_id', $m)
+                    ->orWhereNull('company_id');
+            })
+            ->where('gate_pass_type', 3)
+            ->orderBy('gate_pass_date', 'DESC')
+            ->orderBy('id', 'DESC')
+            ->get($manualGatePassColumns);
+
+        CommonHelper::reconnectMasterDatabase();
+
+        return view('GatePass.gate_pass_in_form', compact('m', 'pageType', 'parentCode', 'manualGatePasses'));
+    }
+
+    public function getGatePassInManualDetails(Request $request)
+    {
+        $m = $request->input('m', $_GET['m'] ?? Session::get('run_company'));
+        $gatePassId = (int) $request->input('gate_pass_id', 0);
+
+        CommonHelper::companyDatabaseConnection($m);
+
+        $gatePass = DB::connection('mysql2')->table('gate_pass')
+            ->where('id', $gatePassId)
+            ->where(function ($query) use ($m) {
+                $query->where('company_id', $m)
+                    ->orWhereNull('company_id');
+            })
+            ->where('gate_pass_type', 3)
+            ->where('status', 1)
+            ->first();
+
+        if (!$gatePass) {
+            CommonHelper::reconnectMasterDatabase();
+            return response()->json(['gate_pass' => null, 'items' => []]);
+        }
+
+        $columns = ['id', 'item_name', 'qty', 'rate', 'amount'];
+        foreach (['purpose', 'bag_qty', 'party_id', 'uom'] as $column) {
+            if ($this->gatePassDataHasColumn($column)) {
+                $columns[] = $column;
+            }
+        }
+
+        $items = DB::connection('mysql2')->table('gate_pass_data')
+            ->where('gate_pass_id', $gatePassId)
+            ->where('status', 1)
+            ->orderBy('id', 'ASC')
+            ->get($columns)
+            ->map(function ($item) {
+                $partyName = '';
+                if (!empty($item->party_id)) {
+                    $partyName = DB::connection('mysql2')->table('customers')->where('id', $item->party_id)->value('name') ?? '';
+                }
+
+                return [
+                    'id' => $item->id,
+                    'item_name' => $item->item_name ?? '',
+                    'qty' => (float) ($item->qty ?? 0),
+                    'bag_qty' => (float) ($item->bag_qty ?? 0),
+                    'uom' => $item->uom ?? '',
+                    'purpose' => $item->purpose ?? '',
+                    'party_name' => $partyName,
+                    'rate' => (float) ($item->rate ?? 0),
+                    'amount' => (float) ($item->amount ?? 0),
+                ];
+            });
+
+        CommonHelper::reconnectMasterDatabase();
+
+        return response()->json([
+            'gate_pass' => [
+                'id' => $gatePass->id,
+                'gate_pass_no' => $gatePass->gate_pass_no,
+                'gate_pass_date' => $gatePass->gate_pass_date,
+                'gate_pass_time' => $gatePass->gate_pass_time,
+                'vehicle_no' => $gatePass->vehicle_no,
+                'vehicle_type' => $gatePass->vehicle_type,
+                'driver_name' => $gatePass->driver_name,
+                'vehicle_contact' => $gatePass->vehicle_contact,
+                'description' => $gatePass->description,
+                'gate_pass_in_description' => $gatePass->gate_pass_in_description ?? '',
+                'gate_pass_in_status' => (int) ($gatePass->gate_pass_in_status ?? 0),
+            ],
+            'items' => $items,
+        ]);
+    }
+
+    public function storeGatePassIn(Request $request)
+    {
+        $m = $request->input('m', $_GET['m'] ?? Session::get('run_company'));
+        $pageType = trim((string) $request->input('pageType', 'add'));
+        $parentCode = trim((string) $request->input('parentCode', ''));
+        $gatePassId = (int) $request->input('manual_gate_pass_id', 0);
+
+        if ($gatePassId <= 0) {
+            return redirect()->back()->withInput()->with('error', 'Please select manual gate pass.');
+        }
+
+        CommonHelper::companyDatabaseConnection($m);
+
+        if (!$this->gatePassHasColumn('gate_pass_in_description') || !$this->gatePassHasColumn('gate_pass_in_status')) {
+            CommonHelper::reconnectMasterDatabase();
+            return redirect()->back()->withInput()->with('error', 'Gate Pass IN database fields are missing. Please run migration.');
+        }
+
+        $gatePass = DB::connection('mysql2')->table('gate_pass')
+            ->where('id', $gatePassId)
+            ->where(function ($query) use ($m) {
+                $query->where('company_id', $m)
+                    ->orWhereNull('company_id');
+            })
+            ->where('gate_pass_type', 3)
+            ->where('status', 1)
+            ->first();
+
+        if (!$gatePass) {
+            CommonHelper::reconnectMasterDatabase();
+            return redirect()->back()->withInput()->with('error', 'Manual gate pass not found.');
+        }
+
+        if ((int) ($gatePass->gate_pass_in_status ?? 0) === 1) {
+            CommonHelper::reconnectMasterDatabase();
+            return redirect()->back()->with('error', 'Gate Pass IN already created against this gate pass.');
+        }
+
+        DB::connection('mysql2')->table('gate_pass')
+            ->where('id', $gatePassId)
+            ->update([
+                'gate_pass_in_description' => $request->input('gate_pass_in_description', ''),
+                'gate_pass_in_status' => 1,
+            ]);
+
+        CommonHelper::reconnectMasterDatabase();
+
+        return redirect()->to('pdc/gatePassInForm?pageType=' . $pageType . '&&parentCode=' . $parentCode . '&&m=' . $m . '#signsnow')
+            ->with('success', 'Gate Pass IN created successfully.');
+    }
+
+    public function viewGatePassInList(Request $request)
+    {
+        $m = $request->input('m', $_GET['m'] ?? Session::get('run_company'));
+        $pageType = trim((string) $request->input('pageType', ''));
+        $parentCode = trim((string) $request->input('parentCode', ''));
+        CommonHelper::companyDatabaseConnection($m);
+
+        $gatePassNo = trim($request->input('gate_pass_no', ''));
+        $vehicleNo = trim($request->input('vehicle_no', ''));
+        $fromDate = trim($request->input('from_date', date('Y-m-d', strtotime('-3 days'))));
+        $toDate = trim($request->input('to_date', date('Y-m-d')));
+
+        $query = DB::connection('mysql2')
+            ->table('gate_pass as gp')
+            ->where('gp.company_id', $m)
+            ->where('gp.status', 1)
+            ->where('gp.gate_pass_type', 3)
+            ->where('gp.gate_pass_in_status', 1);
+
+        if ($gatePassNo !== '') {
+            $query->where('gp.gate_pass_no', 'like', '%' . $gatePassNo . '%');
+        }
+        if ($vehicleNo !== '') {
+            $query->where('gp.vehicle_no', 'like', '%' . $vehicleNo . '%');
+        }
+        if ($fromDate !== '' && $toDate !== '') {
+            $query->whereBetween('gp.gate_pass_date', [$fromDate, $toDate]);
+        }
+
+        $gatePassInList = $query->select('gp.*')->orderBy('gp.id', 'DESC')->paginate(25)->appends($request->query());
+
+        CommonHelper::reconnectMasterDatabase();
+
+        return view('GatePass.view_gate_pass_in_list', compact(
+            'm',
+            'pageType',
+            'parentCode',
+            'gatePassNo',
+            'vehicleNo',
+            'fromDate',
+            'toDate',
+            'gatePassInList'
+        ));
+    }
+
+    public function viewGatePassInListAjax(Request $request)
+    {
+        $m = $request->input('m', $_GET['m'] ?? Session::get('run_company'));
+        CommonHelper::companyDatabaseConnection($m);
+
+        $gatePassNo = trim($request->input('gate_pass_no', ''));
+        $vehicleNo = trim($request->input('vehicle_no', ''));
+        $fromDate = trim($request->input('from_date', date('Y-m-d', strtotime('-3 days'))));
+        $toDate = trim($request->input('to_date', date('Y-m-d')));
+
+        $query = DB::connection('mysql2')
+            ->table('gate_pass as gp')
+            ->where('gp.company_id', $m)
+            ->where('gp.status', 1)
+            ->where('gp.gate_pass_type', 3)
+            ->where('gp.gate_pass_in_status', 1);
+
+        if ($gatePassNo !== '') {
+            $query->where('gp.gate_pass_no', 'like', '%' . $gatePassNo . '%');
+        }
+        if ($vehicleNo !== '') {
+            $query->where('gp.vehicle_no', 'like', '%' . $vehicleNo . '%');
+        }
+        if ($fromDate !== '' && $toDate !== '') {
+            $query->whereBetween('gp.gate_pass_date', [$fromDate, $toDate]);
+        }
+
+        $gatePassInList = $query->select('gp.*')->orderBy('gp.id', 'DESC')->paginate(25);
+
+        CommonHelper::reconnectMasterDatabase();
+
+        return response()->json([
+            'table_html' => view('GatePass.ajax_gate_pass_in_table', compact('gatePassInList', 'm'))->render(),
+        ]);
+    }
+
+    public function viewGatePassInDetailAjax(Request $request)
+    {
+        $id = (int) $request->input('id', 0);
+        $m = $request->input('m', $_GET['m'] ?? Session::get('run_company'));
+        CommonHelper::companyDatabaseConnection($m);
+
+        $gatePass = DB::connection('mysql2')->table('gate_pass')
+            ->where('id', $id)
+            ->where('company_id', $m)
+            ->where('status', 1)
+            ->where('gate_pass_type', 3)
+            ->where('gate_pass_in_status', 1)
+            ->first();
+
+        if (empty($gatePass)) {
+            CommonHelper::reconnectMasterDatabase();
+            return response()->json(['message' => 'Gate pass in not found.'], 404);
+        }
+
+        $items = DB::connection('mysql2')->table('gate_pass_data')
+            ->where('gate_pass_id', $id)
+            ->where('status', 1)
+            ->orderBy('id', 'ASC')
+            ->get();
+
+        CommonHelper::reconnectMasterDatabase();
+
+        return view('GatePass.ajax_gate_pass_in_detail', compact('gatePass', 'items', 'm'));
+    }
+
+    public function editGatePassInForm($id, Request $request)
+    {
+        $m = $request->input('m', $_GET['m'] ?? Session::get('run_company'));
+        $pageType = trim((string) $request->input('pageType', 'edit'));
+        $parentCode = trim((string) $request->input('parentCode', ''));
+        CommonHelper::companyDatabaseConnection($m);
+
+        $gatePass = DB::connection('mysql2')->table('gate_pass')
+            ->where('id', $id)
+            ->where('company_id', $m)
+            ->where('status', 1)
+            ->where('gate_pass_type', 3)
+            ->where('gate_pass_in_status', 1)
+            ->first();
+
+        if (empty($gatePass)) {
+            CommonHelper::reconnectMasterDatabase();
+            return redirect()->back()->with('error', 'Gate Pass IN record not found.');
+        }
+
+        $items = DB::connection('mysql2')->table('gate_pass_data')
+            ->where('gate_pass_id', $id)
+            ->where('status', 1)
+            ->orderBy('id', 'ASC')
+            ->get();
+
+        CommonHelper::reconnectMasterDatabase();
+
+        return view('GatePass.edit_gate_pass_in_form', compact('gatePass', 'items', 'm', 'pageType', 'parentCode'));
+    }
+
+    public function updateGatePassIn($id, Request $request)
+    {
+        $m = $request->input('m', $_GET['m'] ?? Session::get('run_company'));
+        $pageType = trim((string) $request->input('pageType', 'edit'));
+        $parentCode = trim((string) $request->input('parentCode', ''));
+        CommonHelper::companyDatabaseConnection($m);
+
+        $gatePass = DB::connection('mysql2')->table('gate_pass')
+            ->where('id', $id)
+            ->where('company_id', $m)
+            ->where('status', 1)
+            ->where('gate_pass_type', 3)
+            ->where('gate_pass_in_status', 1)
+            ->first();
+
+        if (empty($gatePass)) {
+            CommonHelper::reconnectMasterDatabase();
+            return redirect()->back()->with('error', 'Gate Pass IN record not found.');
+        }
+
+        DB::connection('mysql2')->table('gate_pass')
+            ->where('id', $id)
+            ->update([
+                'gate_pass_in_description' => trim((string) $request->input('gate_pass_in_description', '')),
+            ]);
+
+        CommonHelper::reconnectMasterDatabase();
+
+        return redirect()->to('pdc/viewGatePassInList?pageType=' . $pageType . '&&parentCode=' . $parentCode . '&&m=' . $m . '#signsnow')
+            ->with('success', 'Gate Pass IN updated successfully.');
+    }
+
     public function editGatePassForm($id, Request $request)
     {
         $m = $request->input('m', $_GET['m'] ?? Session::get('run_company'));

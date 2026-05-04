@@ -172,6 +172,26 @@ $icons = [
                                     <?php
                                     }
                                     ?>
+                                    <?php if (strcasecmp(trim($row1->title), "Gate Pass") === 0) { ?>
+                                    <li>
+                                        <span></span>
+                                        <a href="<?php echo url(
+                                            "pdc/gatePassInForm?pageType=add&&parentCode=" .
+                                                $row1->id .
+                                                "&&m=" .
+                                                Session::get("run_company")
+                                        ); ?>"> Gate Pass IN</a>
+                                    </li>
+                                    <li>
+                                        <span></span>
+                                        <a href="<?php echo url(
+                                            "pdc/viewGatePassInList?pageType=view&&parentCode=" .
+                                                $row1->id .
+                                                "&&m=" .
+                                                Session::get("run_company")
+                                        ); ?>"> View Gate Pass IN List</a>
+                                    </li>
+                                    <?php } ?>
                                 </ul>
                             </div>
                             </ul>

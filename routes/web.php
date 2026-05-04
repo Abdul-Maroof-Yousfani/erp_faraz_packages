@@ -991,6 +991,14 @@ Route::group(['prefix' => 'pdc', 'middleware' => 'mysql2', 'before' => 'csrf'], 
 
     //gate pass routes
     Route::get('/createGatePassForm', 'PurchaseDataCallController@createGatePassForm');
+    Route::get('/gatePassInForm', 'PurchaseDataCallController@gatePassInForm');
+    Route::get('/getGatePassInManualDetails', 'PurchaseDataCallController@getGatePassInManualDetails');
+    Route::post('/storeGatePassIn', 'PurchaseDataCallController@storeGatePassIn');
+    Route::get('/viewGatePassInList', 'PurchaseDataCallController@viewGatePassInList');
+    Route::get('/viewGatePassInListAjax', 'PurchaseDataCallController@viewGatePassInListAjax');
+    Route::get('/viewGatePassInDetailAjax', 'PurchaseDataCallController@viewGatePassInDetailAjax');
+    Route::get('/editGatePassInForm/{id}', 'PurchaseDataCallController@editGatePassInForm');
+    Route::post('/updateGatePassIn/{id}', 'PurchaseDataCallController@updateGatePassIn');
     Route::get('/editGatePassForm/{id}', 'PurchaseDataCallController@editGatePassForm');
     Route::get('/getGatePassSourceItems', 'PurchaseDataCallController@getGatePassSourceItems');
     Route::get('/viewGatePassList', 'PurchaseDataCallController@viewGatePassList');

@@ -18,7 +18,7 @@ use App\Helpers\CommonHelper;
         <!-- Logo + Company Info -->
         <div style="display: flex; align-items: center; gap: 12px;">
             <div style="width: 80px; height: 80px; background: #eee; display: flex; align-items: center; justify-content: center; border-radius: 8px; overflow: hidden;">
-                <img src="{{ asset('logoo.png') }}" alt="Logo" style="max-width: 100%; max-height: 100%;">
+                <img src="{{ asset('https://hr-innovative.com/assets/images/cbimage.png') }}" alt="Logo" style="max-width: 100%; max-height: 100%;">
             </div>
         </div>
 

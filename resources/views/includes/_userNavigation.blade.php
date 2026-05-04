@@ -120,6 +120,16 @@ endif;
                                              </a>
                                           </li>
                                           <?php endif; } ?>
+                                          <?php if (strcasecmp(trim($row1->title), 'Gate Pass') === 0): ?>
+                                          <li>
+                                             <span><i class="fal fa-circle-notch"></i></span>
+                                             <a href="<?php echo url('pdc/gatePassInForm?pageType=add&&parentCode='.$row1->id.'&&m='.Session::get('run_company').'#signsnow')?>"> Gate Pass IN</a>
+                                          </li>
+                                          <li>
+                                             <span><i class="fal fa-circle-notch"></i></span>
+                                             <a href="<?php echo url('pdc/viewGatePassInList?pageType=view&&parentCode='.$row1->id.'&&m='.Session::get('run_company').'#signsnow')?>"> View Gate Pass IN List</a>
+                                          </li>
+                                          <?php endif; ?>
                                        </ul>
                                  </div>
                               </ul>
