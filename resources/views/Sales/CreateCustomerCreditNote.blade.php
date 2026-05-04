@@ -59,23 +59,24 @@ use App\Helpers\CommonHelper;
                                 <div class="panel-body" id="PrintEmpExitInterviewList">
                                     <?php echo CommonHelper::headerPrintSectionInPrintView($m);?>
                                     <?php echo Form::open(array('url' => 'sales/addCustomerCredit_no?m='.$m.'','id'=>'cashPaymentVoucherForm'));?>
-                                    <input type="hidden" name="type" value="1"/>
                                     <div class="row">
 
-                                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-                                            <label>SO No.</label>
-                                            <input type="text" name="so_no" id="so_no" max="<?php ?>" value="" class="form-control" />
-
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                            <label>Customer</label>
+                                            <select name="customer_id" id="customer_id" class="form-control">
+                                                <option value="">Select Customer</option>
+                                                @foreach(($customers ?? []) as $customer)
+                                                    <option value="{{ $customer->id }}">{{ $customer->name }}</option>
+                                                @endforeach
+                                            </select>
                                         </div>
 
-                                        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
-                                            <label>DN
-                                            <input checked type="radio" name="type" id="dn"  value="1" class=""  /></label>
-
-                                            <label>SI
-                                                <input type="radio" name="type" id="si"  value="2" class="" /></label>
-                                            <button type="button" class="btn btn-sm btn-primary" style="margin-top: 30px;" onclick="ShowData();" tabindex="2">Search</button>
-
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                            <label>Invoice</label>
+                                            <select name="invoice_no" id="invoice_no" class="form-control">
+                                                <option value="">Select Invoice</option>
+                                            </select>
+                                            <input type="hidden" name="type" id="credit_note_type" value="">
                                         </div>
 
 
@@ -133,21 +134,67 @@ use App\Helpers\CommonHelper;
 
     <script !src="">
         $(document).ready(function () {
-            $('#SupplierId').select2();
+            $('#customer_id').select2();
+            $('#invoice_no').select2();
             var action = $('form').attr('action');
             $('form').attr('action',action);
+
+            $('#customer_id').on('change', function () {
+                loadCustomerInvoices();
+            });
+
+            $('#invoice_no').on('change', function () {
+                if ($(this).val() !== '') {
+                    $('#credit_note_type').val($(this).find(':selected').data('type') || '');
+                    ShowData();
+                } else {
+                    $('#credit_note_type').val('');
+                    $('#ShowOn').html('');
+                    $('#add').prop('disabled', true);
+                }
+            });
         });
+
+        function loadCustomerInvoices()
+        {
+            var customerId = $('#customer_id').val();
+
+            $('#ShowOn').html('');
+            $('#add').prop('disabled', true);
+            $('#credit_note_type').val('');
+            $('#invoice_no').html('<option value="">Select Invoice</option>').trigger('change.select2');
+
+            if (customerId === '') {
+                return false;
+            }
+
+            $.ajax({
+                url: '<?php echo url('/')?>/sdc/getCustomerInvoicesForCreditNote',
+                type: "GET",
+                data: {customer_id: customerId},
+                success:function(data) {
+                    var options = '<option value="">Select Invoice</option>';
+
+                    $.each(data, function(index, row) {
+                        var voucherDate = row.voucher_date ? ' - ' + row.voucher_date : '';
+                        options += '<option value="' + row.voucher_no + '" data-type="' + row.type + '">' + row.voucher_no + voucherDate + '</option>';
+                    });
+
+                    $('#invoice_no').html(options).trigger('change.select2');
+                }
+            });
+        }
 
         function ShowData()
         {
-            var so = $('#so_no').val();
-            var type = $('input[name="type"]:checked').val();
+            var so = $('#invoice_no').val();
+            var type = $('#credit_note_type').val();
 
             if(so == "")
 
             {
 
-               alert('Required So');
+               alert('Required Invoice');
                 return false;
 
             }

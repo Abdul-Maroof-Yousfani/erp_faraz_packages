@@ -1733,7 +1733,12 @@ class SalesController extends Controller
         $sales_tax_invoice = new SalesTaxInvoice();
         $sales_tax_invoice = $sales_tax_invoice->SetConnection('mysql2');
         $sales_tax_invoice = $sales_tax_invoice->where('status', 1)->get();
-        return view('Sales.CreateCustomerCreditNote', compact('sales_tax_invoice'));
+        $customers = DB::Connection('mysql2')->table('customers')
+            ->where('status', 1)
+            ->orderBy('name')
+            ->select('id', 'name')
+            ->get();
+        return view('Sales.CreateCustomerCreditNote', compact('sales_tax_invoice', 'customers'));
     }
 
     public function addCustomerCredit_no(Request $request)

@@ -1845,6 +1845,7 @@ Route::group(['prefix' => 'sdc', 'middleware' => 'mysql2', 'before' => 'csrf'], 
     Route::get('/getDeliveryChallanFilterWise', 'SalesDataCallController@getDeliveryChallanFilterWise');
     Route::get('/getSalesTaxInvoiceeFilterWise', 'SalesDataCallController@getSalesTaxInvoiceeFilterWise');
     Route::get('/getCustomerCreditNoteData', 'SalesDataCallController@getCustomerCreditNoteData');
+    Route::get('/getCustomerInvoicesForCreditNote', 'SalesDataCallController@getCustomerInvoicesForCreditNote');
     Route::get('/pos_delete', 'SalesDataCallController@pos_delete');
 
 

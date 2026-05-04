@@ -1113,7 +1113,10 @@ class SalesDataCallController extends Controller
                 ->leftJoin('sales_order as b', 'a.master_id', '=', 'b.id')
                 ->where('a.status',1)
                 ->where('b.status',1)
-                ->where('a.so_no',$so)
+                ->where(function ($query) use ($so) {
+                    $query->where('a.so_no', $so)
+                          ->orWhere('a.gd_no', $so);
+                })
                 ->select('a.id','a.gd_no as gi_no','a.gd_date as gi_date','b.buyers_id','a.master_id')
                 ->get();
 
@@ -1131,6 +1134,46 @@ class SalesDataCallController extends Controller
 
         return view('Sales.AjaxPages.getSalesTaxInvoice',compact('dataa','type'));
 
+    }
+
+    function getCustomerInvoicesForCreditNote(Request $request)
+    {
+        $customerId = $request->customer_id;
+        $type = $request->type;
+
+        if (empty($customerId)) {
+            return response()->json([]);
+        }
+
+        $invoices = collect();
+
+        if (empty($type) || $type == 1) {
+            $deliveryNotes = DB::Connection('mysql2')->table('delivery_note as a')
+                ->leftJoin('sales_order as b', 'a.master_id', '=', 'b.id')
+                ->where('a.status', 1)
+                ->where('b.status', 1)
+                ->where('b.buyers_id', $customerId)
+                ->select('a.gd_no as voucher_no', 'a.gd_date as voucher_date', DB::raw('1 as type'))
+                ->orderBy('a.gd_date', 'DESC')
+                ->orderBy('a.id', 'DESC')
+                ->get();
+
+            $invoices = $invoices->merge($deliveryNotes);
+        }
+
+        if (empty($type) || $type == 2) {
+            $salesTaxInvoices = DB::Connection('mysql2')->table('sales_tax_invoice')
+                ->where('status', 1)
+                ->where('buyers_id', $customerId)
+                ->select('gi_no as voucher_no', 'gi_date as voucher_date', DB::raw('2 as type'))
+                ->orderBy('gi_date', 'DESC')
+                ->orderBy('id', 'DESC')
+                ->get();
+
+            $invoices = $invoices->merge($salesTaxInvoices);
+        }
+
+        return response()->json($invoices->sortByDesc('voucher_date')->values());
     }
 
     function viewSurveyListDetail()

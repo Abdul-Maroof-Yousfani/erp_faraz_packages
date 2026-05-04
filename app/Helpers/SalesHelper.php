@@ -414,9 +414,12 @@ class SalesHelper
             return $acc_id = DB::Connection('mysql2')->table('delivery_note_data as a')
                 ->join('delivery_note as b', 'a.master_id', '=', 'b.id')
                 ->select(
+                    'a.id',
                     'a.gd_no as gi_no',
                     'b.gd_date as gi_date',
                     'a.qty',
+                    DB::raw('0 as bag_qty'),
+                    DB::raw('NULL as uom'),
                     'a.rate',
                     'a.tax',
                     'a.tax_amount',

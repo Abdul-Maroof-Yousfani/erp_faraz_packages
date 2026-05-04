@@ -120,7 +120,7 @@ $m=Input::get('m');
                 ->join('subitem as si', 'si.id', '=', 's.sub_item_id')
                 ->whereIn('s.status', [1, 3])
                 ->whereIn('s.voucher_no', $quarterVoucherNos)
-                ->select('s.voucher_no', 'si.sub_ic', 's.rate', DB::raw('SUM(s.qty) as qty'))
+                ->select('s.voucher_no', 'si.sub_ic', 's.rate', DB::raw('SUM(s.qty) as qty'), DB::raw('SUM(s.amount) as amount'))
                 ->groupBy('s.voucher_no', 'si.sub_ic', 's.rate')
                 ->orderBy('si.sub_ic')
                 ->orderBy('s.rate')
@@ -150,10 +150,16 @@ $m=Input::get('m');
                 $termLabel = '-';
 
                 if ($supplier) {
-                    $termLabel = (string) $supplier->terms_of_payment;
-                    if (!empty($supplier->no_of_days)) {
-                        $termLabel .= ' | No of Days: ' . $supplier->no_of_days;
+                    $termParts = [];
+                    if (!empty($supplier->terms_of_payment)) {
+                        $termParts[] = (string) $supplier->terms_of_payment;
                     }
+
+                    if (!empty($supplier->no_of_days)) {
+                        $termParts[] = $supplier->no_of_days . ' Days';
+                    }
+
+                    $termLabel = !empty($termParts) ? implode(' | ', $termParts) : '-';
                 }
 
                 $purchaseVoucherPaymentTerms[$purchaseVoucherRow->pv_no] = $termLabel;
@@ -438,13 +444,22 @@ $m=Input::get('m');
 
                     if (!empty($ledgerItemDetails[$trow->voucher_no])) {
                         foreach ($ledgerItemDetails[$trow->voucher_no] as $ledgerItem) {
-                            $paymentTerm = $purchaseVoucherPaymentTerms[$trow->voucher_no] ?? '-';
+                            $paymentTerm = trim((string) ($purchaseVoucherPaymentTerms[$trow->voucher_no] ?? ''));
+                            $qty = (float) ($ledgerItem->qty ?? 0);
+                            $rate = (float) ($ledgerItem->rate ?? 0);
+                            $amount = isset($ledgerItem->amount) ? (float) $ledgerItem->amount : ($qty * $rate);
+                            $detailParts = [
+                                e($ledgerItem->sub_ic ?? ''),
+                                number_format($qty, 2) . ' KG',
+                                number_format($rate, 2),
+                                number_format($amount, 2),
+                            ];
 
-                            $itemDetails[] = 
-                                'Item Name: ' . e($ledgerItem->sub_ic) . ' | ' .
-                                'Qty: ' . number_format((float) $ledgerItem->qty, 2) . ' |</br> ' .
-                                'Rate: ' . number_format((float) ($ledgerItem->rate ?? 0), 2) . ' | ' .
-                                'Payment Term: ' . e($paymentTerm);
+                            if ($paymentTerm !== '' && $paymentTerm !== '-') {
+                                $detailParts[] = e($paymentTerm);
+                            }
+
+                            $itemDetails[] = implode(' | ', $detailParts);
                         }
                     }
 
