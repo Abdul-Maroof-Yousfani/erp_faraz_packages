@@ -110,6 +110,8 @@ $total_amount = 0;
                                                         <th class="text-center">Quantity (KG)</th>
                                                         <th class="text-center">Quantity (lbs)</th>
                                                         <th class="text-center">Rate</th>
+                                                        <th class="text-center">Sales Tax</th>
+                                                        <th class="text-center">Tax Amount</th>
                                                         <th class="text-center">Total Amount</th>
                                                         <!-- <th>GST</th>
                                                         <th>Unit Price <span>with GST</span></th>
@@ -124,14 +126,20 @@ $total_amount = 0;
                                                     <tbody id="data">
                                                         @foreach($sale_order as $sale_order_item)
                                                         @php
-                                                         $product = CommonHelper::get_item_by_id($sale_order_item->item_id);   
-                                                        @endphp
+                                                         $product = CommonHelper::get_item_by_id($sale_order_item->item_id);
+                                                         $packSize = (float) ($sale_order_item->pack_size ?? 0);
+                                                         $bagsQty = $packSize > 0
+                                                            ? ((float) $sale_order_item->qty / $packSize)
+                                                            : (float) ($sale_order_item->length_bundle ?? 0);
+                                                         $itemTaxRate = (float) ($sale_order_item->tax ?? 0);
+                                                         $itemTaxAmount = (float) ($sale_order_item->tax_amount ?? 0);
+                                                         @endphp
                                                         <tr>        
 
                                                             <td class="text-left">{{$sale_order_item->sub_ic }}</td>
                                                             {{-- <td class="text-left">{{ $sale_order_item->color }}</td> --}}
                                                             <td class="text-center">{{ $sale_order_item->uom_name }}</td>
-                                                            <td class="text-left">{{ $sale_order_item->qty/$sale_order_item->pack_size}}</td>
+                                                            <td class="text-left">{{ number_format($bagsQty, 2) }}</td>
 
                                                             <td class="text-right">
                                                                 {{ number_format($sale_order_item->qty, 2) }} KG 
@@ -143,6 +151,12 @@ $total_amount = 0;
                                                                 {{number_format($sale_order_item->rate,2)}}
                                                             </td>
                                                         
+                                                            <td class="text-right">
+                                                                {{ $itemTaxRate > 0 ? number_format($itemTaxRate, 2) . ' %' : '-' }}
+                                                            </td>
+                                                            <td class="text-right">
+                                                                {{ $itemTaxAmount > 0 ? number_format($itemTaxAmount, 2) : '-' }}
+                                                            </td>
                                                             <td class="text-right">
                                                                 {{number_format($sale_order_item->amount,2)}}
                                                             </td>
@@ -218,9 +232,15 @@ $total_amount = 0;
                                     </div> -->
 
 
-                                    @php 
-                                        $tax = $sale_order[0]->total_amount / 100 * $sale_order[0]->sales_tax_rate;
-                                        $further_tax = $sale_order[0]->total_amount / 100 * $sale_order[0]->sales_tax_further;
+                                    @php
+                                        $tax = $sale_order->sum('tax_amount');
+                                        $further_tax = $sale_order->sum('further_tax_amount');
+                                        $advance_tax = $sale_order->sum('advance_tax_amount');
+                                        $salesTaxLabel = $sale_order->pluck('tax')->filter(function ($rate) {
+                                            return (float) $rate > 0;
+                                        })->unique()->map(function ($rate) {
+                                            return number_format((float) $rate, 2) . '%';
+                                        })->implode(', ');
                                     @endphp
                                     <div class="row">
                                         <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12"></div>
@@ -228,15 +248,12 @@ $total_amount = 0;
                                             <div class="tasetb">
                                                 <table class="userlittab3 table table-bordered sf-table-list3">
                                                     <tbody id="data">
-                                                        @php
-                                                        $advance_tax = $sale_order[0]->total_amount / 100 * $sale_order[0]->advance_tax
-                                                        @endphp
                                                         <tr>
                                                             <td class="text-center">Total Amount</td>
                                                             <td class="text-center">{{number_format($sale_order[0]->total_amount,2)}}</td>
                                                         </tr>
                                                         <tr>
-                                                            <td class="text-center">Sales Tax {{ number_format($sale_order[0]->sales_tax_rate) }} %</td>
+                                                            <td class="text-center">Sales Tax {{ $salesTaxLabel ?: '0.00%' }}</td>
                                                             <td class="text-center">{{number_format($tax ,2)}} </td>
                                                         </tr>
                                                         <tr>

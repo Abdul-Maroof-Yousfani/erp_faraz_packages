@@ -173,6 +173,12 @@ use App\Helpers\ReuseableCode;
 											</div>
 
 											<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+												<label class="sf-label">Bilty No.</label>
+												<input type="text" class="form-control" placeholder=""
+													name="bilty_no" id="bilty_no" value="" />
+											</div>
+
+											<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
 												<label class="sf-label">Despatched Document Date</label>
 												<input type="date" class="form-control" placeholder=""
 													name="despacth_document_date" id="despacth_document_date" value="" />

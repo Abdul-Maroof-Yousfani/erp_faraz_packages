@@ -2331,6 +2331,7 @@ class SalesAddDetailControler extends Controller
             $sales_tax_invoice->order_date = $request->order_date ?? '';
             $sales_tax_invoice->other_refrence = $request->other_refrence;
             $sales_tax_invoice->despacth_document_no = $request->despacth_document_no;
+            $sales_tax_invoice->bilty_no = $request->bilty_no ?? '';
             $sales_tax_invoice->commission_buyer = $request->commission_buyer;
             $sales_tax_invoice->despacth_document_date = $request->despacth_document_date;
             $sales_tax_invoice->despacth_through = $request->despacth_through;
@@ -2988,6 +2989,7 @@ class SalesAddDetailControler extends Controller
         $sales_tax_invoice->order_no               = $request->order_no;
         $sales_tax_invoice->order_date             = $request->order_date;
         $sales_tax_invoice->despacth_document_no   = $request->despacth_document_no;
+        $sales_tax_invoice->bilty_no               = $request->bilty_no ?? '';
         $sales_tax_invoice->despacth_document_date = $request->despacth_document_date;
         $sales_tax_invoice->despacth_through       = $request->despacth_through;
         $sales_tax_invoice->destination            = $request->destination;
@@ -3032,6 +3034,7 @@ class SalesAddDetailControler extends Controller
         // === Insert New Detail Lines ===
         $itemIds = $request->item_id ?? [];   // Main array to loop on
         $total_amount = 0;
+        $total_commission_amount = 0;
 
         foreach ($itemIds as $key => $item_id) {
             if (empty($item_id)) continue;
@@ -3039,6 +3042,8 @@ class SalesAddDetailControler extends Controller
             $qty   = $request->actual_qty[$key] ?? 0;
             $rate  = $request->rate[$key] ?? 0;
             $amount = $request->amount[$key] ?? ($qty * $rate);
+            $commission = $request->commission[$key] ?? 0;
+            $commission_amount = $commission * $rate;
 
             $detail = new SalesTaxInvoiceData();
             $detail->setConnection('mysql2');
@@ -3051,7 +3056,7 @@ class SalesAddDetailControler extends Controller
             $detail->qty           = $qty;
             $detail->rate          = $rate;
             $detail->amount        = $amount;
-            $detail->commission    = $request->commission[$key] ?? 0;
+            $detail->commission    = $commission;
             $detail->tax           = $request->tax[$key] ?? 0;
             $detail->tax_amount    = $request->tax_amount[$key] ?? 0;
             $detail->warehouse_id  = $request->warehouse[$key] ?? null;
@@ -3072,7 +3077,7 @@ class SalesAddDetailControler extends Controller
                     'voucher_no' => $request->gi_no,
                     'voucher_date' => $request->gi_date,
                     'supplier_id' => 0,
-                    'customer_id' => $buyers_id,
+                    'customer_id' => $buyer_id,
                     'voucher_type' => 5,
                     'rate' => $request->rate[$key],
                     'sub_item_id' => $request->item_id[$key],
@@ -3091,6 +3096,7 @@ class SalesAddDetailControler extends Controller
                 DB::Connection('mysql2')->table('stock')->insert($stock);
 
             $total_amount += $amount;
+            $total_commission_amount += $commission_amount;
         }
 
             $cogs = DB::Connection('mysql2')->table('sales_tax_invoice as a')
@@ -3296,7 +3302,7 @@ class SalesAddDetailControler extends Controller
 
 
         //----------new  
-         $customer_acc_id = SalesHelper::get_customer_acc_id($buyers_id);
+         $customer_acc_id = SalesHelper::get_customer_acc_id($buyer_id);
 
             if($request->commission_buyer != null){
             $commission_buyer_acc_id = SalesHelper::get_customer_acc_id($request->commission_buyer);
@@ -3357,9 +3363,9 @@ class SalesAddDetailControler extends Controller
         DB::connection('mysql2')->commit();
 
         // === Redirect Logic ===
-        $m = Session::get('company_run');
-        $pageType   = $request->pageType;
-        $parentCode = $request->parentCode;
+        $m = $request->m ?? Session::get('company_run');
+        $pageType   = $request->pageType ?: 'view';
+        $parentCode = $request->parentCode ?: 91;
         $SavePrintVal = $request->SavePrintVal;
 
         if ($SavePrintVal == 1) {
@@ -3367,7 +3373,7 @@ class SalesAddDetailControler extends Controller
             return redirect()->to($url);
         }
 
-        return redirect()->to("sales/CreateSalesTaxInvoiceList?pageType={$pageType}&parentCode={$parentCode}&m={$m}#SFR");
+        return redirect()->to("sales/viewSalesTaxInvoiceList?pageType=view&&parentCode=91&&m={$m}#SFR");
 
     } catch (\Exception $ex) {
         dd([$ex, $ex->getMessage(), $ex->getLine()]);  // Remove in production

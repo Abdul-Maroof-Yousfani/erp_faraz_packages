@@ -5,6 +5,29 @@ use App\Helpers\FinanceHelper;
 
 //$m = $_GET['m'];
 $currentDate = date('Y-m-d');
+$isFilled = function ($value) {
+    if (is_null($value)) {
+        return false;
+    }
+
+    if (is_string($value)) {
+        $value = trim($value);
+    }
+
+    return $value !== '' && $value !== '0000-00-00';
+};
+
+$formatViewDate = function ($value) use ($isFilled) {
+    return $isFilled($value) ? CommonHelper::changeDateFormat($value) : '';
+};
+
+$detailRow = function ($label, $value, $labelStyle = '', $valueStyle = '') use ($isFilled) {
+    if (!$isFilled($value)) {
+        return '';
+    }
+
+    return '<tr><td class="text-left" style="border: solid 1px black;' . $labelStyle . '">' . e($label) . '</td><td class="text-left" style="border: solid 1px black;' . $valueStyle . '">' . e($value) . '</td></tr>';
+};
 ?>
 
 
@@ -32,6 +55,10 @@ $currentDate = date('Y-m-d');
         table.table-bordered>thead>tr>th {
             border: 1px solid black !important;
         }
+
+        body {
+            font-size: 10px;
+        }
     }
 
     table {
@@ -48,6 +75,10 @@ $currentDate = date('Y-m-d');
 
     th {
         border: solid 1px black;
+    }
+
+    body{
+        font-size: 10px;
     }
 </style>
 <?php
@@ -69,8 +100,16 @@ $currentDate = date('Y-m-d');
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <div class="well">
                 <div class="row">
+                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <h3 style="text-align: center;">Delivery Challan</h3>
+                    </div>
+
                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                         <?php echo CommonHelper::get_company_logo(Session::get('run_company'));?>
+                        <h4 style="text-align:center; margin:5px 0 3px 0;">FARAZ PACKAGES</h4>
+                        <p style="text-align:center; margin:0; font-size:12px; line-height:16px;">Plot No. F-188-E, Near D-1 Bus Stop SITE Area, Karachi</p>
+                        <p style="text-align:center; margin:0; font-size:12px; line-height:16px;">Ph: 021-32544444 | Cell: 0321 3254444</p>
+                        <p style="text-align:center; margin:0; font-size:12px; line-height:16px;">Email: farazpackages@gmail.com</p>
                     </div>
 
                 </div>
@@ -83,10 +122,7 @@ $currentDate = date('Y-m-d');
                             < ?php echo CommonHelper::changeDateFormat($currentDate);?>
                         </label>--}}
                     </div>
-                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
-                        <h3 style="text-align: center;">Delivery Note</h3>
-                    </div>
-
+        
                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-right">
                         {{--< ?php $nameOfDay=date('l', strtotime($currentDate)); ?>--}}
                             {{--<label style="border-bottom:2px solid #000 !important;">Printed On
@@ -104,42 +140,17 @@ $currentDate = date('Y-m-d');
                         <div style="width:49%; float:left;">
                             <table class="table " style="border: solid 1px  black">
                                 <tbody>
-                                    <?php $customer_data = CommonHelper::byers_name($delivery_note->buyers_id);?>
-                                    <tr>
-                                        <td class="text-left" style="border: solid 1px black;">Buyer's Name</td>
-                                        <td class="text-left" style="border: solid 1px black;">
-                                            <?php echo ucwords($customer_data->name)?></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="text-left" style="border: solid 1px black;width:60%;">Buyer's Order
-                                            NO</td>
-                                        <td class="text-left" style="border: solid 1px black;width:40%;">
-                                            <?php echo $delivery_note->order_no . ' ';    ?></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="text-left" style="border: solid 1px black;width:60%;">Buyer's Order
-                                            Date</td>
-                                        <td class="text-left" style="border: solid 1px black;width:40%;">
-                                            <?php echo CommonHelper::changeDateFormat($delivery_note->order_date);?>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <?php $SalesOrder = CommonHelper::get_single_row('sales_order', 'id', $delivery_note->master_id);?>
-                                        <td class="text-left" style="width:60%;">Buyer's Unit</td>
-                                        <td class="text-left" style="width:40%;"><?php echo $SalesOrder->buyers_unit;?>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="text-left" style="border: solid 1px black;">Buyer's Address</td>
-                                        <td style="border: solid 1px black;font-size: xx-small" class="text-left">
-                                            <?php echo ucwords($customer_data->address);?></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="text-left" style="border: solid 1px black;width:60%;">Destination
-                                        </td>
-                                        <td class="text-left" style="border: solid 1px black;width:40%;">
-                                            <?php echo $delivery_note->destination;?></td>
-                                    </tr>
+                                    <?php
+                                        $customer_data = CommonHelper::byers_name($delivery_note->buyers_id);
+                                        $SalesOrder = CommonHelper::get_single_row('sales_order', 'id', $delivery_note->master_id);
+
+                                        echo $detailRow("Buyer's Name", ucwords($customer_data->name ?? ''));
+                                        echo $detailRow("Buyer's Order NO", $delivery_note->order_no ?? '', 'width:60%;', 'width:40%;');
+                                        echo $detailRow("Buyer's Order Date", $formatViewDate($delivery_note->order_date ?? ''), 'width:60%;', 'width:40%;');
+                                        echo $detailRow("Buyer's Unit", $SalesOrder->buyers_unit ?? '', 'width:60%;', 'width:40%;');
+                                        echo $detailRow("Buyer's Address", ucwords($customer_data->address ?? ''), '', 'font-size: xx-small;');
+                                        echo $detailRow('Destination', $delivery_note->destination ?? '', 'width:60%;', 'width:40%;');
+                                    ?>
 
 
                                 </tbody>
@@ -150,38 +161,14 @@ $currentDate = date('Y-m-d');
                         <div style="width:50%; float:right;">
                             <table class="table " style="border: solid 1px black; border: solid 1px black;">
                                 <tbody>
-                                    <tr>
-                                        <td class="text-left" style="border: solid 1px black;width:50%;">DN NO.</td>
-                                        <td class="text-left" style="border: solid 1px black;width:50%;">
-                                            <?php echo strtoupper($delivery_note->gd_no);?></td>
-                                    </tr>
-
-                                    <tr>
-                                        <td class="text-left" style="border: solid 1px black;">DN Date</td>
-                                        <td class="text-left">
-                                            <?php echo CommonHelper::changeDateFormat($delivery_note->gd_date);?></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="text-left" style="border: solid 1px black;width:50%;">SO NO.</td>
-                                        <td class="text-left" style="border: solid 1px black;width:50%;">
-                                            <?php echo strtoupper($delivery_note->so_no);?></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="text-left" style="border: solid 1px black;">SO Date</td>
-                                        <td class="text-left" style="border: solid 1px black;">
-                                            <?php echo CommonHelper::changeDateFormat($delivery_note->so_date);?></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="text-left" style="border: solid 1px black;">Other Reference(S)</td>
-                                        <td class="text-left" style="border: solid 1px black;">
-                                            <?php echo $delivery_note->other_refrence?></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="text-left" style="border: solid 1px black;width:60%;">Terms Of
-                                            Delivery</td>
-                                        <td class="text-left" style="border: solid 1px black;width:40%;">
-                                            <?php echo $delivery_note->terms_of_delivery;?></td>
-                                    </tr>
+                                    <?php
+                                        echo $detailRow('DN NO.', strtoupper($delivery_note->gd_no ?? ''), 'width:50%;', 'width:50%;');
+                                        echo $detailRow('DN Date', $formatViewDate($delivery_note->gd_date ?? ''));
+                                        echo $detailRow('SO NO.', strtoupper($delivery_note->so_no ?? ''), 'width:50%;', 'width:50%;');
+                                        echo $detailRow('SO Date', $formatViewDate($delivery_note->so_date ?? ''));
+                                        echo $detailRow('Other Reference(S)', $delivery_note->other_refrence ?? '');
+                                        echo $detailRow('Terms Of Delivery', $delivery_note->terms_of_delivery ?? '', 'width:60%;', 'width:40%;');
+                                    ?>
 
                                 </tbody>
                             </table>
@@ -198,17 +185,17 @@ $currentDate = date('Y-m-d');
                             <table id="tablee" class="table " style="border: solid 1px black;">
                                 <thead>
                                     <tr>
-                                        <th class="text-center" style="border:1px solid black;">S.NO</th>
+                                        <th class="text-center hide" style="border:1px solid black;">S.NO</th>
+                                        <th class="text-center" style="border:1px solid black;">Quantity.<span class="rflabelsteric"><strong></strong></span></th>
                                         <th class="text-center" style="border:1px solid black;">Item</th>
                                         <th class="text-center" style="border:1px solid black;">Bags</th>
+                                        
                                         {{-- <th class="text-center" style="border:1px solid black;">Color</th> --}}
-                                        <th class="text-center" style="border:1px solid black;">QTY. (KG)<span
-                                                class="rflabelsteric"><strong>*</strong></span></th>
-                                        <th class="text-center" style="border:1px solid black;">Rate</th>
-                                        <th class="text-center" style="border:1px solid black;">Amount</th>
+                                        <th class="text-center hide" style="border:1px solid black;">Rate</th>
+                                        <th class="text-center hide" style="border:1px solid black;">Amount</th>
                                         <th class="text-center hide" style="border:1px solid black;">Tax %</th>
                                         <th class="text-center hide" style="border:1px solid black;">Tax Amount</th>
-                                        <th class="text-center" style="border:1px solid black;">Net Amount</th>
+                                        <th class="text-center hide" style="border:1px solid black;">Net Amount</th>
                                         {{-- <th class="text-center" style="border:1px solid black;">Batch Codes</th> --}}
                                     </tr>
                                 </thead>
@@ -241,23 +228,23 @@ $currentDate = date('Y-m-d');
                                                     $packSize = (float) ($row->pack_size ?? 0);
                                                     $bags = $packSize > 0 ? ($batchQty / $packSize) : 0;
                                                 @endphp
-                                                <td style="text-align: center; border:1px solid black;">{{ $count++ }}</td>
+                                                <td class="text-center hide" style="text-align: center; border:1px solid black;">{{ $count++ }}</td>
                                                 <td style="border:1px solid black;">{{ $row->sub_ic }}</td>
                                                 <td style="border:1px solid black;">{{ number_format($bags, 3) }}</td>
                                                 {{-- <td style="border:1px solid black;">{{ $row->color }}</td> --}}
                                                 <td class="text-right" style="border:1px solid black;">{{ number_format($batchQty, 3) }}</td>
                                                 <!-- <td class="text-right" style="border:1px solid black;">{{ $row->qty }}</td> -->
-                                                <td class="text-right" style="border:1px solid black;">{{ number_format($rate, 2) }}</td>
-                                                <td class="text-right" style="border:1px solid black;">{{ number_format($amountBeforeTax, 2) }}</td>
+                                                <td class="text-right hide" style="border:1px solid black;">{{ number_format($rate, 2) }}</td>
+                                                <td class="text-right hide" style="border:1px solid black;">{{ number_format($amountBeforeTax, 2) }}</td>
                                                 <td class="text-right hide" style="border:1px solid black;">{{ number_format($taxPercent, 2) }}</td>
                                                 <td class="text-right hide" style="border:1px solid black;">{{ number_format($taxAmount, 2) }}</td>
-                                                <td class="text-right" style="border:1px solid black;">{{ number_format($netAmount, 2) }}</td>
+                                                <td class="text-right hide" style="border:1px solid black;">{{ number_format($netAmount, 2) }}</td>
                                                 {{-- <td class="text-right" style="border:1px solid black;">{{ trim($batch_code) }}</td> --}}
                                             </tr>
                                         @endforeach
                                     @endforeach
 
-                                    <tr style="font-size: large;font-weight: bold">
+                                    <tr class="text-center hide" style="font-size: large;font-weight: bold">
                                         <td colspan="5" style="border:1px solid black;"> Total </td>
                                         <td class="text-right" style="border:1px solid black;">
                                             {{ number_format($total_before_tax, 2) }} </td>
@@ -279,7 +266,7 @@ $currentDate = date('Y-m-d');
                                 $dnGrandTotal = $total_before_tax + $dnSalesTax + $dnFurtherTax + $dnAdvanceTax + $dnCartage;
                             @endphp
 
-                            <table class="table table-bordered" style="margin-top: 15px;">
+                            <table class="table table-bordered hide" style="margin-top: 15px;">
                                 <tbody>
                                     <tr>
                                         <td colspan="6" class="text-right"><strong>DN Amount</strong></td>
@@ -315,7 +302,7 @@ $currentDate = date('Y-m-d');
                             </table>
 
                             @if(isset($linkedInvoices) && $linkedInvoices->count() > 0)
-                                <table class="table table-bordered" style="margin-top: 15px;">
+                                <table class="table table-bordered hide" style="margin-top: 15px;">
                                     <thead>
                                         <tr>
                                             <th colspan="8" class="text-center" style="border:1px solid black;">Generated Invoice Detail</th>
@@ -437,7 +424,9 @@ $currentDate = date('Y-m-d');
                         <div class="row text-left">
                             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 printHide">
 
-                                <textarea><?php echo 'Description:' . ' ' . strtoupper($delivery_note->description); ?></textarea>
+                                <?php if ($isFilled($delivery_note->description ?? '')): ?>
+                                    <textarea><?php echo 'Description:' . ' ' . strtoupper($delivery_note->description); ?></textarea>
+                                <?php endif; ?>
                             </div>
                         </div>
                         <style>

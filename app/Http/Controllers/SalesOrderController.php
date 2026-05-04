@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Prospect;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use App\Helpers\CommonHelper;
 use App\Helpers\FinanceHelper;
 use App\Models\Sales_Order;
@@ -168,6 +169,7 @@ class SalesOrderController extends Controller
             $master_id = $sales_order->id;
             $data = $request->item_id;
 
+            $hasItemSalesTaxGroup = Schema::connection('mysql2')->hasColumn('sales_order_data', 'sales_tax_group');
             $count = 1;
             foreach ($data as $key => $row):
                 $item_id = explode('@', (string) $request->item_id[$key])[0];
@@ -191,11 +193,19 @@ class SalesOrderController extends Controller
 
                 $sales_order_data->length_bundle = $request->pack_size[$key] ?? ($request->length_bundle[$key] ?? '');
                 // $sales_order_data->delivery_type=$request->total[$key];   Delivery type
-                $sales_order_data->tax = $request->sale_tax_rate;
+                $item_sale_tax_group = explode(',', (string) ($request->item_sale_tax_group[$key] ?? ''));
+                $item_sale_tax_group_id = $item_sale_tax_group[0] ?? 0;
+                $item_sale_tax_rate = $request->item_sale_tax_rate[$key] ?? ($item_sale_tax_group[1] ?? ($request->sale_tax_rate ?? 0));
+                $item_sale_tax_amount = $request->item_tax_amount[$key] ?? (($request->total[$key] / 100) * $item_sale_tax_rate);
+
+                if ($hasItemSalesTaxGroup) {
+                    $sales_order_data->sales_tax_group = $item_sale_tax_group_id;
+                }
+                $sales_order_data->tax = $item_sale_tax_rate;
                 $sales_order_data->further_tax = $request->further_tax;
                 $sales_order_data->advance_tax = $request->advance_tax;
 
-                $sale_tax_amount = $request->total[$key] / 100 * $request->sale_tax_rate;
+                $sale_tax_amount = $item_sale_tax_amount;
                 $further_tax_amount = $request->total[$key] / 100 * $request->further_tax;
                 $advance_tax_amount = $request->total[$key] / 100 * $request->advance_tax;
                 
@@ -406,6 +416,7 @@ class SalesOrderController extends Controller
             ]);
 
           
+            $hasItemSalesTaxGroup = Schema::connection('mysql2')->hasColumn('sales_order_data', 'sales_tax_group');
             $data = $request->item_id;
             $count = 1;
             foreach ($data as $key => $row):
@@ -429,11 +440,19 @@ class SalesOrderController extends Controller
                 $sales_order_data->amount = $request->total[$key];
                 $sales_order_data->length_bundle = $request->pack_size[$key] ?? ($request->length_bundle[$key] ?? null);
 
-                $sales_order_data->tax = $request->sale_tax_rate;
+                $item_sale_tax_group = explode(',', (string) ($request->item_sale_tax_group[$key] ?? ''));
+                $item_sale_tax_group_id = $item_sale_tax_group[0] ?? 0;
+                $item_sale_tax_rate = $request->item_sale_tax_rate[$key] ?? ($item_sale_tax_group[1] ?? ($request->sale_tax_rate ?? 0));
+                $item_sale_tax_amount = $request->item_tax_amount[$key] ?? (($request->total[$key] / 100) * $item_sale_tax_rate);
+
+                if ($hasItemSalesTaxGroup) {
+                    $sales_order_data->sales_tax_group = $item_sale_tax_group_id;
+                }
+                $sales_order_data->tax = $item_sale_tax_rate;
                 $sales_order_data->further_tax = $request->further_tax;
                 $sales_order_data->advance_tax = $request->advance_tax;
 
-                $sale_tax_amount = $request->total[$key] / 100 * $request->sale_tax_rate;
+                $sale_tax_amount = $item_sale_tax_amount;
                 $further_tax_amount = $request->total[$key] / 100 * $request->further_tax;
                 $advance_tax_amount = $request->total[$key] / 100 * $request->advance_tax;
 

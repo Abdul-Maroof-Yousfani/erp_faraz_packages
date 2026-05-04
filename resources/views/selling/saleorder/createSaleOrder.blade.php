@@ -5,6 +5,7 @@
     <?php
     use App\Helpers\CommonHelper;
     $so_no = CommonHelper::generateUniquePosNo('sales_order', 'so_no', 'SO');
+    $salesTaxList = CommonHelper::get_table_data('gst');
                         ?>
     <style>
         .my-lab label {
@@ -68,23 +69,8 @@
                                                     @endforeach
                                                 </select>
                                             </div>
-                                            <div class="col-md-3">
-                                                <label class="control-label">Sales Tax Group </label>
-                                                <select style="width: 100%" onchange="saletax(this)"
-                                                    name="sale_taxt_group" class="form-control select"
-                                                    id="sale_taxt_group">
-                                                    <option value="">Select</option>
-                                                    @foreach(CommonHelper::get_table_data('gst') as $item)
-                                                        <option data-value="{{$item->id}}" value="{{$item->id}},{{$item->rate}}">
-                                                            {{$item->rate}} %
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label class="control-label">Sales Tax Rate</label>
-                                                <input type="text" class="form-control" readonly name="sale_tax_rate" id="sale_tax_rate" />
-                                            </div>
+                                            <input type="hidden" name="sale_taxt_group" id="sale_taxt_group" value="">
+                                            <input type="hidden" name="sale_tax_rate" id="sale_tax_rate" value="">
                                             
                                         </div>
                                         <div class="row">
@@ -161,6 +147,8 @@
                                                                 <th class="text-center">Qty (lbs)</th>
                                                                 <th class="text-center">Unit Price</th>
                                                                 <th class="text-center">Total</th>
+                                                                <th class="text-center">Sales Tax Group</th>
+                                                                <th class="text-center">Tax Amount</th>
                                                                 <th class="text-center">Action</th>
                                                             </tr>
                                                         </thead>
@@ -226,6 +214,23 @@
                                                                     <input class="form-control" type="number"
                                                                         name="total[]" id="total" step="any" readonly />
                                                                 </td>
+                                                                <td>
+                                                                    <select name="item_sale_tax_group[]" id="item_sale_tax_group1"
+                                                                        class="form-control item-sale-tax-group select2"
+                                                                        onchange="rowSaleTax(this)">
+                                                                        <option value="">Select</option>
+                                                                        @foreach($salesTaxList as $item)
+                                                                            <option data-value="{{$item->id}}" data-rate="{{$item->rate}}" value="{{$item->id}},{{$item->rate}}">
+                                                                                {{$item->rate}} %
+                                                                            </option>
+                                                                        @endforeach
+                                                                    </select>
+                                                                    <input type="hidden" name="item_sale_tax_rate[]" id="item_sale_tax_rate1" value="0">
+                                                                </td>
+                                                                <td>
+                                                                    <input class="form-control" type="number"
+                                                                        name="item_tax_amount[]" id="item_tax_amount1" step="any" readonly />
+                                                                </td>
                                                                 <td class="text-center">
                                                                     <a href="#" onclick="AddMoreDetails()" class="btn btn-primary">
                                                                         <i class="fa fa-plus-circle" aria-hidden="true"></i>
@@ -286,6 +291,25 @@
     </div>
 
     <script type="text/javascript">
+        var salesTaxOptions = @json(collect($salesTaxList)->map(function ($item) {
+            return ['id' => $item->id, 'rate' => $item->rate];
+        })->values());
+
+        function salesTaxOptionsHtml() {
+            var html = '<option value="">Select</option>';
+            salesTaxOptions.forEach(function (item) {
+                html += '<option data-value="' + item.id + '" data-rate="' + item.rate + '" value="' + item.id + ',' + item.rate + '">' + item.rate + ' %</option>';
+            });
+            return html;
+        }
+
+        function rowSaleTax(instance) {
+            var row = $(instance).closest('.main');
+            var value = $(instance).val() || '';
+            var taxRate = value ? (value.split(',')[1] || 0) : 0;
+            row.find('[name="item_sale_tax_rate[]"]').val(taxRate);
+            calculation_amount();
+        }
 
         $(function () {
             $(".btn-success").click(function (e) {
@@ -355,6 +379,15 @@
                     <td>
                         <input class="form-control" type="text" name="total[]" id="total" value="">
                     </td>
+                    <td>
+                        <select name="item_sale_tax_group[]" id="item_sale_tax_group${Counter}" class="form-control item-sale-tax-group select2" onchange="rowSaleTax(this)">
+                            ${salesTaxOptionsHtml()}
+                        </select>
+                        <input type="hidden" name="item_sale_tax_rate[]" id="item_sale_tax_rate${Counter}" value="0">
+                    </td>
+                    <td>
+                        <input class="form-control" type="number" name="item_tax_amount[]" id="item_tax_amount${Counter}" step="any" readonly>
+                    </td>
                     <td class="text-center">
                         <a href="#" class="btn btn-sm btn-danger" onclick="RemoveSection(${Counter})">
                             <i class="fa fa-minus-circle" aria-hidden="true"></i>
@@ -363,6 +396,7 @@
                 </tr> `);
             $('#category_id' + Counter).select2();
             $('#item_id' + Counter).select2();
+            $('#item_sale_tax_group' + Counter).select2();
 
             Counter++;
             calculation_amount();
@@ -383,6 +417,9 @@
             $('#pack_size' + indexVal).val('');
             $('#qty' + indexVal).val('');
             $('#qty_lbs' + indexVal).val('');
+            $('#item_sale_tax_group' + indexVal).val('').trigger('change.select2');
+            $('#item_sale_tax_rate' + indexVal).val(0);
+            $('#item_tax_amount' + indexVal).val('');
             $('#pack_qty').val('');
             get_sub_item(categoryId);
         }
@@ -533,13 +570,11 @@
 
             var grad_total = 0;
 
-            var tax = $('#sale_tax_rate').val();
             var fTax = $('#further_tax').val();
             var aTax = $('#advance_tax').val();
 
             let cartage_amount = parseFloat($('#cartage_amount').val()) || 0;
 
-            var sale_tax = tax ? tax : 0;
             var advance_tax = aTax ? aTax : 0;
             var further_tax = fTax ? fTax : 0;
 
@@ -561,6 +596,7 @@
 
                 var total = (parseFloat(actual_qty) || 0) * (parseFloat(rate) || 0);
 
+                var sale_tax = parseFloat(row.find('[name="item_sale_tax_rate[]"]').val()) || 0;
                 var sale_tax_amount = total / 100 * sale_tax;
                 var further_tax_amount = total / 100 * further_tax;
                 var advance_tax_amount = total / 100 * advance_tax;
@@ -570,6 +606,7 @@
                 all_tax += sale_tax_amount + advance_tax_amount + further_tax_amount;
 
                 row.find('[name="total[]"]').val(total);
+                row.find('[name="item_tax_amount[]"]').val(sale_tax_amount.toFixed(3));
             });
             $('#total_tax').val(Number(all_tax).toFixed(3));
             $('#grand_total').val(Number(befor_tax).toFixed(3));

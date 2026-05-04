@@ -5,6 +5,7 @@
 <?php
 use App\Helpers\CommonHelper;
 $so_no =CommonHelper::generateUniquePosNo('sales_order','so_no','SO');
+$salesTaxList = CommonHelper::get_table_data('gst');
 $count = 1;
 // echo "<pre>";
 // print_r($sale_orders);
@@ -71,19 +72,8 @@ $count = 1;
                                                     @endforeach
                                                 </select>
                                             </div> 
-                                            <div class="col-md-3">
-                                                <label class="control-label">Sales Tax Group</label>
-                                                <select onchange="saletax(this)" name="sale_taxt_group" class="form-control select2" id="sale_taxt_group">
-                                                    <option value="">Select</option>
-                                                    @foreach(CommonHelper::get_table_data('gst') as $item)
-                                                        <option @if($sale_orders->sales_tax_group == $item->id && $sale_orders->sales_tax_rate == $item->rate ) selected @endif  value="{{$item->id}},{{$item->rate}}" id="tax{{$item->id}}">{{$item->rate}} %</option>
-                                                    @endforeach
-                                                </select>
-                                            </div> 
-                                            <div class="col-md-3">
-                                                <label class="control-label">Sales Tax Rate</label>
-                                                <input type="text" class="form-control" readonly name="sale_tax_rate" id="sale_tax_rate" />
-                                            </div>
+                                            <input type="hidden" name="sale_taxt_group" id="sale_taxt_group" value="">
+                                            <input type="hidden" name="sale_tax_rate" id="sale_tax_rate" value="">
                                             <div class="col-md-3">
                                                 <label class="control-label">Further Tax Group</label>
                                                 <select onchange="furtherTax(this)" name="further_taxes_group" class="form-control select2" id="further_taxes_group">
@@ -163,6 +153,8 @@ $count = 1;
                                                                 <th class="text-center">Qty in KG</th>
                                                                 <th class="text-center">Qty (lbs)</th>
                                                                 <th class="text-center">Unit Price</th>
+                                                                <th class="text-center">Sales Tax Group</th>
+                                                                <th class="text-center">Tax Amount</th>
                                                                 <th class="text-center">Total</th>
                                                                 <th class="text-center">Action</th>
                                                         </tr>
@@ -180,6 +172,8 @@ $count = 1;
                                                                         : number_format($value->qty / ($packQty ?: 1), 2, '.', ''));
                                                                 $selectedItemId = explode('@', (string) $value->item_id)[0];
                                                                 $selectedItemExists = $sub_item->contains('id', (int) $selectedItemId);
+                                                                $selectedSalesTaxGroup = (int) ($value->sales_tax_group ?? 0);
+                                                                $selectedSalesTaxRate = (float) ($value->tax ?? 0);
                                                             @endphp
                                                             <tr id="RemoveRows{{$count}}" class="m-tab main">
                                                                 <td style="width: 18%">
@@ -224,7 +218,25 @@ $count = 1;
                                                                 <td>
                                                                     <input class="form-control" onkeyup="calculation_amount()" type="text" name="rate[]" id="rate{{ $count }}" value="{{$value->rate}}">
                                                                 </td>
-                                                                
+                                                                <td>
+                                                                    <select name="item_sale_tax_group[]" id="item_sale_tax_group{{ $count }}"
+                                                                        class="form-control item-sale-tax-group select2"
+                                                                        onchange="rowSaleTax(this)">
+                                                                        <option value="">Select</option>
+                                                                        @foreach($salesTaxList as $item)
+                                                                            <option
+                                                                                @if($selectedSalesTaxGroup == $item->id || (!$selectedSalesTaxGroup && $selectedSalesTaxRate == (float) $item->rate)) selected @endif
+                                                                                data-value="{{$item->id}}" data-rate="{{$item->rate}}"
+                                                                                value="{{$item->id}},{{$item->rate}}">
+                                                                                {{$item->rate}} %
+                                                                            </option>
+                                                                        @endforeach
+                                                                    </select>
+                                                                    <input type="hidden" name="item_sale_tax_rate[]" id="item_sale_tax_rate{{ $count }}" value="{{ $selectedSalesTaxRate }}">
+                                                                </td>
+                                                                <td>
+                                                                    <input class="form-control" type="number" name="item_tax_amount[]" id="item_tax_amount{{ $count }}" value="{{ $value->tax_amount }}" step="any" readonly>
+                                                                </td>
                                                                 <td>
                                                                     <input class="form-control" type="text" name="total[]" id="total{{ $count }}" value="{{$value->amount}}" readonly>
                                                                 </td>
@@ -289,6 +301,25 @@ $count = 1;
     </div>
 
     <script type="text/javascript">
+        var salesTaxOptions = @json(collect($salesTaxList)->map(function ($item) {
+            return ['id' => $item->id, 'rate' => $item->rate];
+        })->values());
+
+        function salesTaxOptionsHtml() {
+            var html = '<option value="">Select</option>';
+            salesTaxOptions.forEach(function (item) {
+                html += '<option data-value="' + item.id + '" data-rate="' + item.rate + '" value="' + item.id + ',' + item.rate + '">' + item.rate + ' %</option>';
+            });
+            return html;
+        }
+
+        function rowSaleTax(instance) {
+            var row = $(instance).closest('.main');
+            var value = $(instance).val() || '';
+            var taxRate = value ? (value.split(',')[1] || 0) : 0;
+            row.find('[name="item_sale_tax_rate[]"]').val(taxRate);
+            calculation_amount();
+        }
 
         $(document).ready(function(){
             $(".btn-success").click(function (e) {
@@ -353,6 +384,15 @@ $count = 1;
                     </td>
                     <td>
                         <input class="form-control" onkeyup="calculation_amount()" type="text" name="rate[]" id="rate${Counter}" value="">
+                    </td>
+                    <td>
+                        <select name="item_sale_tax_group[]" id="item_sale_tax_group${Counter}" class="form-control item-sale-tax-group select2" onchange="rowSaleTax(this)">
+                            ${salesTaxOptionsHtml()}
+                        </select>
+                        <input type="hidden" name="item_sale_tax_rate[]" id="item_sale_tax_rate${Counter}" value="0">
+                    </td>
+                    <td>
+                        <input class="form-control" type="number" name="item_tax_amount[]" id="item_tax_amount${Counter}" step="any" readonly>
                     </td>
                     <td>
                         <input class="form-control" type="text" name="total[]" id="total${Counter}" value="" readonly>
@@ -541,13 +581,11 @@ function calculation_amount(index) {
 
             var grad_total = 0;
 
-            var tax = $('#sale_tax_rate').val();
             var fTax = $('#further_tax').val();
             var aTax = $('#advance_tax').val();
 
             let cartage_amount = parseFloat($('#cartage_amount').val()) || 0;
 
-            var sale_tax = tax ? tax : 0;
             var advance_tax = aTax ? aTax : 0;
             var further_tax = fTax ? fTax : 0;
 
@@ -569,6 +607,7 @@ function calculation_amount(index) {
 
                 var total = (parseFloat(actual_qty) || 0) * (parseFloat(rate) || 0);
 
+                var sale_tax = parseFloat(row.find('[name="item_sale_tax_rate[]"]').val()) || 0;
                 var sale_tax_amount = total / 100 * sale_tax;
                 var further_tax_amount = total / 100 * further_tax;
                 var advance_tax_amount = total / 100 * advance_tax;
@@ -578,6 +617,7 @@ function calculation_amount(index) {
                 all_tax += sale_tax_amount + advance_tax_amount + further_tax_amount;
 
                 row.find('[name="total[]"]').val(total);
+                row.find('[name="item_tax_amount[]"]').val(sale_tax_amount.toFixed(3));
             });
 
             // $('#total_tax').val(all_tax);
@@ -630,7 +670,6 @@ function calculation_amount(index) {
  $(document).ready(function(){
 
     
-    $('#sale_taxt_group').trigger('change')
     $('#further_taxes_group').trigger('change')
    setTimeout(() => {
     //    $('.category').trigger('change')

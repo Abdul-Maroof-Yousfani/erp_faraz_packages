@@ -172,6 +172,12 @@ $AmountInWordsMain =0;
                                         <th style="border:1px solid black;" class="text-left" style="border: solid 1px;">SI Date</th>
                                         <td style="border:1px solid black;" class="text-left"><?php echo CommonHelper::changeDateFormat($sales_tax_invoice->gi_date);?></td>
                                     </tr>
+                                    @if(trim($sales_tax_invoice->bilty_no ?? '') != '')
+                                        <tr>
+                                            <th style="border:1px solid black;" class="text-left" style="border: solid 1px;">Bilty No.</th>
+                                            <td style="border:1px solid black;" class="text-left">{{ $sales_tax_invoice->bilty_no }}</td>
+                                        </tr>
+                                    @endif
                                     @php
                                         $currency = '-';
                                         if ($sales_tax_invoice->currency != 0):
