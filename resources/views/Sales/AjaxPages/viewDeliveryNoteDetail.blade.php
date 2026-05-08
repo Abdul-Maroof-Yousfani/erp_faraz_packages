@@ -359,7 +359,7 @@ $detailRow = function ($label, $value, $labelStyle = '', $valueStyle = '') use (
                                     </tbody>
                                 </table>
                             @else
-                                <table class="table table-bordered" style="margin-top: 15px;">
+                                {{-- <table class="table table-bordered" style="margin-top: 15px;">
                                     <tbody>
                                         <tr>
                                             <td class="text-center"><strong>Invoice Detail</strong></td>
@@ -368,7 +368,7 @@ $detailRow = function ($label, $value, $labelStyle = '', $valueStyle = '') use (
                                             <td class="text-center">No sales tax invoice generated against this delivery note yet.</td>
                                         </tr>
                                     </tbody>
-                                </table>
+                                </table> --}}
                             @endif
 
                             <table style="display: none;" class="table table-bordered tra">

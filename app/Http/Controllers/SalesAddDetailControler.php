@@ -1015,7 +1015,10 @@ class SalesAddDetailControler extends Controller
             $sales_order->p_type = $request->v_type ?? 0;
             $sales_order->verified = $request->verified;
             $sales_tax = CommonHelper::check_str_replace($request->sales_tax);
-            $sales_tax_further = CommonHelper::check_str_replace($request->sales_tax_further);
+            $sales_tax_further = DB::Connection('mysql2')->table('sales_tax_invoice_data')
+                ->where('status', 1)
+                ->where('master_id', $id)
+                ->sum('sales_tax_further');
 
 
             $sales_order->sales_tax = $sales_tax;
@@ -1194,6 +1197,14 @@ class SalesAddDetailControler extends Controller
             // Clean buyers_id (in case it's "1*Something")
             $buyers_id = $request->input('buyers_id');
             $buyers_id = explode('*', $buyers_id)[0] ?? $buyers_id;
+            $masterId = $request->input('master_id');
+            $sourceSaleOrder = DB::connection('mysql2')->table('sales_order')->where('id', $masterId)->first();
+            $sourceSaleOrderData = DB::connection('mysql2')
+                ->table('sales_order_data')
+                ->where('master_id', $masterId)
+                ->where('status', 1)
+                ->get()
+                ->keyBy('id');
 
             // ────────────────────────────────────────────────
             // Create main Delivery Note (using your preferred style)
@@ -1203,7 +1214,7 @@ class SalesAddDetailControler extends Controller
 
             $gd_no = SalesHelper::get_unique_no_delivery_note(date('y'), date('m'));
 
-            $delivery_note->master_id = $request->input('master_id');
+            $delivery_note->master_id = $masterId;
             $delivery_note->gd_no = $gd_no;
             $delivery_note->gd_date = $request->input('gd_date');
             $delivery_note->model_terms_of_payment = $request->input('model_terms_of_payment'); // note: field may not exist in your request
@@ -1219,13 +1230,16 @@ class SalesAddDetailControler extends Controller
             $delivery_note->terms_of_delivery = $request->input('terms_of_delivery', '');
             $delivery_note->buyers_id = $buyers_id;
             $delivery_note->due_date = $request->input('due_date');
-            $salesTaxRate = (float) CommonHelper::check_str_replace($request->input('sales_tax_rate', 0));
-            $salesTaxAmount = (float) CommonHelper::check_str_replace($request->input('sales_tax', 0));
-            $furtherTaxRate = (float) CommonHelper::check_str_replace($request->input('sales_tax_further_per', 0));
-            $furtherTaxAmount = (float) CommonHelper::check_str_replace($request->input('sales_tax_further', 0));
-            $advanceTaxRate = (float) CommonHelper::check_str_replace($request->input('advance_tax_rate', 0));
-            $advanceTaxAmount = (float) CommonHelper::check_str_replace($request->input('advance_tax_amount', 0));
-            $cartageAmount = (float) CommonHelper::check_str_replace($request->input('cartage_amount', 0));
+            $sourceSalesTaxRow = $sourceSaleOrderData->first(function ($row) {
+                return (float) ($row->tax ?? 0) > 0;
+            });
+            $salesTaxRate = (float) ($sourceSalesTaxRow->tax ?? CommonHelper::check_str_replace($request->input('sales_tax_rate', 0)));
+            $salesTaxAmount = (float) ($sourceSaleOrderData->sum('tax_amount') ?: CommonHelper::check_str_replace($request->input('sales_tax', 0)));
+            $furtherTaxRate = (float) ($sourceSaleOrder ? $sourceSaleOrder->sales_tax_further : CommonHelper::check_str_replace($request->input('sales_tax_further_per', 0)));
+            $furtherTaxAmount = (float) ($sourceSaleOrderData->sum('further_tax_amount') ?: CommonHelper::check_str_replace($request->input('sales_tax_further', 0)));
+            $advanceTaxRate = (float) ($sourceSaleOrder ? $sourceSaleOrder->advance_tax : CommonHelper::check_str_replace($request->input('advance_tax_rate', 0)));
+            $advanceTaxAmount = (float) ($sourceSaleOrderData->sum('advance_tax_amount') ?: CommonHelper::check_str_replace($request->input('advance_tax_amount', 0)));
+            $cartageAmount = (float) ($sourceSaleOrder ? $sourceSaleOrder->cartage_amount : CommonHelper::check_str_replace($request->input('cartage_amount', 0)));
 
             $delivery_note->sales_tax_amount = $salesTaxAmount;
             $delivery_note->sales_tax_rate = $salesTaxRate;
@@ -1267,6 +1281,7 @@ class SalesAddDetailControler extends Controller
                 $desc = $request->input("desc{$i}", '');
                 $data_id = $request->input("data_id{$i}");
                 $bundles_id = $request->input("bundles_id{$i}", 0);
+                $sourceLine = $sourceSaleOrderData->get($data_id);
 
                 if ($qty <= 0) {
                     continue;
@@ -1361,18 +1376,22 @@ class SalesAddDetailControler extends Controller
                 $detail->bundles_id = $bundles_id;
                 $detail->qty = $qty;
                 $detail->rate = $send_rate;
-                $lineSalesTaxAmount = ($send_amount * $salesTaxRate) / 100;
-                $lineFurtherTaxAmount = ($send_amount * $furtherTaxRate) / 100;
-                $lineAdvanceTaxAmount = ($send_amount * $advanceTaxRate) / 100;
+                $lineRatio = ($sourceLine && (float) $sourceLine->qty > 0) ? ($qty / (float) $sourceLine->qty) : 1;
+                $lineSalesTaxRate = (float) ($sourceLine->tax ?? $salesTaxRate);
+                $lineFurtherTaxRate = (float) ($sourceLine->further_tax ?? $furtherTaxRate);
+                $lineAdvanceTaxRate = (float) ($sourceLine->advance_tax ?? $advanceTaxRate);
+                $lineSalesTaxAmount = $sourceLine ? ((float) ($sourceLine->tax_amount ?? 0) * $lineRatio) : (($send_amount * $lineSalesTaxRate) / 100);
+                $lineFurtherTaxAmount = $sourceLine ? ((float) ($sourceLine->further_tax_amount ?? 0) * $lineRatio) : (($send_amount * $lineFurtherTaxRate) / 100);
+                $lineAdvanceTaxAmount = $sourceLine ? ((float) ($sourceLine->advance_tax_amount ?? 0) * $lineRatio) : (($send_amount * $lineAdvanceTaxRate) / 100);
 
                 $detail->amount = $send_amount;
-                $detail->tax = $salesTaxRate;
+                $detail->tax = $lineSalesTaxRate;
                 $detail->tax_amount = $lineSalesTaxAmount;
                 $detail->batch_code = '';
                 $detail->out_qty_details = (string) $qty;
-                $detail->sales_tax_further_per = $furtherTaxRate;
+                $detail->sales_tax_further_per = $lineFurtherTaxRate;
                 $detail->sales_tax_further = $lineFurtherTaxAmount;
-                $detail->advance_tax_rate = $advanceTaxRate;
+                $detail->advance_tax_rate = $lineAdvanceTaxRate;
                 $detail->advance_tax_amount = $lineAdvanceTaxAmount;
                 $detail->status = 1;
                 $detail->date = date('Y-m-d');
@@ -3392,6 +3411,24 @@ class SalesAddDetailControler extends Controller
         $SavePrintVal = Input::get('SavePrintVal');
 
         $update_id = explode(',', $request->input('dn_ids'));
+        $selectedDeliveryNoteTotals = DB::Connection('mysql2')->table('delivery_note')
+            ->whereIn('id', $update_id)
+            ->where('status', 1)
+            ->selectRaw('
+                MAX(sales_tax_rate) as sales_tax_rate,
+                SUM(sales_tax_amount) as sales_tax_amount,
+                MAX(sales_tax_further_per) as sales_tax_further_per,
+                SUM(sales_tax_further) as sales_tax_further,
+                MAX(advance_tax_rate) as advance_tax_rate,
+                SUM(advance_tax_amount) as advance_tax_amount,
+                SUM(cartage_amount) as cartage_amount
+            ')
+            ->first();
+        $selectedDeliveryNoteLineTotals = DB::Connection('mysql2')->table('delivery_note_data')
+            ->whereIn('master_id', $update_id)
+            ->where('status', 1)
+            ->selectRaw('SUM(tax_amount) as sales_tax_amount, SUM(sales_tax_further) as sales_tax_further')
+            ->first();
 
 
         $count = $request->count;
@@ -3421,9 +3458,9 @@ class SalesAddDetailControler extends Controller
             $sales_tax_invoice->destination = $request->destination ?? '';
             $sales_tax_invoice->terms_of_delivery = $request->terms_of_delivery ?? '';
             $sales_tax_invoice->due_date = $request->due_date;
-            $sales_tax_invoice->advance_tax_rate = $request->advance_tax_rate ?? 0;
-            $sales_tax_invoice->advance_tax_amount = $request->advance_tax_amount ?? 0;
-            $sales_tax_invoice->cartage_amount = $request->cartage_amount ?? 0;
+            $sales_tax_invoice->advance_tax_rate = $selectedDeliveryNoteTotals->advance_tax_rate ?? ($request->advance_tax_rate ?? 0);
+            $sales_tax_invoice->advance_tax_amount = $selectedDeliveryNoteTotals->advance_tax_amount ?? ($request->advance_tax_amount ?? 0);
+            $sales_tax_invoice->cartage_amount = $selectedDeliveryNoteTotals->cartage_amount ?? ($request->cartage_amount ?? 0);
             $sales_tax_invoice->status = 1;
             $sales_tax_invoice->username = Auth::user()->name;
             $sales_tax_invoice->amount_in_words = $request->rupeess;
@@ -3432,8 +3469,8 @@ class SalesAddDetailControler extends Controller
             $sales_tax_invoice->buyers_id = $request->buyers_id;
             $sales_tax_invoice->description = $request->description;
             $sales_tax_data = SalesHelper::get_sales_tax_by_sales_order_id($request->sales_order_id);
-            $sales_tax_invoice->sales_tax = CommonHelper::check_str_replace($request->sales_tax);
-            $sales_tax_invoice->sales_tax_further = CommonHelper::check_str_replace($request->sales_tax_further);
+            $sales_tax_invoice->sales_tax = $selectedDeliveryNoteLineTotals->sales_tax_amount ?? CommonHelper::check_str_replace($request->sales_tax);
+            $sales_tax_invoice->sales_tax_further = $selectedDeliveryNoteLineTotals->sales_tax_further ?? CommonHelper::check_str_replace($request->sales_tax_further);
             $sales_tax_invoice->acc_id = $request->acc_id;
             // model_terms_of_payment
             $sales_tax_invoice->save();

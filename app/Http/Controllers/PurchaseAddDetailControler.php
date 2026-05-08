@@ -600,6 +600,42 @@ class PurchaseAddDetailControler extends Controller
 
         $lastInsertedID = DB::Connection('mysql2')->table('supplier')->InsertGetId($data2);
 
+        if ((int) Input::get('mark_as_customer', 0) === 1) {
+            $customerExists = DB::Connection('mysql2')->table('customers')
+                ->whereRaw('LOWER(name) = ?', [strtolower(trim((string) $name))])
+                ->where('contact', (string) ($contact_no ?? ''))
+                ->where('status', 1)
+                ->exists();
+
+            if (!$customerExists) {
+                $customerData = [
+                    'acc_id' => (int) $acc_id,
+                    'name' => strip_tags((string) $name),
+                    'address' => strip_tags((string) ($address ?? '')),
+                    'country' => strip_tags((string) ($country ?? '')),
+                    'province' => strip_tags((string) ($state ?? '')),
+                    'city' => strip_tags((string) ($city ?? '')),
+                    'contact' => strip_tags((string) ($contact_no ?? '')),
+                    'email' => strip_tags((string) ($email ?? '')),
+                    'cnic_ntn' => strip_tags((string) ($ntn ?? '')),
+                    'strn' => strip_tags((string) ($regd_in_srb ?? '')),
+                    'customer_type' => 3,
+                    'terms_of_payment' => (int) ($term ?? 0),
+                    'no_of_days' => strip_tags((string) ($no_of_days ?? '')),
+                    'contact_person' => strip_tags((string) ($contact_person ?? '')),
+                    'contact_person_no' => strip_tags((string) ($contact_person_no ?? '')),
+                    'contact_person_email' => strip_tags((string) ($contact_person_email ?? '')),
+                    'username' => Auth::user()->name,
+                    'date' => date("Y-m-d"),
+                    'time' => date("H:i:s"),
+                    'action' => 'create',
+                    'status' => 1,
+                ];
+
+                DB::Connection('mysql2')->table('customers')->insert($customerData);
+            }
+        }
+
 
         // foreach($contact_person as $key => $row)
         // {

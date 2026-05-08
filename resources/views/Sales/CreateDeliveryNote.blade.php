@@ -412,66 +412,68 @@ use App\Helpers\ReuseableCode;
 
                                                 </tr>
 
-                                                @php 
-                                                    $tax = $sales_order->total_amount / 100 * $sales_order->sales_tax_rate;
-                                                    $further_tax = $sales_order->total_amount / 100 * $sales_order->sales_tax_further;
-
-                                                    $advance_tax = $sales_order->total_amount / 100 * $sales_order->advance_tax;
+                                                @php
+                                                    $tax = $sale_order_data->sum('tax_amount');
+                                                    $further_tax = $sale_order_data->sum('further_tax_amount');
+                                                    $advance_tax = $sale_order_data->sum('advance_tax_amount');
+                                                    $salesTaxRate = $sale_order_data->pluck('tax')->filter(function ($rate) {
+                                                        return (float) $rate > 0;
+                                                    })->first();
+                                                    $salesTaxRate = $salesTaxRate ?: ($sales_order->sales_tax_rate ?? 0);
+                                                    $furtherTaxRate = $sales_order->sales_tax_further ?? 0;
+                                                    $advanceTaxRate = $sales_order->advance_tax ?? 0;
+                                                    $cartageAmount = $sales_order->cartage_amount ?? 0;
+                                                    $amountAfterTax = $sales_order->total_amount_after_sale_tax
+                                                        ?: (($sales_order->total_amount ?? $total) + $tax + $further_tax + $advance_tax + $cartageAmount);
                                                 @endphp
-
-                                                @if($sales_order->sales_tax_rate > 0)
-                                                    <?php  $total += $sales_order->sales_tax_rate; ?>
-                                                    <tr>
-                                                        <td  class="text-right" colspan="5"></td>
-                                                        <td class="text-right" colspan="2">Sales Tax {{ number_format($sales_order->sales_tax_rate,2) }}</td>
-                                                        <td colspan="1"> <input style="font-weight: bolder" class="form-control text-right" readonly type="text" name="sales_tax" id="sales_tax" value="{{ $tax }}" /></td>
-                                                        <td colspan="1"> <input type="hidden" name="sales_tax_rate" id="sales_tax_rate" value="{{ $sales_order->sales_tax_rate }}" /></td>
-                                                        <td class="text-right" colspan="1"></td>
-                                                    </tr>
-                                                @endif
-
-                                                
-                                                @if($sales_order->sales_tax_further > 0)
-                                                    <tr>
-                                                        <td  class="text-right" colspan="5"></td>
-                                                        <td class="text-right" colspan="2">Further Sales Tax {{ number_format($sales_order->sales_tax_further,2) }}</td>
-                                                        <td class="text-right" colspan="1">
-                                                            <input type="hidden" name="sales_tax_further_per" id="sales_tax_further_per" value="{{ $sales_order->sales_tax_further ?? 0 }}" />
-                                                            
-                                                            <input style="font-weight: bolder" class="form-control text-right comma_seprated" readonly type="text" name="sales_tax_further" id="sales_tax_further" value="{{ $further_tax }}" />
-                                                        </td>
-                                                        <td class="text-right" colspan="1"></td>
-
-                                                    </tr>
-                                                @endif
-                                                @if($sales_order->advance_tax >0)
-                                                    <tr>
-                                                        <td  class="text-right" colspan="5"></td>
-                                                        <td class="text-right" colspan="2">Advance Tax {{ number_format($sales_order->advance_tax,2) }}</td>
-                                                        <td class="text-right" colspan="1">
-                                                            
-                                                        <input type="hidden" name="advance_tax_rate" id="advance_tax_rate" value="{{ $sales_order->advance_tax ?? 0 }}" />
-
-                                                        <input style="font-weight: bolder" class="form-control text-right comma_seprated" readonly type="text"   name="advance_tax_amount" id="advance_tax_amount" value="{{ $advance_tax }}" />
-                                                        </td>
-                                                        <td class="text-right" colspan="1"></td>
-                                                    </tr>
-                                                @endif
-                                                 @if($sales_order->cartage_amount >0)
-                                                    <tr>
-                                                        <td  class="text-right" colspan="5"></td>
-                                                        <td class="text-right" colspan="2">Cartage Amount</td>
-                                                        
-                                                        <td colspan=""> <input class="form-control text-right" type="text" name="cartage_amount" id="cartage_amount" value="{{ $sales_order->cartage_amount }}" readonly />
-                                                        </td>
-
-                                                    </tr>
-                                                @endif
+                                                <input type="hidden" id="so_total_amount" value="{{ $sales_order->total_amount ?? $total }}" />
+                                                <input type="hidden" id="so_sales_tax_amount" value="{{ $tax }}" />
+                                                <input type="hidden" id="so_further_tax_amount" value="{{ $further_tax }}" />
+                                                <input type="hidden" id="so_advance_tax_amount" value="{{ $advance_tax }}" />
 
                                                 <tr>
                                                     <td  class="text-right" colspan="5"></td>
-                                                    <td  class="text-right" colspan="2">Grand Total</td>
-                                                    <td colspan="1">   <input style="font-weight: bolder" class="form-control text-right" readonly type="text" name="grand" id="grand" value="" /></td>
+                                                    <td class="text-right" colspan="2">Sales Tax {{ number_format($salesTaxRate,2) }}</td>
+                                                    <td colspan="1"> <input style="font-weight: bolder" class="form-control text-right" readonly type="text" name="sales_tax" id="sales_tax" value="{{ $tax }}" /></td>
+                                                    <td colspan="1"> <input type="hidden" name="sales_tax_rate" id="sales_tax_rate" value="{{ $salesTaxRate }}" /></td>
+                                                    <td class="text-right" colspan="1"></td>
+                                                </tr>
+
+                                                <tr>
+                                                    <td  class="text-right" colspan="5"></td>
+                                                    <td class="text-right" colspan="2">Further Sales Tax {{ number_format($furtherTaxRate,2) }}</td>
+                                                    <td class="text-right" colspan="1">
+                                                        <input type="hidden" name="sales_tax_further_per" id="sales_tax_further_per" value="{{ $furtherTaxRate }}" />
+
+                                                        <input style="font-weight: bolder" class="form-control text-right comma_seprated" readonly type="text" name="sales_tax_further" id="sales_tax_further" value="{{ $further_tax }}" />
+                                                    </td>
+                                                    <td class="text-right" colspan="1"></td>
+
+                                                </tr>
+                                                <tr>
+                                                    <td  class="text-right" colspan="5"></td>
+                                                    <td class="text-right" colspan="2">Advance Tax {{ number_format($advanceTaxRate,2) }}</td>
+                                                    <td class="text-right" colspan="1">
+
+                                                    <input type="hidden" name="advance_tax_rate" id="advance_tax_rate" value="{{ $advanceTaxRate }}" />
+
+                                                    <input style="font-weight: bolder" class="form-control text-right comma_seprated" readonly type="text"   name="advance_tax_amount" id="advance_tax_amount" value="{{ $advance_tax }}" />
+                                                    </td>
+                                                    <td class="text-right" colspan="1"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td  class="text-right" colspan="5"></td>
+                                                    <td class="text-right" colspan="2">Cartage Amount</td>
+
+                                                    <td colspan=""> <input class="form-control text-right" type="text" name="cartage_amount" id="cartage_amount" value="{{ $cartageAmount }}" readonly />
+                                                    </td>
+
+                                                </tr>
+
+                                                <tr>
+                                                    <td  class="text-right" colspan="5"></td>
+                                                    <td  class="text-right" colspan="2">Amount After Tax</td>
+                                                    <td colspan="1">   <input style="font-weight: bolder" class="form-control text-right" readonly type="text" name="grand" id="grand" value="{{ $amountAfterTax }}" /></td>
                                                     <td class="text-right" colspan="1"></td>
                                                 </tr>
 
@@ -595,9 +597,22 @@ use App\Helpers\ReuseableCode;
             var cartage_amount = parseFloat($('#cartage_amount').val());
             cartage_amount = isNaN(cartage_amount) ? 0 : cartage_amount;
 
-            var sales_tax = (total / 100) * sales_tax_per;
-            var sales_tax_further = (total / 100) * sales_tax_further_per;
-            var advance_tax = (total / 100) * advance_tax_rate;
+            var so_total = parseFloat($('#so_total_amount').val());
+            so_total = isNaN(so_total) || so_total <= 0 ? total : so_total;
+            var amountRatio = so_total > 0 ? (total / so_total) : 1;
+
+            var so_sales_tax = parseFloat($('#so_sales_tax_amount').val());
+            so_sales_tax = isNaN(so_sales_tax) ? ((total / 100) * sales_tax_per) : so_sales_tax * amountRatio;
+
+            var so_further_tax = parseFloat($('#so_further_tax_amount').val());
+            so_further_tax = isNaN(so_further_tax) ? ((total / 100) * sales_tax_further_per) : so_further_tax * amountRatio;
+
+            var so_advance_tax = parseFloat($('#so_advance_tax_amount').val());
+            so_advance_tax = isNaN(so_advance_tax) ? ((total / 100) * advance_tax_rate) : so_advance_tax * amountRatio;
+
+            var sales_tax = so_sales_tax;
+            var sales_tax_further = so_further_tax;
+            var advance_tax = so_advance_tax;
 
             $('#sales_tax').val(sales_tax);
 

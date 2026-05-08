@@ -78,7 +78,7 @@ if ($accType == 'client') {
 
                                                                     </select>
                                                                     </div>
-
+                                                            
 
                                                                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                         <label>Registration No</label>
@@ -103,6 +103,13 @@ if ($accType == 'client') {
                                                                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                         <label>Products/ Services Provided</label>
                                                                         <input id="Products_Services_Provided" name="product_services_provided"  type="text" class="form-control" value="">
+                                                                    </div>
+                                                                         <div class="col-lg-12 col-md-3 col-sm-3 col-xs-3" style="margin-top: 24px;">
+                                                                        <label style="display:block;">&nbsp;</label>
+                                                                        <label style="font-weight: 600;">
+                                                                            <input type="checkbox" name="mark_as_customer" value="1">
+                                                                            Mark as Customer
+                                                                        </label>
                                                                     </div>
 
 

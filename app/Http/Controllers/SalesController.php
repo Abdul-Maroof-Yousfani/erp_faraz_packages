@@ -620,6 +620,10 @@ class SalesController extends Controller
                 'a.sub_total',
                 'a.tax',
                 'a.tax_amount',
+                'a.further_tax',
+                'a.further_tax_amount',
+                'a.advance_tax',
+                'a.advance_tax_amount',
                 'a.desc',
                 'b.product_name',
                 'b.rate as bundle_rate',
@@ -1351,8 +1355,10 @@ class SalesController extends Controller
         // $sale_order_data = $sale_order_data->whereIn('dispatches.id', $request->checkbox)->orderBy('dispatches.id', 'ASC')->get();
 
         $ids = implode(',', $request->checkbox);
-        $sale_order_data = DB::Connection('mysql2')->select('select a.item_id,a.groupby,a.id,b.master_id,b.bundles_id,a.id as so_data_id,a.desc,
-        b.gd_no,sum(b.qty) as qty,a.master_id as so_id,b.warehouse_id,b.rate,b.tax,c.product_name,c.bundle_unit,c.qty as bqty,
+        $sale_order_data = DB::Connection('mysql2')->select('select a.item_id,a.groupby,b.id,b.master_id,b.bundles_id,a.id as so_data_id,a.desc,
+        b.gd_no,sum(b.qty) as qty,a.master_id as so_id,b.warehouse_id,b.rate,b.tax,sum(b.tax_amount) as tax_amount,
+        b.sales_tax_further_per,sum(b.sales_tax_further) as sales_tax_further,b.advance_tax_rate,sum(b.advance_tax_amount) as advance_tax_amount,
+        c.product_name,c.bundle_unit,c.qty as bqty,
         c.rate as bundle_rate,c.amount as bundle_amount ,c.discount_percent as b_percent,c.discount_amount as b_dis_amount,c.net_amount as b_net, s.hs_code_id,pt.type,s.pack_size,s.primary_pack_type,s.color
 
         from sales_order_data  a
@@ -1388,7 +1394,22 @@ class SalesController extends Controller
             ->where('delivery_note.status', 1)
             ->whereIn('delivery_note.id', $request->checkbox)
             // ->whereIn('id',$request->checkbox)
-            ->select('delivery_note.gd_no', 'delivery_note.gd_date', 'delivery_note.despacth_document_no', 'delivery_note.despacth_document_date', 'delivery_note.so_no', 'delivery_note.so_date', 'delivery_note.master_id', 'delivery_note.sales_tax_further_per', 'delivery_note.sales_tax_further', 'delivery_note.advance_tax_rate', 'delivery_note.advance_tax_amount', 'delivery_note.cartage_amount')->first();
+            ->selectRaw('
+                MIN(delivery_note.gd_no) as gd_no,
+                MIN(delivery_note.gd_date) as gd_date,
+                MIN(delivery_note.despacth_document_no) as despacth_document_no,
+                MIN(delivery_note.despacth_document_date) as despacth_document_date,
+                MIN(delivery_note.so_no) as so_no,
+                MIN(delivery_note.so_date) as so_date,
+                MIN(delivery_note.master_id) as master_id,
+                MAX(delivery_note.sales_tax_rate) as sales_tax_rate,
+                SUM(delivery_note.sales_tax_amount) as sales_tax_amount,
+                MAX(delivery_note.sales_tax_further_per) as sales_tax_further_per,
+                SUM(delivery_note.sales_tax_further) as sales_tax_further,
+                MAX(delivery_note.advance_tax_rate) as advance_tax_rate,
+                SUM(delivery_note.advance_tax_amount) as advance_tax_amount,
+                SUM(delivery_note.cartage_amount) as cartage_amount
+            ')->first();
 
         $so_id = $delivery_not->master_id;
 

@@ -394,22 +394,15 @@ use App\Helpers\FinanceHelper;
                                                 $line_qty = $dn_qty - $return_qty;
                                                 $amount = $dn_rate * $line_qty;
                                                 $discount_amount = 0;
-                                                $tax_amount = 0;
-                                                $further_tax_amount = 0;
-
-                                                if ($sales_order->sales_tax_rate != 0):
-                                                    $tax_amount = ($amount / 100) * $sales_order->sales_tax_rate;
-                                                endif;
-                                                if ($delivery_not->sales_tax_further_per != 0):
-                                                    $further_tax_amount = ($amount / 100) * $delivery_not->sales_tax_further_per;
-                                                elseif ($sales_order->sales_tax_further != 0):
-                                                    $further_tax_amount = ($amount / 100) * $sales_order->sales_tax_further;
-                                                endif;
+                                                $tax_amount = $row1->tax_amount ?? 0;
+                                                $further_tax_amount = $row1->sales_tax_further ?? 0;
+                                                $lineSalesTaxRate = $row1->tax ?? ($delivery_not->sales_tax_rate ?? $sales_order->sales_tax_rate ?? 0);
+                                                $lineFurtherTaxRate = $row1->sales_tax_further_per ?? ($delivery_not->sales_tax_further_per ?? 0);
                                                 $net_amount = $amount;
                                                 ?>
-                                                <input type="hidden" class="form-control" name="tax_percent{{$id_count}}" id="tax_percent{{$id_count}}" value="{{ $sales_order->sales_tax_rate }}"/>
+                                                <input type="hidden" class="form-control" name="tax_percent{{$id_count}}" id="tax_percent{{$id_count}}" value="{{ $lineSalesTaxRate }}"/>
                                                 <input type="hidden" class="form-control" name="tax_amount{{$id_count}}" id="tax_amount{{$id_count}}" value="{{$tax_amount}}"/>
-                                                <input type="hidden" class="form-control" name="sales_tax_further_per{{$id_count}}" id="sales_tax_further_per{{$id_count}}" value="{{ $delivery_not->sales_tax_further_per }}"/>
+                                                <input type="hidden" class="form-control" name="sales_tax_further_per{{$id_count}}" id="sales_tax_further_per{{$id_count}}" value="{{ $lineFurtherTaxRate }}"/>
                                                 <input type="hidden" class="form-control" name="sales_tax_further{{$id_count}}" id="sales_tax_further{{$id_count}}" value="{{$further_tax_amount}}"/>
 
                                                 <tr>
@@ -531,20 +524,14 @@ use App\Helpers\FinanceHelper;
                                                 <?php
                                                 $line_qty = $dn_qty - $return_qty;
                                                 $amount = $dn_rate * $line_qty;
-                                                $tax_amount = 0;
-                                                $further_tax_amount = 0;
-                                                if ($sales_order->sales_tax_rate != 0):
-                                                    $tax_amount = ($amount / 100) * $sales_order->sales_tax_rate;
-                                                endif;
-                                                if ($delivery_not->sales_tax_further_per != 0):
-                                                    $further_tax_amount = ($amount / 100) * $delivery_not->sales_tax_further_per;
-                                                elseif ($sales_order->sales_tax_further != 0):
-                                                    $further_tax_amount = ($amount / 100) * $sales_order->sales_tax_further;
-                                                endif;
+                                                $tax_amount = $bundle_data->tax_amount ?? 0;
+                                                $further_tax_amount = $bundle_data->sales_tax_further ?? 0;
+                                                $lineSalesTaxRate = $bundle_data->tax ?? ($delivery_not->sales_tax_rate ?? $sales_order->sales_tax_rate ?? 0);
+                                                $lineFurtherTaxRate = $bundle_data->sales_tax_further_per ?? ($delivery_not->sales_tax_further_per ?? 0);
                                                 ?>
-                                                <input type="hidden" class="form-control" name="tax_percent{{$id_count}}" id="tax_percent{{$id_count}}" value="{{ $sales_order->sales_tax_rate }}"/>
+                                                <input type="hidden" class="form-control" name="tax_percent{{$id_count}}" id="tax_percent{{$id_count}}" value="{{ $lineSalesTaxRate }}"/>
                                                 <input type="hidden" class="form-control" name="tax_amount{{$id_count}}" id="tax_amount{{$id_count}}" value="{{ $tax_amount }}"/>
-                                                <input type="hidden" class="form-control" name="sales_tax_further_per{{$id_count}}" id="sales_tax_further_per{{$id_count}}" value="{{ $delivery_not->sales_tax_further_per }}"/>
+                                                <input type="hidden" class="form-control" name="sales_tax_further_per{{$id_count}}" id="sales_tax_further_per{{$id_count}}" value="{{ $lineFurtherTaxRate }}"/>
                                                 <input type="hidden" class="form-control" name="sales_tax_further{{$id_count}}" id="sales_tax_further{{$id_count}}" value="{{ $further_tax_amount }}"/>
 
                                                 {{--hidden data End --}}
@@ -606,9 +593,13 @@ use App\Helpers\FinanceHelper;
 
 
                                                 </tbody>
-                                                @if(($sales_order->sales_tax_rate ?? 0) > 0)
+                                                @php
+                                                    $summarySalesTaxRate = $delivery_not->sales_tax_rate ?? $sales_order->sales_tax_rate ?? 0;
+                                                    $summaryFurtherTaxRate = ($delivery_not->sales_tax_further_per ?? 0) > 0 ? $delivery_not->sales_tax_further_per : ($sales_order->sales_tax_further ?? 0);
+                                                @endphp
+                                                @if(($summarySalesTaxRate ?? 0) > 0)
                                                     <tr>
-                                                        <td class="text-right invoice-summary-label" colspan="10">Sales Tax {{ number_format($sales_order->sales_tax_rate,2) }}</td>
+                                                        <td class="text-right invoice-summary-label" colspan="10">Sales Tax {{ number_format($summarySalesTaxRate,2) }}</td>
                                                         <td class="text-right" colspan="1">
                                                             <input readonly type="text" class="form-control text-right comma_seprated" name="sales_tax" id="sales_tax" value="0" />
                                                         </td>
@@ -617,10 +608,9 @@ use App\Helpers\FinanceHelper;
                                                     <input type="hidden" name="sales_tax" id="sales_tax" value="0" />
                                                 @endif
 
-                                                <?php $furtherTaxPer = ($delivery_not->sales_tax_further_per ?? 0) > 0 ? $delivery_not->sales_tax_further_per : ($sales_order->sales_tax_further ?? 0); ?>
-                                                @if(($furtherTaxPer ?? 0) > 0)
+                                                @if(($summaryFurtherTaxRate ?? 0) > 0)
                                                     <tr>
-                                                        <td class="text-right invoice-summary-label" colspan="10">Further Sales Tax {{ number_format($furtherTaxPer,2) }}</td>
+                                                        <td class="text-right invoice-summary-label" colspan="10">Further Sales Tax {{ number_format($summaryFurtherTaxRate,2) }}</td>
                                                         <td class="text-right" colspan="1">
                                                             <input readonly type="text" class="form-control text-right comma_seprated" name="sales_tax_further" id="sales_tax_further" value="0" />
                                                         </td>
