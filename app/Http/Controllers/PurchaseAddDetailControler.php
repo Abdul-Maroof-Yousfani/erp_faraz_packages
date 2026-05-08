@@ -4516,7 +4516,7 @@ public function updatePurchaseReturnDetail(Request $request)
 
 
                             $category_id = 0;
-                            $category = DB::connection('mysql2')->table('category')->where('main_ic', '=', $getData[0]);
+                            $category = DB::connection('mysql2')->table('category')->where('main_ic', '=', $get
                             if ($category->count() > 0) {
                                 $category_id = $category->value('id');
                             } else {

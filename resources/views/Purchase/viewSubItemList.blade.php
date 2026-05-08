@@ -151,27 +151,21 @@ if($accType == 'client'){
                 var category = $('#category_id').val();
                 var sub_category = $('#sub_category_id').val();
                 var m = '<?php echo $_GET['m']?>';
-                if (category != "" || sub_category != "") {
-                    $('#viewSubItemList').html('<tr><td colspan="9"><div class="row"><div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center"><div class="loader"></div></div></div></div></td><tr>');
-                    $.ajax({
-                        url: '<?php echo url('/')?>/pdc/viewSubItemListAjax',
-                        method: 'GET',
-                        data: {category: category, sub_category: sub_category, m: m},
-                        error: function () {
-                            alert('error');
-                        },
-                        success: function (response) {
-                            $('#viewSubItemList').html(response);
-              //              loading = false;
-                        }
-                    });
-                    //viewSubItemList();
-                    //alert("Please Select Category");
-                }
-                else {
-                    //loading = true;
-
-                }
+                $('#viewSubItemList').html('<tr><td colspan="10"><div class="row"><div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center"><div class="loader"></div></div></div></div></td><tr>');
+                $.ajax({
+                    url: '<?php echo url('/')?>/pdc/viewSubItemListAjax',
+                    method: 'GET',
+                    data: {category: category, sub_category: sub_category, m: m},
+                    error: function () {
+                        alert('error');
+                    },
+                    success: function (response) {
+                        $('#viewSubItemList').html(response);
+          //              loading = false;
+                    }
+                });
+                //viewSubItemList();
+                //alert("Please Select Category");
             //} else {
               //  alert("Wait Loading");
             //}

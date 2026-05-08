@@ -625,11 +625,11 @@ class PurchaseDataCallController extends Controller
             $subitems = Subitem::where('status', '=', 1)->get();
         }
 
-        // $packaging_type = DB::Connection('mysql2')->table('packaging_type')->where('status', '=', 1)->get();
-        // $packaging_data = [];
-        // foreach($packaging_type as $val) {
-        //     $packaging_data[$val->id] = $val->type; 
-        // }
+        $packaging_data = DB::Connection('mysql2')
+            ->table('packaging_type')
+            ->where('status', 1)
+            ->pluck('type', 'id')
+            ->toArray();
 
         // $uom_data = [];
         // foreach($uom as $val) {
@@ -638,17 +638,27 @@ class PurchaseDataCallController extends Controller
         CommonHelper::reconnectMasterDatabase();
         $counter = 1;
         foreach ($subitems as $row) {
+            $uomName = !empty($row['uom'])
+                ? UOM::where('status', 1)->where('id', $row['uom'])->value('uom_name')
+                : '-';
+            $primaryPackType = !empty($row['primary_pack_type']) && array_key_exists($row['primary_pack_type'], $packaging_data)
+                ? $packaging_data[$row['primary_pack_type']]
+                : '-';
+            $color = !empty(trim($row['color'] ?? '')) ? $row['color'] : 'N/A';
+            $categoryName = !empty($row['main_ic_id'])
+                ? CommonHelper::getCompanyDatabaseTableValueById($m, 'category', 'main_ic', $row['main_ic_id'])
+                : '-';
             $DataCount = DB::Connection('mysql2')->selectOne('select count(*) data_count from stock where sub_item_id = '.$row->id.' and status = 1')->data_count;
             ?>
             <tr id="RemoveTr<?php echo $row['id'] ?>" title="<?php echo $row['id'] ?>">
                 <td class="text-center"><?php echo $row['id']; ?></td>
-                <td>-</td>
+                <td><?php echo $categoryName ?: '-'; ?></td>
                 <td class="hide"><?php echo $row['item_code']; ?></td>
                 <td><?php echo $row['sub_ic']; ?></td>
-                <td>-</td>
+                <td><?php echo $primaryPackType; ?></td>
                 <td><?php echo $row['pack_size']; ?></td>
-                <td>-</td>
-                <td><?php echo $row['color']; ?></td>
+                <td><?php echo $uomName ?: '-'; ?></td>
+                <td><?php echo $color; ?></td>
                 <td><?php echo $row['hs_code_id']; ?></td>
                 <td class="text-center col-sm-1">
                     <div class="dropdown">
