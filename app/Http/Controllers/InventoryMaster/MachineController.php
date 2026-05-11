@@ -13,13 +13,16 @@ use DB;
 use Config;
 use Session;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Database\QueryException;
 use Carbon\Carbon;
 class MachineController extends Controller
 {
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = DB::connection('mysql2')->table('machine')->where('status', 1);
+            $data = DB::connection('mysql2')->table('machine')
+                ->where('machine.status', 1)
+                ->select('machine.*');
 
             // if ($request->rate_date) {
             //     $data = $data->where('er.rate_date', '>=', $request->rate_date);
@@ -28,7 +31,16 @@ class MachineController extends Controller
             //     $data = $data->where('er.rate_date', '<=', $request->to_date);
             // }
 
-            $data = $data->orderBy('id', 'desc')->get();
+            $data = $data->orderBy('machine.id', 'desc')->get();
+            $departmentNames = $this->getDepartments()
+                ->pluck('department_name', 'id')
+                ->toArray();
+
+            foreach ($data as $row) {
+                $row->department_name = isset($departmentNames[$row->department_id])
+                    ? $departmentNames[$row->department_id]
+                    : '-';
+            }
 
             return view('InventoryMaster.Machine.ajax.listMachineAjax', compact('data'));
         }
@@ -44,7 +56,9 @@ class MachineController extends Controller
      */
     public function create()
     {
-        return view('InventoryMaster.Machine.createMachine' );
+        $departments = $this->getDepartments();
+
+        return view('InventoryMaster.Machine.createMachine', compact('departments'));
     }
 
     /**
@@ -57,6 +71,7 @@ class MachineController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required',
+            'department_id' => 'required',
         ]);
     // dd($request);
         try {
@@ -70,6 +85,7 @@ class MachineController extends Controller
             $data = Machine::create(
                 [
                     'name' => $request->name, 
+                    'department_id' => $request->department_id,
                     'asset_id' => 0, 
                     'status' => 1, 
                     'username' => Auth()->user()->name,
@@ -104,12 +120,13 @@ class MachineController extends Controller
     public function edit($id)
     {
         $Machine = Machine::where('id', $id)->where('status', 1)->first();
+        $departments = $this->getDepartments();
 
         if (!$Machine) {
             return redirect()->back()->withErrors('Record not found')->withInput();
         }
 
-        return view('InventoryMaster.Machine.updateMachine', compact('Machine'));
+        return view('InventoryMaster.Machine.updateMachine', compact('Machine', 'departments'));
     }
 
     /**
@@ -122,8 +139,9 @@ class MachineController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required'
-               ]);
+            'name' => 'required',
+            'department_id' => 'required',
+        ]);
 
         try {
             if ($validator->fails()) {
@@ -138,6 +156,7 @@ class MachineController extends Controller
 
             $Machine->update([
                 'name' => $request->name,
+                'department_id' => $request->department_id,
                 'asset_id' => 0, 
                 'status' => 1,
                 'username' => Auth()->user()->name,
@@ -163,9 +182,32 @@ class MachineController extends Controller
     }
     public function deleteMachine($id)
     {
-        Machine::find($id)->update([
+        $Machine = Machine::find($id);
+
+        if (!$Machine) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Record not found',
+            ], 404);
+        }
+
+        $Machine->update([
             'status' => 0
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Record deleted successfully',
         ]);
     }
 
+    private function getDepartments()
+    {
+        return DB::table('department')
+            ->where('company_id', Session::get('run_company'))
+            ->where('status', 1)
+            ->select('id', 'department_name')
+            ->orderBy('department_name')
+            ->get();
+    }
 }

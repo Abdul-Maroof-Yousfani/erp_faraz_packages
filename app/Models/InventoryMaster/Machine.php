@@ -10,6 +10,7 @@ class Machine extends Model
     protected $table = 'machine';
     protected $fillable = [
         'name',
+        'department_id',
         'asset_id',
         'operator',
         'status',

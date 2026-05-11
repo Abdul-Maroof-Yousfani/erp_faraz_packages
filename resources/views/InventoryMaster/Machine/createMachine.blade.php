@@ -26,6 +26,7 @@
 
         </div>
     </div>
+
     <div class="row">
 
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
@@ -44,6 +45,16 @@
                                                     <div class="col-md-12 bor-bo">
                                                         <h1>Add Machine</h1>
                                                     </div>
+                                                        @if(session('success'))
+                                                            <div class="row">
+                                                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                                                    <div class="alert alert-success alert-dismissible">
+                                                                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                                                        {{ session('success') }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        @endif
 
                                                     <div class="col-md-12 padt pos-r">
                                                         <div class="row">
@@ -53,7 +64,21 @@
                                                                 <div class="form-group">
                                                                     <label for="name">Machine Name</label>
                                                                     <input type="text" name="name" id="name"
-                                                                        class="form-control" required>
+                                                                        value="{{ old('name') }}" class="form-control" required>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group">
+                                                                    <label for="department_id">Department</label>
+                                                                    <select name="department_id" id="department_id"
+                                                                        class="form-control select2" required>
+                                                                        <option value="">Select Department</option>
+                                                                        @foreach($departments as $department)
+                                                                            <option value="{{ $department->id }}" {{ old('department_id') == $department->id ? 'selected' : '' }}>
+                                                                                {{ $department->department_name }}
+                                                                            </option>
+                                                                        @endforeach
+                                                                    </select>
                                                                 </div>
                                                             </div>
                                                             <div class="col-md-4 padtb text-right">
@@ -84,7 +109,7 @@
     </div>
     <script>
         $(document).ready(function () {
-            $('#asset').select2();
+            $('#department_id').select2();
         });
         function getAsset() {
             var asset = $('#asset').val();
