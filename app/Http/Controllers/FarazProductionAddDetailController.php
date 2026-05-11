@@ -1306,10 +1306,17 @@ class FarazProductionAddDetailController extends Controller
         DB::connection('mysql2')->beginTransaction();
 
         try {
+            $rollIds = (array) $request->roll_id;
+            $firstRollId = $rollIds[0] ?? null;
+            $sourceRoll = $firstRollId
+                ? DB::connection('mysql2')->table('production_rolling')->where('id', $firstRollId)->first()
+                : null;
+
             $pro_no = DB::connection('mysql2')
                 ->table('production_request')
-                ->where('id', $request->production_order_id)
+                ->where('id', $sourceRoll->production_order_id ?? $request->production_order_id)
                 ->value('pr_no');
+            $pro_no = $pro_no ?: $firstRollId;
 
             // We'll collect per-roll updates here (only update rolls that were actually used)
             $rollUpdates = [];
@@ -1317,7 +1324,7 @@ class FarazProductionAddDetailController extends Controller
             foreach ($request->item_id as $key => $itemId) {
                 $printedQty = (float) ($request->printed_roll_qty[$key] ?? 0);
 
-                $rollId = $request->roll_id[$key] ?? null;
+                $rollId = $rollIds[$key] ?? $firstRollId;
 
                 // ───────────────────────────────────────────────
                 // INSERT PRINTING RECORD
@@ -1333,6 +1340,7 @@ class FarazProductionAddDetailController extends Controller
                     'brand_id' => $request->brand[$key] ?? null,
                     'remarks' => $request->remarks[$key] ?? null,
                     'no_of_roll' => $printedQty,
+                    'used_no_of_roll' => 0,
                     'date' => $request->date[$key] ?? now(),
                     'status' => 1,
                     'username' => Auth::user()->name,
@@ -1404,10 +1412,13 @@ class FarazProductionAddDetailController extends Controller
             );
         } catch (\Exception $e) {
             DB::connection('mysql2')->rollback();
-            // In production: log the error instead of showing raw message to user
-            \Log::error('Production roll printing failed: ' . $e->getMessage());
-            return back()->withErrors(['error' => 'Something went wrong. Please try again.']);
-            // or: return $e->getMessage();  // only during development
+            \Log::error('Production roll printing failed: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'request' => $request->all(),
+            ]);
+
+            return back()->withErrors(['error' => $e->getMessage()])->withInput();
         }
     }
 

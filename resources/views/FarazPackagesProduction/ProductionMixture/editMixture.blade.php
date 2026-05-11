@@ -85,11 +85,11 @@ $rowCount = max($mixtureData->count(), 1);
                                                 </select>
                                             </div>
                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                                <label class="sf-label">Mixture Machine</label>
+                                                <label class="sf-label">Machine</label>
                                                 <span class="rflabelsteric"><strong>*</strong></span>
                                                 <select class="form-control select2 requiredField" name="mixture_machine_id"
                                                     id="mixture_machine_id">
-                                                    <option value="">Select Mixture Machine</option>
+                                                    <option value="">Select Machine</option>
                                                     @foreach ($mixture_machines as $key => $value)
                                                         <option value="{{ $value->id }}"
                                                             @if ($mixture->mixture_machine_id == $value->id) selected @endif>

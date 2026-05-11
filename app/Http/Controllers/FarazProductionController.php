@@ -353,9 +353,7 @@ class FarazProductionController extends Controller
             ->where('status', '=', 1)
             // ->where('approval_status', '=', 2)
             ->select('id', 'pr_no')->get();
-        $mixture_machines = DB::Connection('mysql2')->table('mixture_machines')
-            ->select('id', 'name')
-            ->where('status', '=', 1)->get();
+        $mixture_machines = $this->getMixtureDepartmentMachines();
         $pm_no = CommonHelper::generateProductionMixtureNumber();
 
         return view('FarazPackagesProduction.ProductionMixture.createProductionMixtureForm', compact('sub_item', 'raw_material', 'production_order', 'mixture_machines', 'pm_no'));
@@ -365,7 +363,12 @@ class FarazProductionController extends Controller
     {
         $mixingList = ProductionMixture::with('productionOrder')
             ->withCount('productionRollings as usage_count')
-            ->where('status', '=', 1)->get();
+            ->select('production_mixture.*')
+            ->selectRaw('(COALESCE(qty, 0) - COALESCE(used_qty, 0)) as remaining_qty')
+            ->where('status', '=', 1)
+            ->whereRaw('COALESCE(qty, 0) > COALESCE(used_qty, 0)')
+            ->orderBy('id', 'desc')
+            ->get();
         $m = $this->m;
         return view('FarazPackagesProduction.ProductionMixture.viewProductionMixing', compact('mixingList', 'm'));
     }
@@ -415,9 +418,7 @@ class FarazProductionController extends Controller
             ->where('status', '=', 1)
             ->select('id', 'pr_no')->get();
 
-        $mixture_machines = DB::Connection('mysql2')->table('mixture_machines')
-            ->select('id', 'name')
-            ->where('status', '=', 1)->get();
+        $mixture_machines = $this->getMixtureDepartmentMachines($mixture->mixture_machine_id);
 
         return view('FarazPackagesProduction.ProductionMixture.editMixture', compact(
             'mixture',
@@ -428,6 +429,77 @@ class FarazProductionController extends Controller
             'mixture_machines',
             'm'
         ));
+    }
+
+    private function getMixtureDepartmentMachines($selectedMachineId = null)
+    {
+        $mixtureDepartment = DB::table('department')
+            ->where('company_id', Session::get('run_company'))
+            ->where('status', 1)
+            ->where('department_name', 'Mixture Department')
+            ->select('id')
+            ->first();
+
+        if (!$mixtureDepartment) {
+            return collect();
+        }
+
+        $machines = DB::connection('mysql2')->table('machine')
+            ->where('status', 1)
+            ->where('department_id', $mixtureDepartment->id);
+
+        if ($selectedMachineId) {
+            $machines->orWhere(function ($query) use ($selectedMachineId) {
+                $query->where('id', $selectedMachineId)
+                    ->where('status', 1);
+            });
+        }
+
+        return $machines->select('id', 'name')
+            ->orderBy('name')
+            ->get();
+    }
+
+    private function getDepartmentMachines($departmentName)
+    {
+        $department = $this->getProductionDepartment($departmentName);
+
+        if (!$department) {
+            return collect();
+        }
+
+        return DB::connection('mysql2')->table('machine')
+            ->where('status', 1)
+            ->where('department_id', $department->id)
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
+    }
+
+    private function getDepartmentOperators($departmentName)
+    {
+        $department = $this->getProductionDepartment($departmentName);
+
+        if (!$department) {
+            return collect();
+        }
+
+        return DB::connection('mysql2')->table('operators')
+            ->where('status', 1)
+            ->where('department_id', $department->id)
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
+    }
+
+    private function getProductionDepartment($departmentName)
+    {
+        return DB::table('department')
+            ->where('company_id', Session::get('run_company'))
+            ->where('status', 1)
+            ->where('department_name', $departmentName)
+            ->select('id')
+            ->first();
     }
 
     public function danaReport(Request $request)
@@ -789,15 +861,9 @@ class FarazProductionController extends Controller
             ->orderBy('s.id')
             ->get();
 
-        $machines = DB::connection('mysql2')->table('machine')
-            ->select('id', 'name')
-            ->where('status', '=', 1)
-            ->get();
+        $machines = $this->getDepartmentMachines('Rolling Department');
 
-        $operators = DB::connection('mysql2')->table('operators')
-            ->select('id', 'name')
-            ->where('status', '=', 1)
-            ->get();
+        $operators = $this->getDepartmentOperators('Rolling Department');
 
         $shifts = DB::connection('mysql')->table('shift_type')
             ->select('id', 'shift_type_name')
@@ -876,13 +942,9 @@ class FarazProductionController extends Controller
             ->orderBy('s.id')
             ->get();
 
-        $machines = DB::Connection('mysql2')->table('machine')
-            ->select('id', 'name')
-            ->where('status', '=', 1)->get();
+        $machines = $this->getDepartmentMachines('Rolling Department');
 
-        $operators = DB::Connection('mysql2')->table('operators')
-            ->select('id', 'name')
-            ->where('status', '=', 1)->get();
+        $operators = $this->getDepartmentOperators('Rolling Department');
 
         $shifts = DB::Connection('mysql')->table('shift_type')
             ->select('id', 'shift_type_name')
@@ -991,13 +1053,9 @@ class FarazProductionController extends Controller
             ->orderBy('s.id')
             ->get();
 
-        $machines = DB::Connection('mysql2')->table('machine')
-            ->select('id', 'name')
-            ->where('status', '=', 1)->get();
+        $machines = $this->getDepartmentMachines('Rolling Department');
 
-        $operators = DB::Connection('mysql2')->table('operators')
-            ->select('id', 'name')
-            ->where('status', '=', 1)->get();
+        $operators = $this->getDepartmentOperators('Rolling Department');
 
         $shifts = DB::Connection('mysql')->table('shift_type')
             ->select('id', 'shift_type_name')
@@ -1059,13 +1117,9 @@ class FarazProductionController extends Controller
             ->orderBy('s.id')
             ->get();
 
-        $machines = DB::Connection('mysql2')->table('machine')
-            ->select('id', 'name')
-            ->where('status', '=', 1)->get();
+        $machines = $this->getDepartmentMachines('Rolling Department');
 
-        $operators = DB::Connection('mysql2')->table('operators')
-            ->select('id', 'name')
-            ->where('status', '=', 1)->get();
+        $operators = $this->getDepartmentOperators('Rolling Department');
 
         $shifts = DB::Connection('mysql')->table('shift_type')
             ->select('id', 'shift_type_name')
@@ -1335,13 +1389,9 @@ class FarazProductionController extends Controller
             ->groupBy('s.item_code')
             ->orderBy('s.id')
             ->get();
-        $machines = DB::Connection('mysql2')->table('machine')
-            ->select('id', 'name')
-            ->where('status', '=', 1)->get();
+        $machines = $this->getDepartmentMachines('Cutting & Sealing Department');
 
-        $operators = DB::Connection('mysql2')->table('operators')
-            ->select('id', 'name')
-            ->where('status', '=', 1)->get();
+        $operators = $this->getDepartmentOperators('Cutting & Sealing Department');
 
         $shifts = DB::Connection('mysql')->table('shift_type')
             ->select('id', 'shift_type_name')
@@ -1410,9 +1460,7 @@ class FarazProductionController extends Controller
             ->groupBy('s.item_code')
             ->orderBy('s.id')
             ->get();
-        $machines = DB::Connection('mysql2')->table('machine')
-            ->select('id', 'name')
-            ->where('status', '=', 1)->get();
+        $machines = $this->getDepartmentMachines('Cutting & Sealing Department');
 
         $brands = DB::Connection('mysql2')->table('brands')
             ->select('id', 'name')
@@ -1422,9 +1470,7 @@ class FarazProductionController extends Controller
             ->select('id', 'name')
             ->where('status', '=', 1)->get();
 
-        $operators = DB::Connection('mysql2')->table('operators')
-            ->select('id', 'name')
-            ->where('status', '=', 1)->get();
+        $operators = $this->getDepartmentOperators('Cutting & Sealing Department');
 
         $shifts = DB::Connection('mysql')->table('shift_type')
             ->select('id', 'shift_type_name')
@@ -1648,13 +1694,9 @@ class FarazProductionController extends Controller
             ->orderBy('s.id')
             ->get();
 
-        $machines = DB::Connection('mysql2')->table('machine')
-            ->select('id', 'name')
-            ->where('status', '=', 1)->get();
+        $machines = $this->getDepartmentMachines('Packing Department');
 
-        $operators = DB::Connection('mysql2')->table('operators')
-            ->select('id', 'name')
-            ->where('status', '=', 1)->get();
+        $operators = $this->getDepartmentOperators('Packing Department');
 
         $shifts = DB::Connection('mysql')->table('shift_type')
             ->select('id', 'shift_type_name')
@@ -1742,13 +1784,9 @@ class FarazProductionController extends Controller
             ->orderBy('s.id')
             ->get();
 
-        $machines = DB::Connection('mysql2')->table('machine')
-            ->select('id', 'name')
-            ->where('status', '=', 1)->get();
+        $machines = $this->getDepartmentMachines('Packing Department');
 
-        $operators = DB::Connection('mysql2')->table('operators')
-            ->select('id', 'name')
-            ->where('status', '=', 1)->get();
+        $operators = $this->getDepartmentOperators('Packing Department');
 
         $shifts = DB::Connection('mysql')->table('shift_type')
             ->select('id', 'shift_type_name')
