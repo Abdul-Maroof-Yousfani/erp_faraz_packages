@@ -964,17 +964,27 @@ class FarazProductionController extends Controller
         return view('FarazPackagesProduction.ProductionMixture.viewProductionRolling', compact('rollingList', 'm'));
     }
 
-    public function viewProductionRollPrintingList()
+    public function viewProductionRollPrintingList(Request $request)
     {
+        $printingType = $request->printing_type;
+
         $rollPricingList = ProductionRollPrinting::with(
             'productionRoll.productionOrder',
             'brand',
             'color'
         )
             ->withCount('cuttingAndSealings as usage_count')
-            ->where('status', '=', 1)->get();
+            ->where('status', '=', 1);
+
+        if ($printingType == 'printed') {
+            $rollPricingList->where('type', 'Printed');
+        } elseif ($printingType == 'non_printed') {
+            $rollPricingList->where('type', 'Non-Printed');
+        }
+
+        $rollPricingList = $rollPricingList->get();
         $m = $this->m;
-        return view('FarazPackagesProduction.ProductionMixture.viewProductionRollPrinting', compact('rollPricingList', 'm'));
+        return view('FarazPackagesProduction.ProductionMixture.viewProductionRollPrinting', compact('rollPricingList', 'm', 'printingType'));
     }
 
     public function viewProductionCuttingAndSealingList()

@@ -37,6 +37,26 @@ $this->m = Session::get('run_company');
                         </div>
 
                         <div class="lineHeight">&nbsp;</div>
+                        <form method="GET" action="{{ url('/far_production/viewProductionRollPrintingList') }}">
+                            <input type="hidden" name="pageType" value="{{ request('pageType') }}">
+                            <input type="hidden" name="parentCode" value="{{ request('parentCode') }}">
+                            <input type="hidden" name="m" value="{{ request('m', $m) }}">
+                            <div class="row">
+                                <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
+                                    <label>Printing Type</label>
+                                    <select name="printing_type" class="form-control">
+                                        <option value="">All</option>
+                                        <option value="printed" {{ ($printingType ?? '') == 'printed' ? 'selected' : '' }}>Printed</option>
+                                        <option value="non_printed" {{ ($printingType ?? '') == 'non_printed' ? 'selected' : '' }}>Non-Printed</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12">
+                                    <label>&nbsp;</label>
+                                    <button type="submit" class="btn btn-primary btn-block">Filter</button>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="lineHeight">&nbsp;</div>
                         <div class="panel">
                             <div class="panel-body" id="PrintEmpExitInterviewList">
                                 <?php echo CommonHelper::headerPrintSectionInPrintView($m); ?>
