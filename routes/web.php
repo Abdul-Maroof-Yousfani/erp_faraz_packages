@@ -2268,6 +2268,12 @@ Route::group(['prefix' => 'far_production', 'middleware' => 'mysql2', 'before' =
     Route::get('/getGalaOrCuttingAndSealingItemsForBulkPacking', 'FarazProductionController@getCuttingAndSealingItemsForBulkPacking')->name('FarProduction.getGalaOrCuttingAndSealingItems');
     Route::get('/viewProductionPackingList', 'FarazProductionController@viewProductionPackingList');
 
+    // production wastage
+    Route::get('/addProductionWastage', 'FarazProductionController@addProductionWastage');
+    Route::get('/viewProductionWastageList', 'FarazProductionController@viewProductionWastageList');
+    Route::get('/viewProductionWastageDetail', 'FarazProductionController@viewProductionWastageDetail');
+    Route::get('/editProductionWastageForm/{id}', 'FarazProductionController@editProductionWastageForm');
+    Route::get('/getProductionOrderWastageDetails', 'FarazProductionController@getProductionOrderWastageDetails')->name('FarProduction.getProductionOrderWastageDetails');
 
     Route::resource('mixture_machines', 'MixtureMachineController');
 
@@ -2300,6 +2306,9 @@ Route::group(['prefix' => 'far_prod', 'middleware' => 'mysql2', 'before' => 'csr
     // production packing ajax
     Route::post('/addProductionPackingDetail', 'FarazProductionAddDetailController@addProductionPackingDetail')->name('FarProduction.Packing');
 
+    // production wastage ajax
+    Route::post('/addProductionWastageDetail', 'FarazProductionAddDetailController@addProductionWastageDetail')->name('FarProduction.Wastage');
+    Route::post('/updateProductionWastageDetail', 'FarazProductionAddDetailController@updateProductionWastageDetail')->name('FarProduction.WastageUpdate');
 
 
 });

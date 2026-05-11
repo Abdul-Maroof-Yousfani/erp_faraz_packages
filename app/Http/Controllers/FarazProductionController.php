@@ -1010,6 +1010,185 @@ class FarazProductionController extends Controller
         return view('FarazPackagesProduction.ProductionMixture.viewProductionPacking', compact('packingList', 'm'));
     }
 
+    public function addProductionWastage()
+    {
+        $productionOrders = DB::connection('mysql2')
+            ->table('production_request')
+            ->where('status', 1)
+            ->select('id', 'pr_no', 'request_date', 'ref_no')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $items = DB::connection('mysql2')
+            ->table('subitem as s')
+            ->leftJoin(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
+            ->where('s.status', 1)
+            ->select('s.id', 's.item_code', 's.sub_ic', 'u.uom_name')
+            ->orderBy('s.item_code')
+            ->get();
+
+        $processes = $this->getProductionWastageProcesses();
+        $m = $this->m;
+
+        return view('FarazPackagesProduction.ProductionMixture.createProductionWastage', compact(
+            'productionOrders',
+            'items',
+            'processes',
+            'm'
+        ));
+    }
+
+    public function viewProductionWastageList(Request $request)
+    {
+        $wastageList = DB::connection('mysql2')
+            ->table('wastage as w')
+            ->leftJoin('production_request as pr', 'w.production_order_id', '=', 'pr.id')
+            ->where('w.status', 1)
+            ->select(
+                'w.*',
+                'pr.pr_no',
+                DB::raw('(SELECT COUNT(*) FROM wastage_data wd WHERE wd.master_id = w.id) as detail_count'),
+                DB::raw('(SELECT SUM(COALESCE(wd.qty, 0)) FROM wastage_data wd WHERE wd.master_id = w.id) as detail_qty')
+            )
+            ->orderBy('w.id', 'desc')
+            ->get();
+
+        $processes = $this->getProductionWastageProcesses();
+        $m = $this->m;
+
+        return view('FarazPackagesProduction.ProductionMixture.viewProductionWastage', compact(
+            'wastageList',
+            'processes',
+            'm'
+        ));
+    }
+
+    public function viewProductionWastageDetail(Request $request)
+    {
+        $wastage = $this->getProductionWastageById($request->id);
+        $wastageDetails = $this->getProductionWastageDetails($request->id);
+        $processes = $this->getProductionWastageProcesses();
+
+        return view('FarazPackagesProduction.ProductionMixture.viewProductionWastageDetail', compact(
+            'wastage',
+            'wastageDetails',
+            'processes'
+        ));
+    }
+
+    public function editProductionWastageForm($id)
+    {
+        $wastage = $this->getProductionWastageById($id);
+        $wastageDetails = $this->getProductionWastageDetails($id);
+
+        if (!$wastage) {
+            abort(404);
+        }
+
+        $productionOrders = DB::connection('mysql2')
+            ->table('production_request')
+            ->where('status', 1)
+            ->select('id', 'pr_no', 'request_date', 'ref_no')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $items = DB::connection('mysql2')
+            ->table('subitem as s')
+            ->leftJoin(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
+            ->where('s.status', 1)
+            ->select('s.id', 's.item_code', 's.sub_ic', 'u.uom_name')
+            ->orderBy('s.item_code')
+            ->get();
+
+        $processes = $this->getProductionWastageProcesses();
+        $m = $this->m;
+
+        return view('FarazPackagesProduction.ProductionMixture.editProductionWastage', compact(
+            'wastage',
+            'wastageDetails',
+            'productionOrders',
+            'items',
+            'processes',
+            'm'
+        ));
+    }
+
+    public function getProductionOrderWastageDetails(Request $request)
+    {
+        $order = DB::connection('mysql2')
+            ->table('production_request')
+            ->where('id', $request->production_order_id)
+            ->where('status', 1)
+            ->select('id', 'pr_no', 'request_date', 'ref_no', 'description', 'curr_status')
+            ->first();
+
+        if (!$order) {
+            return response()->json(['order' => null, 'details' => []]);
+        }
+
+        $details = DB::connection('mysql2')
+            ->table('production_request_data as prd')
+            ->leftJoin('sub_category as sc', 'prd.sub_category_id', '=', 'sc.id')
+            ->where('prd.master_id', $order->id)
+            ->where('prd.status', 1)
+            ->select(
+                'prd.purpose',
+                'prd.required_date',
+                'sc.sub_category_name'
+            )
+            ->get();
+
+        return response()->json([
+            'order' => $order,
+            'details' => $details,
+        ]);
+    }
+
+    private function getProductionWastageProcesses()
+    {
+        return [
+            'production_mixing' => 'Production Mixing',
+            'production_rolling' => 'Production Rolling',
+            'roll_printing' => 'Roll Printing',
+            'cutting_and_sealing' => 'Cutting And Sealing',
+            'gala_cutting' => 'Gala Cutting',
+            'packing' => 'Packing',
+        ];
+    }
+
+    private function getProductionWastageById($id)
+    {
+        return DB::connection('mysql2')
+            ->table('wastage as w')
+            ->leftJoin('production_request as pr', 'w.production_order_id', '=', 'pr.id')
+            ->where('w.id', $id)
+            ->where('w.status', 1)
+            ->select(
+                'w.*',
+                'pr.pr_no',
+                'pr.request_date',
+                'pr.ref_no',
+                'pr.curr_status'
+            )
+            ->first();
+    }
+
+    private function getProductionWastageDetails($id)
+    {
+        return DB::connection('mysql2')
+            ->table('wastage_data as wd')
+            ->leftJoin('subitem as s', 'wd.item_id', '=', 's.id')
+            ->leftJoin(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
+            ->where('wd.master_id', $id)
+            ->select(
+                'wd.*',
+                's.item_code',
+                's.sub_ic',
+                'u.uom_name'
+            )
+            ->get();
+    }
+
     public function viewProductionGalaCuttingList()
     {
         $galaCuttingList = ProductionGalaCutting::with(

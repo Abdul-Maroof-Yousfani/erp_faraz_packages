@@ -1529,16 +1529,7 @@ class FarazProductionAddDetailController extends Controller
             if ($wastageItemId && $wastageQty > 0) {
 
 
-                // Record wastage centrally (adjust table/columns as per your wastage schema)
-                DB::connection('mysql2')->table('production_wastage')->insert([
-                    'module' => 'cutting_and_sealing', // or 'gala_cutting', 'packing'
-                    'reference_id' => $csId ?? null,         // or $galaId / $packingId or 0 for bulk
-                    'item_id' => $wastageItemId,
-                    'qty' => $wastageQty,
-                    'date' => now()->format('Y-m-d'),
-                    'username' => Auth::user()->name,
-                    'status' => 1,
-                ]);
+                $this->recordProductionWastage('cutting_and_sealing', $wastageItemId, $wastageQty, $request->date[0] ?? now());
 
                 // Stock OUT for wastage
                 $wDetail = CommonHelper::get_subitem_detail2($wastageItemId);
@@ -1685,16 +1676,7 @@ class FarazProductionAddDetailController extends Controller
             if ($wastageItemId && $wastageQty > 0) {
 
 
-                // Record wastage centrally (adjust table/columns as per your wastage schema)
-                DB::connection('mysql2')->table('production_wastage')->insert([
-                    'module' => 'cutting_and_sealing', // or 'gala_cutting', 'packing'
-                    'reference_id' => 0,         // or $galaId / $packingId or 0 for bulk
-                    'item_id' => $wastageItemId,
-                    'qty' => $wastageQty,
-                    'date' => now()->format('Y-m-d'),
-                    'username' => Auth::user()->name,
-                    'status' => 1,
-                ]);
+                $this->recordProductionWastage('cutting_and_sealing', $wastageItemId, $wastageQty, $request->date[0] ?? now());
 
                 // Stock OUT for wastage
                 $wDetail = CommonHelper::get_subitem_detail2($wastageItemId);
@@ -1843,16 +1825,7 @@ class FarazProductionAddDetailController extends Controller
             if ($wastageItemId && $wastageQty > 0) {
 
 
-                // Record wastage centrally (adjust table/columns as per your wastage schema)
-                DB::connection('mysql2')->table('production_wastage')->insert([
-                    'module' => 'gala_cutting', // or 'gala_cutting', 'packing'
-                    'reference_id' => 0,         // or $galaId / $packingId or 0 for bulk
-                    'item_id' => $wastageItemId,
-                    'qty' => $wastageQty,
-                    'date' => now()->format('Y-m-d'),
-                    'username' => Auth::user()->name,
-                    'status' => 1,
-                ]);
+                $this->recordProductionWastage('gala_cutting', $wastageItemId, $wastageQty, $request->date[0] ?? now());
 
                 // Stock OUT for wastage
                 $wDetail = CommonHelper::get_subitem_detail2($wastageItemId);
@@ -2040,16 +2013,7 @@ class FarazProductionAddDetailController extends Controller
             if ($wastageItemId && $wastageQty > 0) {
 
 
-                // Record wastage centrally (adjust table/columns as per your wastage schema)
-                DB::connection('mysql2')->table('production_wastage')->insert([
-                    'module' => 'packing', // or 'gala_cutting', 'packing'
-                    'reference_id' => 0,         // or $galaId / $packingId or 0 for bulk
-                    'item_id' => $wastageItemId,
-                    'qty' => $wastageQty,
-                    'date' => now()->format('Y-m-d'),
-                    'username' => Auth::user()->name,
-                    'status' => 1,
-                ]);
+                $this->recordProductionWastage('packing', $wastageItemId, $wastageQty, $request->date[0] ?? now());
 
                 // Stock OUT for wastage
                 $wDetail = CommonHelper::get_subitem_detail2($wastageItemId);
@@ -2084,6 +2048,185 @@ class FarazProductionAddDetailController extends Controller
             '&&parentCode=' . Input::get('parentCode') .
             '&&m=1'
         );
+    }
+
+    public function addProductionWastageDetail(Request $request)
+    {
+        $request->validate([
+            'production_order_id' => 'required',
+            'process' => 'required',
+            'wastage_date' => 'required|date',
+            'item_id' => 'required|array',
+            'qty' => 'required|array',
+        ]);
+
+        DB::connection('mysql2')->beginTransaction();
+
+        try {
+            $totalQty = 0;
+            $firstItemId = 0;
+            $detailRows = [];
+
+            foreach ($request->item_id as $key => $itemId) {
+                $qty = (float) ($request->qty[$key] ?? 0);
+
+                if (!$itemId || $qty <= 0) {
+                    continue;
+                }
+
+                $firstItemId = $firstItemId ?: $itemId;
+                $totalQty += $qty;
+                $detailRows[] = [
+                    'item_id' => $itemId,
+                    'qty' => $qty,
+                    'ppc' => $request->remarks[$key] ?? null,
+                ];
+            }
+
+            if (empty($detailRows)) {
+                DB::connection('mysql2')->rollBack();
+                return back()->withErrors(['error' => 'Please add at least one wastage item with qty.'])->withInput();
+            }
+
+            $masterId = DB::connection('mysql2')->table('wastage')->insertGetId([
+                'production_order_id' => $request->production_order_id,
+                'type' => 'production',
+                'process' => $request->process,
+                'item_id' => $firstItemId,
+                'warehouse_id' => 0,
+                'batch_code' => '',
+                'qty' => $totalQty,
+                'remarks' => implode(' | ', array_filter((array) $request->remarks)),
+                'wastage_date' => $request->wastage_date,
+                'username' => Auth::user()->name,
+                'status' => 1,
+                'date' => date('Y-m-d'),
+            ]);
+
+            foreach ($detailRows as $row) {
+                $row['master_id'] = $masterId;
+                DB::connection('mysql2')->table('wastage_data')->insert($row);
+            }
+
+            DB::connection('mysql2')->commit();
+        } catch (\Exception $e) {
+            DB::connection('mysql2')->rollBack();
+            return back()->withErrors(['error' => $e->getMessage()])->withInput();
+        }
+
+        Session::flash('dataInsert', 'Wastage Successfully Saved.');
+
+        return Redirect::to(
+            'far_production/addProductionWastage?pageType=' .
+            Input::get('pageType') .
+            '&&parentCode=' . Input::get('parentCode') .
+            '&&m=' . Input::get('m')
+        );
+    }
+
+    public function updateProductionWastageDetail(Request $request)
+    {
+        $request->validate([
+            'id' => 'required',
+            'production_order_id' => 'required',
+            'process' => 'required',
+            'wastage_date' => 'required|date',
+            'item_id' => 'required|array',
+            'qty' => 'required|array',
+        ]);
+
+        DB::connection('mysql2')->beginTransaction();
+
+        try {
+            $itemIds = (array) $request->item_id;
+            $qtys = (array) $request->qty;
+            $remarks = (array) $request->remarks;
+            $totalQty = 0;
+            $firstItemId = 0;
+            $detailRows = [];
+
+            foreach ($itemIds as $key => $itemId) {
+                $qty = (float) ($qtys[$key] ?? 0);
+
+                if (!$itemId || $qty <= 0) {
+                    continue;
+                }
+
+                $firstItemId = $firstItemId ?: $itemId;
+                $totalQty += $qty;
+                $detailRows[] = [
+                    'master_id' => $request->id,
+                    'item_id' => $itemId,
+                    'qty' => $qty,
+                    'ppc' => $remarks[$key] ?? null,
+                ];
+            }
+
+            if (empty($detailRows)) {
+                DB::connection('mysql2')->rollBack();
+                return back()->withErrors(['error' => 'Please add at least one wastage item with qty.'])->withInput();
+            }
+
+            DB::connection('mysql2')->table('wastage')
+                ->where('id', $request->id)
+                ->update([
+                    'production_order_id' => $request->production_order_id,
+                    'type' => 'production',
+                    'process' => $request->process,
+                    'item_id' => $firstItemId,
+                    'qty' => $totalQty,
+                    'remarks' => implode(' | ', array_filter($remarks)),
+                    'wastage_date' => $request->wastage_date,
+                    'username' => Auth::user()->name,
+                ]);
+
+            DB::connection('mysql2')->table('wastage_data')->where('master_id', $request->id)->delete();
+
+            foreach ($detailRows as $row) {
+                DB::connection('mysql2')->table('wastage_data')->insert($row);
+            }
+
+            DB::connection('mysql2')->commit();
+        } catch (\Exception $e) {
+            DB::connection('mysql2')->rollBack();
+            return back()->withErrors(['error' => $e->getMessage()])->withInput();
+        }
+
+        Session::flash('dataInsert', 'Wastage Successfully Updated.');
+
+        return Redirect::to(
+            'far_production/viewProductionWastageList?pageType=' .
+            Input::get('pageType') .
+            '&&parentCode=' . Input::get('parentCode') .
+            '&&m=' . Input::get('m')
+        );
+    }
+
+    private function recordProductionWastage($process, $itemId, $qty, $date, $productionOrderId = null, $remarks = null)
+    {
+        $masterId = DB::connection('mysql2')->table('wastage')->insertGetId([
+            'production_order_id' => $productionOrderId,
+            'type' => 'production',
+            'process' => $process,
+            'item_id' => $itemId,
+            'warehouse_id' => 0,
+            'batch_code' => '',
+            'qty' => $qty,
+            'remarks' => $remarks,
+            'wastage_date' => $date,
+            'username' => Auth::user()->name,
+            'status' => 1,
+            'date' => date('Y-m-d'),
+        ]);
+
+        DB::connection('mysql2')->table('wastage_data')->insert([
+            'master_id' => $masterId,
+            'item_id' => $itemId,
+            'qty' => $qty,
+            'ppc' => $remarks,
+        ]);
+
+        return $masterId;
     }
 
 }

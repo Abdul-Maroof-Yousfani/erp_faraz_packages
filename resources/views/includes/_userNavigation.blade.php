@@ -404,6 +404,20 @@ endif;
                               ); ?>"><i class="glyphicon glyphicon-plus-sign"></i> <?php echo $dataValue->name; ?></a></li>
                               <?php
                               }
+                              if ($row1->id == 241 && !in_array(549, $submenu_ids)) { ?>
+                              <li><a href="<?php echo url(
+                                 "far_production/addProductionWastage?pageType=&&parentCode=241&&m=" .
+                                    Session::get("run_company") .
+                                    "#signsnow"
+                              ); ?>"><i class="glyphicon glyphicon-plus-sign"></i> Add Wastage</a></li>
+                              <?php }
+                              if ($row1->id == 241 && !in_array(550, $submenu_ids)) { ?>
+                              <li><a href="<?php echo url(
+                                 "far_production/viewProductionWastageList?pageType=&&parentCode=241&&m=" .
+                                    Session::get("run_company") .
+                                    "#signsnow"
+                              ); ?>"><i class="glyphicon glyphicon-plus-sign"></i> Wastage List</a></li>
+                              <?php }
                               ?>
                            </ul>
                         </li>
