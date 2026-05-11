@@ -1518,6 +1518,7 @@ class SalesController extends Controller
             SELECT 
                 a.item_id,
                 a.uom,
+                u.uom_name,
                 a.qty,
                 a.rate,
                 a.tax as tax,

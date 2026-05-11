@@ -307,7 +307,16 @@ $AmountInWordsMain =0;
                                             <td class="hide" style="border:1px solid black;">{{ $row->hs_code_id }}</td>
                                             <td style="border:1px solid black;">{{ $bags !== '' ? number_format((float) $bags,2) : '' }}</td>
                                             {{-- <td style="border:1px solid black;">{{ $row->color }}</td> --}}
-                                            <td style="border:1px solid black;">{{ CommonHelper::get_uom_name($row->uom) ??  CommonHelper::get_uom($row->item_id) }}</td>
+                                            @php
+                                                $uomName = $row->uom_name ?? '';
+                                                if (empty($uomName)) {
+                                                    $uomName = CommonHelper::get_uom_name($row->uom);
+                                                }
+                                                if (empty($uomName)) {
+                                                    $uomName = CommonHelper::get_uom($row->item_id);
+                                                }
+                                            @endphp
+                                            <td style="border:1px solid black;">{{ $uomName ?: 'N/A' }}</td>
                                             <td class="text-right" style="border:1px solid black;">{{ $row->qty }}</td>
                                             <td class="text-right" style="border:1px solid black;">{{ number_format($row->rate,2) }}</td>
                                             <td class="text-right" style="border:1px solid black;">{{ number_format($row->rate * $row->qty,2) }}</td>
