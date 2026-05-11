@@ -122,7 +122,6 @@ $counter = 1;
                                 <tr>
                                     <td>
                                         {{ $roll->subItem->sub_ic ?? '' }}
-                                        <span style="color: red;">{{ $roll->roll_qty == 0 ? '(wastage)' : '' }}</span>
                                     </td>
                                     <td class="text-center">{{ number_format($roll->mixture_qty, 2) }}</td>
                                     <td class="text-center">{{ number_format($roll->roll_qty, 2) }}</td>

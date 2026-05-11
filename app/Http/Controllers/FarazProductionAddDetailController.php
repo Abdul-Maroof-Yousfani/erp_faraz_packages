@@ -1434,8 +1434,8 @@ class FarazProductionAddDetailController extends Controller
         DB::connection('mysql2')->beginTransaction();
 
         try {
-            $wastageItemId = $request->wastage_item_id;
-            $wastageQty = (float) $request->wastage_qty;
+            $wastageItemId = $request->input('wastage_item_id');
+            $wastageQty = (float) $request->input('wastage_qty', 0);
             foreach ($request->item_id as $key => $itemId) {
 
                 $qty = $request->qty[$key] ?? 0;
@@ -1523,8 +1523,8 @@ class FarazProductionAddDetailController extends Controller
                 ]);
 
             // wastage section
-            $wastageItemId = $request->wastage_item_id;
-            $wastageQty = (float) $request->wastage_qty;
+            $wastageItemId = $request->input('wastage_item_id');
+            $wastageQty = (float) $request->input('wastage_qty', 0);
 
             if ($wastageItemId && $wastageQty > 0) {
 
@@ -1679,8 +1679,8 @@ class FarazProductionAddDetailController extends Controller
             // dd("ok");
 
             // wastage section
-            $wastageItemId = $request->wastage_item_id;
-            $wastageQty = (float) $request->wastage_qty;
+            $wastageItemId = $request->input('wastage_item_id');
+            $wastageQty = (float) $request->input('wastage_qty', 0);
 
             if ($wastageItemId && $wastageQty > 0) {
 
@@ -1837,8 +1837,8 @@ class FarazProductionAddDetailController extends Controller
             }
 
             // wastage section
-            $wastageItemId = $request->wastage_item_id;
-            $wastageQty = (float) $request->wastage_qty;
+            $wastageItemId = $request->input('wastage_item_id');
+            $wastageQty = (float) $request->input('wastage_qty', 0);
 
             if ($wastageItemId && $wastageQty > 0) {
 
@@ -2034,8 +2034,8 @@ class FarazProductionAddDetailController extends Controller
             // update used qty
 
             // wastage section
-            $wastageItemId = $request->wastage_item_id;
-            $wastageQty = (float) $request->wastage_qty;
+            $wastageItemId = $request->input('wastage_item_id');
+            $wastageQty = (float) $request->input('wastage_qty', 0);
 
             if ($wastageItemId && $wastageQty > 0) {
 

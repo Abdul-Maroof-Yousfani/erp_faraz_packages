@@ -77,19 +77,6 @@
                                                                 </select>
                                                             </div>
 
-                                                            <div class="col-md-3">
-                                                                <label>Wastage Item</label>
-                                                                <select name="wastage_item_id" class="form-control select2">
-                                                                    <option value="">Select</option>
-                                                                    @foreach($sub_item_wastage ?? [] as $val)
-                                                                        <option value="{{ $val->id }}">{{ $val->item_code }} -- {{ $val->sub_ic }}</option>
-                                                                    @endforeach
-                                                                </select>
-                                                            </div>
-                                                            <div class="col-md-2">
-                                                                <label>Wastage Qty (KG)</label>
-                                                                <input type="number" step="any" name="wastage_qty" class="form-control">
-                                                            </div>
                                                         </div>
 
                                                         <div class="row">
@@ -99,15 +86,6 @@
                                                                     <div class="col-md-12 text-right mr-4">
                                                                         <a onclick="addRawMaterial()"
                                                                             class="btn btn-primary mr-1">Add More</a>
-                                                                    </div>
-                                                                </div>
-                                                            </div> --}}
-                                                            {{-- <div class="col-md-12">
-                                                                <hr>
-                                                                <div class="row">
-                                                                    <div class="col-md-12 text-right mr-4">
-                                                                        <a onclick="addWastage()"
-                                                                            class="btn btn-primary mr-1">Add Wastage</a>
                                                                     </div>
                                                                 </div>
                                                             </div> --}}
@@ -433,131 +411,6 @@
 
             $('#out_source_production_data_to_finish_received').append(html);
             $('.select2').select2();
-
-            count++
-        }
-
-        function addWastage() {
-            let html = `
-            <hr>
-            <h2>Wastage Detail</h2>
-                        <div class="row" id="row_${count}">
-                            <div class="col-md-2">
-                                <label for="">Item</label>
-                                 <select style="width: 100% !important;"
-                                     name="item_id[]"
-                                    id="item_id${count}"
-                                    class="form-control requiredField item-select select2">
-                                    <option value="">Select</option>
-                                    @foreach($sub_item_wastage as $val)
-                                        <option
-                                            value="{{ $val->id . '@' . $val->uom_name . '@' . $val->sub_ic }}">
-                                            {{ $val->item_code . ' -- ' . $val->sub_ic }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-
-
-                            <div class="col-md-2">
-                                <label for="">Operator</label>
-                                    <select style="width: 100% !important;"
-                                    name="operator_id[]"
-                                    id="operator_id${count}"
-                                    class="form-control requiredField select2">
-                                    <option value="">Select</option>
-                                    @foreach($operators as $val)
-                                        <option
-                                            value="{{$val->id}}">
-                                            {{ $val->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <label for="">Machine</label>
-                                    <select style="width: 100% !important;"
-                                    name="machine_id[]"
-                                    id="machine_id${count}"
-                                    class="form-control requiredField select2">
-                                    <option value="">Select</option>
-                                    @foreach($machines as $val)
-                                        <option
-                                            value="{{$val->id}}">
-                                            {{ $val->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-1">
-                                <label for="">Shift</label>
-                                    <select style="width: 100% !important;"
-                                    name="shift_id[]"
-                                    id="shift_id${count}"
-                                    class="form-control requiredField select2">
-                                    <option value="">Select</option>
-                                    @foreach($shifts as $val)
-                                        <option
-                                            value="{{$val->id}}">
-                                            {{ $val->shift_type_name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div class="col-md-2">
-                                <label for="">Date</label>
-                                <input 
-                                    type="date"
-                                    name="date[]"
-                                    id="date_${count}"
-                                    class="form-control move-next date"
-                                    value="{{ date('Y-m-d') }}" 
-                                    required 
-
-                                >
-
-                            </div>
-
-                            <div class="col-md-1">
-                                <label for="">C&S Qty</label>
-                                <input 
-                                    type="text" 
-                                    name="qty[]"
-                                    id="qty_${count}"
-                                    class="form-control move-next qty_${count} requiredField"
-                                    onkeyup="validateRollQty(this)"
-                                    required 
-
-                                >
-                            </div>
-
-                            <div class="col-md-1">
-                                <label for="">Wastage Qty (KG)</label>
-                                <input 
-                                    type="text" 
-                                    name="gala_qty[]"
-                                    id="gala_qty_${count}"
-                                    class="form-control move-next gala_qty_${count} requiredField"
-                                    required 
-
-                                >
-                            </div>
-
-
-
-
-
-
-                            <div class="col-md-1" style="padding-top: 41px;">
-                                <a class="btn btn-danger mr-1" style="" onclick="removeDiv('row_${count}')">-</a>
-                            </div>
-
-                        </div>
-                        `;
-
-            $('#out_source_production_data_to_finish_received').append(html)
 
             count++
         }
