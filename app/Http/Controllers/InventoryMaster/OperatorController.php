@@ -13,6 +13,7 @@ use DB;
 use Config;
 use Session;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Database\QueryException;
 use Carbon\Carbon;
 
 class OperatorController extends Controller
@@ -20,7 +21,9 @@ class OperatorController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = DB::connection('mysql2')->table('operators')->where('status', 1);
+            $data = DB::connection('mysql2')->table('operators')
+                ->where('operators.status', 1)
+                ->select('operators.*');
 
             // if ($request->rate_date) {
             //     $data = $data->where('er.rate_date', '>=', $request->rate_date);
@@ -29,7 +32,16 @@ class OperatorController extends Controller
             //     $data = $data->where('er.rate_date', '<=', $request->to_date);
             // }
 
-            $data = $data->orderBy('id', 'desc')->get();
+            $data = $data->orderBy('operators.id', 'desc')->get();
+            $departmentNames = $this->getDepartments()
+                ->pluck('department_name', 'id')
+                ->toArray();
+
+            foreach ($data as $row) {
+                $row->department_name = isset($departmentNames[$row->department_id])
+                    ? $departmentNames[$row->department_id]
+                    : '-';
+            }
 
             return view('InventoryMaster.Operator.ajax.listOperatorAjax', compact('data'));
         }
@@ -45,7 +57,9 @@ class OperatorController extends Controller
      */
     public function create()
     {
-        return view('InventoryMaster.Operator.createOperator' );
+        $departments = $this->getDepartments();
+
+        return view('InventoryMaster.Operator.createOperator', compact('departments'));
     }
 
     /**
@@ -58,6 +72,7 @@ class OperatorController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required',
+            'department_id' => 'required',
         ]);
     
         try {
@@ -71,6 +86,7 @@ class OperatorController extends Controller
             $data = Operator::create(
                 [
                     'name' => $request->name, 
+                    'department_id' => $request->department_id,
                     'status' => 1, 
                     'username' => Auth()->user()->name,
                 ]
@@ -104,12 +120,13 @@ class OperatorController extends Controller
     public function edit($id)
     {
         $Operator = Operator::where('id', $id)->where('status', 1)->first();
+        $departments = $this->getDepartments();
 
         if (!$Operator) {
             return redirect()->back()->withErrors('Record not found')->withInput();
         }
 
-        return view('InventoryMaster.Operator.updateOperator', compact('Operator'));
+        return view('InventoryMaster.Operator.updateOperator', compact('Operator', 'departments'));
     }
 
     /**
@@ -122,8 +139,9 @@ class OperatorController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required'
-               ]);
+            'name' => 'required',
+            'department_id' => 'required',
+        ]);
 
         try {
             if ($validator->fails()) {
@@ -138,6 +156,7 @@ class OperatorController extends Controller
 
             $Operator->update([
                 'name' => $request->name,
+                'department_id' => $request->department_id,
                 'status' => 1,
                 'username' => Auth()->user()->name,
             ]);
@@ -162,8 +181,32 @@ class OperatorController extends Controller
     }
     public function deleteOperator($id)
     {
-        Operator::find($id)->update([
+        $Operator = Operator::find($id);
+
+        if (!$Operator) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Record not found',
+            ], 404);
+        }
+
+        $Operator->update([
             'status' => 0
         ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Record deleted successfully',
+        ]);
+    }
+
+    private function getDepartments()
+    {
+        return DB::table('department')
+            ->where('company_id', Session::get('run_company'))
+            ->where('status', 1)
+            ->select('id', 'department_name')
+            ->orderBy('department_name')
+            ->get();
     }
 }

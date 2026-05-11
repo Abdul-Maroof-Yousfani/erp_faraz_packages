@@ -14,9 +14,19 @@
             </ul>
         </div>
     </div>
+    @if(session('success'))
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class="alert alert-success alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    {{ session('success') }}
+                </div>
+            </div>
+        </div>
+    @endif
     <div class="row">
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-       
+            <div id="operatorMessage" style="display:none;"></div>
         </div>
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <div class="well_N">
@@ -63,6 +73,7 @@
                                                 <thead>
                                                 <tr>
                                                     <th class="text-center">Name</th>
+                                                    <th class="text-center">Department</th>
                                                     <!-- <th class="text-center">Rate</th>
                                                     <th class="text-center">Date</th> -->
                                                     <!-- <th class="text-center">To Date</th> -->
