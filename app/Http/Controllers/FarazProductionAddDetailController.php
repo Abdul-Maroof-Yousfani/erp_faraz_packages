@@ -2202,6 +2202,18 @@ class FarazProductionAddDetailController extends Controller
         );
     }
 
+    public function deleteProductionWastage(Request $request)
+    {
+        DB::connection('mysql2')->table('wastage')
+            ->where('id', $request->id)
+            ->update([
+                'status' => 0,
+                'username' => Auth::user()->name,
+            ]);
+
+        return 'true';
+    }
+
     private function recordProductionWastage($process, $itemId, $qty, $date, $productionOrderId = null, $remarks = null)
     {
         $masterId = DB::connection('mysql2')->table('wastage')->insertGetId([

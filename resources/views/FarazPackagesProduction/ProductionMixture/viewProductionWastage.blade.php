@@ -64,7 +64,7 @@ $this->m = Session::get('run_company');
                                             <tbody>
                                                 <?php $count = 0; ?>
                                                 @foreach($wastageList as $row)
-                                                    <tr>
+                                                    <tr id="wastageRow{{ $row->id }}">
                                                         <td class="text-center">{{ ++$count }}</td>
                                                         <td class="text-center">{{ $row->pr_no ?? '-' }}</td>
                                                         <td>{{ $processes[$row->process] ?? ucwords(str_replace('_', ' ', $row->process)) }}</td>
@@ -83,6 +83,9 @@ $this->m = Session::get('run_company');
                                                                         </a>
                                                                         <a href="{{ url('far_production/editProductionWastageForm/'.$row->id.'?pageType='.request('pageType').'&&parentCode='.request('parentCode').'&&m='.request('m', $m)) }}" type="button" class="dropdown-item_sale_order_list dropdown-item">
                                                                             <i class="fa-solid fa-pencil"></i> Edit
+                                                                        </a>
+                                                                        <a onclick="deleteProductionWastage('{{ $row->id }}')" type="button" class="dropdown-item_sale_order_list dropdown-item">
+                                                                            <i class="fa-solid fa-trash"></i> Delete
                                                                         </a>
                                                                     </li>
                                                                 </ul>
@@ -110,6 +113,22 @@ $this->m = Session::get('run_company');
         var wb = XLSX.utils.table_to_book(elt, { sheet: "sheet1" });
         return dl ? XLSX.write(wb, { bookType: type, bookSST: true, type: 'base64' }) :
             XLSX.writeFile(wb, fn || ('Production Wastage <?php echo date('d-M-Y') ?>.' + (type || 'xlsx')));
+    }
+</script>
+<script>
+    function deleteProductionWastage(id) {
+        if (confirm('Are you sure you want to delete this wastage record?')) {
+            $.ajax({
+                url: '{{ url('/') }}/far_prod/deleteProductionWastage',
+                type: 'GET',
+                data: { id: id },
+                success: function (response) {
+                    if (response == 'true') {
+                        $('#wastageRow' + id).fadeOut();
+                    }
+                }
+            });
+        }
     }
 </script>
 @endsection

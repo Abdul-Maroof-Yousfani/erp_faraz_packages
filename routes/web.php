@@ -2309,6 +2309,7 @@ Route::group(['prefix' => 'far_prod', 'middleware' => 'mysql2', 'before' => 'csr
     // production wastage ajax
     Route::post('/addProductionWastageDetail', 'FarazProductionAddDetailController@addProductionWastageDetail')->name('FarProduction.Wastage');
     Route::post('/updateProductionWastageDetail', 'FarazProductionAddDetailController@updateProductionWastageDetail')->name('FarProduction.WastageUpdate');
+    Route::get('/deleteProductionWastage', 'FarazProductionAddDetailController@deleteProductionWastage');
 
 
 });

@@ -959,6 +959,7 @@ class FarazProductionController extends Controller
             ->withCount('printings as usage_count')
             ->where('status', '=', 1)
             ->where('roll_qty', '!=', 0)
+            ->orderByDesc('id')
             ->get();
         $m = $this->m;
         return view('FarazPackagesProduction.ProductionMixture.viewProductionRolling', compact('rollingList', 'm'));
@@ -982,7 +983,7 @@ class FarazProductionController extends Controller
             $rollPricingList->where('type', 'Non-Printed');
         }
 
-        $rollPricingList = $rollPricingList->get();
+        $rollPricingList = $rollPricingList->orderByDesc('id')->get();
         $m = $this->m;
         return view('FarazPackagesProduction.ProductionMixture.viewProductionRollPrinting', compact('rollPricingList', 'm', 'printingType'));
     }
@@ -994,7 +995,9 @@ class FarazProductionController extends Controller
             'galaCutting',
             'packing'
         )
-            ->where('status', '=', 1)->get();
+            ->where('status', '=', 1)
+            ->orderByDesc('id')
+            ->get();
         $m = $this->m;
         return view('FarazPackagesProduction.ProductionMixture.viewProductionCuttingAndSealing', compact('cuttingAndSealingList', 'm'));
     }
@@ -1004,7 +1007,10 @@ class FarazProductionController extends Controller
         $packingList = ProductionPacking::with([
             'cuttingAndSealing.printedRoll.productionRoll.productionOrder',
             'galaCutting.cuttingAndSealing.printedRoll.productionRoll.productionOrder',
-        ])->where('status', 1)->get();
+        ])
+            ->where('status', 1)
+            ->orderByDesc('id')
+            ->get();
 
         $m = $this->m;
         return view('FarazPackagesProduction.ProductionMixture.viewProductionPacking', compact('packingList', 'm'));
