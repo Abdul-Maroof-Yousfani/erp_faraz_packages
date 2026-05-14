@@ -438,10 +438,10 @@ endif;
                                                                 oninput="bag_qq(1)">
                                                         </td>
                                                         <td>
-                                                            <input type="text" onchange="claculation('1')"
+                                                            <input type="text" oninput="kg_manual('1')" onchange="kg_manual('1')"
                                                                 class="form-control requiredField ActualQty"
                                                                 name="actual_qty[]" id="actual_qty1"
-                                                                placeholder="ACTUAL QTY" min="1" value="" readonly>
+                                                                placeholder="ACTUAL QTY" min="1" value="">
                                                             <input type="hidden" class="PackQty" name="pack_qty[]"
                                                                 id="pack_qty1">
                                                         </td>
@@ -656,14 +656,14 @@ endif;
                 '<input type="text" onkeyup="bag_qq(' + Counter + ')" class="form-control requiredField BagsQty" name="bags_qty[]" id="bags_qty' + Counter + '" placeholder="BAGS QTY">' +
                 '</td>' +
                 '<td>' +
-                '<input type="text" onchange="claculation(' + Counter + ')" class="form-control requiredField ActualQty" name="actual_qty[]" id="actual_qty' + Counter + '" placeholder="ACTUAL QTY" readonly>' +
+                '<input type="text" oninput="kg_manual(' + Counter + ')" onchange="kg_manual(' + Counter + ')" class="form-control requiredField ActualQty" name="actual_qty[]" id="actual_qty' + Counter + '" placeholder="ACTUAL QTY">' +
                 '<input type="hidden" ' +
                 'class="PackQty" ' +
                 'name="pack_qty[]" ' +
                 'id="pack_qty' + Counter + '">' +
                 '</td>' +
                 '<td>' +
-                '<input type="text" class="form-control requiredField" name="qty_lbs[]" id="qty_lbs' + Counter + '" placeholder="QTY LBS">' +
+                '<input type="text" class="form-control requiredField" name="qty_lbs[]" id="qty_lbs' + Counter + '" placeholder="QTY LBS" readonly>' +
                 '</td>' +
                 '<td>' +
                 '<select name="rate_cal_by[]" id="rate_cal_by_' + Counter + '"' +
@@ -961,9 +961,16 @@ endif;
 
             var total_qty = (bags_qty * pack_qty).toFixed(2);
             $('#actual_qty' + counter).val(total_qty);
-            $('#qty_lbs' + counter).val(total_qty * 2.2);
+            $('#qty_lbs' + counter).val((total_qty * 2.2).toFixed(2));
             claculation(counter);
 
+        }
+
+        function kg_manual(counter) {
+            // User typed KG directly — recalculate lbs and amounts live
+            var qty_kg = parseFloat($('#actual_qty' + counter).val()) || 0;
+            $('#qty_lbs' + counter).val((qty_kg * 2.2).toFixed(2));
+            claculation(counter);
         }
 
         function claculation(number) {
@@ -1073,7 +1080,7 @@ endif;
             $('#uom_id' + index).val(uom[1]);
             $('#item_code' + index).val(uom[2]);
             $('#actual_qty' + index).val(uom[3]);
-            $('#qty_lbs' + index).val(uom[3] * 2.2);
+            $('#qty_lbs' + index).val((parseFloat(uom[3]) * 2.2).toFixed(2));
             $('#pack_qty' + index).val(uom[3]);
 
             if (!$('#bags_qty' + index).val()) {

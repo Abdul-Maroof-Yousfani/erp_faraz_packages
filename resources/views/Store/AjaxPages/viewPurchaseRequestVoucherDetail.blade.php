@@ -244,107 +244,74 @@ if($_GET['pageType']=='viewlist'){
                             <table  class="table sale_older_tab3 table table-bordered sf-table-list">
                                 <thead>
                                     <tr>
-                                        {{-- <th style="text-align: center">S.NO</th> --}}
-                                        <!-- <th class="text-center">PR NO</th>
-                                        <th style="font-size: 13px;" class="text-center">PR  Date </th> -->
-
-                                        <th style="text-align: center">Requisitioner Description</th>
-                                        {{-- <th style="text-align: center">UOM</th> --}}
-                                        <th style="text-align: center" >Ship via per kg</th>
-                                        <th style="text-align: center" >Bags</th>
-                                        <!-- <th class="text-center hide" >No Of Carton <span class="rflabelsteric"><strong>*</strong></span></th> -->
+                                        <th style="text-align: center">Item Description</th>
+                                        <th style="text-align: center">UoM</th>
+                                        <th style="text-align: center">Bags</th>
+                                        <th style="text-align: center">Qty (KG)</th>
+                                        <th style="text-align: center">Qty (lbs)</th>
+                                        <th style="text-align: center">Rate Cal. By</th>
                                         <th style="text-align: center">U.Price</th>
-                                        <!-- <th class="text-center">Amount(PKR)</th> -->
-                                        <!-- <th class="text-center">Amount</th> -->
-
-                                        <!-- <th class="text-center">Discount%</th>
-                                        <th class="text-center">Discount Amount</th> -->
                                         <th style="text-align: center">Net Amount</th>
-                                        <!-- <th class="text-center showw" style="display: none">Amount In PKR</th> -->
-                                        {{-- <th style="text-align: center" class="printHide">View</th> --}}
+                                        <th style="text-align: center">DO No.</th>
+                                        <th style="text-align: center">Godown No.</th>
+                                        <th style="text-align: center">Location</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php
                                     $counter = 1;
-                                            $total=0;
+                                    $total=0;
                                     $total_exchange=0;
                                     $actual_amount =0;
                                     foreach ($purchaseRequestDataDetail as $row1){
+                                    $rate_cal_label = $row1->rate_cal_by == 2 ? 'By KGS' : ($row1->rate_cal_by == 3 ? 'By LBS' : 'By BAGS');
+                                    $qty_lbs_show = $row1->qty_lbs ?? round($row1->purchase_approve_qty * 2.2, 2);
+                                    $warehouse_name = $row1->warehouse_id ? CommonHelper::get_warehouse_name($row1->warehouse_id) : '-';
                                     ?>
                                     <tr>
-                                        {{-- <td style="text-align: center">{{ $counter++ }}</td> --}}
-                                        {{--<td class="text-center">< ?php echo strtoupper($row1->demand_no);?></td>--}}
-                                        {{--<td class="text-center">< ?php echo  CommonHelper::changeDateFormat($row1->demand_date);?></td>--}}
-
-                                        <td title="item_name={{CommonHelper::get_item_name($row1->sub_item_id)}}">
-                                            <?php $accType = Auth::user()->acc_type;
-                                            if($accType == 'client'):
-                                            ?>
-                                            <a class="LinkHide" href="<?php echo url('/') ?>/store/stockReportView?item_id=<?php echo $row1->sub_item_id?>&&pageType=&&parentCode=126&&m=1" target="_blank">
-                                                <?php echo CommonHelper::get_item_name($row1->sub_item_id);//echo CommonHelper::get_item_name($row1->sub_item_id);?>
-                                            </a>
-                                            <?php else:?>
+                                        <td>
                                             <?php echo CommonHelper::get_item_name($row1->sub_item_id);?>
-                                            <?php endif;?>
                                         </td>
-
-
-                                        <?php $sub_ic_detail=CommonHelper::get_subitem_detail($row1->sub_item_id);
-                                        $sub_ic_detail= explode(',',$sub_ic_detail)
-                                        ?>
-
-                                       
-                                        <td style="text-align: center"><?php echo $row1->purchase_approve_qty;?></td>
-                                        <td style="text-align: center"><?php echo $row1->bags_qty;?></td>
-
-                                        <td class="text-center hide"><?php echo $row1->no_of_carton;?></td>
-                                        <td style="text-align: center">{{ $cur }} {{ number_format($row1->rate, 3) }}</td>
-                                        <!-- <td class="text-right"><?php echo number_format($row1->rate * $row1->purchase_approve_qty * $row->currency_rate,3);?></td> -->
-                                        <!-- <td class="text-right"><?php echo number_format($row1->rate * $row1->purchase_approve_qty,3);?></td> -->  
-
-                                        <td style="text-align: center">{{ $cur }} {{ number_format($row1->net_amount,3) }}</td>
-                                        <td style="display: none"  class="text-right showw"><?php echo number_format($row1->net_amount*$row->currency_rate,3);?></td>
-                                        
+                                        <td style="text-align:center"><?php echo CommonHelper::get_uom_name_by_item($row1->sub_item_id);?></td>
+                                        <td style="text-align:center"><?php echo $row1->bags_qty;?></td>
+                                        <td style="text-align:center"><?php echo $row1->purchase_approve_qty;?></td>
+                                        <td style="text-align:center"><?php echo $qty_lbs_show;?></td>
+                                        <td style="text-align:center"><?php echo $rate_cal_label;?></td>
+                                        <td style="text-align:center">{{ $cur }} {{ number_format($row1->rate, 3) }}</td>
+                                        <td style="text-align:center">{{ $cur }} {{ number_format($row1->net_amount, 3) }}</td>
+                                        <td style="text-align:center"><?php echo $row1->do_no ?? '-';?></td>
+                                        <td style="text-align:center"><?php echo $row1->godown_no ?? '-';?></td>
+                                        <td style="text-align:center"><?php echo $warehouse_name;?></td>
                                     </tr>
                                     <?php
-                                            $actual_amount +=  $row1->rate * $row1->purchase_approve_qty;
-                                            $total+=$row1->net_amount;
-                                    $total_exchange+=$row1->net_amount*$row->currency_rate;
+                                    $actual_amount += $row1->rate * $row1->purchase_approve_qty;
+                                    $total += $row1->net_amount;
+                                    $total_exchange += $row1->net_amount * $row->currency_rate;
                                     }
                                     ?>
 
                                     <tr>
-
-                                        <td colspan="4">Total</td>
-                                        <!-- <td style="background-color: darkgray" class="text-right"  >{{number_format($actual_amount,2)}} ({{$currency}})</td> -->
+                                        <td colspan="7">Total</td>
                                         <td style="text-align: center" >{{ $cur }} {{number_format($total,2)}}</td>
-                                        <!-- <td style="background-color: darkgray;display: none" class="text-right showw">{{number_format($total_exchange,2)}}</td> -->
-                                        {{-- <td class="printHide"></td> --}}
+                                        <td colspan="3"></td>
                                     </tr>
 
                                     <tr>
                                         @php
                                             $pkr_sale_tax_amount = ($total_exchange*$row->sales_tax)/100;
                                         @endphp
-                                        <td colspan="4">{{ 'Sales Tax :'. $row->sales_tax.' %' }}</td>
+                                        <td colspan="7">{{ 'Sales Tax :'. $row->sales_tax.' %' }}</td>
                                         <td style="text-align: center">{{ $cur }} {{ number_format($row->sales_tax_amount,2)}}</td>
-                                        <!-- <td class="text-right showw" style="display: none" >{{   number_format($pkr_sale_tax_amount,2)}}</td> -->
-                                        {{-- <td class="printHide"></td> --}}
+                                        <td colspan="3"></td>
                                     </tr>
 
                                     <tr>
-
-                                        <td class="text-center" colspan="4">Grand Total</td>
+                                        <td class="text-center" colspan="7">Grand Total</td>
                                         <td style="text-align: center" >{{ $cur }} {{number_format($total+$row->sales_tax_amount,2)}}</td>
-                                        <!-- <td style="background-color: darkgray;display: none"  class="text-right showw" colspan="6">{{number_format($total_exchange+$pkr_sale_tax_amount,2)}}
-
-                                        </td> -->
-                                        {{-- <td class="printHide"></td> --}}
+                                        <td colspan="3"></td>
                                     </tr>
                                     <tr>
-                                        <td colspan="5" style="text-transform: capitalize;">Amount In Words : {{ $row->amount_in_words }} </td>
-                                        {{-- <td class="printHide"></td> --}}
+                                        <td colspan="11" style="text-transform: capitalize;">Amount In Words : {{ $row->amount_in_words }} </td>
                                     </tr>
                                 </tbody>
                             </table>

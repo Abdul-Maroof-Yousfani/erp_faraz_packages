@@ -787,14 +787,14 @@ class StoreAddDetailControler extends Controller
                 $purch_request_data->master_id=$master_id;
                 $purch_request_data->purchase_request_no=$purchaseRequestNo;
                 $purch_request_data->purchase_request_date=$request->po_date;
+                $purch_request_data->category_id=$request->input('category')[$key] ?? null;
                 $purch_request_data->sub_item_id=$request->input('item_id')[$key];
                 $purch_request_data->description=$row;
                 $purch_request_data->bags_qty=$request->input('bags_qty')[$key] ?? $request->input('actual_qty')[$key]/25;
+                $purch_request_data->qty_lbs=$request->input('qty_lbs')[$key] ?? 0;
+                $purch_request_data->rate_cal_by=$request->input('rate_cal_by')[$key] ?? 1;
                 $purch_request_data->purchase_request_qty=$request->input('actual_qty')[$key];
                 $purch_request_data->purchase_approve_qty=$request->input('actual_qty')[$key];
-
-                // $purch_request_data->no_of_carton=$request->input('no_of_carton')[$key];
-
 
                 $purch_request_data->rate=$request->input('rate')[$key];
                 $purch_request_data->amount=CommonHelper::check_str_replace($request->input('amount')[$key]);
@@ -809,6 +809,7 @@ class StoreAddDetailControler extends Controller
                 $purch_request_data->username=Auth::user()->name;
                 $purch_request_data->do_no = $request->input('do_no')[$key] ?? null;
                 $purch_request_data->godown_no = $request->input('godown_no')[$key] ?? null;
+                $purch_request_data->warehouse_id = $request->input('warehouse_id')[$key] ?? null;
                 $purch_request_data->save();
                  endforeach;
 

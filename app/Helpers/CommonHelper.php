@@ -1911,6 +1911,22 @@ class CommonHelper
         return $demand_type->name;
     }
 
+    public static function get_uom_name_by_item($item_id)
+    {
+        if (!$item_id) return '';
+        $item = DB::Connection('mysql2')->table('subitem')
+            ->join('uom', 'subitem.uom', '=', 'uom.id')
+            ->where('subitem.id', $item_id)
+            ->select('uom.uom_name')
+            ->first();
+        return $item ? strtoupper($item->uom_name) : '';
+    }
+
+    public static function get_warehouse_name($id)
+    {
+        return static::get_name_warehouse($id);
+    }
+
     public static function get_all_warehouse()
     {
         $warehouse = new Warehouse();

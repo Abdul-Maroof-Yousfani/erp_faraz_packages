@@ -23,6 +23,14 @@ $currentMonthEndDate   = date('Y-m-t');
     @include('modal')
     @include('number_formate')
 
+    <style>
+        .table-compact { font-size: 0.92rem; line-height: 1.15; }
+        .table-compact th, .table-compact td { padding: 5px 6px !important; vertical-align: middle; }
+        .table-compact input.form-control, .table-compact select.form-control { font-size: 0.88rem; padding: 4px 6px; height: 28px; }
+        .table-compact th { white-space: nowrap; font-weight: 600; }
+        .nowrap { white-space: nowrap; }
+    </style>
+
     <script>
         var counter=1;
     </script>
@@ -216,102 +224,135 @@ A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRB WITHHOLDING RULES-2014</tex
                         <div class="row">
                             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                 <div class="table-responsive" >
-                                    <table class="table table-bordered">
+                                    <table class="table table-bordered table-compact">
                                         <thead>
                                         <tr class="text-center">
-                                            <th colspan="8" class="text-center">Purchase Request Detail</th>
-                                            <th colspan="2" class="text-center">
-                                                <input type="button" class="btn btn-sm btn-primary" onclick="AddMoreDetails()" value="Add More Rows" />
-                                            </th>
+                                            <th colspan="14" class="text-center">Purchase Order Detail</th>
                                             <th class="text-center">
                                                 <span class="badge badge-success" id="span"><?php echo $purchase_order_data->count();?></span>
                                             </th>
                                         </tr>
                                         <tr>
-                                            <th class="text-center" style="width: 35%;">Item</th>
-                                            <th class="text-center" >Uom<span class="rflabelsteric"><strong>*</strong></span></th>
-                                            <th class="text-center" >Actual Qty<span class="rflabelsteric"><strong>*</strong></span></th>
-                                            <th class="text-center">Rate<span class="rflabelsteric"><strong>*</strong></span></th>
-                                            <th class="text-center">Amount<span class="rflabelsteric"><strong>*</strong></span></th>
-                                            <th class="text-center">Discount %<span class="rflabelsteric"><strong>*</strong></span></th>
-                                            <th class="text-center">Discount Amount<span class="rflabelsteric"><strong>*</strong></span></th>
-                                            <th class="text-center">Net Amount<span class="rflabelsteric"><strong>*</strong></span></th>
-                                            <th class="text-center">DO No.</th>
-                                            <th class="text-center">Godown No.</th>
-                                            <th class="text-center">Delete<span class="rflabelsteric"><strong>*</strong></span></th>
+                                            <th class="text-center nowrap" style="width:9%;font-size:0.9rem;">Category</th>
+                                            <th class="text-center nowrap" style="width:13%;font-size:0.9rem;">Item</th>
+                                            <th class="text-center nowrap" style="font-size:0.9rem;">UoM<span class="rflabelsteric"><strong>*</strong></span></th>
+                                            <th class="text-center nowrap" style="font-size:0.9rem;">Bags Qty<span class="rflabelsteric"><strong>*</strong></span></th>
+                                            <th class="text-center nowrap" style="font-size:0.9rem;">Qty (KG)<span class="rflabelsteric"><strong>*</strong></span></th>
+                                            <th class="text-center nowrap" style="font-size:0.9rem;">Qty (lbs)<span class="rflabelsteric"><strong>*</strong></span></th>
+                                            <th class="text-center nowrap" style="font-size:0.9rem;">Rate Cal. By<span class="rflabelsteric"><strong>*</strong></span></th>
+                                            <th class="text-center nowrap" style="font-size:0.9rem;">Rate<span class="rflabelsteric"><strong>*</strong></span></th>
+                                            <th class="text-center nowrap" style="font-size:0.9rem;">Amount<span class="rflabelsteric"><strong>*</strong></span></th>
+                                            <th class="text-center nowrap" style="font-size:0.9rem;">Amount (PKR)<span class="rflabelsteric"><strong>*</strong></span></th>
+                                            <th class="text-center nowrap" style="font-size:0.9rem;">Net Amount (PKR)<span class="rflabelsteric"><strong>*</strong></span></th>
+                                            <th class="text-center nowrap" style="font-size:0.85rem;">DO No.</th>
+                                            <th class="text-center nowrap" style="font-size:0.85rem;">Godown No.</th>
+                                            <th class="text-center nowrap" style="font-size:0.9rem;">Location<span class="rflabelsteric"><strong>*</strong></span></th>
+                                            <th class="text-center" style="font-size:0.9rem;">Action</th>
                                         </tr>
                                         </thead>
                                         <tbody id="AppnedHtml">
                                         <?php
                                         $Counter = 0;
                                         $total_amount=0;
-                                        $count=1;
                                         foreach($purchase_order_data as $Fil):
-
-                                        $sub_ic_detail=CommonHelper::get_subitem_detail($Fil->sub_item_id);
-                                        $sub_ic_detail= explode(',',$sub_ic_detail);
                                         $total_amount+=$Fil->net_amount;
                                         $Counter++;
+                                        $qty_lbs_val = $Fil->qty_lbs ?? round($Fil->purchase_approve_qty * 2.2, 2);
+                                        $rate_cal_by_val = $Fil->rate_cal_by ?? 1;
+                                        $warehouse_val = $Fil->warehouse_id ?? '';
+                                        $category_val = $Fil->category_id ?? '';
                                         ?>
-                                        <tr title="1" id="RemoveRows{{$Counter}}" class="AutoNo">
+                                        <tr title="{{$Counter}}" id="RemoveRows{{$Counter}}" class="AutoNo">
                                             <td>
-                                                {{-- <select  name="item_id[]" id="item_1" onchange="itemChange(1)"
-                                                class="form-control select2" disabled>
+                                                <select style="width:100% !important;"
+                                                    onchange="get_sub_item_edit('category_id_edit{{$Counter}}')"
+                                                    name="category[]" id="category_id_edit{{$Counter}}"
+                                                    class="form-control category select2">
+                                                    <option value="">Select</option>
+                                                    @foreach (CommonHelper::get_all_category() as $cat)
+                                                        <option value="{{ $cat->id }}" {{ $category_val == $cat->id ? 'selected' : '' }}>{{ $cat->main_ic }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <select style="width:100% !important;"
+                                                    onchange="get_item_name_po({{$Counter}})"
+                                                    name="item_id[]" id="item_id{{$Counter}}"
+                                                    class="form-control select2">
+                                                    <option value="">Select</option>
                                                     @foreach (CommonHelper::get_all_subitem() as $item)
-                                                        <option value="{{ $item->id }}" data-hscode="{{$item->hs_code}}" data-uom="{{$item->uom_name}}" {{$Fil->sub_item_id==$item->id ? "selected" : ''}}>
+                                                        <option value="{{ $item->id.'@'.$item->uom_name.'@'.$item->sub_ic.'@'.($item->pack_size ?? 1) }}"
+                                                            {{ $Fil->sub_item_id == $item->id ? 'selected' : '' }}>
                                                             {{ $item->sub_ic }}
                                                         </option>
                                                     @endforeach
-                                                </select> --}}
-                                                <input type="text" readonly class="form-control requiredField sam_jass" name="sub_ic_des[]" id="item_<?php echo $Counter?>" placeholder="ITEM" value="<?php echo htmlspecialchars($sub_ic_detail[3])?>">
-                                                <input type="hidden" class="requiredField" name="item_id[]" id="sub_<?php echo $Counter?>" value="<?php echo $Fil->sub_item_id?>">
-                                            </td>
-
-                                            <td>
-                                                <input readonly type="text" class="form-control" name="uom_id[]" id="uom_id<?php echo $Counter?>" value="<?php echo CommonHelper::get_uom_name($sub_ic_detail[0]);?>">
+                                                </select>
                                             </td>
                                             <td>
-                                                <input type="text" onkeyup="claculation('{{$count}}')" onblur="claculation('{{$count}}')" class="form-control requiredField ActualQty" name="actual_qty[]" id="actual_qty<?php echo $Counter?>" placeholder="ACTUAL QTY" min="1" value="<?php echo $Fil->purchase_approve_qty;?>">
+                                                <input readonly type="text" class="form-control" name="uom_id[]" id="uom_id{{$Counter}}" value="<?php echo CommonHelper::get_uom_name_by_item($Fil->sub_item_id);?>">
                                             </td>
                                             <td>
-                                                <input type="text" onkeyup="claculation('{{$count}}')" onblur="claculation('{{$count}}')" class="form-control requiredField ActualRate" name="rate[]" id="rate<?php echo $Counter?>" placeholder="RATE" min="1" value="<?php echo $Fil->rate?>">
+                                                <input type="text" oninput="bag_qq({{$Counter}})" class="form-control requiredField BagsQty" name="bags_qty[]" id="bags_qty{{$Counter}}" value="<?php echo $Fil->bags_qty;?>">
                                             </td>
                                             <td>
-                                                <input type="text" class="form-control" name="amount[]" id="amount<?php echo $Counter?>" placeholder="AMOUNT" min="1" value="<?php echo $Fil->amount?>" readonly>
+                                                <input type="text" oninput="kg_manual({{$Counter}})" onchange="kg_manual({{$Counter}})" class="form-control requiredField ActualQty" name="actual_qty[]" id="actual_qty{{$Counter}}" value="<?php echo $Fil->purchase_approve_qty;?>">
+                                                <input type="hidden" class="PackQty" name="pack_qty[]" id="pack_qty{{$Counter}}" value="<?php echo $Fil->purchase_approve_qty;?>">
                                             </td>
                                             <td>
-                                                <input type="text" onkeyup="discount_percent(this.id)" onblur="discount_percent(this.id)" class="form-control requiredField" name="discount_percent[]" id="discount_percent<?php echo $Counter?>" placeholder="DISCOUNT" min="1" value="<?php echo $Fil->discount_percent;?>">
+                                                <input type="number" readonly class="form-control" name="qty_lbs[]" id="qty_lbs{{$Counter}}" step="any" value="<?php echo $qty_lbs_val;?>">
                                             </td>
                                             <td>
-                                                <input type="text" onkeyup="discount_amount(this.id)" onblur="discount_amount(this.id)" class="form-control requiredField" name="discount_amount[]" id="discount_amount<?php echo $Counter?>" placeholder="DISCOUNT" min="1" value="<?php echo $Fil->discount_amount;?>">
+                                                <select class="form-control select2" name="rate_cal_by[]" id="rate_cal_by_{{$Counter}}" onchange="calculateLineAmount(this)">
+                                                    <option value="1" {{ $rate_cal_by_val == 1 ? 'selected' : '' }}>By BAGS</option>
+                                                    <option value="2" {{ $rate_cal_by_val == 2 ? 'selected' : '' }}>By KGS</option>
+                                                    <option value="3" {{ $rate_cal_by_val == 3 ? 'selected' : '' }}>By LBS</option>
+                                                </select>
                                             </td>
                                             <td>
-                                                <input type="text" class="form-control net_amount_dis" name="after_dis_amount[]" id="after_dis_amount<?php echo $Counter?>" placeholder="NET AMOUNT" min="1" value="<?php echo $Fil->net_amount;?>" readonly>
+                                                <input type="text" onkeyup="claculation('{{$Counter}}')" class="form-control requiredField ActualRate" name="rate[]" id="rate{{$Counter}}" value="<?php echo $Fil->rate;?>">
                                             </td>
                                             <td>
-                                                <input type="text" class="form-control" name="do_no[]" id="do_no<?php echo $Counter?>" placeholder="DO No." value="<?php echo htmlspecialchars($Fil->do_no ?? ''); ?>" />
+                                                <input type="text" class="form-control number_format" name="amount[]" id="amount{{$Counter}}" value="<?php echo $Fil->amount;?>" readonly>
                                             </td>
                                             <td>
-                                                <input type="text" class="form-control" name="godown_no[]" id="godown_no<?php echo $Counter?>" placeholder="Godown No." value="<?php echo htmlspecialchars($Fil->godown_no ?? ''); ?>" />
+                                                <input type="text" class="form-control actual_amount number_format" name="actual_amount[]" id="actual_amount{{$Counter}}" value="<?php echo $Fil->amount;?>" readonly>
                                             </td>
-                                            <td style="background-color: #ccc"><input onclick="view_history(<?php echo $Counter?>)" type="checkbox" id="view_history<?php echo $Counter?>"> &nbsp;&nbsp; @if($Counter>1) <button type="button" class="btn btn-sm btn-danger" id="BtnRemove{{$Counter}}" onclick="RemoveSection('{{$Counter}}')"> - </button> @endif</td>
+                                            <input type="hidden" onkeyup="discount_percent(this.id)" class="form-control" name="discount_percent[]" id="discount_percent{{$Counter}}" value="<?php echo $Fil->discount_percent;?>">
+                                            <input type="hidden" onkeyup="discount_amount(this.id)" class="form-control" name="discount_amount[]" id="discount_amount{{$Counter}}" value="<?php echo $Fil->discount_amount;?>">
+                                            <td>
+                                                <input type="text" class="form-control net_amount_dis number_format" name="after_dis_amount[]" id="after_dis_amount{{$Counter}}" value="<?php echo $Fil->net_amount;?>" readonly>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control" name="do_no[]" id="do_no{{$Counter}}" placeholder="DO No." value="<?php echo htmlspecialchars($Fil->do_no ?? ''); ?>">
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control" name="godown_no[]" id="godown_no{{$Counter}}" placeholder="Godown No." value="<?php echo htmlspecialchars($Fil->godown_no ?? ''); ?>">
+                                            </td>
+                                            <td>
+                                                <select class="form-control select2" name="warehouse_id[]" id="warehouse_{{$Counter}}">
+                                                    @foreach(CommonHelper::get_all_warehouse() as $wh)
+                                                        <option value="{{ $wh->id }}" {{ $warehouse_val == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </td>
+                                            <td style="background-color:#ccc" class="text-center">
+                                                @if($Counter>1)
+                                                <button type="button" class="btn btn-sm btn-danger" id="BtnRemove{{$Counter}}" onclick="RemoveSection('{{$Counter}}')"> - </button>
+                                                @else
+                                                <input type="button" class="btn btn-sm btn-primary" onclick="AddMoreDetails()" value="+" />
+                                                @endif
+                                            </td>
                                         </tr>
-
-                                        <?php
-
-                                     $count++;   endforeach;?>
+                                        <?php endforeach;?>
                                         </tbody>
                                         <tbody>
-                                        <tr  style="font-size:large;font-weight: bold">
+                                        <tr style="font-size:large;font-weight: bold">
                                             <td class="text-center" colspan="9">Total</td>
-                                            <td id="" class="text-right" colspan="1"><input readonly value="{{$total_amount}}" class="form-control" type="text" id="net" name="net"/> </td>
-                                            <td colspan="2"></td>
+                                            <td class="text-right" colspan="1"><input readonly value="{{$total_amount}}" class="form-control number_format" type="text" id="net" name="net"/></td>
+                                            <td colspan="5"></td>
                                         </tr>
                                         </tbody>
                                     </table>
-
-
-
                                 </div>
                             </div>
                         </div>
@@ -428,73 +469,102 @@ A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRB WITHHOLDING RULES-2014</tex
         function AddMoreDetails()
         {
             Counter++;
+            var category = 'category_id_edit' + Counter;
             $('#AppnedHtml').append('<tr id="RemoveRows'+Counter+'" class="AutoNo">' +
-                    '<td class="AutoCounter" title="'+AutoCount+'">' +
-                    '<input type="text" class="form-control sam_jass" name="sub_ic_des[]" id="item_'+Counter+'" placeholder="ITEM">' +
-                    '<input type="hidden" class="requiredField" name="item_id[]" id="sub_'+Counter+'">'+
-                    '</td>' +
-                    '<td>' +
-                    '<input readonly type="text" class="form-control" name="uom_id[]" id="uom_id'+Counter+'" >' +
-                    '</td>' +
-                    '<td>' +
-                    '<input type="text" onkeyup="claculation('+Counter+')" class="form-control requiredField ActualQty" name="actual_qty[]" id="actual_qty'+Counter+'" placeholder="ACTUAL QTY">' +
-                    '</td>' +
-                    '<td>' +
-                    '<input type="text" onkeyup="claculation('+Counter+')" class="form-control requiredField ActualRate" name="rate[]" id="rate'+Counter+'" placeholder="RATE">' +
-                    '</td>' +
-                    '<td>' +
-                    '<input readonly type="text" class="form-control" name="amount[]" id="amount'+Counter+'" placeholder="AMOUNT">' +
-                    '</td>' +
-                    '<td>' +
-                    '<input type="text" onkeyup="discount_percent(this.id)" class="form-control requiredField" name="discount_percent[]" id="discount_percent'+Counter+'" placeholder="DISCOUNT" value="0">' +
-                    '</td>' +
-                    '<td>' +
-                    '<input type="text" onkeyup="discount_amount(this.id)" class="form-control requiredField" name="discount_amount[]" id="discount_amount'+Counter+'" placeholder="DISCOUNT" value="0">' +
-                    '</td>' +
-                    '<td>' +
-                    '<input readonly type="text" class="form-control net_amount_dis" name="after_dis_amount[]" id="after_dis_amount'+Counter+'" placeholder="NET AMOUNT">' +
-                    '</td>' +
-                    '<td>' +
-                    '<input type="text" class="form-control" name="do_no[]" id="do_no'+Counter+'" placeholder="DO No." />' +
-                    '</td>' +
-                    '<td>' +
-                    '<input type="text" class="form-control" name="godown_no[]" id="godown_no'+Counter+'" placeholder="Godown No." />' +
-                    '</td>' +
-                    '<td class="text-center">' +
-                    '<input onclick="view_history('+Counter+')" type="checkbox" id="view_history'+Counter+'">&nbsp;&nbsp;'+
-                    '<button type="button" class="btn btn-sm btn-danger" id="BtnRemove'+Counter+'" onclick="RemoveSection('+Counter+')"> - </button>' +
-                    '</td>' +
-                    '</tr>');
+                '<td>' +
+                '<select style="width:100% !important;" onchange="get_sub_item_edit(`' + category + '`)" name="category[]" id="category_id_edit'+Counter+'" class="form-control category select2">' +
+                '<option value="">Select</option>' +
+                '@foreach (CommonHelper::get_all_category() as $cat):' +
+                    '<option value="{{ $cat->id }}"> {{ $cat->main_ic }} </option>' +
+                '@endforeach' +
+                '</select>' +
+                '</td>' +
+                '<td>' +
+                '<select style="width:100% !important;" onchange="get_item_name_po('+Counter+')" name="item_id[]" id="item_id'+Counter+'" class="form-control select2">' +
+                '<option value="">Select</option>' +
+                '</select>' +
+                '</td>' +
+                '<td><input readonly type="text" class="form-control" name="uom_id[]" id="uom_id'+Counter+'"></td>' +
+                '<td><input type="text" oninput="bag_qq('+Counter+')" class="form-control requiredField BagsQty" name="bags_qty[]" id="bags_qty'+Counter+'" placeholder="Bags Qty"></td>' +
+                '<td>' +
+                '<input type="text" oninput="kg_manual('+Counter+')" onchange="kg_manual('+Counter+')" class="form-control requiredField ActualQty" name="actual_qty[]" id="actual_qty'+Counter+'" placeholder="ACTUAL QTY">' +
+                '<input type="hidden" class="PackQty" name="pack_qty[]" id="pack_qty'+Counter+'">' +
+                '</td>' +
+                '<td><input type="number" readonly class="form-control" name="qty_lbs[]" id="qty_lbs'+Counter+'" step="any" placeholder="QTY LBS"></td>' +
+                '<td>' +
+                '<select class="form-control select2" name="rate_cal_by[]" id="rate_cal_by_'+Counter+'" onchange="calculateLineAmount(this)">' +
+                '<option value="1">By BAGS</option><option value="2">By KGS</option><option value="3">By LBS</option>' +
+                '</select>' +
+                '</td>' +
+                '<td><input type="text" onkeyup="claculation('+Counter+')" class="form-control requiredField ActualRate" name="rate[]" id="rate'+Counter+'" placeholder="RATE"></td>' +
+                '<td><input readonly type="text" class="form-control number_format" name="amount[]" id="amount'+Counter+'" placeholder="AMOUNT"></td>' +
+                '<td><input readonly type="text" class="form-control actual_amount number_format" name="actual_amount[]" id="actual_amount'+Counter+'" placeholder="AMOUNT"></td>' +
+                '<input type="hidden" onkeyup="discount_percent(this.id)" class="form-control" value="0" name="discount_percent[]" id="discount_percent'+Counter+'">' +
+                '<input type="hidden" onkeyup="discount_amount(this.id)" class="form-control" value="0" name="discount_amount[]" id="discount_amount'+Counter+'">' +
+                '<td><input readonly type="text" class="form-control net_amount_dis number_format" name="after_dis_amount[]" id="after_dis_amount'+Counter+'" placeholder="NET AMOUNT"></td>' +
+                '<td><input type="text" class="form-control" name="do_no[]" id="do_no'+Counter+'" placeholder="DO No."></td>' +
+                '<td><input type="text" class="form-control" name="godown_no[]" id="godown_no'+Counter+'" placeholder="Godown No."></td>' +
+                '<td>' +
+                '<select class="form-control select2" name="warehouse_id[]" id="warehouse_'+Counter+'">' +
+                '@foreach (CommonHelper::get_all_warehouse() as $wh)' +
+                    '<option value="{{ $wh->id }}">{{ $wh->name }}</option>' +
+                '@endforeach' +
+                '</select>' +
+                '</td>' +
+                '<td style="background-color:#ccc" class="text-center">' +
+                '<button type="button" class="btn btn-sm btn-danger" id="BtnRemove'+Counter+'" onclick="RemoveSection('+Counter+')"> - </button>' +
+                '</td>' +
+                '</tr>');
             $('.select2').select2();
-
+            $('.number_format').number(true, 2);
             var AutoNo = $(".AutoNo").length;
             $('#span').text(AutoNo);
+        }
 
-            var AutoCount=1;;
-            $(".AutoCounter").each(function(){
-                AutoCount++;
-                $(this).prop('title', AutoCount);
-
-            });
-            $('.sam_jass').bind("enterKey",function(e){
-
-
-                $('#items').modal('show');
-
-
-            });
-            $('.sam_jass').keyup(function(e){
-                if(e.keyCode == 13)
-                {
-                    selected_id=this.id;
-                    $(this).trigger("enterKey");
-
-
+        function get_sub_item_edit(id) {
+            var category_id = $('#' + id).val();
+            var counter = id.replace('category_id_edit', '');
+            $.ajax({
+                url: '{{ url("/pdc/get_sub_item") }}',
+                type: 'GET',
+                data: { category_id: category_id },
+                success: function(response) {
+                    $('#item_id' + counter).html(response);
+                    $('.select2').select2();
                 }
-
             });
+        }
 
+        function get_item_name_po(index) {
+            var item = $('#item_id' + index).val();
+            if (!item) return;
+            var uom = item.split('@');
+            $('#uom_id' + index).val(uom[1]);
+            $('#actual_qty' + index).val(uom[3]);
+            $('#qty_lbs' + index).val((parseFloat(uom[3]) * 2.2).toFixed(2));
+            $('#pack_qty' + index).val(uom[3]);
+            if (!$('#bags_qty' + index).val()) $('#bags_qty' + index).val(1);
+            bag_qq(index);
+        }
 
+        function bag_qq(counter) {
+            var bags_qty = parseFloat($('#bags_qty' + counter).val()) || 1;
+            var pack_qty = parseFloat($('#pack_qty' + counter).val()) || 0;
+            var total_qty = (bags_qty * pack_qty).toFixed(2);
+            $('#actual_qty' + counter).val(total_qty);
+            $('#qty_lbs' + counter).val((total_qty * 2.2).toFixed(2));
+            claculation(counter);
+        }
+
+        function kg_manual(counter) {
+            var qty_kg = parseFloat($('#actual_qty' + counter).val()) || 0;
+            $('#qty_lbs' + counter).val((qty_kg * 2.2).toFixed(2));
+            claculation(counter);
+        }
+
+        function calculateLineAmount(element) {
+            var rowCounter = element.id.replace('rate_cal_by_', '');
+            claculation(rowCounter);
         }
 
         function view_history(id)
@@ -745,32 +815,25 @@ A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRB WITHHOLDING RULES-2014</tex
 
         function claculation(number)
         {
-            var  qty=$('#actual_qty'+number).val();
-            var  rate=$('#rate'+number).val();
-            var currency = $('#currency_rate').val();
-            if (currency== '')
-            {
-                currency = 1;
-            }
-            var total=parseFloat(qty*rate*currency).toFixed(2);
+            var rate_cal_by = $('#rate_cal_by_' + number).val() || "1";
+            var bags_qty = parseFloat($('#bags_qty' + number).val()) || 0;
+            var qty_kg   = parseFloat($('#actual_qty' + number).val()) || 0;
+            var qty_lbs  = parseFloat($('#qty_lbs' + number).val()) || 0;
+            var rate     = parseFloat($('#rate' + number).val()) || 0;
+            var currency = parseFloat($('#currency_rate').val()) || 1;
 
-            $('#amount'+number).val(total);
+            var multiplier = 0;
+            if (rate_cal_by === "1")      multiplier = bags_qty;
+            else if (rate_cal_by === "2") multiplier = qty_kg;
+            else if (rate_cal_by === "3") multiplier = qty_lbs;
 
-            var amount = 0;
-            count=1;
-            $('.net_amount_dis').each(function (i, obj) {
+            var total = (multiplier * rate * currency).toFixed(2);
+            $('#amount' + number).val(total);
+            $('#actual_amount' + number).val(total);
 
-                amount += +$('#'+obj.id).val();
-
-                count++;
-            });
-            amount=parseFloat(amount);
-
-
-            sales_tax('sales_taxx');
-            discount_percent('discount_percent'+number);
+            discount_percent('discount_percent' + number);
             net_amount();
-            //  toWords(1);
+            sales_tax('sales_taxx');
         }
         // function sales_tax(id)
         // {
