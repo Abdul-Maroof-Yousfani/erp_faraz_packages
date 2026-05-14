@@ -872,6 +872,102 @@ function addDirectgrn()
         }
     }
 
+    public static function getApprovedGrnBySupplierForReturn(){
+        $id = $_GET['supplier_id'];
+        echo '<option value="">Select GRN No</option>';
+
+        $GoodsReceiptNote = new GoodsReceiptNote();
+        $GoodsReceiptNote = $GoodsReceiptNote->SetConnection('mysql2');
+        $rows = $GoodsReceiptNote
+            ->where('status', 1)
+            ->where('supplier_id', $id)
+            ->whereIn('grn_status', [2, 3])
+            ->select('id', 'grn_no', 'grn_date')
+            ->orderBy('grn_date', 'DESC')
+            ->orderBy('id', 'DESC')
+            ->get();
+
+        foreach($rows as $row){
+            $label = strtoupper($row->grn_no) . ' => ' . CommonHelper::changeDateFormat($row->grn_date);
+            echo '<option value="' . $row->id . '*' . $row->grn_no . '*' . $row->grn_date . '">' . $label . '</option>';
+        }
+    }
+
+    public function makeFormPurchaseReturnDetailByGrnNo(){
+        $m = $_GET['m'];
+        $makeGetValue = explode('*', $_GET['GrnValue']);
+        $GrnId   = $makeGetValue[0] ?? 0;
+        $GrnNo   = $makeGetValue[1] ?? '';
+        $GrnDate = $makeGetValue[2] ?? '';
+
+        CommonHelper::companyDatabaseConnection($m);
+
+        $DataMaster = DB::connection('mysql2')->table('goods_receipt_note')
+            ->where('status', 1)
+            ->where('id', $GrnId)
+            ->first();
+
+        // Get GRN detail rows
+        $DataDetail = DB::connection('mysql2')->table('grn_data as gd')
+            ->where('gd.master_id', $GrnId)
+            ->where('gd.status', 1)
+            ->select(
+                'gd.id as purchase_grn_data_id',
+                'gd.sub_item_id as sub_item',
+                'gd.purchase_recived_qty',
+                'gd.rate',
+                DB::raw('gd.purchase_recived_qty * gd.rate as amount'),
+                'gd.discount_percent',
+                'gd.discount_amount',
+                'gd.net_amount',
+                'gd.warehouse_id',
+                DB::raw('COALESCE(gd.batch_code, "") as batch_code'),
+                DB::raw('gd.purchase_recived_qty as qty'),
+                'gd.do_no',
+                'gd.godown_no',
+                DB::raw('"" as grn_description')
+            )
+            ->get();
+
+        // For tax summary — try to get from linked PO
+        $originalBeforeTaxAmount = (float) $DataDetail->sum('amount');
+        $originalTaxAmount       = 0;
+        $originalTaxPercent      = 0;
+
+        if ($DataMaster && $DataMaster->po_no) {
+            $po = DB::connection('mysql2')->table('purchase_request')
+                ->where('purchase_request_no', $DataMaster->po_no)
+                ->where('status', 1)
+                ->select('sales_tax', 'sales_tax_amount')
+                ->first();
+            if ($po) {
+                $originalTaxPercent = (float) ($po->sales_tax ?? 0);
+                $originalTaxAmount  = ($originalBeforeTaxAmount * $originalTaxPercent) / 100;
+            }
+        }
+        $originalAfterTaxAmount = $originalBeforeTaxAmount + $originalTaxAmount;
+
+        // Use GrnId as InvoiceId so the existing blade/controller works seamlessly
+        $InvoiceId   = $GrnId;
+        $InvoiceNo   = $GrnNo;
+        $InvoiceDate = $GrnDate;
+
+        CommonHelper::reconnectMasterDatabase();
+
+        return view('Purchase.AjaxPages.makeFormPurchaseReturnDetailByInvoiceNo', compact(
+            'DataMaster',
+            'DataDetail',
+            'InvoiceId',
+            'InvoiceNo',
+            'InvoiceDate',
+            'm',
+            'originalBeforeTaxAmount',
+            'originalTaxAmount',
+            'originalTaxPercent',
+            'originalAfterTaxAmount'
+        ));
+    }
+
     public static function getPurchaseInvoiceNoBySupplier(){
         $id = $_GET['supplier_id'];
         echo '<option value="">Select Purchase Invoice</option>';

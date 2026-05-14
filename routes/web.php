@@ -1231,6 +1231,8 @@ Route::group(['prefix' => 'pmfal', 'middleware' => 'mysql2', 'before' => 'csrf']
     Route::get('/get_po', 'PurchaseMakeFormAjaxLoadController@get_po');
     Route::get('/getGrnNoBySupplier', 'PurchaseMakeFormAjaxLoadController@getGrnNoBySupplier');
     Route::get('/getPurchaseInvoiceNoBySupplier', 'PurchaseMakeFormAjaxLoadController@getPurchaseInvoiceNoBySupplier');
+    Route::get('/getApprovedGrnBySupplierForReturn', 'PurchaseMakeFormAjaxLoadController@getApprovedGrnBySupplierForReturn');
+    Route::get('/makeFormPurchaseReturnDetailByGrnNo', 'PurchaseMakeFormAjaxLoadController@makeFormPurchaseReturnDetailByGrnNo');
 
     Route::get('/get_refer', 'PurchaseMakeFormAjaxLoadController@get_refer');
     Route::get('/get_ledger_refrence_wise', 'PurchaseMakeFormAjaxLoadController@get_ledger_refrence_wise');

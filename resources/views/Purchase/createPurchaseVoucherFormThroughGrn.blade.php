@@ -54,13 +54,15 @@ use App\Helpers\ReuseableCode;
         $terms_of_paym = '';
         $no_days = '';
         $bill_date=$good_recipt_note->bill_date;
-        $purchase_reqiest->terms_of_paym;
-        if($purchase_reqiest->terms_of_paym == 1) {
+        $raw_terms = $purchase_reqiest->terms_of_paym ?? '';
+        if($raw_terms == 1 || $raw_terms == 'Advance') {
             $terms_of_paym = 'Advance';
-        } elseif($purchase_reqiest->terms_of_paym == 2) {
+        } elseif($raw_terms == 2 || $raw_terms == 'Against Delivery') {
             $terms_of_paym = 'Against Delivery';
-        } elseif($purchase_reqiest->terms_of_paym == 3) {
+        } elseif($raw_terms == 3 || $raw_terms == 'Credit') {
             $terms_of_paym = 'Credit';
+        } else {
+            $terms_of_paym = $raw_terms;
         }
         $supplier = CommonHelper::getSupplierDetail($good_recipt_note->supplier_id);
         $no_days = $supplier->no_of_days;

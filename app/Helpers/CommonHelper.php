@@ -1988,7 +1988,7 @@ class CommonHelper
 
         $grn_data = new GRNData();
         $grn_data = $grn_data->SetConnection('mysql2');
-        $grn_data = $grn_data->where('master_id', $master_id)->select('id', 'grn_no', 'sub_item_id', 'purchase_recived_qty', 'qc_qty', 'po_data_id', 'rate', 'amount', 'discount_percent', 'discount_amount', 'net_amount', 'description')->get();
+        $grn_data = $grn_data->where('master_id', $master_id)->select('id', 'grn_no', 'sub_item_id', 'purchase_recived_qty', 'qc_qty', 'po_data_id', 'rate', 'amount', 'discount_percent', 'discount_amount', 'net_amount', 'description', 'do_no', 'godown_no', 'warehouse_id')->get();
         return $grn_data;
     }
 

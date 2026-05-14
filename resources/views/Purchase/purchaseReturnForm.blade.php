@@ -38,7 +38,7 @@ use App\Helpers\CommonHelper;
                                                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                                                     <label class="sf-label">Supplier</label>
                                                     <span class="rflabelsteric"><strong>*</strong></span>
-                                                    <select class="form-control requiredField" required name="supplier" id="supplier" onchange="getPurchaseInvoiceNoBySupplier()">
+                                                    <select class="form-control requiredField" required name="supplier" id="supplier" onchange="getApprovedGrnBySupplier()">
                                                         <option value="">Select Supplier</option>
                                                         <?php foreach(CommonHelper::get_all_supplier() as $row){?>
                                                         <option value="{{$row->id}}"> {{ucwords($row->name)}} </option>
@@ -47,12 +47,10 @@ use App\Helpers\CommonHelper;
                                                 </div>
 
                                                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-                                                    <label class="sf-label">Purchase Invoice NO</label>
+                                                    <label class="sf-label">GRN No (Approved)</label>
                                                     <span class="rflabelsteric"><strong>*</strong></span>
-                                                    <select class="form-control requiredField" required name="purchase_invoice_no" id="purchase_invoice_no" onchange="loadPurchaseReturnDetailByInvoiceNo()">
-                                                        <option>select</option>
-
-                                                        <?php ?>
+                                                    <select class="form-control requiredField" required name="grn_value" id="grn_value" onchange="loadPurchaseReturnDetailByGrnNo()">
+                                                        <option value="">Select GRN</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -82,37 +80,33 @@ use App\Helpers\CommonHelper;
             $('#supplier').select2();
         });
 
-        function getPurchaseInvoiceNoBySupplier() {
-
+        function getApprovedGrnBySupplier() {
             $('.loadGoodsReceiptNoteDetailSection').html('');
-            var supplier_id=$('#supplier').val();
+            var supplier_id = $('#supplier').val();
             $.ajax({
-                url: '<?php echo url('/')?>/pmfal/getPurchaseInvoiceNoBySupplier',
+                url: '<?php echo url('/')?>/pmfal/getApprovedGrnBySupplierForReturn',
                 type: "GET",
-                data: { supplier_id:supplier_id},
-                success:function(data)
-                {
-                    $('#purchase_invoice_no').html(data);
-                    $('#purchase_invoice_no').select2();
+                data: { supplier_id: supplier_id },
+                success: function(data) {
+                    $('#grn_value').html(data);
+                    $('#grn_value').select2();
                 }
             });
         }
 
-        function loadPurchaseReturnDetailByInvoiceNo(){
-
-
-            var PurchaseInvoiceNo = $('#purchase_invoice_no').val();
+        function loadPurchaseReturnDetailByGrnNo() {
+            var GrnValue = $('#grn_value').val();
             var m = '<?php echo $_GET['m']?>';
-            if(PurchaseInvoiceNo == ''){
-                alert('Please Select Purchase Invoice No');
+            if (GrnValue == '' || GrnValue == null) {
+                alert('Please Select GRN No');
                 $('.loadGoodsReceiptNoteDetailSection').html('');
-            }else{
+            } else {
                 $('.loadGoodsReceiptNoteDetailSection').html('<div class="row"><div class="col-lg-12 col-md-12 col-sm-12 col-xs-12"><div class="loader"></div></div></div>');
                 $.ajax({
-                    url: '<?php echo url('/')?>/pmfal/makeFormPurchaseReturnDetailByInvoiceNo',
+                    url: '<?php echo url('/')?>/pmfal/makeFormPurchaseReturnDetailByGrnNo',
                     type: "GET",
-                    data: { PurchaseInvoiceNo:PurchaseInvoiceNo,m:m},
-                    success:function(data) {
+                    data: { GrnValue: GrnValue, m: m },
+                    success: function(data) {
                         $('.loadGoodsReceiptNoteDetailSection').html(data);
                     }
                 });

@@ -3,9 +3,15 @@ use App\Helpers\CommonHelper;
 use App\Helpers\ReuseableCode;
 
 $m = $_GET['m'];
-$makeGetValue = explode('*', $_GET['PurchaseInvoiceNo']);
-$InvoiceId = $makeGetValue[0] ?? 0;
-$InvoiceNo = $makeGetValue[1] ?? '';
+
+// Support both GRN-based and Invoice-based calls
+if (isset($_GET['GrnValue'])) {
+    $makeGetValue = explode('*', $_GET['GrnValue']);
+} else {
+    $makeGetValue = explode('*', $_GET['PurchaseInvoiceNo'] ?? '');
+}
+$InvoiceId   = $makeGetValue[0] ?? 0;
+$InvoiceNo   = $makeGetValue[1] ?? '';
 $InvoiceDate = $makeGetValue[2] ?? '';
 ?>
 @include('number_formate')
@@ -26,9 +32,13 @@ $InvoiceDate = $makeGetValue[2] ?? '';
     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
         <label for="">Purchase Invoice Date</label>
         <input type="date" id="InvoiceDate" name="InvoiceDate" value="<?php echo $InvoiceDate?>" class="form-control" readonly>
-        <input type="hidden" id="PurchaseInvoiceNo" name="PurchaseInvoiceNo" value="<?php echo $InvoiceNo?>" class="form-control" readonly>
-        <input type="hidden" id="PurchaseInvoiceId" name="PurchaseInvoiceId" value="<?php echo $InvoiceId?>" class="form-control" readonly>
+        <input type="hidden" id="PurchaseInvoiceNo"   name="PurchaseInvoiceNo"   value="<?php echo $InvoiceNo?>"   class="form-control" readonly>
+        <input type="hidden" id="PurchaseInvoiceId"   name="PurchaseInvoiceId"   value="<?php echo $InvoiceId?>"   class="form-control" readonly>
         <input type="hidden" id="PurchaseInvoiceDate" name="PurchaseInvoiceDate" value="<?php echo $InvoiceDate?>" class="form-control" readonly>
+        {{-- GRN aliases so controller fallback works for both flows --}}
+        <input type="hidden" name="GrnId"   value="<?php echo $InvoiceId?>">
+        <input type="hidden" name="GrnNo"   value="<?php echo $InvoiceNo?>">
+        <input type="hidden" name="GrnDate" value="<?php echo $InvoiceDate?>">
     </div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <label for="">Remarks</label>
