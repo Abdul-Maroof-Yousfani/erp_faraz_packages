@@ -13,6 +13,7 @@ if($accType == 'client'){
 $current_date = date('Y-m-d');
 $currentMonthStartDate = date('Y-m-01');
 $currentMonthEndDate   = date('Y-m-t');
+$currencyId = explode(',', $purchase_order->currency_id ?? '')[0] ?? '';
 
 ?>
 
@@ -28,6 +29,8 @@ $currentMonthEndDate   = date('Y-m-t');
         .table-compact th, .table-compact td { padding: 5px 6px !important; vertical-align: middle; }
         .table-compact input.form-control, .table-compact select.form-control { font-size: 0.88rem; padding: 4px 6px; height: 28px; }
         .table-compact th { white-space: nowrap; font-weight: 600; }
+        .col-narrow  { width: 95px  !important; min-width: 95px  !important; }
+        .col-very-narrow { width: 70px !important; min-width: 70px !important; }
         .nowrap { white-space: nowrap; }
     </style>
 
@@ -128,65 +131,53 @@ $currentMonthEndDate   = date('Y-m-t');
                                             <option value="">Select Vendor</option>
                                             <?php
                                             foreach ($supplierList as $row1){
-
                                             $address= CommonHelper::get_supplier_address($row1->id);
                                             ?>
                                             <option value="<?php echo $row1->id.'@#'.$address.'@#'.$row1->ntn.'@#'.$row1->terms_of_payment?>" <?php if($purchase_order->supplier_id == $row1->id):echo "selected"; endif;?>>
                                                 <?php echo ucwords($row1->name)?></option>
-                                            <?php
-                                            }
-                                            ?>
+                                            <?php } ?>
                                         </select>
                                     </div>
 
-                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                    {{-- Currency hidden (same as create form) --}}
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 hide">
                                         <label class="sf-label"> <a href="#" onclick="showDetailModelOneParamerter('pdc/createCurrencyTypeForm')" class="">Currency</a></label>
-                                        <span class="rflabelsteric"><strong>*</strong></span>
                                         <select onchange="claculation(1);get_rate()" name="curren" id="curren" class="form-control select2 requiredField">
                                             @foreach(CommonHelper::get_all_currency_with_current_rate() as $row)
-                                                <option value="{{$row->id.','.$row->rate}}" <?php if($purchase_order->currency_id == $row->id):echo "selected"; endif;?>>{{$row->name}}</option>
-                                            @endforeach;
-
+                                                <option value="{{$row->id.','.$row->rate}}" <?php if($currencyId == $row->id):echo "selected"; endif;?>>{{$row->name}}</option>
+                                            @endforeach
                                         </select>
-
                                     </div>
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 hide">
+                                        <label class="sf-label">Currency Rate</label>
+                                        <input class="form-control" type="text" name="currency_rate" id="currency_rate" value="<?php echo $purchase_order->currency_rate ?? 1;?>"/>
+                                    </div>
+                                    <input type="hidden" name="curren_rate" id="curren_rate" value="<?php echo $purchase_order->currency_rate ?? 1;?>"/>
 
                                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                        <label class="sf-label"> Currency Rate</label>
-                                        <span class="rflabelsteric"><strong>*</strong></span>
-                                        <input class="form-control" type="text" name="currency_rate" id="currency_rate" value="<?php echo $purchase_order->currency_rate;?>"/>
-
+                                        <label class="sf-label">Mode/ Terms Of Payment</label>
+                                        <input onkeyup="calculate_due_date()" type="number" class="form-control requiredField" placeholder="" name="model_terms_of_payment" id="model_terms_of_payment" value="<?php echo $purchase_order->terms_of_paym?>" />
                                     </div>
-
-                                    <input type="hidden" name="curren_rate" id="curren_rate" value="1"/>
+                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                        <label class="sf-label">Payment Due Date</label>
+                                        <input type="date" class="form-control" placeholder="" name="due_date" id="due_date" value="<?php echo $purchase_order->due_date;?>" readonly />
+                                    </div>
 
                                 </div>
 
                                 <div class="lineHeight">&nbsp;</div>
                                 <div class="row">
-                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                        <label class="sf-label">Mode/ Terms Of Payment <span class="rflabelsteric"><strong>*</strong></span></label>
-                                        <input onkeyup="calculate_due_date()"  type="number" class="form-control requiredField" placeholder="" name="model_terms_of_payment" id="model_terms_of_payment" value="<?php echo $purchase_order->terms_of_paym?>" />
-                                    </div>
-                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                        <label class="sf-label">Due Date <span class="rflabelsteric"><strong>*</strong></span></label>
-                                        <input  type="date" class="form-control" placeholder="" name="due_date" id="due_date" value="<?php echo $purchase_order->due_date;?>" readonly />
-                                    </div>
                                     <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                                         <label class="sf-label">Supplier's Address</label>
-                                        <input style="text-transform: capitalize;" readonly type="text" class="form-control" placeholder="" name="address" id="addresss" value="" />
+                                        <input style="text-transform: capitalize;" readonly type="text" class="form-control" placeholder="" name="address" id="addresss" value="<?php echo CommonHelper::get_supplier_address($purchase_order->supplier_id); ?>" />
                                     </div>
-                                </div>
-                                <div class="lineHeight">&nbsp;</div>
-
-                                <div class="row">
                                     <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
                                         <label class="sf-label">Supplier's NTN</label>
-                                        <input readonly type="text" class="form-control" placeholder="Ntn" name="ntn" id="ntn_id" value="" />
+                                        <input readonly type="text" class="form-control" placeholder="Ntn" name="ntn" id="ntn_id" value="<?php echo CommonHelper::get_supplier_ntn($purchase_order->supplier_id); ?>" />
                                     </div>
                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
                                         <label class="sf-label">Remarks</label>
-                                        <textarea  name="Remarks" id="terms_and_condition" class="form-control" placeholder="Remarks"><?php echo $purchase_order->remarks?></textarea>
+                                        <textarea name="Remarks" id="terms_and_condition" class="form-control" placeholder="Remarks"><?php echo $purchase_order->remarks?></textarea>
                                     </div>
                                 </div>
                                 <div class="row hide">
@@ -261,6 +252,7 @@ A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRB WITHHOLDING RULES-2014</tex
                                         $rate_cal_by_val = $Fil->rate_cal_by ?? 1;
                                         $warehouse_val = $Fil->warehouse_id ?? '';
                                         $category_val = $Fil->category_id ?? '';
+                                        $sub_item_id_val = explode('@', $Fil->sub_item_id ?? '')[0] ?? '';
                                         ?>
                                         <tr title="{{$Counter}}" id="RemoveRows{{$Counter}}" class="AutoNo">
                                             <td>
@@ -282,14 +274,14 @@ A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRB WITHHOLDING RULES-2014</tex
                                                     <option value="">Select</option>
                                                     @foreach (CommonHelper::get_all_subitem() as $item)
                                                         <option value="{{ $item->id.'@'.$item->uom_name.'@'.$item->sub_ic.'@'.($item->pack_size ?? 1) }}"
-                                                            {{ $Fil->sub_item_id == $item->id ? 'selected' : '' }}>
+                                                            {{ $sub_item_id_val == $item->id ? 'selected' : '' }}>
                                                             {{ $item->sub_ic }}
                                                         </option>
                                                     @endforeach
                                                 </select>
                                             </td>
                                             <td>
-                                                <input readonly type="text" class="form-control" name="uom_id[]" id="uom_id{{$Counter}}" value="<?php echo CommonHelper::get_uom_name_by_item($Fil->sub_item_id);?>">
+                                                <input readonly type="text" class="form-control" name="uom_id[]" id="uom_id{{$Counter}}" value="<?php echo CommonHelper::get_uom_name_by_item($sub_item_id_val);?>">
                                             </td>
                                             <td>
                                                 <input type="text" oninput="bag_qq({{$Counter}})" class="form-control requiredField BagsQty" name="bags_qty[]" id="bags_qty{{$Counter}}" value="<?php echo $Fil->bags_qty;?>">
@@ -347,7 +339,9 @@ A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRB WITHHOLDING RULES-2014</tex
                                         </tbody>
                                         <tbody>
                                         <tr style="font-size:large;font-weight: bold">
-                                            <td class="text-center" colspan="9">Total</td>
+                                            <td class="text-center" colspan="7">Total</td>
+                                            <td class="text-right" colspan="1"><input readonly class="form-control number_format" type="text" name="pkr_net" id="pkr_net" /></td>
+                                            <td class="text-right" colspan="1"><input readonly class="form-control number_format" type="text" name="actual_net" id="actual_net" /></td>
                                             <td class="text-right" colspan="1"><input readonly value="{{$total_amount}}" class="form-control number_format" type="text" id="net" name="net"/></td>
                                             <td colspan="5"></td>
                                         </tr>
@@ -422,46 +416,35 @@ A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRB WITHHOLDING RULES-2014</tex
     <script>
 
         $(document).ready(function(){
+            // Pre-fill address and NTN from saved supplier on page load
             get_address();
-            calculate_due_date();
-
-
-
-
-
-
+            $('.select2').select2();
+            $('.number_format').number(true, 2);
         });
 
-        function get_address()
-        {
-            var supplier= $('#supplier_id').val();
-
-            supplier=  supplier.split('@#');
+        function get_address() {
+            var supplier = $('#supplier_id').val();
+            if (!supplier) return;
+            supplier = supplier.split('@#');
             $('#addresss').val(supplier[1]);
-
             $('#ntn_id').val(supplier[2]);
-            $('#model_terms_of_payment').val(supplier[3]);
-            //calculate_due_date();
+            $('#model_terms_of_payment').val($('#model_terms_of_payment').val() || supplier[3]);
         }
 
-        function calculate_due_date()
-        {
+        function calculate_due_date() {
+            var date = new Date($("#po_date").val());
+            var days = parseFloat($('#model_terms_of_payment').val());
 
-
-            var days=parseFloat($('#model_terms_of_payment').val())-1;
-            var tt = document.getElementById('po_date').value;
-
-            var date = new Date(tt);
-            var newdate = new Date(date);
-            newdate.setDate(newdate.getDate() + days);
-            var dd = newdate.getDate();
-
-            var dd = ("0" + (newdate.getDate() + 1)).slice(-2);
-            var mm = ("0" + (newdate.getMonth() + 1)).slice(-2);
-            var y = newdate.getFullYear();
-            var someFormattedDate =  + y+'-'+ mm +'-'+dd;
-
-            document.getElementById('due_date').value = someFormattedDate;
+            if (!isNaN(date.getTime())) {
+                date.setDate(date.getDate() + days);
+                var yyyy = date.getFullYear().toString();
+                var mm = (date.getMonth() + 1).toString();
+                var dd = date.getDate().toString();
+                var new_d = yyyy + "-" + (mm[1] ? mm : "0" + mm[0]) + "-" + (dd[1] ? dd : "0" + dd[0]);
+                $("#due_date").val(new_d);
+            } else {
+                alert("Invalid Date");
+            }
         }
 
         var Counter = '<?php echo $Counter?>';
@@ -704,22 +687,28 @@ A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRB WITHHOLDING RULES-2014</tex
 
         function net_amount()
         {
-            var amount=0;
+            var amount = 0;
+            var actual_amount = 0;
+            var pkr_amount = 0;
             $('.net_amount_dis').each(function (i, obj) {
-
-                amount += +$('#'+obj.id).val();
-
-
-
+                amount += +$('#' + obj.id).val();
             });
-            amount=parseFloat(amount);
+            $('.actual_amount').each(function (i, obj) {
+                actual_amount += +$('#' + obj.id).val();
+            });
+            $('input[name="amount[]"]').each(function (i, obj) {
+                pkr_amount += +$('#' + obj.id).val();
+            });
+            amount = parseFloat(amount);
+            actual_amount = parseFloat(actual_amount);
+            pkr_amount = parseFloat(pkr_amount);
             $('#net').val(amount);
-            var sales_tax  = parseFloat($('#sales_amount_td').val());
-
-            $('#net_after_tax').val(amount+sales_tax);
-            $('#d_t_amount_1').val(amount+sales_tax);
+            $('#actual_net').val(actual_amount);
+            $('#pkr_net').val(pkr_amount);
+            var sales_tax = parseFloat($('#sales_amount_td').val());
+            $('#net_after_tax').val(amount + sales_tax);
+            $('#d_t_amount_1').val(amount + sales_tax);
             toWords(1);
-
         }
 
 

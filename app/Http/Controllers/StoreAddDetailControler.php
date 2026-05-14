@@ -702,6 +702,11 @@ class StoreAddDetailControler extends Controller
 
             if ($edit_mode!=''):
                 $purchase_request=$purchase_request->find($edit_mode);
+                if (!$purchase_request) {
+                    DB::Connection('mysql2')->rollback();
+                    Session::flash('dataError', 'Purchase Order record not found.');
+                    return Redirect::to('store/viewPurchaseRequestList?pageType=view&&parentCode=001&&m='.$_GET['m']);
+                }
                 $purchaseRequestNo=$request->po_no;
             else:
                 $year= substr($po_date,2,2);
@@ -746,7 +751,8 @@ class StoreAddDetailControler extends Controller
             $purchase_request->terms_of_paym =$request->model_terms_of_payment;
             $purchase_request->due_date =$request->due_date;
             $purchase_request->destination =$request->destination;
-            $purchase_request->currency_id =$request->curren;
+            $currency = explode(',', $request->curren);
+            $purchase_request->currency_id =$currency[0] ?? 0;
             $purchase_request->currency_rate =$request->currency_rate;
             $purchase_request->sales_tax =$SalesTaxPer;
             $purchase_request->sales_tax_acc_id =$SalesTaxAccId;
@@ -771,7 +777,7 @@ class StoreAddDetailControler extends Controller
             else:
                 $master_id=$purchase_request->id;
             endif;
-            $data=$request->item_id;
+            $data=$request->item_id ?? [];
 
 
             // Delete
@@ -781,6 +787,8 @@ class StoreAddDetailControler extends Controller
             // End
             $TotAmount = 0;
             foreach($data as $key=>$row):
+                $item = explode('@', $row);
+                $subItemId = $item[0] ?? $row;
 
                 $purch_request_data =new PurchaseRequestData();
                 $purch_request_data=$purch_request_data->SetConnection('mysql2');
@@ -788,7 +796,7 @@ class StoreAddDetailControler extends Controller
                 $purch_request_data->purchase_request_no=$purchaseRequestNo;
                 $purch_request_data->purchase_request_date=$request->po_date;
                 $purch_request_data->category_id=$request->input('category')[$key] ?? null;
-                $purch_request_data->sub_item_id=$request->input('item_id')[$key];
+                $purch_request_data->sub_item_id=$subItemId;
                 $purch_request_data->description=$row;
                 $purch_request_data->bags_qty=$request->input('bags_qty')[$key] ?? $request->input('actual_qty')[$key]/25;
                 $purch_request_data->qty_lbs=$request->input('qty_lbs')[$key] ?? 0;
@@ -813,7 +821,7 @@ class StoreAddDetailControler extends Controller
                 $purch_request_data->save();
                  endforeach;
 
-            CommonHelper::inventory_activity($purchaseRequestNo,$po_date,$TotAmount+$SalesTaxAmount,2,'Insert');
+            CommonHelper::inventory_activity($purchaseRequestNo,$po_date,$TotAmount+$SalesTaxAmount,2,$edit_mode != '' ? 'Update' : 'Insert');
             DB::Connection('mysql2')->commit();
         }
         catch(\Exception $e)
