@@ -746,11 +746,20 @@ class FinanceDataCallController extends Controller
 
 
          $total_amount= 0;
+            DB::Connection('mysql2')->table('stock')
+                ->where('main_id', $id)
+                ->where('voucher_type', 1)
+                ->where('status', 1)
+                ->update(['status' => 0]);
+
             foreach($grn as $row):
 
 
-                $item_amount_percent = ($row->net_amount / $item_amount) * 100;
-                $exp_amount_apply = ($exp_amount /100) * $item_amount_percent;
+                $lineNetAmount = $this->cleanVoucherNumber($row->net_amount);
+                $qtyKg = $this->cleanVoucherNumber($row->qty);
+                $exp_amount_apply = $this->allocatedExpenseAmount($lineNetAmount, $item_amount, $exp_amount);
+                $stockAmount = $lineNetAmount + $exp_amount_apply;
+                $stockRate = $this->stockRateFromKgQty($stockAmount, $qtyKg, $row->rate);
                 $status=1;
                 if ($row->type==2):
                  $status = 1;
@@ -762,12 +771,12 @@ class FinanceDataCallController extends Controller
                 $stock['voucher_date']=$row->pv_date;
                 $stock['voucher_type']=1;
                 $stock['sub_item_id']=$row->sub_item;
-                $stock['qty']=$row->qty;
-                $stock['rate']=$row->rate;
+                $stock['qty']=$qtyKg;
+                $stock['rate']=$stockRate;
                 $stock['amount_before_discount']=$row->amount;
                 $stock['discount_percent']=0;
                 $stock['discount_amount']=$row->discount_amount ;
-                $stock['amount']=$row->net_amount + $exp_amount_apply;
+                $stock['amount']=$stockAmount;
                 $stock['warehouse_id']=$row->warehouse;
                 $stock['description']=$row->description;
                 $stock['batch_code']=0;
@@ -775,7 +784,7 @@ class FinanceDataCallController extends Controller
                 $stock['created_date']=date('Y-m-d');
                 $stock['username']=Auth::user()->name;
                 DB::Connection('mysql2')->table('stock')->insert($stock);
-                $total_amount+=$row->net_amount;
+                $total_amount+=$lineNetAmount;
             endforeach;
 
             $t_data=   DB::Connection('mysql2')->table('stock as a')
@@ -893,13 +902,41 @@ class FinanceDataCallController extends Controller
 
           //  DB::Connection('mysql2')->commit();
         }
-        catch ( Exception $ex )
+        catch (\Exception $ex)
         {
-
-
-            DB::rollBack();
-            print_r($goods_rece);
+            DB::Connection('mysql2')->rollBack();
+            echo $ex->getMessage();
         }
+    }
+
+    private function cleanVoucherNumber($value)
+    {
+        return (float) CommonHelper::check_str_replace($value ?? 0);
+    }
+
+    private function allocatedExpenseAmount($lineNetAmount, $itemTotalAmount, $expenseTotalAmount)
+    {
+        $lineNetAmount = $this->cleanVoucherNumber($lineNetAmount);
+        $itemTotalAmount = $this->cleanVoucherNumber($itemTotalAmount);
+        $expenseTotalAmount = $this->cleanVoucherNumber($expenseTotalAmount);
+
+        if ($itemTotalAmount <= 0 || $expenseTotalAmount <= 0) {
+            return 0;
+        }
+
+        return ($lineNetAmount / $itemTotalAmount) * $expenseTotalAmount;
+    }
+
+    private function stockRateFromKgQty($stockAmount, $qtyKg, $fallbackRate = 0)
+    {
+        $stockAmount = $this->cleanVoucherNumber($stockAmount);
+        $qtyKg = $this->cleanVoucherNumber($qtyKg);
+
+        if ($qtyKg <= 0) {
+            return $this->cleanVoucherNumber($fallbackRate);
+        }
+
+        return $stockAmount / $qtyKg;
     }
 
     public function approvePurchaseVoucherDetail(Request $request)
@@ -937,6 +974,20 @@ class FinanceDataCallController extends Controller
                 // $data = DB::Connection('mysql2')->selectRaw('select net_amount,category_id ,sub_item from new_purchase_voucher_data
                 // where master_id="'.$master_id.'" and additional_exp=0 ');
                 $data = DB::connection('mysql2')->table('new_purchase_voucher_data')->where([['master_id',$master_id],['additional_exp', 0 ]])->get();
+                DB::Connection('mysql2')->table('stock')
+                    ->where('main_id', $master_id)
+                    ->where('voucher_type', 1)
+                    ->where('status', 1)
+                    ->update(['status' => 0]);
+
+                $item_amount = DB::Connection('mysql2')->table('new_purchase_voucher_data')
+                    ->where('master_id', $master_id)
+                    ->where('additional_exp', 0)
+                    ->sum('net_amount');
+                $exp_amount = DB::Connection('mysql2')->table('new_purchase_voucher_data')
+                    ->where('master_id', $master_id)
+                    ->where('additional_exp', 1)
+                    ->sum('net_amount');
 
 
                 foreach ($data as $key => $value) {
@@ -962,7 +1013,13 @@ class FinanceDataCallController extends Controller
                     $transaction->voucher_type=4;
                     $transaction->save();
 
-                    $credit_amount+=$value->net_amount;
+                    $lineNetAmount = $this->cleanVoucherNumber($value->net_amount);
+                    $qtyKg = $this->cleanVoucherNumber($value->qty);
+                    $exp_amount_apply = $this->allocatedExpenseAmount($lineNetAmount, $item_amount, $exp_amount);
+                    $stockAmount = $lineNetAmount + $exp_amount_apply;
+                    $stockRate = $this->stockRateFromKgQty($stockAmount, $qtyKg, $value->rate);
+
+                    $credit_amount+=$lineNetAmount;
 
 
                     $stock = new Stock();
@@ -975,13 +1032,12 @@ class FinanceDataCallController extends Controller
                     $stock->voucher_date=$purchase_date;
                     $stock->voucher_type=1;
                     $stock->sub_item_id=$value->sub_item;
-                    // $stock->qty=$value->bag_qty; BEFORE 
-                    $stock->qty=$value->qty; // AFTER
-                    $stock->rate=$value->rate;
+                    $stock->qty=$qtyKg;
+                    $stock->rate=$stockRate;
                     $stock->amount_before_discount=$value->amount;
                     $stock->discount_percent=0;
                     $stock->discount_amount=$value->discount_amount ;
-                    $stock->amount=$value->bag_qty * $value->rate;
+                    $stock->amount=$stockAmount;
                     $stock->warehouse_id=$value->warehouse_id;
                     $stock->description=$description;
                     $stock->batch_code=0;
@@ -1031,32 +1087,7 @@ class FinanceDataCallController extends Controller
                     $transaction->status=1;
                     $transaction->voucher_type=4;
                     $transaction->save();
-                    $credit_amount+=$exp->net_amount;
-
-
-                    $stock = new Stock();
-                    $stock=$stock->SetConnection('mysql2');
-
-                    $stock->voucher_no=$value->pv_no;
-                    $stock->main_id=$value->master_id;
-                    $stock->master_id=$value->id;
-                    $stock->supplier_id=$supplier;
-                    $stock->voucher_date=$purchase_date;
-                    $stock->voucher_type=1;
-                    $stock->sub_item_id=$value->sub_item;
-                    $stock->qty=$value->qty;
-                    $stock->rate=$value->rate;
-                    $stock->amount_before_discount=$value->amount;
-                    $stock->discount_percent=0;
-                    $stock->discount_amount=$value->discount_amount ;
-                    $stock->amount=$value->net_amount + $sales_tax_amount;
-                    $stock->warehouse_id=$value->warehouse_id;
-                    $stock->description=$description;
-                    $stock->batch_code=0;
-                    $stock->status=$status;
-                    $stock->created_date=date('Y-m-d');
-                    $stock->username=Auth::user()->name;
-                    $stock->save();
+                    $credit_amount+=$this->cleanVoucherNumber($exp->net_amount);
 
                 endforeach;
 

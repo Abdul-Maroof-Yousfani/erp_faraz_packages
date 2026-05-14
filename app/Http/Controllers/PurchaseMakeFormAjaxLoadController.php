@@ -972,18 +972,30 @@ function addDirectgrn()
         $id = $_GET['supplier_id'];
         echo '<option value="">Select Purchase Invoice</option>';
 
-        $purchaseInvoices = DB::connection('mysql2')->table('new_purchase_voucher as npv')
-            // ->leftJoin('goods_receipt_note as grn', 'grn.id', '=', 'npv.grn_id')
-            // ->where('npv.status', 1)
-            ->where('npv.supplier', $id)
-            // ->where('npv.grn_no', '!=', '')
+        $purchaseInvoicesQuery = DB::connection('mysql2')->table('new_purchase_voucher as npv')
+            ->where('npv.status', 1)
+            ->where('npv.pv_status', 2)
+            ->where('npv.supplier', $id);
+
+        if (isset($_GET['direct_only']) && $_GET['direct_only'] == 1) {
+            $purchaseInvoicesQuery
+                ->where(function ($query) {
+                    $query->whereNull('npv.grn_id')
+                        ->orWhere('npv.grn_id', 0)
+                        ->orWhere('npv.grn_id', '');
+                })
+                ->where(function ($query) {
+                    $query->whereNull('npv.grn_no')
+                        ->orWhere('npv.grn_no', '')
+                        ->orWhere('npv.grn_no', 0);
+                });
+        }
+
+        $purchaseInvoices = $purchaseInvoicesQuery
             ->select(
                 'npv.id',
                 'npv.pv_no',
-                'npv.pv_date',
-                // 'npv.grn_id',
-                // 'npv.grn_no',
-                // 'grn.grn_date as grn_date'
+                'npv.pv_date'
             )
             ->orderBy('npv.pv_date', 'DESC')
             ->orderBy('npv.id', 'DESC')
@@ -1056,20 +1068,21 @@ function addDirectgrn()
         $DataDetail = DB::connection('mysql2')->table('new_purchase_voucher_data as npvd')
             ->where('npvd.staus', 1)
             ->where('npvd.master_id', $InvoiceId)
+            ->where('npvd.additional_exp', 0)
             ->select(
                 'npvd.id as purchase_grn_data_id',
                 'npvd.sub_item',
-                'npvd.bag_qty as qty',
-                'npvd.rate',
-                'npvd.amount',
+                DB::raw('COALESCE(npvd.qty, 0) as qty'),
+                DB::raw('CASE WHEN COALESCE(npvd.qty, 0) > 0 THEN COALESCE(npvd.net_amount, npvd.amount, 0) / npvd.qty ELSE COALESCE(npvd.rate, 0) END as rate'),
+                DB::raw('COALESCE(npvd.net_amount, npvd.amount, 0) as amount'),
                 'npvd.do_no',
                 'npvd.godown_no',
                 DB::raw('0 as discount_percent'),
                 DB::raw('0 as discount_amount'),
-                DB::raw('npvd.amount as net_amount'),
-                DB::raw('0 as warehouse_id'),
+                DB::raw('COALESCE(npvd.net_amount, npvd.amount, 0) as net_amount'),
+                DB::raw('COALESCE(npvd.warehouse_id, 0) as warehouse_id'),
                 DB::raw('"" as batch_code'),
-                DB::raw('npvd.bag_qty as purchase_recived_qty'),
+                DB::raw('COALESCE(npvd.qty, 0) as purchase_recived_qty'),
                 DB::raw('"" as grn_description')
             )
             ->get();

@@ -333,6 +333,7 @@ class GrnQaController extends Controller
                     $discount_percent = floatval($grn_item->discount_percent ?? 0);
                     $proportional_discount_amount = ($proportional_amount / 100) * $discount_percent;
                     $proportional_net_amount = $proportional_amount - $proportional_discount_amount;
+                    $stock_rate = $accepted_qty > 0 ? ($proportional_net_amount / $accepted_qty) : $unit_rate;
                     
                     // Check if purchase voucher data already exists for this item
                     $existing_pv_data = DB::Connection('mysql2')->table('new_purchase_voucher_data')
@@ -379,7 +380,14 @@ class GrnQaController extends Controller
                         $pv_data_id = DB::Connection('mysql2')->table('new_purchase_voucher_data')->insertGetId($data2);
                     }
                     
-                    // Create stock entry for THIS ITEM
+                    DB::Connection('mysql2')->table('stock')
+                        ->where('main_id', $request->grn_id)
+                        ->where('master_id', $grn_item->id)
+                        ->where('voucher_type', 1)
+                        ->where('status', 1)
+                        ->update(['status' => 0]);
+
+                    // Create stock entry for THIS ITEM. Qty is always KG.
                     $stock = [
                         'voucher_no' => $goods_rece->grn_no ?? '',
                         'main_id' => $request->grn_id,
@@ -389,7 +397,7 @@ class GrnQaController extends Controller
                         'voucher_type' => 1,
                         'sub_item_id' => $grn_item->sub_item_id ?? 0,
                         'qty' => $accepted_qty,
-                        'rate' => $unit_rate,
+                        'rate' => $stock_rate,
                         'amount_before_discount' => $proportional_amount,
                         'discount_percent' => $discount_percent,
                         'discount_amount' => $proportional_discount_amount,

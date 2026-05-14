@@ -1816,10 +1816,25 @@ class CommonHelper
 
     public static function get_subitem_detail($id)
     {
+        if (strpos((string) $id, '@') !== false) {
+            $id = explode('@', $id)[0];
+        }
+        if (strpos((string) $id, ',') !== false) {
+            $id = explode(',', $id)[0];
+        }
+
+        if ($id === '' || $id === null) {
+            return '0,0,0,,0,0';
+        }
+
         $sub_iteme = new Subitem();
         $sub_iteme = $sub_iteme->SetConnection('mysql2');
         $sub_iteme = $sub_iteme->where('id', $id)->select('uom', 'pack_size', 'rate', 'description', 'sub_ic', 'main_ic_id', 'item_code')->first();
-        return $sub_iteme->uom . ',' . $sub_iteme->pack_size . ',' . $sub_iteme->rate . ',' . $sub_iteme->item_code . ',' . $sub_iteme->sub_ic . ',' . $sub_iteme->main_ic_id;
+        if (!$sub_iteme) {
+            return '0,0,0,,0,0';
+        }
+
+        return ($sub_iteme->uom ?? 0) . ',' . ($sub_iteme->pack_size ?? 0) . ',' . ($sub_iteme->rate ?? 0) . ',' . ($sub_iteme->item_code ?? '') . ',' . ($sub_iteme->sub_ic ?? 0) . ',' . ($sub_iteme->main_ic_id ?? 0);
     }
 
     public static function get_subitem_detail2($id)

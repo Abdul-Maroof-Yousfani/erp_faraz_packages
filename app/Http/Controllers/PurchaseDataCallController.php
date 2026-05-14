@@ -2210,21 +2210,31 @@ echo "aa"; die;
                 }
             }
 
-            // Stock entries - exclude returned items
+            DB::Connection('mysql2')->table('stock')
+                ->where('main_id', $id)
+                ->where('voucher_type', 1)
+                ->where('status', 1)
+                ->update(['status' => 0]);
+
+            // Stock entries - exclude returned items. Qty is always KG.
             foreach($grn as $row):
                 // Check if this item has a return quantity
                 $return_qty = isset($return_items[$row->id]) ? $return_items[$row->id] : 0;
-                $received_qty = floatval($row->purchase_recived_qty ?? 0);
+                $received_qty = (float) CommonHelper::check_str_replace($row->purchase_recived_qty ?? 0);
                 
                 // Only add to stock if there's accepted quantity (received - returned)
                 $accepted_qty = $received_qty - $return_qty;
                 
                 if ($accepted_qty > 0) {
                     // Calculate amounts based on accepted quantity
-                    $rate = floatval($row->rate ?? 0);
-                    $proportional_amount = ($accepted_qty / $received_qty) * floatval($row->amount ?? 0);
-                    $proportional_discount_amount = ($accepted_qty / $received_qty) * floatval($row->discount_amount ?? 0);
-                    $proportional_net_amount = ($accepted_qty / $received_qty) * floatval($row->net_amount ?? 0);
+                    $line_amount = (float) CommonHelper::check_str_replace($row->amount ?? 0);
+                    $line_discount_amount = (float) CommonHelper::check_str_replace($row->discount_amount ?? 0);
+                    $line_net_amount = (float) CommonHelper::check_str_replace($row->net_amount ?? 0);
+                    $qty_ratio = $received_qty > 0 ? ($accepted_qty / $received_qty) : 0;
+                    $proportional_amount = $qty_ratio * $line_amount;
+                    $proportional_discount_amount = $qty_ratio * $line_discount_amount;
+                    $proportional_net_amount = $qty_ratio * $line_net_amount;
+                    $stock_rate = $accepted_qty > 0 ? ($proportional_net_amount / $accepted_qty) : (float) CommonHelper::check_str_replace($row->rate ?? 0);
                     
                     $stock['voucher_no']=$row->grn_no;
                     $stock['main_id']=$id;
@@ -2233,8 +2243,8 @@ echo "aa"; die;
                     $stock['voucher_date']=$row->grn_date;
                     $stock['voucher_type']=1;
                     $stock['sub_item_id']=$row->sub_item_id;
-                    $stock['qty']=$accepted_qty; // Use accepted quantity instead of received
-                    $stock['rate']=$rate;
+                    $stock['qty']=$accepted_qty;
+                    $stock['rate']=$stock_rate;
                     $stock['amount_before_discount']=$proportional_amount;
                     $stock['discount_percent']=$row->discount_percent;
                     $stock['discount_amount']=$proportional_discount_amount;
@@ -3456,6 +3466,12 @@ echo "aa"; die;
             // $po_detail=   CommonHelper::get_po($grn->first()->po_no);
 
 
+            DB::Connection('mysql2')->table('stock')
+                ->where('main_id', $id)
+                ->where('voucher_type', 1)
+                ->where('status', 1)
+                ->update(['status' => 0]);
+
             foreach($grn as $row):
 
                 $status=1;
@@ -3474,16 +3490,18 @@ echo "aa"; die;
                 else:
                  $qty = $row->purchase_recived_qty;
                 endif;
-                $amount =$row->rate * $qty;
+                $qty = (float) CommonHelper::check_str_replace($qty);
+                $amount =(float) CommonHelper::check_str_replace($row->rate) * $qty;
                 if ($row->discount_percent>0):
                     $discount_amount= ($amount / 100) * $row->discount_percent;
                 else:
                     $discount_amount=0;
                 endif;
                 $net_amount = $amount -$discount_amount;
+                $stock_rate = $qty > 0 ? ($net_amount / $qty) : (float) CommonHelper::check_str_replace($row->rate);
 
                 $stock['qty']=$qty;
-                $stock['rate']=$row->rate;
+                $stock['rate']=$stock_rate;
                 $stock['amount_before_discount']=$amount;
                 $stock['discount_percent']=$row->discount_percent;
                 $stock['discount_amount']=$discount_amount ;
