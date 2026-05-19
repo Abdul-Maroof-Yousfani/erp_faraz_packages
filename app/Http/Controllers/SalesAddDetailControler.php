@@ -1239,7 +1239,8 @@ class SalesAddDetailControler extends Controller
             $furtherTaxAmount = (float) ($sourceSaleOrderData->sum('further_tax_amount') ?: CommonHelper::check_str_replace($request->input('sales_tax_further', 0)));
             $advanceTaxRate = (float) ($sourceSaleOrder ? $sourceSaleOrder->advance_tax : CommonHelper::check_str_replace($request->input('advance_tax_rate', 0)));
             $advanceTaxAmount = (float) ($sourceSaleOrderData->sum('advance_tax_amount') ?: CommonHelper::check_str_replace($request->input('advance_tax_amount', 0)));
-            $cartageAmount = (float) ($sourceSaleOrder ? $sourceSaleOrder->cartage_amount : CommonHelper::check_str_replace($request->input('cartage_amount', 0)));
+            $sourceCartageAmount = (float) ($sourceSaleOrder ? $sourceSaleOrder->cartage_amount : CommonHelper::check_str_replace($request->input('cartage_amount', 0)));
+            $cartageAmount = $sourceCartageAmount;
 
             $delivery_note->sales_tax_amount = $salesTaxAmount;
             $delivery_note->sales_tax_rate = $salesTaxRate;
@@ -1264,6 +1265,9 @@ class SalesAddDetailControler extends Controller
             $group_counter = 1;
             $total_grand_qty = 0;
             $total_grand_amount = 0;
+            $totalSalesTaxAmount = 0;
+            $totalFurtherTaxAmount = 0;
+            $totalAdvanceTaxAmount = 0;
 
             for ($i = 1; $i <= $count; $i++) {
                 $item_id = $request->input("item_id{$i}");
@@ -1273,15 +1277,18 @@ class SalesAddDetailControler extends Controller
                 $qty = (float) CommonHelper::check_str_replace($request->input("send_qty{$i}", 0));
                 $send_rate = (float) CommonHelper::check_str_replace($request->input("send_rate{$i}", 0));
                 $send_discount = (float) CommonHelper::check_str_replace($request->input("send_discount{$i}", 0));
-                $send_amount = $qty * $send_rate;
-                if ($send_discount > 0) {
-                    $send_amount += ($send_amount * $send_discount) / 100;
-                }
                 $warehouse_id = $request->input("warehouse{$i}", 1);
                 $desc = $request->input("desc{$i}", '');
                 $data_id = $request->input("data_id{$i}");
                 $bundles_id = $request->input("bundles_id{$i}", 0);
                 $sourceLine = $sourceSaleOrderData->get($data_id);
+                $lineRatio = ($sourceLine && (float) $sourceLine->qty > 0) ? ($qty / (float) $sourceLine->qty) : 1;
+                $send_amount = $sourceLine
+                    ? ((float) ($sourceLine->amount ?? 0) * $lineRatio)
+                    : ($qty * $send_rate);
+                if (!$sourceLine && $send_discount > 0) {
+                    $send_amount += ($send_amount * $send_discount) / 100;
+                }
 
                 if ($qty <= 0) {
                     continue;
@@ -1376,7 +1383,6 @@ class SalesAddDetailControler extends Controller
                 $detail->bundles_id = $bundles_id;
                 $detail->qty = $qty;
                 $detail->rate = $send_rate;
-                $lineRatio = ($sourceLine && (float) $sourceLine->qty > 0) ? ($qty / (float) $sourceLine->qty) : 1;
                 $lineSalesTaxRate = (float) ($sourceLine->tax ?? $salesTaxRate);
                 $lineFurtherTaxRate = (float) ($sourceLine->further_tax ?? $furtherTaxRate);
                 $lineAdvanceTaxRate = (float) ($sourceLine->advance_tax ?? $advanceTaxRate);
@@ -1404,6 +1410,9 @@ class SalesAddDetailControler extends Controller
 
                 $total_grand_qty += $qty;
                 $total_grand_amount += $send_amount;
+                $totalSalesTaxAmount += $lineSalesTaxAmount;
+                $totalFurtherTaxAmount += $lineFurtherTaxAmount;
+                $totalAdvanceTaxAmount += $lineAdvanceTaxAmount;
 
                 $group_counter++;
             }
@@ -1418,11 +1427,30 @@ class SalesAddDetailControler extends Controller
                 DB::connection('mysql2')->table('stock')->insert($stock_rows);
             }
 
+            $salesTaxAmount = $totalSalesTaxAmount;
+            $furtherTaxAmount = $totalFurtherTaxAmount;
+            $advanceTaxAmount = $totalAdvanceTaxAmount;
+            $sourceBeforeTaxAmount = (float) ($sourceSaleOrder->total_amount ?? $sourceSaleOrderData->sum('amount'));
+            $cartageAmount = $sourceBeforeTaxAmount > 0
+                ? ($sourceCartageAmount * ($total_grand_amount / $sourceBeforeTaxAmount))
+                : $sourceCartageAmount;
+            $delivery_note->sales_tax_amount = $salesTaxAmount;
+            $delivery_note->sales_tax_further = $furtherTaxAmount;
+            $delivery_note->advance_tax_amount = $advanceTaxAmount;
+            $delivery_note->cartage_amount = $cartageAmount;
+            $delivery_note->save();
+
             // Optional: mark sale order as having delivery note
             if ($request->input('master_id')) {
                 $sale_order = Sales_Order::on('mysql2')->find($request->input('master_id'));
                 if ($sale_order) {
-                    $sale_order->delivery_note_status = 1;
+                    $hasPendingDeliveryQty = DB::connection('mysql2')
+                        ->table('sales_order_data as sod')
+                        ->where('sod.master_id', $request->input('master_id'))
+                        ->where('sod.status', 1)
+                        ->whereRaw('CAST(sod.qty AS DECIMAL(18,6)) > COALESCE((SELECT SUM(CAST(dnd.qty AS DECIMAL(18,6))) FROM delivery_note_data dnd WHERE dnd.so_data_id = sod.id AND dnd.status = 1), 0)')
+                        ->exists();
+                    $sale_order->delivery_note_status = $hasPendingDeliveryQty ? 0 : 1;
                     $sale_order->save();
                 }
             }

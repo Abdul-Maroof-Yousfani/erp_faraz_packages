@@ -66,6 +66,17 @@ use App\Models\ComplaintDocument;
 
 class SalesController extends Controller
 {
+    private function applyPendingDeliveryNoteScope($query)
+    {
+        return $query->whereExists(function ($pendingLine) {
+            $pendingLine->select(DB::raw(1))
+                ->from('sales_order_data as sod')
+                ->whereColumn('sod.master_id', 'sales_order.id')
+                ->where('sod.status', 1)
+                ->whereRaw('CAST(sod.qty AS DECIMAL(18,6)) > COALESCE((SELECT SUM(CAST(dnd.qty AS DECIMAL(18,6))) FROM delivery_note_data dnd WHERE dnd.so_data_id = sod.id AND dnd.status = 1), 0)');
+        });
+    }
+
     /**
      * Create a new controller instance.
      *
@@ -492,7 +503,7 @@ class SalesController extends Controller
         $currentMonthStartDate = date('Y-m-01');
         $currentMonthEndDate = date('Y-m-t');
 
-        $sale_order = Sales_Order::where('status', 1)->where('delivery_note_status', 0)
+        $sale_order = $this->applyPendingDeliveryNoteScope(Sales_Order::where('status', 1))
             ->whereIn('so_status', [1, 2, 3, 4])
             ->whereBetween('so_date', [$currentMonthStartDate, $currentMonthEndDate])
             ->get();
@@ -569,6 +580,10 @@ class SalesController extends Controller
                 'a.groupby',
                 'a.tax',
                 'a.tax_amount',
+                'a.sales_tax_further_per',
+                'a.sales_tax_further',
+                'a.advance_tax_rate',
+                'a.advance_tax_amount',
                 'b.product_name',
                 'b.rate as bundle_rate',
                 'b.amount as bundle_amount',
@@ -598,7 +613,9 @@ class SalesController extends Controller
     public function CreateDeliveryNote()
     {
         $id = Input::get('id');
-        $sales_order = DB::connection('mysql2')->table('sales_order')->where('id', $id)->where('delivery_note_status', 0)->first();
+        $sales_order = $this->applyPendingDeliveryNoteScope(
+            DB::connection('mysql2')->table('sales_order')->where('id', $id)->where('status', 1)
+        )->first();
 
         $sale_order_data = DB::connection('mysql2')
             ->table('sales_order_data as a')

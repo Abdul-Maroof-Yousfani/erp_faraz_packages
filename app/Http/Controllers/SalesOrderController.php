@@ -170,6 +170,7 @@ class SalesOrderController extends Controller
             $data = $request->item_id;
 
             $hasItemSalesTaxGroup = Schema::connection('mysql2')->hasColumn('sales_order_data', 'sales_tax_group');
+            $hasRateCalBy = Schema::connection('mysql2')->hasColumn('sales_order_data', 'rate_cal_by');
             $count = 1;
             foreach ($data as $key => $row):
                 $item_id = explode('@', (string) $request->item_id[$key])[0];
@@ -186,6 +187,9 @@ class SalesOrderController extends Controller
                 $sales_order_data->qty = $request->qty[$key];
                 $sales_order_data->qty_lbs = $request->qty_lbs[$key];
                 $sales_order_data->rate = $request->rate[$key];
+                if ($hasRateCalBy) {
+                    $sales_order_data->rate_cal_by = $request->rate_cal_by[$key] ?? 1;
+                }
                 $sales_order_data->printing = $request->printing[$key] ?? '';
                 $sales_order_data->special_instruction = $request->special_ins[$key] ?? '';
                 $sales_order_data->delivery_date = $request->delivery_date[$key] ?? '';
@@ -417,6 +421,7 @@ class SalesOrderController extends Controller
 
           
             $hasItemSalesTaxGroup = Schema::connection('mysql2')->hasColumn('sales_order_data', 'sales_tax_group');
+            $hasRateCalBy = Schema::connection('mysql2')->hasColumn('sales_order_data', 'rate_cal_by');
             $data = $request->item_id;
             $count = 1;
             foreach ($data as $key => $row):
@@ -434,6 +439,9 @@ class SalesOrderController extends Controller
                 $sales_order_data->qty = $request->qty[$key];
                 $sales_order_data->qty_lbs = $request->qty_lbs[$key];
                 $sales_order_data->rate = $request->rate[$key];
+                if ($hasRateCalBy) {
+                    $sales_order_data->rate_cal_by = $request->rate_cal_by[$key] ?? 1;
+                }
                 $sales_order_data->printing = $request->printing[$key] ?? null;
                 $sales_order_data->special_instruction = $request->special_ins[$key] ?? null;
                 $sales_order_data->delivery_date = $request->delivery_date[$key] ?? null;

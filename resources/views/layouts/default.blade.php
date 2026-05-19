@@ -1988,8 +1988,8 @@ if (!empty($_GET['pageType'])) {
 			@if($page == 'salesorder' || $page == 'CreateDeliveryNote')
 				setTimeout(function () {
 
-					$(".sidenavnr").toggleClass("Navactive");
-					$("body").toggleClass("full_with");
+					// $(".sidenavnr").toggleClass("Navactive");
+					// $("body").toggleClass("full_with");
 
 				}, 2000);
 			@endif

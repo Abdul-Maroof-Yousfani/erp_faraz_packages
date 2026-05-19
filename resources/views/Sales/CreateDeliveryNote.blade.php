@@ -186,8 +186,10 @@ use App\Helpers\ReuseableCode;
                                                     <!-- <th style="width: 150px" class="text-center" >Batch Code <span class="rflabelsteric"><strong>*</strong></span></th> -->
                                                     <!-- <th class="text-center">In Stock<span class="rflabelsteric"><strong>*</strong></span></th> -->
                                                     <th class="text-center hidee">Rate</th>
-                                                    <!-- <th class="text-center hidee">Discount %</th>
-                                                    <th class="text-center hidee">Discount Amount</th> -->
+                                                    <th class="text-center hidee">Tax %</th>
+                                                    <th class="text-center hidee">Tax Amount</th>
+                                                    <th class="text-center hidee">Further Tax</th>
+                                                    <th class="text-center hidee">Advance Tax</th>
                                                     <th class="text-center hidee">Net Amount</th>
                                                     <th class="text-center hidee">0 QTY</th>
 
@@ -201,14 +203,27 @@ use App\Helpers\ReuseableCode;
                                                 $working_counter=0;
                                                 $total=0;
                                                 $total_qty=0;
+                                                $totalSalesTax=0;
+                                                $totalFurtherTax=0;
+                                                $totalAdvanceTax=0;
                                                
                                                 foreach ($sale_order_data as $row1)
                                                 {
+                                                    $displayAmount = 0;
 
                                                     if ($row1->bundles_id==0):
                                                         $qty = SalesHelper::get_dn_total_qty($row1->id);
                                                         $qty = $row1->qty-$qty;
                                                         if ($qty > 0):
+                                                            $lineRatio = ((float) $row1->qty > 0) ? ((float) $qty / (float) $row1->qty) : 1;
+                                                            $lineAmount = (float) $row1->amount * $lineRatio;
+                                                            $lineTaxAmount = (float) $row1->tax_amount * $lineRatio;
+                                                            $lineFurtherTaxAmount = (float) $row1->further_tax_amount * $lineRatio;
+                                                            $lineAdvanceTaxAmount = (float) $row1->advance_tax_amount * $lineRatio;
+                                                            $displayAmount = $lineAmount;
+                                                            $totalSalesTax += $lineTaxAmount;
+                                                            $totalFurtherTax += $lineFurtherTaxAmount;
+                                                            $totalAdvanceTax += $lineAdvanceTaxAmount;
                                                             $working_counter++;
                                                             $id_count++;
                                                 ?>
@@ -216,6 +231,11 @@ use App\Helpers\ReuseableCode;
                                                 <input type="hidden" name="data_id{{$id_count}}" id="data_id" value="{{$row1->id}}" />
                                                 <input type="hidden" name="groupby{{$id_count}}" id="groupby" value="{{$row1->groupby}}" />
                                                 <input type="hidden" name="item_id{{$id_count}}" id="item_id{{$id_count}}" value="{{$row1->item_id}}" />
+                                                <input type="hidden" id="source_qty{{$id_count}}" value="{{$row1->qty}}" />
+                                                <input type="hidden" id="source_amount{{$id_count}}" value="{{$row1->amount}}" />
+                                                <input type="hidden" id="source_tax_amount{{$id_count}}" value="{{$row1->tax_amount}}" />
+                                                <input type="hidden" id="source_further_tax_amount{{$id_count}}" value="{{$row1->further_tax_amount}}" />
+                                                <input type="hidden" id="source_advance_tax_amount{{$id_count}}" value="{{$row1->advance_tax_amount}}" />
                                                 <!-- <input type="hidden" name="rate{{$id_count}}" id="rate{{$id_count}}" value="{{$row1->rate}}" />
                                                 <input type="hidden" name="discount_percent{{$id_count}}" id="discount_percent{{$id_count}}" value="" />
                                                 <input type="hidden" name="discount_amount{{$id_count}}" id="discount_amount{{$id_count}}" value="" />
@@ -239,7 +259,7 @@ use App\Helpers\ReuseableCode;
                                                     ?>
                                                     <!-- <td class="text-left"> <?php echo CommonHelper::get_uom_name($sub_ic_detail[0]);?></td> -->
 
-                                                    <?php $total_qty+=$row1->qty; ?>
+                                                    <?php $total_qty += $qty; ?>
                                                     <td class="text-right">
                                                         <input onkeyup="calc('{{$id_count}}')" onblur="calc('{{$id_count}}')" class="form-control qty {{'item'.$row1->item_id}}" type="text" name="send_qty{{$id_count}}" id="send_qty{{$id_count}}" value="{{$qty}}"/>
                                                         <input type="hidden" class="" name="qty{{$id_count}}" id="qty{{$id_count}}" value="{{$qty}}"/>
@@ -262,15 +282,20 @@ use App\Helpers\ReuseableCode;
                                                         <td class="text-right hidee">
                                                         <input readonly class="form-control" type="text" name="send_rate{{$id_count}}" id="send_rate{{$id_count}}" value="{{$row1->rate}}"/>
                                                     </td>
-                                                    <!-- <td class="text-right hidee">
-                                                        <input class="form-control" type="text" name="send_discount{{$id_count}}" id="send_discount{{$id_count}}" value=""/>
+                                                    <td class="text-right hidee">
+                                                        <input readonly class="form-control" type="text" name="send_tax_rate{{$id_count}}" id="send_tax_rate{{$id_count}}" value="{{ number_format((float) $row1->tax, 2, '.', '') }}"/>
                                                     </td>
-
                                                     <td class="text-right hidee">
-                                                        <input readonly class="form-control" type="text" name="send_discount_amount{{$id_count}}" id="send_discount_amount{{$id_count}}" value=""/>
-                                                    </td> -->
+                                                        <input readonly class="form-control line-tax-amount" type="text" name="send_tax_amount{{$id_count}}" id="send_tax_amount{{$id_count}}" value="{{ number_format($lineTaxAmount, 3, '.', '') }}"/>
+                                                    </td>
                                                     <td class="text-right hidee">
-                                                        <input readonly class="form-control amount " type="text" name="send_amount{{$id_count}}" id="send_amount{{$id_count}}" value="{{$row1->amount}}"/>
+                                                        <input readonly class="form-control line-further-tax-amount" type="text" name="send_further_tax_amount{{$id_count}}" id="send_further_tax_amount{{$id_count}}" value="{{ number_format($lineFurtherTaxAmount, 3, '.', '') }}"/>
+                                                    </td>
+                                                    <td class="text-right hidee">
+                                                        <input readonly class="form-control line-advance-tax-amount" type="text" name="send_advance_tax_amount{{$id_count}}" id="send_advance_tax_amount{{$id_count}}" value="{{ number_format($lineAdvanceTaxAmount, 3, '.', '') }}"/>
+                                                    </td>
+                                                    <td class="text-right hidee">
+                                                        <input readonly class="form-control amount " type="text" name="send_amount{{$id_count}}" id="send_amount{{$id_count}}" value="{{ number_format($lineAmount, 3, '.', '') }}"/>
                                                     </td>
 
                                                     <td><input type="checkbox" class="" id="check{{$id_count}}" onclick="required_none('{{$id_count}}','{{$qty}}')" ></td>
@@ -300,6 +325,16 @@ use App\Helpers\ReuseableCode;
                                                         $qty=$bundle_data->qty-$qty;
 
                                                             if ($qty>0):
+                                                                $lineRatio = ((float) $bundle_data->qty > 0) ? ((float) $qty / (float) $bundle_data->qty) : 1;
+                                                                $lineAmount = (float) $bundle_data->amount * $lineRatio;
+                                                                $lineTaxAmount = (float) ($bundle_data->tax_amount ?? 0) * $lineRatio;
+                                                                $lineFurtherTaxAmount = (float) ($bundle_data->further_tax_amount ?? 0) * $lineRatio;
+                                                                $lineAdvanceTaxAmount = (float) ($bundle_data->advance_tax_amount ?? 0) * $lineRatio;
+                                                                $displayAmount += $lineAmount;
+                                                                $totalSalesTax += $lineTaxAmount;
+                                                                $totalFurtherTax += $lineFurtherTaxAmount;
+                                                                $totalAdvanceTax += $lineAdvanceTaxAmount;
+                                                                $total_qty += $qty;
                                                                 $working_counter++;
                                                                 $id_count++;
                                                             ?>
@@ -325,6 +360,11 @@ use App\Helpers\ReuseableCode;
                                                             <input type="hidden" name="qty{{$id_count}}" id="qty{{$id_count}}" value="{{$qty}}"/>
                                                                 <input type="hidden" name="bundles_id{{$id_count}}" value="{{$bundle_data->bundles_id}}"/>
                                                             <input type="hidden" name="item_id{{$id_count}}" id="item_id{{$id_count}}" value="{{$bundle_data->item_id}}"/>
+                                                            <input type="hidden" id="source_qty{{$id_count}}" value="{{$bundle_data->qty}}" />
+                                                            <input type="hidden" id="source_amount{{$id_count}}" value="{{$bundle_data->amount}}" />
+                                                            <input type="hidden" id="source_tax_amount{{$id_count}}" value="{{$bundle_data->tax_amount}}" />
+                                                            <input type="hidden" id="source_further_tax_amount{{$id_count}}" value="{{$bundle_data->further_tax_amount}}" />
+                                                            <input type="hidden" id="source_advance_tax_amount{{$id_count}}" value="{{$bundle_data->advance_tax_amount}}" />
 
                                                             <tr title="{{CommonHelper::get_item_name($bundle_data->item_id)}}" style="background-color: lightyellow">
                                                                 <td class="text-center" class="text-center"><?php echo $item_count;?></td>
@@ -363,22 +403,20 @@ use App\Helpers\ReuseableCode;
                                                                     <input readonly class="form-control" type="text" name="send_rate{{$id_count}}" id="send_rate{{$id_count}}" value="{{$bundle_data->rate}}"/>
 
                                                                 </td>
-                                                                <?php if ($bundle_data->discount=='') ?>
-
                                                                 <td class="text-right hidee">
-                                                                    <input readonly class="form-control" type="text" name="send_discount{{$id_count}}" id="send_discount{{$id_count}}" value="{{$bundle_data->discount}}"/>
-
-                                                                </td>
-
-
-                                                                <td class="text-right hidee">
-
-                                                                    <input readonly class="form-control" type="text" name="send_discount_amount{{$id_count}}" id="send_discount_amount{{$id_count}}"
-
-                                                                           value="{{$bundle_data->discount_amount}}"/>
+                                                                    <input readonly class="form-control" type="text" name="send_tax_rate{{$id_count}}" id="send_tax_rate{{$id_count}}" value="{{ number_format((float) $bundle_data->tax, 2, '.', '') }}"/>
                                                                 </td>
                                                                 <td class="text-right hidee">
-                                                                    <input readonly class="form-control amount comma_seprated" type="text" name="send_amount{{$id_count}}" id="send_amount{{$id_count}}" value="{{$bundle_data->amount}}"/>
+                                                                    <input readonly class="form-control line-tax-amount" type="text" name="send_tax_amount{{$id_count}}" id="send_tax_amount{{$id_count}}" value="{{ number_format($lineTaxAmount, 3, '.', '') }}"/>
+                                                                </td>
+                                                                <td class="text-right hidee">
+                                                                    <input readonly class="form-control line-further-tax-amount" type="text" name="send_further_tax_amount{{$id_count}}" id="send_further_tax_amount{{$id_count}}" value="{{ number_format($lineFurtherTaxAmount, 3, '.', '') }}"/>
+                                                                </td>
+                                                                <td class="text-right hidee">
+                                                                    <input readonly class="form-control line-advance-tax-amount" type="text" name="send_advance_tax_amount{{$id_count}}" id="send_advance_tax_amount{{$id_count}}" value="{{ number_format($lineAdvanceTaxAmount, 3, '.', '') }}"/>
+                                                                </td>
+                                                                <td class="text-right hidee">
+                                                                    <input readonly class="form-control amount comma_seprated" type="text" name="send_amount{{$id_count}}" id="send_amount{{$id_count}}" value="{{ number_format($lineAmount, 3, '.', '') }}"/>
                                                                 </td>
                                                                 <td><input type="checkbox" class="" id="check{{$id_count}}" onclick="required_none('{{$id_count}}','{{$qty}}')" ></td>
                                                             </tr>
@@ -392,7 +430,7 @@ use App\Helpers\ReuseableCode;
 
 
 
-                                                $total+=$row1->amount;
+                                                $total += $displayAmount;
                                                 $counter++;
 
 
@@ -404,7 +442,7 @@ use App\Helpers\ReuseableCode;
                                                 <tr>
 
                                                     <td id="total_" style="background-color: darkgray" class="text-center" colspan="3">Total</td>
-                                                    <td  style="background-color: darkgray" class="text-right"  colspan="1"><input style="font-weight: bolder" class="form-control" readonly type="text" id="total_qty" value="{{$total_qty,3}}" /> </td>
+                                                    <td  style="background-color: darkgray" class="text-right"  colspan="1"><input style="font-weight: bolder" class="form-control" readonly type="text" id="total_qty" value="{{ number_format($total_qty, 3, '.', '') }}" /> </td>
                                                     <td style="background-color: darkgray" class="text-right" colspan="1"></td>
                                                     <td   style="background-color: darkgray" class="text-right hidee nett"  colspan="4"><input style="font-weight: bolder" class="form-control text-right comma_seprated" readonly type="text" id="total_amount" value="{{$total}}" /></td>
                                                     <td style="background-color: darkgray" class="text-right" colspan="1"></td>
@@ -413,20 +451,22 @@ use App\Helpers\ReuseableCode;
                                                 </tr>
 
                                                 @php
-                                                    $tax = $sale_order_data->sum('tax_amount');
-                                                    $further_tax = $sale_order_data->sum('further_tax_amount');
-                                                    $advance_tax = $sale_order_data->sum('advance_tax_amount');
+                                                    $tax = $totalSalesTax;
+                                                    $further_tax = $totalFurtherTax;
+                                                    $advance_tax = $totalAdvanceTax;
                                                     $salesTaxRate = $sale_order_data->pluck('tax')->filter(function ($rate) {
                                                         return (float) $rate > 0;
                                                     })->first();
                                                     $salesTaxRate = $salesTaxRate ?: ($sales_order->sales_tax_rate ?? 0);
                                                     $furtherTaxRate = $sales_order->sales_tax_further ?? 0;
                                                     $advanceTaxRate = $sales_order->advance_tax ?? 0;
-                                                    $cartageAmount = $sales_order->cartage_amount ?? 0;
-                                                    $amountAfterTax = $sales_order->total_amount_after_sale_tax
-                                                        ?: (($sales_order->total_amount ?? $total) + $tax + $further_tax + $advance_tax + $cartageAmount);
+                                                    $sourceTotalAmount = (float) ($sales_order->total_amount ?: $sale_order_data->sum('amount'));
+                                                    $sourceCartageAmount = (float) ($sales_order->cartage_amount ?? 0);
+                                                    $cartageAmount = $sourceTotalAmount > 0 ? ($sourceCartageAmount * ($total / $sourceTotalAmount)) : $sourceCartageAmount;
+                                                    $amountAfterTax = $total + $tax + $further_tax + $advance_tax + $cartageAmount;
                                                 @endphp
-                                                <input type="hidden" id="so_total_amount" value="{{ $sales_order->total_amount ?? $total }}" />
+                                                <input type="hidden" id="so_total_amount" value="{{ $sourceTotalAmount ?: $total }}" />
+                                                <input type="hidden" id="so_cartage_amount" value="{{ $sourceCartageAmount }}" />
                                                 <input type="hidden" id="so_sales_tax_amount" value="{{ $tax }}" />
                                                 <input type="hidden" id="so_further_tax_amount" value="{{ $further_tax }}" />
                                                 <input type="hidden" id="so_advance_tax_amount" value="{{ $advance_tax }}" />
@@ -465,7 +505,7 @@ use App\Helpers\ReuseableCode;
                                                     <td  class="text-right" colspan="5"></td>
                                                     <td class="text-right" colspan="2">Cartage Amount</td>
 
-                                                    <td colspan=""> <input class="form-control text-right" type="text" name="cartage_amount" id="cartage_amount" value="{{ $cartageAmount }}" readonly />
+                                                    <td colspan=""> <input class="form-control text-right" type="text" name="cartage_amount" id="cartage_amount" value="{{ number_format($cartageAmount, 3, '.', '') }}" readonly />
                                                     </td>
 
                                                 </tr>
@@ -594,41 +634,51 @@ use App\Helpers\ReuseableCode;
             var advance_tax_rate = parseFloat($('#advance_tax_rate').val());
             advance_tax_rate = isNaN(advance_tax_rate) ? 0 : advance_tax_rate;
 
-            var cartage_amount = parseFloat($('#cartage_amount').val());
-            cartage_amount = isNaN(cartage_amount) ? 0 : cartage_amount;
-
             var so_total = parseFloat($('#so_total_amount').val());
             so_total = isNaN(so_total) || so_total <= 0 ? total : so_total;
             var amountRatio = so_total > 0 ? (total / so_total) : 1;
 
-            var so_sales_tax = parseFloat($('#so_sales_tax_amount').val());
-            so_sales_tax = isNaN(so_sales_tax) ? ((total / 100) * sales_tax_per) : so_sales_tax * amountRatio;
+            var source_cartage_amount = parseFloat($('#so_cartage_amount').val());
+            source_cartage_amount = isNaN(source_cartage_amount) ? 0 : source_cartage_amount;
+            var cartage_amount = source_cartage_amount * amountRatio;
+            $('#cartage_amount').val(cartage_amount.toFixed(3));
 
-            var so_further_tax = parseFloat($('#so_further_tax_amount').val());
-            so_further_tax = isNaN(so_further_tax) ? ((total / 100) * sales_tax_further_per) : so_further_tax * amountRatio;
-
-            var so_advance_tax = parseFloat($('#so_advance_tax_amount').val());
-            so_advance_tax = isNaN(so_advance_tax) ? ((total / 100) * advance_tax_rate) : so_advance_tax * amountRatio;
-
-            var sales_tax = so_sales_tax;
-            var sales_tax_further = so_further_tax;
-            var advance_tax = so_advance_tax;
-
-            $('#sales_tax').val(sales_tax);
-
-            var strn = $('#buyers_sales').val();
-            if (strn == '') {
-                $('#sales_tax_further').val(sales_tax_further);
-            } else {
-                sales_tax_further = 0;
-                $('#sales_tax_further').val(0);
+            var sales_tax = 0;
+            $('.line-tax-amount').each(function () {
+                var v = parseFloat($(this).val());
+                sales_tax += isNaN(v) ? 0 : v;
+            });
+            if (sales_tax === 0) {
+                sales_tax = (total / 100) * sales_tax_per;
             }
 
-            $('#advance_tax_amount').val(advance_tax);
+            var sales_tax_further = 0;
+            $('.line-further-tax-amount').each(function () {
+                var v = parseFloat($(this).val());
+                sales_tax_further += isNaN(v) ? 0 : v;
+            });
+            if (sales_tax_further === 0) {
+                sales_tax_further = (total / 100) * sales_tax_further_per;
+            }
+
+            var advance_tax = 0;
+            $('.line-advance-tax-amount').each(function () {
+                var v = parseFloat($(this).val());
+                advance_tax += isNaN(v) ? 0 : v;
+            });
+            if (advance_tax === 0) {
+                advance_tax = (total / 100) * advance_tax_rate;
+            }
+
+            $('#sales_tax').val(sales_tax.toFixed(3));
+
+            $('#sales_tax_further').val(sales_tax_further.toFixed(3));
+
+            $('#advance_tax_amount').val(advance_tax.toFixed(3));
 
             var grandTotal = total + sales_tax + sales_tax_further + advance_tax + cartage_amount;
-            $('#grand').val(grandTotal);
-            $('#d_t_amount_1').val(grandTotal);
+            $('#grand').val(grandTotal.toFixed(3));
+            $('#d_t_amount_1').val(grandTotal.toFixed(3));
 
             toWords(1);
         }
@@ -887,6 +937,8 @@ use App\Helpers\ReuseableCode;
         {
             var send_qty=parseFloat($('#send_qty'+num).val());
             var actual_qty=parseFloat($('#qty'+num).val());
+            send_qty = isNaN(send_qty) ? 0 : send_qty;
+            actual_qty = isNaN(actual_qty) ? 0 : actual_qty;
 
             if (send_qty > actual_qty)
             {
@@ -896,22 +948,25 @@ use App\Helpers\ReuseableCode;
                 return false;
             }
 
+            var sourceQty = parseFloat($('#source_qty'+num).val());
+            var sourceAmount = parseFloat($('#source_amount'+num).val());
+            var sourceTaxAmount = parseFloat($('#source_tax_amount'+num).val());
+            var sourceFurtherTaxAmount = parseFloat($('#source_further_tax_amount'+num).val());
+            var sourceAdvanceTaxAmount = parseFloat($('#source_advance_tax_amount'+num).val());
             var rate = parseFloat($('#send_rate'+num).val());
-            var total = send_qty * rate;
+            sourceQty = isNaN(sourceQty) || sourceQty <= 0 ? actual_qty : sourceQty;
+            sourceAmount = isNaN(sourceAmount) ? (send_qty * (isNaN(rate) ? 0 : rate)) : sourceAmount;
 
-            var x = parseFloat($('#send_discount'+num).val());
-            if (isNaN(x)) {
-                x = 0;
-            }
-            if (x > 0) {
-                x = x*total;
-                var discount_amount = parseFloat(x / 100);
-                console.log(typeof discount_amount);
-                $('#send_discount_amount'+num).val(discount_amount.toFixed(2));
-                total= total + discount_amount;
-            }
+            var lineRatio = sourceQty > 0 ? (send_qty / sourceQty) : 1;
+            var total = sourceAmount * lineRatio;
+            var taxAmount = (isNaN(sourceTaxAmount) ? 0 : sourceTaxAmount) * lineRatio;
+            var furtherTaxAmount = (isNaN(sourceFurtherTaxAmount) ? 0 : sourceFurtherTaxAmount) * lineRatio;
+            var advanceTaxAmount = (isNaN(sourceAdvanceTaxAmount) ? 0 : sourceAdvanceTaxAmount) * lineRatio;
 
-            $('#send_amount'+num).val(total);
+            $('#send_amount'+num).val(total.toFixed(3));
+            $('#send_tax_amount'+num).val(taxAmount.toFixed(3));
+            $('#send_further_tax_amount'+num).val(furtherTaxAmount.toFixed(3));
+            $('#send_advance_tax_amount'+num).val(advanceTaxAmount.toFixed(3));
             
             checkOutQtyLimit(num);
             net();

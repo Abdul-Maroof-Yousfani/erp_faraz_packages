@@ -49,6 +49,17 @@ use Illuminate\Support\Facades\Input;
 
 class SalesDataCallController extends Controller
 {
+    private static function applyPendingDeliveryNoteScope($query)
+    {
+        return $query->whereExists(function ($pendingLine) {
+            $pendingLine->select(DB::raw(1))
+                ->from('sales_order_data as sod')
+                ->whereColumn('sod.master_id', 'sales_order.id')
+                ->where('sod.status', 1)
+                ->whereRaw('CAST(sod.qty AS DECIMAL(18,6)) > COALESCE((SELECT SUM(CAST(dnd.qty AS DECIMAL(18,6))) FROM delivery_note_data dnd WHERE dnd.so_data_id = sod.id AND dnd.status = 1), 0)');
+        });
+    }
+
     /**
      * Create a new controller instance.
      *
@@ -2524,7 +2535,9 @@ class SalesDataCallController extends Controller
             if ($SoNo != "") {
                 $sale_order = new Sales_Order();
                 $sale_order = $sale_order->SetConnection('mysql2');
-                $sale_order = $sale_order->where('status', 1)->where('delivery_note_status', 0)->where('so_no', 'like', '%' . $SoNo . '%')->get();
+                $sale_order = self::applyPendingDeliveryNoteScope(
+                    $sale_order->where('status', 1)->where('so_no', 'like', '%' . $SoNo . '%')
+                )->get();
             } else {
                 echo '<tr class="text-center"><td class="text-danger" colspan="11" style="font-size: 18px;"><strong>Please Enter So No</strong></td></tr>';
             }
@@ -2533,14 +2546,18 @@ class SalesDataCallController extends Controller
             if ($BuyerId != "") {
                 $sale_order = new Sales_Order();
                 $sale_order = $sale_order->SetConnection('mysql2');
-                $sale_order = $sale_order->where('status', 1)->where('delivery_note_status', 0)->where('buyers_id', $BuyerId)->get();
+                $sale_order = self::applyPendingDeliveryNoteScope(
+                    $sale_order->where('status', 1)->where('buyers_id', $BuyerId)
+                )->get();
             } else {
                 echo '<tr class="text-center"><td class="text-danger" colspan="11" style="font-size: 18px;"><strong>Please Select Buyer</strong></td></tr>';
             }
         } else {
             $sale_order = new Sales_Order();
             $sale_order = $sale_order->SetConnection('mysql2');
-            $sale_order = $sale_order->where('status', 1)->where('delivery_note_status', 0)->whereBetween('so_date', [$FromDate, $ToDate])->orderBy('so_date', 'ASC')->get();
+            $sale_order = self::applyPendingDeliveryNoteScope(
+                $sale_order->where('status', 1)->whereBetween('so_date', [$FromDate, $ToDate])
+            )->orderBy('so_date', 'ASC')->get();
         }
 
         return view('Sales.AjaxPages.getSalesOrderDateWiseForDeliveryNote', compact('sale_order', 'm'));

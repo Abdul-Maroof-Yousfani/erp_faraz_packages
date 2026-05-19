@@ -152,6 +152,7 @@ $count = 1;
                                                                 {{-- <th class="text-center">Color</th> --}}
                                                                 <th class="text-center">Qty in KG</th>
                                                                 <th class="text-center">Qty (lbs)</th>
+                                                                <th class="text-center">Rate Cal. By<span class="rflabelsteric"><strong>*</strong></span></th>
                                                                 <th class="text-center">Unit Price</th>
                                                                 <th class="text-center">Sales Tax Group</th>
                                                                 <th class="text-center">Tax Amount</th>
@@ -174,6 +175,7 @@ $count = 1;
                                                                 $selectedItemExists = $sub_item->contains('id', (int) $selectedItemId);
                                                                 $selectedSalesTaxGroup = (int) ($value->sales_tax_group ?? 0);
                                                                 $selectedSalesTaxRate = (float) ($value->tax ?? 0);
+                                                                $selectedRateCalBy = $value->rate_cal_by ?? 1;
                                                             @endphp
                                                             <tr id="RemoveRows{{$count}}" class="m-tab main">
                                                                 <td style="width: 18%">
@@ -214,6 +216,15 @@ $count = 1;
                                                                     <input class="form-control requiredField"
                                                                         type="number" id="qty_lbs{{ $count }}" value="{{$value->qty_lbs}}"
                                                                         name="qty_lbs[]" step="any" readonly />
+                                                                </td>
+                                                                <td>
+                                                                    <select required class="form-control select2"
+                                                                        name="rate_cal_by[]" id="rate_cal_by_{{ $count }}"
+                                                                        onchange="calculateLineAmount(this)">
+                                                                        <option value="1" @if($selectedRateCalBy == 1) selected @endif>By BAGS</option>
+                                                                        <option value="2" @if($selectedRateCalBy == 2) selected @endif>By KGS</option>
+                                                                        <option value="3" @if($selectedRateCalBy == 3) selected @endif>By LBS</option>
+                                                                    </select>
                                                                 </td>
                                                                 <td>
                                                                     <input class="form-control" onkeyup="calculation_amount()" type="text" name="rate[]" id="rate{{ $count }}" value="{{$value->rate}}">
@@ -383,6 +394,13 @@ $count = 1;
                             name="qty_lbs[]" step="any" readonly />
                     </td>
                     <td>
+                        <select name="rate_cal_by[]" id="rate_cal_by_${Counter}" class="form-control select2" onchange="calculateLineAmount(this)">
+                            <option value="1">By BAGS</option>
+                            <option value="2">By KGS</option>
+                            <option value="3">By LBS</option>
+                        </select>
+                    </td>
+                    <td>
                         <input class="form-control" onkeyup="calculation_amount()" type="text" name="rate[]" id="rate${Counter}" value="">
                     </td>
                     <td>
@@ -474,7 +492,7 @@ $count = 1;
             $('#item_code' + index).val(uom[2]);
             $('#qty' + index).val(uom[3]);
             $('#pack_qty' + index).val(uom[3]);
-            $('#qty_lbs' + index).val(uom[3]*2.2);
+            $('#qty_lbs' + index).val((parseFloat(uom[3] || 0) * 2.2).toFixed(2));
             $('#color' + index).val(uom[5]);
             $('#pack_size' + index).val(1);
             console.log(index);
@@ -598,14 +616,21 @@ function calculation_amount(index) {
 
                 var actual_rate = row.find('[name="rate[]"]').val();
                 var actual_qty = row.find('[name="qty[]"]').val();
+                var rate_cal_by = row.find('[name="rate_cal_by[]"]').val() || "1";
 
                 var rate = actual_rate ? actual_rate : 0;
                 var qty = actual_qty ? actual_qty : 0;
+                var bags_qty = parseFloat(row.find('[name="pack_size[]"]').val()) || 0;
 
-                var qty_lbs = parseFloat(qty) * 2.2 || 0;
+                var qty_lbs = Number((parseFloat(qty) * 2.2 || 0).toFixed(2));
                 row.find('[name="qty_lbs[]"]').val(qty_lbs.toFixed(2));
 
-                var total = (parseFloat(actual_qty) || 0) * (parseFloat(rate) || 0);
+                var multiplier = 0;
+                if (rate_cal_by === "1") multiplier = bags_qty;
+                else if (rate_cal_by === "2") multiplier = parseFloat(qty) || 0;
+                else if (rate_cal_by === "3") multiplier = qty_lbs;
+
+                var total = Number((multiplier * (parseFloat(rate) || 0)).toFixed(3));
 
                 var sale_tax = parseFloat(row.find('[name="item_sale_tax_rate[]"]').val()) || 0;
                 var sale_tax_amount = total / 100 * sale_tax;
@@ -616,7 +641,7 @@ function calculation_amount(index) {
                 befor_tax += total;
                 all_tax += sale_tax_amount + advance_tax_amount + further_tax_amount;
 
-                row.find('[name="total[]"]').val(total);
+                row.find('[name="total[]"]').val(total.toFixed(3));
                 row.find('[name="item_tax_amount[]"]').val(sale_tax_amount.toFixed(3));
             });
 
@@ -644,6 +669,10 @@ function calculation_amount(index) {
         //     $(this).closest('.main').find('#total').val(total);
         // })
         // document.getElementById('grand_total').innerHTML = grad_total;
+    }
+
+    function calculateLineAmount(element) {
+        calculation_amount();
     }
 
         function saletax(instance) {

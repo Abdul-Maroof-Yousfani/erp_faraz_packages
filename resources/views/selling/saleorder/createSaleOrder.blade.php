@@ -145,6 +145,7 @@
                                                                 {{-- <th class="text-center">Color</th> --}}
                                                                 <th class="text-center">Qty in UOM</th>
                                                                 <th class="text-center">Qty (lbs)</th>
+                                                                <th class="text-center">Rate Cal. By<span class="rflabelsteric"><strong>*</strong></span></th>
                                                                 <th class="text-center">Unit Price</th>
                                                                 <th class="text-center">Total</th>
                                                                 <th class="text-center">Sales Tax Group</th>
@@ -198,12 +199,21 @@
                                                                         onchange="calculation_amount()" oninput="calculation_amount()" type="number"
                                                                         name="qty[]" id="qty1" step="any" />
                                                                          <input type="hidden" class="PackQty" name="pack_qty[]"
-                                                                id="pack_qty">
+                                                                id="pack_qty1">
                                                                 </td>
                                                                 <td>
                                                                     <input class="form-control requiredField"
                                                                         type="number" id="qty_lbs1"
                                                                         name="qty_lbs[]" step="any" readonly />
+                                                                </td>
+                                                                <td>
+                                                                    <select required class="form-control select2"
+                                                                        name="rate_cal_by[]" id="rate_cal_by_1"
+                                                                        onchange="calculateLineAmount(this)">
+                                                                        <option value="1">By BAGS</option>
+                                                                        <option value="2">By KGS</option>
+                                                                        <option value="3">By LBS</option>
+                                                                    </select>
                                                                 </td>
                                                                 <td>
                                                                     <input class="form-control requiredField"
@@ -366,12 +376,19 @@
                    
                     <td>
                         <input class="form-control" onkeyup="calculation_amount()" oninput="calculation_amount()" type="text" name="qty[]" id="qty${Counter}" value="">
-                        <input type="hidden" name="pack_qty[]" id="pack_qty">
+                        <input type="hidden" name="pack_qty[]" id="pack_qty${Counter}">
                     </td>
                     <td>
                         <input class="form-control requiredField"
                             type="number" id="qty_lbs${Counter}"
                             name="qty_lbs[]" step="any" readonly />
+                    </td>
+                    <td>
+                        <select name="rate_cal_by[]" id="rate_cal_by_${Counter}" class="form-control select2" onchange="calculateLineAmount(this)">
+                            <option value="1">By BAGS</option>
+                            <option value="2">By KGS</option>
+                            <option value="3">By LBS</option>
+                        </select>
                     </td>
                     <td>
                         <input class="form-control" onkeyup="calculation_amount()" type="text" name="rate[]" id="rate" value="">
@@ -396,6 +413,7 @@
                 </tr> `);
             $('#category_id' + Counter).select2();
             $('#item_id' + Counter).select2();
+            $('#rate_cal_by_' + Counter).select2();
             $('#item_sale_tax_group' + Counter).select2();
 
             Counter++;
@@ -420,7 +438,8 @@
             $('#item_sale_tax_group' + indexVal).val('').trigger('change.select2');
             $('#item_sale_tax_rate' + indexVal).val(0);
             $('#item_tax_amount' + indexVal).val('');
-            $('#pack_qty').val('');
+            $('#rate_cal_by_' + indexVal).val('1').trigger('change.select2');
+            $('#pack_qty' + indexVal).val('');
             get_sub_item(categoryId);
         }
     
@@ -489,7 +508,7 @@
                 $('#item_code' + index).val('');
                 $('#qty' + index).val('');
                 $('#qty_lbs' + index).val('');
-                $('#pack_qty').val('');
+                $('#pack_qty' + index).val('');
                 $('#pack_size' + index).val('');
                 return;
             }
@@ -509,7 +528,7 @@
                 $('#qty' + index).val(uom[3] || 0);
             }
             $('#qty_lbs' + index).val((parseFloat(uom[3] || 0) * 2.2).toFixed(2));
-            $('#pack_qty').val(uom[3] || 0);
+            $('#pack_qty' + index).val(uom[3] || 0);
             if (uom[4]) {
                 $('#color' + index).val(uom[4]);
             }
@@ -587,14 +606,21 @@
 
                 var actual_rate = row.find('[name="rate[]"]').val();
                 var actual_qty = row.find('[name="qty[]"]').val();
+                var rate_cal_by = row.find('[name="rate_cal_by[]"]').val() || "1";
 
                 var rate = actual_rate ? actual_rate : 0;
                 var qty = actual_qty ? actual_qty : 0;
+                var bags_qty = parseFloat(row.find('[name="pack_size[]"]').val()) || 0;
 
-                var qty_lbs = parseFloat(qty) * 2.2 || 0;
+                var qty_lbs = Number((parseFloat(qty) * 2.2 || 0).toFixed(2));
                 row.find('[name="qty_lbs[]"]').val(qty_lbs.toFixed(2));
 
-                var total = (parseFloat(actual_qty) || 0) * (parseFloat(rate) || 0);
+                var multiplier = 0;
+                if (rate_cal_by === "1") multiplier = bags_qty;
+                else if (rate_cal_by === "2") multiplier = parseFloat(qty) || 0;
+                else if (rate_cal_by === "3") multiplier = qty_lbs;
+
+                var total = Number((multiplier * (parseFloat(rate) || 0)).toFixed(3));
 
                 var sale_tax = parseFloat(row.find('[name="item_sale_tax_rate[]"]').val()) || 0;
                 var sale_tax_amount = total / 100 * sale_tax;
@@ -605,7 +631,7 @@
                 befor_tax += total;
                 all_tax += sale_tax_amount + advance_tax_amount + further_tax_amount;
 
-                row.find('[name="total[]"]').val(total);
+                row.find('[name="total[]"]').val(total.toFixed(3));
                 row.find('[name="item_tax_amount[]"]').val(sale_tax_amount.toFixed(3));
             });
             $('#total_tax').val(Number(all_tax).toFixed(3));
@@ -614,6 +640,10 @@
             $('#d_t_amount_1').val(Number(grad_total + cartage_amount).toFixed(3));
 
             toWords(1);
+        }
+
+        function calculateLineAmount(element) {
+            calculation_amount();
         }
 
 
@@ -627,7 +657,7 @@
 
         function bag_qq(counter) {
             var bags_qty = parseFloat($('#pack_size' + counter).val()) || 1;
-            var pack_qty = parseFloat($('#pack_qty').val()) || 0;
+            var pack_qty = parseFloat($('#pack_qty' + counter).val()) || 0;
             var total_qty = (bags_qty * pack_qty).toFixed(2);
 
             var uom_val = $('#uom_id' + counter).val() || '';
