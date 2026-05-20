@@ -2235,6 +2235,7 @@ Route::group(['prefix' => 'far_production', 'middleware' => 'mysql2', 'before' =
 
     // step 2: roduction mixture module
     Route::get('/addProductionMixture', 'FarazProductionController@addProductionMixture');
+    Route::get('/getProductionMixtureRawStock', 'FarazProductionController@getProductionMixtureRawStock');
     Route::get('/viewProductionMixingList', 'FarazProductionController@viewProductionMixingList');
     Route::get('/viewMixingInfo', 'FarazProductionController@viewMixingInfo');
     Route::get('/mixtureEdit', 'FarazProductionController@mixtureEdit');

@@ -359,6 +359,33 @@ class FarazProductionController extends Controller
         return view('FarazPackagesProduction.ProductionMixture.createProductionMixtureForm', compact('sub_item', 'raw_material', 'production_order', 'mixture_machines', 'pm_no'));
     }
 
+    public function getProductionMixtureRawStock(Request $request)
+    {
+        $item = (int) $request->input('item');
+
+        if ($item <= 0) {
+            return '0/0';
+        }
+
+        $in = DB::Connection('mysql2')->table('stock')->where('status', 1)
+            ->whereIn('voucher_type', [1, 4, 6, 3, 10, 11])
+            ->where('sub_item_id', $item)
+            ->select(DB::raw('COALESCE(SUM(qty), 0) As qty'), DB::raw('COALESCE(SUM(amount), 0) As amount'))
+            ->first();
+
+        $out = DB::Connection('mysql2')->table('stock')->where('status', 1)
+            ->whereIn('voucher_type', [2, 5, 9, 8])
+            ->where('sub_item_id', $item)
+            ->select(DB::raw('COALESCE(SUM(qty), 0) As qty'), DB::raw('COALESCE(SUM(amount), 0) As amount'))
+            ->first();
+
+        $qty = (float) ($in->qty ?? 0) - (float) ($out->qty ?? 0);
+        $qty = $qty > 0 ? $qty : 0;
+        $rate = (float) ($in->qty ?? 0) > 0 ? number_format(((float) ($in->amount ?? 0) / (float) $in->qty), 2, '.', '') : 0;
+
+        return number_format($qty, 2, '.', '') . '/' . $rate;
+    }
+
     public function viewProductionMixingList()
     {
         $mixingList = ProductionMixture::with('productionOrder')

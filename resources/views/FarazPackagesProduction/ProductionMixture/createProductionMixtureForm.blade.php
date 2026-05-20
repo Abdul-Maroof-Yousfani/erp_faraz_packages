@@ -325,9 +325,8 @@ if ($accType == 'client') {
             var warehouse = null;
             var myArray = $('#item_id' + number).find(":selected").val();
             var item = myArray.split(",");
-            var batch_code = 0;
             $.ajax({
-                url: '<?php echo url('/')?>/pdc/get_stock_location_wise?batch_code=' + batch_code,
+                url: '<?php echo url('/')?>/far_production/getProductionMixtureRawStock',
                 type: "GET",
                 data: { warehouse: warehouse, item: item[0] },
                 success: function (data) {
