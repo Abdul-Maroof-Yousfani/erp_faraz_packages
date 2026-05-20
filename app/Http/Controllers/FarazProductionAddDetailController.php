@@ -1307,7 +1307,14 @@ class FarazProductionAddDetailController extends Controller
 
         try {
             $rollIds = (array) $request->roll_id;
-            $firstRollId = $rollIds[0] ?? null;
+            $firstRollId = null;
+            foreach ($rollIds as $rollIdValue) {
+                $parsedRollIds = array_filter(array_map('intval', explode(',', (string) $rollIdValue)));
+                if (!empty($parsedRollIds)) {
+                    $firstRollId = reset($parsedRollIds);
+                    break;
+                }
+            }
             $sourceRoll = $firstRollId
                 ? DB::connection('mysql2')->table('production_rolling')->where('id', $firstRollId)->first()
                 : null;
@@ -1324,7 +1331,9 @@ class FarazProductionAddDetailController extends Controller
             foreach ($request->item_id as $key => $itemId) {
                 $printedQty = (float) ($request->printed_roll_qty[$key] ?? 0);
 
-                $rollId = $rollIds[$key] ?? $firstRollId;
+                $rollIdValue = $rollIds[$key] ?? $firstRollId;
+                $rowRollIds = array_values(array_filter(array_map('intval', explode(',', (string) $rollIdValue))));
+                $rollId = $rowRollIds[0] ?? $firstRollId;
 
                 // ───────────────────────────────────────────────
                 // INSERT PRINTING RECORD
@@ -1384,8 +1393,39 @@ class FarazProductionAddDetailController extends Controller
                     $request->type_id[$key] ?? null
                 );
 
-                // Collect quantity **per roll**
-                if ($rollId) {
+                // Collect quantity per source roll. Grouped rows can contain multiple roll IDs.
+                if (!empty($rowRollIds)) {
+                    $remainingQtyToApply = $printedQty;
+                    $sourceRolls = DB::connection('mysql2')
+                        ->table('production_rolling')
+                        ->whereIn('id', $rowRollIds)
+                        ->orderBy('date')
+                        ->orderBy('id')
+                        ->get();
+
+                    foreach ($sourceRolls as $sourceRow) {
+                        if ($remainingQtyToApply <= 0) {
+                            break;
+                        }
+
+                        $sourceTotal = (float) ($sourceRow->roll_qty ?? $sourceRow->rolls_qty_kg ?? 0);
+                        $sourceUsed = (float) ($sourceRow->printed_rolls_qty_kg ?? 0);
+                        $sourceRemaining = max($sourceTotal - $sourceUsed, 0);
+
+                        if ($sourceRemaining <= 0) {
+                            continue;
+                        }
+
+                        $qtyForThisRoll = min($remainingQtyToApply, $sourceRemaining);
+                        $rollUpdates[$sourceRow->id] = ($rollUpdates[$sourceRow->id] ?? 0) + $qtyForThisRoll;
+                        $remainingQtyToApply -= $qtyForThisRoll;
+                    }
+
+                    if ($remainingQtyToApply > 0.0001) {
+                        DB::connection('mysql2')->rollBack();
+                        return back()->withErrors(['error' => 'Printed roll quantity exceeds remaining rolling quantity for item ' . CommonHelper::get_item_name($itemId)])->withInput();
+                    }
+                } elseif ($rollId) {
                     $rollUpdates[$rollId] = ($rollUpdates[$rollId] ?? 0) + $printedQty;
                 }
             }

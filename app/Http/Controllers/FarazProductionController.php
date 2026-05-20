@@ -1307,14 +1307,15 @@ class FarazProductionController extends Controller
             $out_source_productions_item = DB::connection('mysql2')
                 ->table('production_rolling')
                 ->select(
-                    'roll_qty as total_qty',
-                    'printed_rolls_qty_kg as total_used_qty',
-                    'date',
                     'item_id',
-                    'id'
+                    DB::raw('GROUP_CONCAT(id ORDER BY date, id) as id'),
+                    DB::raw('SUM(COALESCE(roll_qty, rolls_qty_kg, 0)) as total_qty'),
+                    DB::raw('SUM(COALESCE(printed_rolls_qty_kg, 0)) as total_used_qty'),
+                    DB::raw('MIN(date) as date')
                 )
                 ->where('roll_qty', '>', 0)
                 ->where('production_order_id', $id)
+                ->groupBy('item_id')
                 ->get();
         } else {
             $out_source_productions_item = collect([]);
@@ -1367,17 +1368,18 @@ class FarazProductionController extends Controller
             ->join('subitem as s', 'pr.item_id', '=', 's.id')
             ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
             ->select(
-                'pr.id',
                 'pr.item_id',
-                'pr.rolls_qty_kg as total_qty',
-                'pr.printed_rolls_qty_kg as total_used_qty',
-                'pr.date',
+                DB::raw('GROUP_CONCAT(pr.id ORDER BY pr.date, pr.id) as id'),
+                DB::raw('SUM(COALESCE(pr.roll_qty, pr.rolls_qty_kg, 0)) as total_qty'),
+                DB::raw('SUM(COALESCE(pr.printed_rolls_qty_kg, 0)) as total_used_qty'),
+                DB::raw('MIN(pr.date) as date'),
                 's.item_code',
                 's.sub_ic',
                 'u.uom_name'
             )
             ->where('pr.production_order_id', $production_order_id)
-            ->where('roll_qty', '>', 0)
+            ->where('pr.roll_qty', '>', 0)
+            ->groupBy('pr.item_id', 's.item_code', 's.sub_ic', 'u.uom_name')
             ->get();
 
         return response()->json(['items' => $items]);

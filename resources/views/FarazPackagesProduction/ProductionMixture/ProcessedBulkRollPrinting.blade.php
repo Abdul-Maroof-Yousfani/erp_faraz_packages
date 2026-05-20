@@ -9,6 +9,21 @@
     $Machine = [];
     $Operator = [];
             ?>
+
+
+<style>
+.bages-tot .badge {
+    padding: 8px 10px !important;
+    font-weight: bold !important;
+        background: #7367f0 !important;
+}
+
+.bages-tot {
+    text-align: right;
+}
+
+</style>
+
     <div class="row well_N align-items-center">
         <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
             <ul class="cus-ul">
@@ -218,14 +233,12 @@
             let remaining = totalQty - totalUsedQty;
 
             return `
-                        <div class="card mb-3 shadow-sm border-0" id="row_${index}_a" style="background-color: #fcfcfc;">
+                        <div class="card mb-3 shadow-sm border-0" id="row_${index}_a" style="border: 1px solid #ddd;padding: 23px 20px;background: #fff;box-shadow: 1px 0px 4px #00000063;border-radius: 10px;margin-bottom: 40px;">
                             <div class="card-body">
 
-                             <div class="d-flex justify-content-between border-bottom pb-2 mb-3">
-                                    <button type="button" class="btn btn-sm btn-danger" onclick="removeDiv('row_${index}_a')"><i class="fa fa-trash"></i> Remove</button>
-                                </div>
+                        
 
-                                <div class="row mb-3 align-items-end">
+                                <div class="row mb-3 align-items-center">
                                     <div class="col-md-5">
                                         <label class="font-weight-bold">Item <span class="text-danger">*</span></label>
                                         <select style="width: 100% !important;" class="form-control item-select select2" disabled>
@@ -235,14 +248,14 @@
                                         <input type="hidden" name="roll_id[]" value="${item.id}">
                                     </div>
                                     <div class="col-md-7">
-                                        <div class="d-flex justify-content-start align-items-center h-100 pb-2">
+                                        <div class="bages-tot">
                                             <span class="badge badge-info mr-2 p-2" style="font-size: 0.9em;">Total Qty: ${totalQty}</span>
                                             <span class="badge badge-secondary mr-2 p-2" style="font-size: 0.9em;">Used: ${totalUsedQty}</span>
                                             <span class="badge badge-success p-2" style="font-size: 0.9em;">Remaining: <span class="remaining-display">${remaining}</span></span>
                                         </div>
                                     </div>
                                 </div>
-
+                              
                                 <div class="row mb-3">
                                     <div class="col-md-3">
                                         <label>Operator <span class="text-danger">*</span></label>
@@ -310,6 +323,12 @@
                                         <input type="number" step="any" name="printed_roll_qty[]" class="form-control printed-roll-qty-input requiredField" readonly required>
                                     </div>
                                 </div>
+
+                                  <div class="d-flex justify-content-between border-bottom pb-2 mb-3" style="justify-content: right;">
+                                    <button type="button" class="btn btn-sm btn-danger" onclick="removeDiv('row_${index}_a')"><i class="fa fa-trash"></i> Remove</button>
+                                </div>
+
+
                             </div>
                         </div>
                     `;
