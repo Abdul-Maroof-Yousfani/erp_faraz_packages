@@ -103,7 +103,7 @@ $counter = 1;
 
                             {{-- ================= ROLLING ================= --}}
                             <tr style="background:#f2f2f2;">
-                                <th colspan="6">ROLLING</th>
+                                <th colspan="7">ROLLING</th>
                             </tr>
 
                             <tr>
@@ -113,7 +113,7 @@ $counter = 1;
                                 <th>Date</th>
                                 <th>Machine</th>
                                 <th>Operator</th>
-                                {{-- <th>Shift</th> --}}
+                                <th>Shift</th>
                             </tr>
 
                             @php $totalRoll = 0; @endphp
@@ -126,16 +126,16 @@ $counter = 1;
                                     <td class="text-center">{{ number_format($roll->mixture_qty, 2) }}</td>
                                     <td class="text-center">{{ number_format($roll->roll_qty, 2) }}</td>
                                     <td class="text-center">{{ $roll->date }}</td>
-                                    <td>{{ $roll->machine->name }}</td>
-                                    <td class="text-center">{{ $roll->operator->name }}</td>
-                                    {{-- <td class="text-center">{{ $roll->shift->shift_type_name }}</td> --}}
+                                    <td>{{ optional($roll->machine)->name }}</td>
+                                    <td class="text-center">{{ optional($roll->operator)->name }}</td>
+                                    <td class="text-center">{{ optional($roll->shift)->shift_type_name ?? '-' }}</td>
                                 </tr>
                             @endforeach
 
                             <tr style="font-weight:bold;">
                                 <td colspan="2" class="text-right">Total Rolling</td>
                                 <td class="text-center">{{ number_format($totalRoll, 2) }}</td>
-                                <td colspan="3"></td>
+                                <td colspan="4"></td>
                             </tr>
 
 

@@ -78,6 +78,18 @@
                                                                 </select>
                                                             </div>
 
+                                                            <div class="col-md-4">
+                                                                <label for="">Items</label>
+                                                                <span class="rflabelsteric"><strong>*</strong></span>
+                                                                <select class="form-control select2 requiredField"
+                                                                    id="printed_roll_item_filter"
+                                                                    multiple
+                                                                    data-placeholder="Select Items"
+                                                                    onchange="renderSelectedPrintedRollItems()"
+                                                                    style="width: 100% !important;">
+                                                                </select>
+                                                            </div>
+
                                                         </div>
 
                                                         <div class="row">
@@ -155,8 +167,12 @@
 
             function fetchRollingItems() {
                 let productionOrderId = $('#production_order_id').val();
+                $('#printed_roll_item_filter').empty().trigger('change.select2');
+                $('#out_source_production_data_to_finish_received').empty();
+                out_source_productions_items_js = [];
+                rollDateById = {};
+
                 if (!productionOrderId) {
-                    $('#out_source_productions_data_to_finish_received').empty();
                     return;
                 }
 
@@ -169,14 +185,7 @@
                     },
                     success: function (response) {
                         out_source_productions_items_js = response.items;
-                        let container = $('#out_source_productions_data_to_finish_received');
-
-                        // We keep only the rows we might need to add, or we can just empty it.
-                        // The requirements say when an order is selected, load its items.
-                        // But the Blade file structure has a single row containing ALL dropdowns. 
-                        // Wait, ProcessBulkRollPrinting doesn't render rows individually, it renders them all in one flex-wrap div... Let's remove ALL children except Add More button.
-                        // Actually the ID out_source_production_data_to_finish_received contains all items.
-                        $('#out_source_production_data_to_finish_received').empty();
+                        populatePrintedRollItemDropdown(response.items);
 
                         if (response.items.length === 0) {
                             $('#out_source_production_data_to_finish_received').append(`
@@ -184,28 +193,58 @@
                                                     No printed roll items found for this production order.
                                                 </div>
                                             `);
-                        } else {
-                            $('#out_source_production_data_to_finish_received').empty();
-
-                            response.items.forEach((item, index) => {
-                                let html = renderRow(index, item);
-                                $('#out_source_production_data_to_finish_received').append(html);
-                            });
-
-                            $('.select2').select2();
                         }
                     }
                 });
             }
 
-        function renderRow(index, item) {
-            console.log(item);
-            let itemOptions = `<option value="">Select</option>`;
+        function populatePrintedRollItemDropdown(items) {
+            let itemDropdown = $('#printed_roll_item_filter');
+            itemDropdown.empty();
 
-            out_source_productions_items_js.forEach(function (val) {
-                itemOptions += `<option value="${val.item_id}">${val.item_code} -- ${val.sub_ic}</option>`;
+            items.forEach(function (item) {
+                let total = parseFloat(item.total_qty) || 0;
+                let used = parseFloat(item.total_used_qty) || 0;
+                let remaining = total - used;
+                itemDropdown.append(
+                    `<option value="${item.id}">${item.item_code} -- ${item.sub_ic} (Remaining: ${remaining})</option>`
+                );
             });
 
+            itemDropdown.val(null).trigger('change.select2');
+            $('.select2').select2();
+        }
+
+        function renderSelectedPrintedRollItems() {
+            let selectedItems = $('#printed_roll_item_filter').val() || [];
+            let container = $('#out_source_production_data_to_finish_received');
+
+            $('.card[data-roll-id]').each(function () {
+                let rollId = String($(this).data('roll-id'));
+                if (!selectedItems.includes(rollId)) {
+                    $(this).remove();
+                }
+            });
+
+            selectedItems.forEach(function (rollId, index) {
+                let rowId = `row_printed_roll_${rollId}`;
+                if ($('#' + rowId).length > 0) {
+                    return;
+                }
+
+                let item = out_source_productions_items_js.find(function (row) {
+                    return row.id == rollId;
+                });
+
+                if (item) {
+                    container.append(renderRow(index, item));
+                }
+            });
+
+            $('.select2').select2();
+        }
+
+        function renderRow(index, item) {
             let selectedOption = `<option value="${item.item_id}" selected>${item.item_code} -- ${item.sub_ic}</option>`;
 
             let operatorsHtml = `@foreach($operators as $val)<option value="{{$val->id}}">{{ $val->name }}</option>@endforeach`;
@@ -222,23 +261,13 @@
             let totalUsedQty = item.total_used_qty || 0;
             let remaining = totalQty - totalUsedQty;
 
+            let rowId = `row_printed_roll_${item.id}`;
+
             return `
-                    <hr>
-                                    <div class="card mb-6 shadow-sm border-0" id="row_${index}_a" style="background-color: #fcfcfc;">
+                                    <div class="card mb-3 shadow-sm border-0" id="${rowId}" data-roll-id="${item.id}" style="border: 1px solid #ddd;padding: 23px 20px;background: #fff;box-shadow: 1px 0px 4px #00000063;border-radius: 10px;margin-bottom: 40px;">
                                         <div class="card-body">
 
-                                            <div class="d-flex justify-content-end border-bottom pb-2 mb-3" style="float: right;">
-
-                                                <button type="button" class="btn btn-sm btn-danger" onclick="removeDiv('row_${index}_a')">
-                                                    <i class="fa fa-trash"></i> Remove
-                                                </button>
-                                                {{-- &nbsp;&nbsp;
-                                                <button type="button" class="btn btn-sm btn-primary" onclick="addRawMaterial(this)">
-                                                    <i class="fa fa-plus"></i> Add Row
-                                                </button> --}}
-
-                                            </div>
-                                            <div class="row mb-3 align-items-end">
+                                            <div class="row mb-3 align-items-center">
                                                 <div class="col-md-5">
                                                     <label class="font-weight-bold">Printed Roll <span class="text-danger">*</span></label>
                                                     <select style="width: 100% !important;" class="form-control item-select select2" disabled>
@@ -248,7 +277,7 @@
                                                     <input type="hidden" name="printed_roll_qty_sum[]" class="printed-roll-qty-sum" value="0">
                                                 </div>
                                                 <div class="col-md-7">
-                                                    <div class="d-flex justify-content-start align-items-center h-100 pb-2">
+                                                    <div class="bages-tot" style="text-align: right;">
                                                         <span class="badge badge-info mr-2 p-2" style="font-size: 0.9em;">Total Qty: ${totalQty}</span>
                                                         <span class="badge badge-secondary mr-2 p-2" style="font-size: 0.9em;">Printed Qty: ${totalUsedQty}</span>
                                                         <span class="badge badge-success p-2" style="font-size: 0.9em;">Remaining: <span class="remaining-display">${remaining}</span></span>
@@ -261,7 +290,7 @@
                                                     <label class="font-weight-bold">C&S Item <span class="text-danger">*</span></label>
                                                     <select style="width: 100% !important;"
                                                         name="item_id[]"
-                                                        id="item_id${count}"
+                                                        id="item_id_${item.id}_main"
                                                         class="form-control requiredField item-select real-item-id select2"
                                                         onchange="itemSelected(this)">
 
@@ -315,6 +344,7 @@
                                                 <div class="col-md-1">
                                                     <label>Action</label>
                                                     <button type="button" class="btn btn-sm btn-success" onclick="addRawMaterial(this, ${item.id})"><i class="fa fa-add"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-danger" onclick="removeDiv('${rowId}')"><i class="fa fa-trash"></i></button>
                                                 </div>
                                             </div>
                                         </div>
@@ -459,7 +489,7 @@
         function validateRollQty(inputElement) {
             let parsedVal = parseFloat($(inputElement).val()) || 0;
 
-            let mainCard = $(inputElement).closest('.card[id^="row_"][id$="_a"]');
+            let mainCard = $(inputElement).closest('.card[data-roll-id]');
 
             if (mainCard.length === 0) {
                 mainCard = $(inputElement).closest('.card');
@@ -527,13 +557,20 @@
 
 
         function removeDiv(div) {
+            let row = $('#' + div);
+            let rollId = row.data('roll-id');
 
-            // Count total rows (cards)
-            if ($('.card[id^="row_"]').length > 1) {
-                $('#' + div).remove();
-            } else {
-                alert("At least one item must remain.");
+            if (rollId) {
+                let selectedItems = $('#printed_roll_item_filter').val() || [];
+                selectedItems = selectedItems.filter(function (selectedRollId) {
+                    return selectedRollId != rollId;
+                });
+                $('#printed_roll_item_filter').val(selectedItems).trigger('change.select2');
+                row.remove();
+                return;
             }
+
+            row.remove();
 
         }
 

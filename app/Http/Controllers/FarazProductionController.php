@@ -299,6 +299,7 @@ class FarazProductionController extends Controller
     public function viewProductionOrderDetailTrack(Request $request)
     {
         $order = ProductionOrder::with(
+            'productionRollings.shift',
             'productionRollings.printings.cuttingAndSealings'
         )->find($request->id);
         return view('FarazPackagesProduction.viewProductionOrderDetailTrack', compact('order'));
@@ -983,6 +984,7 @@ class FarazProductionController extends Controller
     public function viewProductionRollingList()
     {
         $rollingList = ProductionRolling::with('productionOrder')
+            ->with('shift')
             ->withCount('printings as usage_count')
             ->where('status', '=', 1)
             ->where('roll_qty', '!=', 0)
@@ -1363,24 +1365,54 @@ class FarazProductionController extends Controller
         $m = $request->m;
         $production_order_id = $request->production_order_id;
 
-        $items = DB::connection('mysql2')
+        $rollingRows = DB::connection('mysql2')
             ->table('production_rolling as pr')
             ->join('subitem as s', 'pr.item_id', '=', 's.id')
             ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
             ->select(
+                'pr.id',
                 'pr.item_id',
-                DB::raw('GROUP_CONCAT(pr.id ORDER BY pr.date, pr.id) as id'),
-                DB::raw('SUM(COALESCE(pr.roll_qty, pr.rolls_qty_kg, 0)) as total_qty'),
-                DB::raw('SUM(COALESCE(pr.printed_rolls_qty_kg, 0)) as total_used_qty'),
-                DB::raw('MIN(pr.date) as date'),
+                DB::raw('COALESCE(pr.roll_qty, pr.rolls_qty_kg, 0) as qty'),
+                DB::raw('COALESCE(pr.printed_rolls_qty_kg, 0) as used_qty'),
+                'pr.date',
                 's.item_code',
                 's.sub_ic',
                 'u.uom_name'
             )
             ->where('pr.production_order_id', $production_order_id)
             ->where('pr.roll_qty', '>', 0)
-            ->groupBy('pr.item_id', 's.item_code', 's.sub_ic', 'u.uom_name')
+            ->orderBy('s.item_code')
+            ->orderBy('pr.date')
+            ->orderBy('pr.id')
             ->get();
+
+        $items = $rollingRows
+            ->groupBy('item_id')
+            ->map(function ($rows) {
+                $first = $rows->first();
+
+                return [
+                    'item_id' => $first->item_id,
+                    'id' => $rows->pluck('id')->implode(','),
+                    'total_qty' => $rows->sum('qty'),
+                    'total_used_qty' => $rows->sum('used_qty'),
+                    'date' => $rows->min('date'),
+                    'item_code' => $first->item_code,
+                    'sub_ic' => $first->sub_ic,
+                    'uom_name' => $first->uom_name,
+                    'rows' => $rows->map(function ($row) {
+                        return [
+                            'id' => $row->id,
+                            'item_id' => $row->item_id,
+                            'qty' => $row->qty,
+                            'used_qty' => $row->used_qty,
+                            'remaining_qty' => max(((float) $row->qty) - ((float) $row->used_qty), 0),
+                            'date' => $row->date,
+                        ];
+                    })->values(),
+                ];
+            })
+            ->values();
 
         return response()->json(['items' => $items]);
     }

@@ -232,6 +232,18 @@ $allSubCategories = CommonHelper::get_all_sub_category()
                                                             >
                                                         </div>
 
+                                                        <div class="col-md-2">
+                                                            <label for="">Shift</label>
+                                                            <span class="rflabelsteric"><strong>*</strong></span>
+                                                            <select name="shift_id" id="shift_id"
+                                                                class="form-control requiredField select2" required>
+                                                                <option value="">Select</option>
+                                                                @foreach($shifts as $val)
+                                                                    <option value="{{$val->id}}">{{ $val->shift_type_name }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                        </div>
+
                                                        
                                                     </div>
                                                     <?php
@@ -437,16 +449,6 @@ $global_avg_amt=0;
                                                             </select>
                                                         </div>
                                                         <div class="rolling-field">
-                                                            <label for="">Shift</label>
-                                                            <select name="shift_id[]" id="shift_id1"
-                                                                class="form-control requiredField select2">
-                                                                <option value="">Select</option>
-                                                                @foreach($shifts as $val)
-                                                                    <option value="{{$val->id}}">{{ $val->shift_type_name }}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
-                                                        <div class="rolling-field">
                                                             <label for="">Date</label>
                                                             <input type="date" name="date[]" id="date_1"
                                                                 class="form-control move-next date"
@@ -556,16 +558,6 @@ $global_avg_amt=0;
                                 <option value="">Select</option>
                                 @foreach($machines as $val)
                                     <option value="{{$val->id}}">{{ $val->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="rolling-field">
-                            <label for="">Shift</label>
-                            <select name="shift_id[]" id="shift_id${count}"
-                                class="form-control requiredField select2">
-                                <option value="">Select</option>
-                                @foreach($shifts as $val)
-                                    <option value="{{$val->id}}">{{ $val->shift_type_name }}</option>
                                 @endforeach
                             </select>
                         </div>

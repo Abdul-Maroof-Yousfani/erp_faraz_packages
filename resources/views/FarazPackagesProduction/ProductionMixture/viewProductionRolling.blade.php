@@ -50,6 +50,7 @@ $this->m = Session::get('run_company');
                                                     <th class="text-center">Rolled Item</th>
                                                     <th class="text-center">Qty</th>
                                                     <th class="text-center">Mixture used</th>
+                                                    <th class="text-center">Shift</th>
                                                     <th class="text-center">Prod. Order No.</th>
                                                     <th class="text-center">Used In Printing</th>
                                                     <th class="text-center">Status</th>
@@ -63,6 +64,7 @@ $this->m = Session::get('run_company');
                                                             <td>{{CommonHelper::get_item_name($Fil->item_id)}}</td>
                                                             <td> {{$Fil->roll_qty}} </td>
                                                             <td> {{$Fil->mixture_qty}} </td>
+                                                            <td>{{ optional($Fil->shift)->shift_type_name ?? '-' }}</td>
                                                             <td>{{ optional($Fil->productionOrder)->pr_no }} </td>
                                                             <td class="text-center">
                                                                 @php

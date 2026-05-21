@@ -45,9 +45,9 @@ class ProductionRolling extends Model
         return $this->belongsTo(Operator::class, 'operator_id');
     }
 
-    // public function shift()
-    // {
-    //     return $this->belongsTo(ShiftType::class, 'shift_id');
-    // }
+    public function shift()
+    {
+        return $this->belongsTo(ShiftType::class, 'shift_id');
+    }
 
 }

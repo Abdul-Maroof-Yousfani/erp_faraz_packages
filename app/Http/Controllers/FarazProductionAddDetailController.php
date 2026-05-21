@@ -1138,6 +1138,7 @@ class FarazProductionAddDetailController extends Controller
             'production_mixture_ids' => 'required|array',
             'raw_item_id' => 'required',
             'used_qty_total' => 'required',
+            'shift_id' => 'required',
         ]);
 
         DB::connection('mysql2')->beginTransaction();
@@ -1177,7 +1178,7 @@ class FarazProductionAddDetailController extends Controller
                     'sub_category_id' => $subCategoryId,
                     'machine_id' => $request->machine_id[$key] ?? null,
                     'operator_id' => $request->operator_id[$key] ?? null,
-                    'shift_id' => $request->shift_id[$key] ?? null,
+                    'shift_id' => $request->shift_id,
                     'mixture_qty' => $mixtureQty,
                     'roll_qty' => $rollQty,
                     'rolls_qty_kg' => $request->roll_qty_kg[$key] ?? 0,
