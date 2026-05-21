@@ -207,6 +207,11 @@ class PurchaseEditDetailControler extends Controller
 
     public function editSubItemDetail(Request $request)
     {
+        $request->validate([
+            'label_print' => 'required|in:print,non_print',
+            'gala_cutting' => 'required|in:yes,no',
+        ]);
+
         $EditId = Input::get('EditId');
         $CategoryId = Input::get('CategoryId');
         $item_code = Input::get('item_code');
@@ -239,6 +244,8 @@ class PurchaseEditDetailControler extends Controller
         $UpdateData['stockType'] = $itemType;
         $UpdateData['remark'] = $remark;
         $UpdateData['packing_type'] = $packing_type;
+        $UpdateData['label_print'] = $request->label_print;
+        $UpdateData['gala_cutting'] = $request->gala_cutting;
         DB::Connection('mysql2')->table('subitem')->where('id',$EditId)->update($UpdateData);
 
         Stock::where('status',1)->where('opening',1)->where('sub_item_id',$EditId)->delete();

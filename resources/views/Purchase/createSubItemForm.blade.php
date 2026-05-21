@@ -160,7 +160,7 @@ $m = Session::get('run_company');
                                                                     @endforeach
                                                                 </select>
                                                             </div>
-                                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
                                                                 <label>Type</label><br>
                                                                 <label>
                                                                     <input type="checkbox" name="packing_type" value="primary"> Primary Packing
@@ -169,7 +169,27 @@ $m = Session::get('run_company');
                                                                     <input type="checkbox" name="packing_type" value="secondary"> Secondary Packing
                                                                 </label>
                                                             </div>
-                                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+                                                                <label>Label Print</label>
+                                                                <span class="rflabelsteric"><strong>*</strong></span><br>
+                                                                <label>
+                                                                    <input type="radio" name="label_print" value="print" required> Print
+                                                                </label><br>
+                                                                <label>
+                                                                    <input type="radio" name="label_print" value="non_print" required> Non Print
+                                                                </label>
+                                                            </div>
+                                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+                                                                <label>Gala Cutting</label>
+                                                                <span class="rflabelsteric"><strong>*</strong></span><br>
+                                                                <label>
+                                                                    <input type="radio" name="gala_cutting" value="yes" required> Yes
+                                                                </label><br>
+                                                                <label>
+                                                                    <input type="radio" name="gala_cutting" value="no" required> No
+                                                                </label>
+                                                            </div>
+                                                            <div class="col-lg-12 col-md-12 col-sm-12  col-xs-12">
                                                                 <label>Remarks :</label>
                                                                 <textarea name="remark" id="remark" class="form-control"></textarea>
                                                             </div>

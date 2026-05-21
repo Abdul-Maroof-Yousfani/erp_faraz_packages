@@ -162,6 +162,26 @@ use App\Helpers\ImportHelper;
                                                                 </label>
                                                             </div>
                                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                                <label>Label Print</label>
+                                                                <span class="rflabelsteric"><strong>*</strong></span><br>
+                                                                <label>
+                                                                    <input @if(($sub_item->label_print ?? '') == 'print') checked @endif type="radio" name="label_print" value="print" required> Print
+                                                                </label><br>
+                                                                <label>
+                                                                    <input @if(($sub_item->label_print ?? '') == 'non_print') checked @endif type="radio" name="label_print" value="non_print" required> Non Print
+                                                                </label>
+                                                            </div>
+                                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                                <label>Gala Cutting</label>
+                                                                <span class="rflabelsteric"><strong>*</strong></span><br>
+                                                                <label>
+                                                                    <input @if(($sub_item->gala_cutting ?? '') == 'yes') checked @endif type="radio" name="gala_cutting" value="yes" required> Yes
+                                                                </label><br>
+                                                                <label>
+                                                                    <input @if(($sub_item->gala_cutting ?? '') == 'no') checked @endif type="radio" name="gala_cutting" value="no" required> No
+                                                                </label>
+                                                            </div>
+                                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                                 <label>Remarks :</label>
                                                                 <textarea name="remark" id="remark" class="form-control" value="{{  $sub_item->remark }}">{{ $sub_item->remark }}</textarea>
                                                             </div>

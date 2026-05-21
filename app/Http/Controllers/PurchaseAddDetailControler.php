@@ -757,6 +757,10 @@ class PurchaseAddDetailControler extends Controller
 
     public function addSubItemDetail(Request $request)
     {
+        $request->validate([
+            'label_print' => 'required|in:print,non_print',
+            'gala_cutting' => 'required|in:yes,no',
+        ]);
 
         $sub_item = new Subitem();
         $sub_item = $sub_item->SetConnection('mysql2');
@@ -781,6 +785,8 @@ class PurchaseAddDetailControler extends Controller
         $sub_item->type = $request->maintain;
         $sub_item->remark = $request->remark ?? '';
         $sub_item->packing_type = $request->packing_type ?? '';
+        $sub_item->label_print = $request->label_print;
+        $sub_item->gala_cutting = $request->gala_cutting;
         $sub_item->username = Auth::user()->name;
         $sub_item->date = date('Y-m-d');
         $sub_item->save();
