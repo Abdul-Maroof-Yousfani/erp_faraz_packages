@@ -216,11 +216,11 @@
             itemDropdown.empty();
 
             items.forEach(function (item) {
-                let total = parseFloat(item.total_qty) || 0;
-                let used = parseFloat(item.total_used_qty) || 0;
-                let remaining = total - used;
+                let total     = parseFloat(item.total_qty) || 0;
+                let used      = parseFloat(item.total_used_qty) || 0;
+                let remaining = Math.round((total - used) * 100) / 100;
                 itemDropdown.append(
-                    `<option value="${item.item_id}">${item.item_code} -- ${item.sub_ic} (Remaining: ${remaining})</option>`
+                    `<option value="${item.item_id}">${item.item_code} -- ${item.sub_ic} (Remaining: ${remaining.toFixed(2)})</option>`
                 );
             });
 
@@ -269,7 +269,7 @@
 
             let totalQty    = parseFloat(item.total_qty) || 0;
             let totalUsedQty = parseFloat(item.total_used_qty) || 0;
-            let remaining   = totalQty - totalUsedQty;
+            let remaining   = Math.round((totalQty - totalUsedQty) * 100) / 100;
             let rowId       = `row_item_${item.item_id}`;
 
             // All individual roll IDs joined — passed as a single hidden so the controller

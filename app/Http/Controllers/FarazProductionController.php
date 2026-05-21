@@ -1373,7 +1373,7 @@ class FarazProductionController extends Controller
                 'pr.id',
                 'pr.item_id',
                 DB::raw('COALESCE(pr.roll_qty, pr.rolls_qty_kg, 0) as qty'),
-                DB::raw('COALESCE(pr.printed_rolls_qty_kg, 0) as used_qty'),
+                DB::raw('ROUND(COALESCE(pr.printed_rolls_qty_kg, 0), 2) as used_qty'),
                 'pr.date',
                 's.item_code',
                 's.sub_ic',
@@ -1390,24 +1390,28 @@ class FarazProductionController extends Controller
             ->groupBy('item_id')
             ->map(function ($rows) {
                 $first = $rows->first();
+                $totalQty     = round((float) $rows->sum('qty'), 2);
+                $totalUsedQty = round((float) $rows->sum('used_qty'), 2);
 
                 return [
-                    'item_id' => $first->item_id,
-                    'id' => $rows->pluck('id')->implode(','),
-                    'total_qty' => $rows->sum('qty'),
-                    'total_used_qty' => $rows->sum('used_qty'),
-                    'date' => $rows->min('date'),
-                    'item_code' => $first->item_code,
-                    'sub_ic' => $first->sub_ic,
-                    'uom_name' => $first->uom_name,
-                    'rows' => $rows->map(function ($row) {
+                    'item_id'        => $first->item_id,
+                    'id'             => $rows->pluck('id')->implode(','),
+                    'total_qty'      => $totalQty,
+                    'total_used_qty' => $totalUsedQty,
+                    'date'           => $rows->min('date'),
+                    'item_code'      => $first->item_code,
+                    'sub_ic'         => $first->sub_ic,
+                    'uom_name'       => $first->uom_name,
+                    'rows'           => $rows->map(function ($row) {
+                        $qty  = round((float) $row->qty, 2);
+                        $used = round((float) $row->used_qty, 2);
                         return [
-                            'id' => $row->id,
-                            'item_id' => $row->item_id,
-                            'qty' => $row->qty,
-                            'used_qty' => $row->used_qty,
-                            'remaining_qty' => max(((float) $row->qty) - ((float) $row->used_qty), 0),
-                            'date' => $row->date,
+                            'id'            => $row->id,
+                            'item_id'       => $row->item_id,
+                            'qty'           => $qty,
+                            'used_qty'      => $used,
+                            'remaining_qty' => max($qty - $used, 0),
+                            'date'          => $row->date,
                         ];
                     })->values(),
                 ];
@@ -1422,7 +1426,7 @@ class FarazProductionController extends Controller
         $m = $request->m;
         $production_order_id = $request->production_order_id;
 
-        $items = DB::connection('mysql2')
+        $rollingRows = DB::connection('mysql2')
             ->table('production_rolling as pr')
             ->join('production_roll_printing as prp', 'pr.id', '=', 'prp.production_rolling_id')
             ->join('subitem as s', 'prp.item_id', '=', 's.id')
@@ -1431,7 +1435,7 @@ class FarazProductionController extends Controller
                 'prp.id',
                 'prp.item_id',
                 'prp.no_of_roll as total_qty',
-                'prp.used_no_of_roll as total_used_qty',
+                DB::raw('ROUND(COALESCE(prp.used_no_of_roll, 0), 2) as total_used_qty'),
                 'prp.date',
                 's.item_code',
                 's.sub_ic',
@@ -1439,7 +1443,42 @@ class FarazProductionController extends Controller
             )
             ->where('pr.production_order_id', $production_order_id)
             ->where('prp.no_of_roll', '>', 0)
+            ->orderBy('s.item_code')
+            ->orderBy('prp.date')
+            ->orderBy('prp.id')
             ->get();
+
+        // Group by item_id — sum qtys, collect all IDs
+        $items = $rollingRows
+            ->groupBy('item_id')
+            ->map(function ($rows) {
+                $first = $rows->first();
+                $totalQty     = round((float) $rows->sum('total_qty'), 2);
+                $totalUsedQty = round((float) $rows->sum('total_used_qty'), 2);
+                return [
+                    'item_id'        => $first->item_id,
+                    'id'             => $rows->pluck('id')->implode(','),
+                    'total_qty'      => $totalQty,
+                    'total_used_qty' => $totalUsedQty,
+                    'date'           => $rows->min('date'),
+                    'item_code'      => $first->item_code,
+                    'sub_ic'         => $first->sub_ic,
+                    'uom_name'       => $first->uom_name,
+                    'rows'           => $rows->map(function ($row) {
+                        $qty  = round((float) $row->total_qty, 2);
+                        $used = round((float) $row->total_used_qty, 2);
+                        return [
+                            'id'            => $row->id,
+                            'item_id'       => $row->item_id,
+                            'qty'           => $qty,
+                            'used_qty'      => $used,
+                            'remaining_qty' => max($qty - $used, 0),
+                            'date'          => $row->date,
+                        ];
+                    })->values(),
+                ];
+            })
+            ->values();
 
         return response()->json(['items' => $items]);
     }

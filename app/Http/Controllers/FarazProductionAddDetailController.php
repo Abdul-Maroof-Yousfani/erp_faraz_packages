@@ -1433,11 +1433,12 @@ class FarazProductionAddDetailController extends Controller
 
             // Now update each production_rolling record with **its own** total printed qty
             foreach ($rollUpdates as $rollId => $qtyForThisRoll) {
+                $qtyForThisRoll = round($qtyForThisRoll, 2);
                 DB::connection('mysql2')
                     ->table('production_rolling')
                     ->where('id', $rollId)
                     ->update([
-                        'printed_rolls_qty_kg' => DB::raw("COALESCE(printed_rolls_qty_kg,0) + $qtyForThisRoll")
+                        'printed_rolls_qty_kg' => DB::raw("ROUND(COALESCE(printed_rolls_qty_kg,0) + $qtyForThisRoll, 2)")
                     ]);
             }
 
@@ -1609,50 +1610,91 @@ class FarazProductionAddDetailController extends Controller
 
     public function addBulkProductionCuttingAndSealingDetail(Request $request)
     {
-        // dd($request->all());
         $request->validate([
-            'item_id' => 'required|array',
+            'item_id'    => 'required|array',
             'machine_id' => 'required|array',
         ]);
 
         DB::connection('mysql2')->beginTransaction();
 
         try {
+            // ── Resolve production order no (same pattern as Roll Printing) ──────
+            $allRollIds = [];
+            foreach ((array) $request->roll_id as $rv) {
+                foreach (array_filter(array_map('intval', explode(',', (string) $rv))) as $rid) {
+                    $allRollIds[] = $rid;
+                }
+            }
+            $firstRollPrintId = $allRollIds[0] ?? null;
+
+            // Get the production_rolling_id from the first roll_printing record
+            $firstRollPrint = $firstRollPrintId
+                ? DB::connection('mysql2')->table('production_roll_printing')->where('id', $firstRollPrintId)->first()
+                : null;
+
+            $pro_no = null;
+            if ($firstRollPrint && $firstRollPrint->production_rolling_id) {
+                $sourceRoll = DB::connection('mysql2')
+                    ->table('production_rolling')
+                    ->where('id', $firstRollPrint->production_rolling_id)
+                    ->first();
+                if ($sourceRoll) {
+                    $pro_no = DB::connection('mysql2')
+                        ->table('production_request')
+                        ->where('id', $sourceRoll->production_order_id)
+                        ->value('pr_no');
+                }
+            }
+            $pro_no = $pro_no ?: ($firstRollPrintId ?? 'CS');
+
+            // ── Build a map: raw_item_id keyed by roll_id string ─────────────────
+            // raw_item_id[] is one per card (master), roll_id[] is one per detail row
+            // We need to know which raw_item_id corresponds to which roll_id group
+            $rollIdToRawItem = [];
+            if ($request->raw_item_id) {
+                foreach ($request->raw_item_id as $idx => $rawId) {
+                    // printed_roll_qty_sum is also per card — use same index
+                    $rollIdToRawItem[$idx] = $rawId;
+                }
+            }
+
+            // ── Per-roll-group consume tracking ──────────────────────────────────
+            $rollConsumeMap = []; // rollIdsStr => ['raw_item_id'=>, 'total_consume'=>, 'roll_ids_arr'=>]
+            $csIdLast = null;
 
             foreach ($request->item_id as $key => $itemId) {
+                $qty        = (float) ($request->qty[$key] ?? 0);
+                $consumeQty = (float) ($request->printed_roll_qty[$key] ?? 0);
+                $rawRollId  = $request->roll_id[$key] ?? '';
+                $rollIdFirst = (int) explode(',', $rawRollId)[0];
 
-                $qty = $request->qty[$key] ?? 0;
+                // raw_item_id per row — submitted as row_raw_item_id[]
+                $rawItemId = $request->row_raw_item_id[$key] ?? ($request->raw_item_id[0] ?? null);
 
-                // ========================
-                // INSERT CUTTING & SEALING
-                // ========================
+                // ── INSERT CUTTING & SEALING ──────────────────────────────────────
                 $data2 = [
-                    'printed_rolling_id' => $request->roll_id[$key],
-                    'item_id' => $itemId,
-                    'machine_id' => $request->machine_id[$key] ?? null,
-                    'operator_id' => $request->operator_id[$key] ?? null,
-                    'shift_id' => $request->shift_id[$key] ?? null,
-                    'qty' => $qty ?? 0,
-                    'printed_roll_qty' => $request->printed_roll_qty[$key] ?? 0,
-                    'date' => $request->date[$key] ?? now(),
-                    'status' => 1,
-                    'username' => Auth::user()->name,
+                    'printed_rolling_id' => $rollIdFirst,
+                    'item_id'            => $itemId,
+                    'machine_id'         => $request->machine_id[$key] ?? null,
+                    'operator_id'        => $request->operator_id[$key] ?? null,
+                    'shift_id'           => $request->shift_id[$key] ?? null,
+                    'qty'                => $qty,
+                    'used_qty'           => 0,
+                    'printed_roll_qty'   => $consumeQty,
+                    'remarks'            => $request->remarks[$key] ?? null,
+                    'date'               => $request->date[$key] ?? now(),
+                    'status'             => 1,
+                    'username'           => Auth::user()->name,
                 ];
-                // dd($data2);
                 $csId = DB::connection('mysql2')
                     ->table('production_cutting_and_sealing')
                     ->insertGetId($data2);
+                $csIdLast = $csId;
 
-
-                // ========================
-                // STOCK IN (CUT/SEALED ITEM)
-                // ========================
+                // ── STOCK IN (produced cut/sealed item) ───────────────────────────
                 $finishDetail = CommonHelper::get_subitem_detail2($itemId);
-
                 ReuseableCode::postStock(
-                    $csId,
-                    0,
-                    $request->roll_id[$key],
+                    $csId, 0, $pro_no,
                     $request->date[$key] ?? now(),
                     11,
                     $finishDetail->rate ?? 0,
@@ -1662,72 +1704,95 @@ class FarazProductionAddDetailController extends Controller
                     null
                 );
 
+                // ── Accumulate consume per unique raw_item + roll group ────────────
+                $mapKey = $rawItemId . '|' . $rawRollId;
+                if (!isset($rollConsumeMap[$mapKey])) {
+                    $rollConsumeMap[$mapKey] = [
+                        'raw_item_id'   => $rawItemId,
+                        'total_consume' => 0,
+                        'roll_ids_arr'  => array_values(array_filter(array_unique(
+                            array_map('intval', explode(',', $rawRollId))
+                        ))),
+                        'csId'          => $csId,
+                    ];
+                }
+                $rollConsumeMap[$mapKey]['total_consume'] += $consumeQty;
             }
 
-            $rollIdsUnique = array_values(array_unique($request->roll_id));
+            // ── Per roll group: stock out + update used_no_of_roll ────────────────
+            foreach ($rollConsumeMap as $rollIdsStr => $entry) {
+                $rawItemId    = $entry['raw_item_id'];
+                $totalConsume = $entry['total_consume'];
+                $rollIdsArr   = $entry['roll_ids_arr'];
+                $csId         = $entry['csId'];
 
-            foreach ($rollIdsUnique as $key => $rollId) {
+                if (!$rawItemId || $totalConsume <= 0) continue;
 
-                $qty = $request->printed_roll_qty_sum[$key] ?? 0;
                 // CHECK STOCK
-                $availableQty = ReuseableCode::get_stock(
-                    $request->raw_item_id[$key],
-                    0,
-                    $qty,
-                    0
-                );
-
+                $availableQty = ReuseableCode::get_stock($rawItemId, 0, $totalConsume, 0);
                 if ($availableQty < 0) {
                     DB::connection('mysql2')->rollBack();
-                    return "Insufficient stock for item " .
-                        CommonHelper::get_item_name($request->raw_item_id[$key]);
+                    return back()->withErrors(['error' =>
+                        'Insufficient stock for item ' . CommonHelper::get_item_name($rawItemId)
+                    ])->withInput();
                 }
 
-                $rawDetail = CommonHelper::get_subitem_detail2($request->raw_item_id[$key]);
-                // dd($rawDetail);
+                $rawDetail = CommonHelper::get_subitem_detail2($rawItemId);
 
-                // STOCK OUT
+                // STOCK OUT (consumed printed roll material)
                 ReuseableCode::postStock(
-                    $csId,
-                    0,
-                    $rollId,
+                    $csId, 0, $pro_no,
                     $request->date[0] ?? now(),
                     9,
                     $rawDetail->rate ?? 0,
-                    $request->raw_item_id[$key],
+                    $rawItemId,
                     $rawDetail->sub_ic ?? '',
-                    $qty,
+                    $totalConsume,
                     null
                 );
 
-                // UPDATE USED ROLL
-                DB::connection('mysql2')
-                    ->table('production_roll_printing')
-                    ->where('id', $rollId)
-                    ->update([
-                        'used_no_of_roll' => DB::raw("COALESCE(used_no_of_roll,0) + $qty")
-                    ]);
-            }
-            // dd("ok");
+                // UPDATE used_no_of_roll — distribute proportionally across merged rolls
+                if (count($rollIdsArr) === 1) {
+                    DB::connection('mysql2')
+                        ->table('production_roll_printing')
+                        ->where('id', $rollIdsArr[0])
+                        ->update(['used_no_of_roll' => DB::raw("ROUND(COALESCE(used_no_of_roll,0) + {$totalConsume}, 2)")]);
+                } else {
+                    $rollRows   = DB::connection('mysql2')
+                        ->table('production_roll_printing')
+                        ->whereIn('id', $rollIdsArr)
+                        ->select('id', 'no_of_roll', DB::raw('ROUND(COALESCE(used_no_of_roll,0),2) as used_no_of_roll'))
+                        ->get();
 
-            // wastage section
+                    // Distribute by filling each roll sequentially (oldest first) up to its remaining
+                    $remaining = $totalConsume;
+                    foreach ($rollRows as $rollRow) {
+                        if ($remaining <= 0) break;
+                        $rollRemaining = round(max((float)$rollRow->no_of_roll - (float)$rollRow->used_no_of_roll, 0), 2);
+                        $share = round(min($remaining, $rollRemaining), 2);
+                        if ($share <= 0) continue;
+                        DB::connection('mysql2')
+                            ->table('production_roll_printing')
+                            ->where('id', $rollRow->id)
+                            ->update(['used_no_of_roll' => DB::raw("ROUND(COALESCE(used_no_of_roll,0) + {$share}, 2)")]);
+                        $remaining = round($remaining - $share, 2);
+                    }
+                }
+            }
+
+            // ── Wastage section ───────────────────────────────────────────────────
             $wastageItemId = $request->input('wastage_item_id');
-            $wastageQty = (float) $request->input('wastage_qty', 0);
+            $wastageQty    = (float) $request->input('wastage_qty', 0);
 
             if ($wastageItemId && $wastageQty > 0) {
-
-
                 $this->recordProductionWastage('cutting_and_sealing', $wastageItemId, $wastageQty, $request->date[0] ?? now());
 
-                // Stock OUT for wastage
                 $wDetail = CommonHelper::get_subitem_detail2($wastageItemId);
-
                 ReuseableCode::postStock(
-                    0,
-                    0,
-                    $request->roll_id[0] ?? $request->roll_id ?? '',
-                    $request->date[0] ?? $request->date ?? now(),
-                    11,                          // IN
+                    0, 0,
+                    $request->roll_id[0] ?? '',
+                    $request->date[0] ?? now(),
+                    11,
                     $wDetail->rate ?? 0,
                     $wastageItemId,
                     $wDetail->sub_ic ?? '',
@@ -1736,16 +1801,19 @@ class FarazProductionAddDetailController extends Controller
                 );
             }
 
-
             DB::connection('mysql2')->commit();
 
         } catch (\Exception $e) {
             DB::connection('mysql2')->rollback();
-            return $e->getMessage();
+            \Log::error('Bulk C&S failed: ' . $e->getMessage(), [
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+                'request' => $request->all(),
+            ]);
+            return back()->withErrors(['error' => $e->getMessage()])->withInput();
         }
 
         Session::flash('dataInsert', 'Successfully Saved.');
-
         return Redirect::to(
             'far_production/viewProductionCuttingAndSealingList?pageType=' .
             Input::get('pageType') .
