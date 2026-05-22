@@ -2018,6 +2018,14 @@ class FarazProductionAddDetailController extends Controller
         try {
 
             foreach ($request->item_id as $key => $itemId) {
+                $sourceType = !empty($request->cutting_type)
+                    ? (($request->cutting_type == 'gala cutting') ? 'gala' : 'cutting and sealing')
+                    : ($request->secondary_cutting_type[$key] ?? 'cutting and sealing');
+                $sourceType = ($sourceType === 'gala cutting') ? 'gala' : $sourceType;
+                $rollIds = array_values(array_filter(array_unique(
+                    array_map('intval', explode(',', (string) ($request->roll_id[$key] ?? '')))
+                )));
+                $firstRollId = $rollIds[0] ?? 0;
 
                 // ========================
                 // CHECK STOCK (CUT/SEALED ITEM)
@@ -2036,20 +2044,9 @@ class FarazProductionAddDetailController extends Controller
                 }
 
 
-                if (!empty($request->cutting_type)) {
-
-                    $rollField = ($request->cutting_type == 'cutting and sealing')
-                        ? ['cutting_sealing_id' => $request->roll_id[$key]]
-                        : ['gala_cutting_id' => $request->roll_id[$key]];
-
-                } else {
-
-                    $type = $request->secondary_cutting_type[$key] ?? null;
-
-                    $rollField = ($type === 'gala')
-                        ? ['gala_cutting_id' => $request->roll_id[$key]]
-                        : ['cutting_sealing_id' => $request->roll_id[$key]];
-                }
+                $rollField = ($sourceType === 'gala')
+                    ? ['gala_cutting_id' => $firstRollId]
+                    : ['cutting_sealing_id' => $firstRollId];
 
                 $data2 = array_merge($rollField, [
                     'item_id' => $itemId,
@@ -2065,10 +2062,10 @@ class FarazProductionAddDetailController extends Controller
 
                 $packingId = DB::connection('mysql2')
                     ->table('production_packing')
-                    ->insert($data2);
+                    ->insertGetId($data2);
 
 
-                $rawDetail = CommonHelper::get_subitem_detail2($request->raw_item_id[0]);
+                $rawDetail = CommonHelper::get_subitem_detail2($request->raw_item_id[$key]);
 
                 ReuseableCode::postStock(
                     $packingId,
@@ -2099,49 +2096,46 @@ class FarazProductionAddDetailController extends Controller
                     null
                 );
 
-                $type = $request->cutting_type ?? ($request->secondary_cutting_type[$key] ?? null);
-                // dd($request->secondary_cutting_type[1]);
-                $qty = $request->qty[$key];
-                if ($type == 'cutting and sealing') {
+                $remainingConsumeQty = (float) ($request->qty[$key] ?? 0);
+                $sourceTable = ($sourceType === 'gala')
+                    ? 'production_gala_cutting'
+                    : 'production_cutting_and_sealing';
+                $sourceQtyColumn = ($sourceType === 'gala') ? 'gala_qty' : 'qty';
+
+                $sourceRows = DB::connection('mysql2')
+                    ->table($sourceTable)
+                    ->whereIn('id', $rollIds)
+                    ->select('id', $sourceQtyColumn . ' as source_qty', DB::raw('ROUND(COALESCE(used_qty,0),2) as used_qty'))
+                    ->orderBy('date')
+                    ->orderBy('id')
+                    ->get();
+
+                foreach ($sourceRows as $sourceRow) {
+                    if ($remainingConsumeQty <= 0) {
+                        break;
+                    }
+
+                    $rowRemainingQty = round(max((float) $sourceRow->source_qty - (float) $sourceRow->used_qty, 0), 2);
+                    $consumeShare = round(min($remainingConsumeQty, $rowRemainingQty), 2);
+
+                    if ($consumeShare <= 0) {
+                        continue;
+                    }
+
                     DB::connection('mysql2')
-                        ->table('production_cutting_and_sealing')
-                        ->where('id', $request->roll_id[$key])
+                        ->table($sourceTable)
+                        ->where('id', $sourceRow->id)
                         ->update([
-                            'used_qty' => DB::raw("COALESCE(used_qty,0) + $qty")
+                            'used_qty' => DB::raw("ROUND(COALESCE(used_qty,0) + {$consumeShare}, 2)")
                         ]);
 
-                    // DB::connection('mysql2')
-                    //     ->table('production_cutting_and_sealing')
-                    //     ->where('id', $request->roll_id[$key])
-                    //     ->where('item_id', $request->raw_item_id[$key])
-                    //     ->increment('used_qty', $request->qty[$key]);
+                    $remainingConsumeQty = round($remainingConsumeQty - $consumeShare, 2);
+                }
 
-                } elseif ($type == 'gala') {
-                    DB::connection('mysql2')
-                        ->table('production_gala_cutting')
-                        ->where('id', $request->roll_id[$key])
-                        ->update([
-                            'used_qty' => DB::raw("COALESCE(used_qty,0) + $qty")
-                        ]);
-                    // DB::connection('mysql2')
-                    //     ->table('production_gala_cutting')
-                    //     ->where('id', $request->roll_id[$key])
-                    //     ->where('item_id', $request->raw_item_id[$key])
-                    //     ->increment('used_qty', $request->qty[$key]);
-
-                } else {
-                    DB::connection('mysql2')
-                        ->table('production_cutting_and_sealing')
-                        ->where('id', $request->roll_id[$key])
-                        ->update([
-                            'used_qty' => DB::raw("COALESCE(used_qty,0) + $qty")
-                        ]);
-                    // fallback if null
-                    // DB::connection('mysql2')
-                    //     ->table('production_cutting_and_sealing')
-                    //     ->where('id', $request->roll_id[$key])
-                    //     ->where('item_id', $request->raw_item_id[$key])
-                    //     ->increment('used_qty', $request->qty[$key]);
+                if ($remainingConsumeQty > 0) {
+                    DB::connection('mysql2')->rollBack();
+                    return "Packing quantity exceeds available source quantity for item " .
+                        CommonHelper::get_item_name($request->raw_item_id[$key]);
                 }
             }
 

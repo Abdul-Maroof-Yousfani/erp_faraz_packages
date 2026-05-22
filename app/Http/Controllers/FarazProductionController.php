@@ -1555,7 +1555,7 @@ class FarazProductionController extends Controller
         $cutting_type = $request->cutting_type;
 
         if ($cutting_type == 'cutting and sealing') {
-            $items = DB::connection('mysql2')
+            $rows = DB::connection('mysql2')
                 ->table('production_rolling as pr')
                 ->join('production_roll_printing as prp', 'pr.id', '=', 'prp.production_rolling_id')
                 ->join('production_cutting_and_sealing as pcs', 'prp.id', '=', 'pcs.printed_rolling_id')
@@ -1572,17 +1572,21 @@ class FarazProductionController extends Controller
                     's.item_code',
                     's.sub_ic',
                     'u.uom_name',
-                    DB::raw("'' as cutting_type")
+                    DB::raw("'cutting and sealing' as cutting_type")
                 )
                 ->where('pr.production_order_id', $production_order_id)
                 ->where('pcs.qty', '>', 0)
+                ->whereRaw('COALESCE(pcs.qty,0) > COALESCE(pcs.used_qty,0)')
                 ->whereNull('sc.type')
+                ->orderBy('s.sub_ic')
+                ->orderBy('pcs.date')
+                ->orderBy('pcs.id')
                 ->get();
 
-            return response()->json(['items' => $items]);
+            return response()->json(['items' => $this->groupPackingSourceItems($rows)]);
         } elseif ($cutting_type == 'gala cutting') {
 
-            $items = DB::connection('mysql2')
+            $rows = DB::connection('mysql2')
                 ->table('production_rolling as pr')
                 ->join('production_roll_printing as prp', 'pr.id', '=', 'prp.production_rolling_id')
                 ->join('production_cutting_and_sealing as pcs', 'prp.id', '=', 'pcs.printed_rolling_id')
@@ -1598,13 +1602,17 @@ class FarazProductionController extends Controller
                     's.item_code',
                     's.sub_ic',
                     'u.uom_name',
-                    DB::raw("'' as cutting_type")
+                    DB::raw("'gala' as cutting_type")
                 )
                 ->where('pr.production_order_id', $production_order_id)
                 ->where('pgs.gala_qty', '>', 0)
+                ->whereRaw('COALESCE(pgs.gala_qty,0) > COALESCE(pgs.used_qty,0)')
+                ->orderBy('s.sub_ic')
+                ->orderBy('pgs.date')
+                ->orderBy('pgs.id')
                 ->get();
 
-            return response()->json(['items' => $items]);
+            return response()->json(['items' => $this->groupPackingSourceItems($rows)]);
         } else {
 
             // ── Common base ───────────────────────────────────────
@@ -1621,6 +1629,7 @@ class FarazProductionController extends Controller
                 ->join('sub_category as sc', 's.sub_category_id', '=', 'sc.id')
 
                 ->where('pcs.qty', '>', 0)
+                ->whereRaw('COALESCE(pcs.qty,0) > COALESCE(pcs.used_qty,0)')
                 ->whereNull('sc.type')
 
                 ->select(
@@ -1632,14 +1641,18 @@ class FarazProductionController extends Controller
                     's.item_code',
                     's.sub_ic',
                     'u.uom_name',
-                    DB::raw("'' as cutting_type")   // ← helps frontend distinguish
+                    DB::raw("'cutting and sealing' as cutting_type")
                 )
+                ->orderBy('s.sub_ic')
+                ->orderBy('pcs.date')
+                ->orderBy('pcs.id')
                 ->get();
 
             // ── Gala cutting items ────────────────────────────────
             $galaItems = (clone $baseQuery)
                 ->join('production_gala_cutting as pgs', 'pcs.id', '=', 'pgs.cutting_sealing_id')
                 ->where('pgs.gala_qty', '>', 0)
+                ->whereRaw('COALESCE(pgs.gala_qty,0) > COALESCE(pgs.used_qty,0)')
                 ->select(
                     'pgs.id',
                     'pgs.item_id',
@@ -1649,12 +1662,15 @@ class FarazProductionController extends Controller
                     's.item_code',
                     's.sub_ic',
                     'u.uom_name',
-                    DB::raw("'gala' as cutting_type")     // ← helps frontend distinguish
+                    DB::raw("'gala' as cutting_type")
                 )
+                ->orderBy('s.sub_ic')
+                ->orderBy('pgs.date')
+                ->orderBy('pgs.id')
                 ->get();
 
             // Combine both collections
-            $allItems = $simpleItems->merge($galaItems);
+            $allItems = $this->groupPackingSourceItems($simpleItems->merge($galaItems));
 
             return response()->json([
                 'items' => $allItems,
@@ -1662,6 +1678,43 @@ class FarazProductionController extends Controller
                 'gala_count' => $galaItems->count(),
             ]);
         }
+    }
+
+    private function groupPackingSourceItems($rows)
+    {
+        return $rows
+            ->groupBy(function ($row) {
+                return ($row->cutting_type ?: 'cutting and sealing') . '|' . $row->item_id;
+            })
+            ->map(function ($groupRows) {
+                $first = $groupRows->first();
+
+                return [
+                    'item_id' => $first->item_id,
+                    'id' => $groupRows->pluck('id')->implode(','),
+                    'total_qty' => round((float) $groupRows->sum('total_qty'), 2),
+                    'total_used_qty' => round((float) $groupRows->sum('total_used_qty'), 2),
+                    'date' => $groupRows->min('date'),
+                    'item_code' => $first->item_code,
+                    'sub_ic' => $first->sub_ic,
+                    'uom_name' => $first->uom_name,
+                    'cutting_type' => $first->cutting_type ?: 'cutting and sealing',
+                    'rows' => $groupRows->map(function ($row) {
+                        $qty = round((float) $row->total_qty, 2);
+                        $used = round((float) $row->total_used_qty, 2);
+
+                        return [
+                            'id' => $row->id,
+                            'item_id' => $row->item_id,
+                            'qty' => $qty,
+                            'used_qty' => $used,
+                            'remaining_qty' => max($qty - $used, 0),
+                            'date' => $row->date,
+                        ];
+                    })->values(),
+                ];
+            })
+            ->values();
     }
 
     public function cuttingAndSealing(Request $request)
