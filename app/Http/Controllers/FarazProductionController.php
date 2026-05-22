@@ -355,9 +355,10 @@ class FarazProductionController extends Controller
             // ->where('approval_status', '=', 2)
             ->select('id', 'pr_no')->get();
         $mixture_machines = $this->getMixtureDepartmentMachines();
+        $mixture_operators = $this->getDepartmentOperators('Mixture Department');
         $pm_no = CommonHelper::generateProductionMixtureNumber();
 
-        return view('FarazPackagesProduction.ProductionMixture.createProductionMixtureForm', compact('sub_item', 'raw_material', 'production_order', 'mixture_machines', 'pm_no'));
+        return view('FarazPackagesProduction.ProductionMixture.createProductionMixtureForm', compact('sub_item', 'raw_material', 'production_order', 'mixture_machines', 'mixture_operators', 'pm_no'));
     }
 
     public function getProductionMixtureRawStock(Request $request)
@@ -447,6 +448,7 @@ class FarazProductionController extends Controller
             ->select('id', 'pr_no')->get();
 
         $mixture_machines = $this->getMixtureDepartmentMachines($mixture->mixture_machine_id);
+        $mixture_operators = $this->getDepartmentOperators('Mixture Department');
 
         return view('FarazPackagesProduction.ProductionMixture.editMixture', compact(
             'mixture',
@@ -455,6 +457,7 @@ class FarazProductionController extends Controller
             'raw_material',
             'production_order',
             'mixture_machines',
+            'mixture_operators',
             'm'
         ));
     }

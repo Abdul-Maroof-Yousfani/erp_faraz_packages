@@ -768,7 +768,14 @@
                                     ${shiftsHtml}
                                 </select>
                             </div>
-                            <div class="col-md-5">
+                            <div class="col-md-2">
+                                <label class="font-weight-bold">Date <span class="text-danger">*</span></label>
+                                <input type="date" id="date_master_${item.item_id}"
+                                    class="form-control"
+                                    value="${dateValue}" min="${dateValue}"
+                                    onchange="propagateDate('${item.item_id}')" required>
+                            </div>
+                            <div class="col-md-3">
                                 <div class="bages-tot" style="text-align:right;">
                                     <span class="badge badge-info mr-2 p-2" style="font-size:0.9em;">Total Qty: ${totalQty}</span>
                                     <span class="badge badge-secondary mr-2 p-2" style="font-size:0.9em;">Used: ${totalUsedQty}</span>
@@ -789,7 +796,6 @@
                                         <th class="text-center">Gala Item <span class="text-danger">*</span></th>
                                         <th class="text-center">Operator <span class="text-danger">*</span></th>
                                         <th class="text-center">Machine <span class="text-danger">*</span></th>
-                                        <th class="text-center">Date <span class="text-danger">*</span></th>
                                         <th class="text-center">C&amp;S Qty <span class="text-danger">*</span></th>
                                         <th class="text-center">Gala Qty <span class="text-danger">*</span></th>
                                         <th class="text-center">Available</th>
@@ -799,6 +805,7 @@
                                 <tbody id="tbody_${item.item_id}">
                                     <tr>
                                         <input type="hidden" name="shift_id[]" class="row-shift-val" value="">
+                                        <input type="hidden" name="date[]" class="row-date-val" value="${dateValue}">
                                         <input type="hidden" name="roll_id[]" value="${rollIds}">
                                         <input type="hidden" name="raw_item_id[]" value="${item.item_id}">
                                         <td>
@@ -818,9 +825,6 @@
                                                 <option value="">Select</option>
                                                 ${machinesHtml}
                                             </select>
-                                        </td>
-                                        <td>
-                                            <input type="date" name="date[]" class="form-control form-control-sm move-next date" value="${dateValue}" min="${dateValue}" required>
                                         </td>
                                         <td>
                                             <input type="number" step="any" name="qty[]" class="form-control form-control-sm qty-input requiredField" oninput="validateRollQty(this)" required>
@@ -856,6 +860,11 @@
             $('#row_sealing_' + itemId + ' .row-shift-val').val(shiftVal);
         }
 
+        function propagateDate(itemId) {
+            let dateVal = $('#date_master_' + itemId).val() || '';
+            $('#row_sealing_' + itemId + ' .row-date-val').val(dateVal);
+        }
+
         function addDetailRow(button, itemId, rollIds) {
             let item = out_source_productions_items_js.find(function (row) {
                 return String(row.item_id) === String(itemId);
@@ -866,11 +875,12 @@
             let card = $(button).closest('.card');
             let remaining = card.find('.remaining-display').first().text().trim() || '0';
             let shiftVal = $('#shift_master_' + itemId).val() || '';
-            let dateValue = (item && item.date) ? item.date : "{{ date('Y-m-d') }}";
+            let dateValue = $('#date_master_' + itemId).val() || ((item && item.date) ? item.date : "{{ date('Y-m-d') }}");
 
             let newRow = `
                 <tr>
                     <input type="hidden" name="shift_id[]" class="row-shift-val" value="${shiftVal}">
+                    <input type="hidden" name="date[]" class="row-date-val" value="${dateValue}">
                     <input type="hidden" name="roll_id[]" value="${rollIds}">
                     <input type="hidden" name="raw_item_id[]" value="${itemId}">
                     <td>
@@ -890,9 +900,6 @@
                             <option value="">Select</option>
                             ${machinesHtml}
                         </select>
-                    </td>
-                    <td>
-                        <input type="date" name="date[]" class="form-control form-control-sm move-next date" value="${dateValue}" min="${dateValue}" required>
                     </td>
                     <td>
                         <input type="number" step="any" name="qty[]" class="form-control form-control-sm qty-input requiredField" oninput="validateRollQty(this)" required>

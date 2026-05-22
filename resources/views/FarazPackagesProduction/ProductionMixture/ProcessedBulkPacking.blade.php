@@ -782,28 +782,35 @@
             return `
                 <div class="card mb-3 shadow-sm border-0" id="${rowId}" data-source-key="${key}" style="border:1px solid #ddd;padding:23px 20px;background:#fff;box-shadow:1px 0px 4px #00000063;border-radius:10px;margin-bottom:40px;">
                     <div class="card-body">
-                        <div class="row mb-3 align-items-end">
-                            <div class="col-md-4">
-                                <label class="font-weight-bold">Source Item (${typeLabel}) <span class="text-danger">*</span></label>
-                                <select style="width:100% !important;" class="form-control item-select select2" disabled>
-                                    ${selectedOption}
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="font-weight-bold">Shift <span class="text-danger">*</span></label>
-                                <select style="width:100% !important;" id="${shiftSelId}"
-                                    class="form-control requiredField select2 master-shift-select"
-                                    onchange="propagateShift('${rowId}')" required>
-                                    <option value="">Select Shift</option>
-                                    ${shiftsHtml}
-                                </select>
-                            </div>
-                            <div class="col-md-5">
-                                <div class="bages-tot" style="text-align:right;">
-                                    <span class="badge badge-info mr-2 p-2" style="font-size:0.9em;">Total Qty: ${totalQty}</span>
-                                    <span class="badge badge-secondary mr-2 p-2" style="font-size:0.9em;">Used: ${totalUsedQty}</span>
-                                    <span class="badge badge-success p-2" style="font-size:0.9em;">Remaining: <span class="remaining-display">${remaining.toFixed(2)}</span></span>
+                            <div class="row mb-3 align-items-end">
+                                <div class="col-md-4">
+                                    <label class="font-weight-bold">Source Item (${typeLabel}) <span class="text-danger">*</span></label>
+                                    <select style="width:100% !important;" class="form-control item-select select2" disabled>
+                                        ${selectedOption}
+                                    </select>
                                 </div>
+                                <div class="col-md-3">
+                                    <label class="font-weight-bold">Shift <span class="text-danger">*</span></label>
+                                    <select style="width:100% !important;" id="${shiftSelId}"
+                                        class="form-control requiredField select2 master-shift-select"
+                                        onchange="propagateShift('${rowId}')" required>
+                                        <option value="">Select Shift</option>
+                                        ${shiftsHtml}
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="font-weight-bold">Date <span class="text-danger">*</span></label>
+                                    <input type="date" id="date_master_${rowId}"
+                                        class="form-control master-date-input"
+                                        value="${dateValue}" min="${dateValue}"
+                                        onchange="propagateDate('${rowId}')" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="bages-tot" style="text-align:right;">
+                                        <span class="badge badge-info mr-2 p-2" style="font-size:0.9em;">Total Qty: ${totalQty}</span>
+                                        <span class="badge badge-secondary mr-2 p-2" style="font-size:0.9em;">Used: ${totalUsedQty}</span>
+                                        <span class="badge badge-success p-2" style="font-size:0.9em;">Remaining: <span class="remaining-display">${remaining.toFixed(2)}</span></span>
+                                    </div>
                             </div>
                         </div>
 
@@ -819,7 +826,6 @@
                                         <th class="text-center">Packing Item <span class="text-danger">*</span></th>
                                         <th class="text-center">Operator <span class="text-danger">*</span></th>
                                         <th class="text-center">Machine <span class="text-danger">*</span></th>
-                                        <th class="text-center">Date <span class="text-danger">*</span></th>
                                         <th class="text-center">Cutting Qty <span class="text-danger">*</span></th>
                                         <th class="text-center">Qty <span class="text-danger">*</span></th>
                                         <th class="text-center">Available</th>
@@ -829,6 +835,7 @@
                                 <tbody>
                                     <tr>
                                         <input type="hidden" name="shift_id[]" class="row-shift-val" value="">
+                                        <input type="hidden" name="date[]" class="row-date-val" value="${dateValue}">
                                         <input type="hidden" name="roll_id[]" value="${rollIds}">
                                         <input type="hidden" name="raw_item_id[]" value="${item.item_id}">
                                         <input type="hidden" name="secondary_cutting_type[]" value="${item.cutting_type}">
@@ -849,9 +856,6 @@
                                                 <option value="">Select</option>
                                                 ${machinesHtml}
                                             </select>
-                                        </td>
-                                        <td>
-                                            <input type="date" name="date[]" class="form-control form-control-sm move-next date" value="${dateValue}" min="${dateValue}" required>
                                         </td>
                                         <td>
                                             <input type="number" step="any" name="qty[]" class="form-control form-control-sm roll-qty-input requiredField" oninput="validateRollQty(this)" required>
@@ -887,6 +891,11 @@
             $('#' + rowId + ' .row-shift-val').val(shiftVal);
         }
 
+        function propagateDate(rowId) {
+            let dateVal = $('#date_master_' + rowId).val() || '';
+            $('#' + rowId + ' .row-date-val').val(dateVal);
+        }
+
         function addDetailRow(button, key, rollIds) {
             let item = out_source_productions_items_js.find(function (row) {
                 return sourceKey(row) === key;
@@ -897,11 +906,13 @@
             let card = $(button).closest('.card');
             let remaining = card.find('.remaining-display').first().text().trim() || '0';
             let shiftVal = card.find('.master-shift-select').val() || '';
-            let dateValue = (item && item.date) ? item.date : "{{ date('Y-m-d') }}";
+            let rowId = card.attr('id');
+            let dateValue = $('#date_master_' + rowId).val() || ((item && item.date) ? item.date : "{{ date('Y-m-d') }}");
 
             let newRow = `
                 <tr>
                     <input type="hidden" name="shift_id[]" class="row-shift-val" value="${shiftVal}">
+                    <input type="hidden" name="date[]" class="row-date-val" value="${dateValue}">
                     <input type="hidden" name="roll_id[]" value="${rollIds}">
                     <input type="hidden" name="raw_item_id[]" value="${item.item_id}">
                     <input type="hidden" name="secondary_cutting_type[]" value="${item.cutting_type}">
@@ -922,9 +933,6 @@
                             <option value="">Select</option>
                             ${machinesHtml}
                         </select>
-                    </td>
-                    <td>
-                        <input type="date" name="date[]" class="form-control form-control-sm move-next date" value="${dateValue}" min="${dateValue}" required>
                     </td>
                     <td>
                         <input type="number" step="any" name="qty[]" class="form-control form-control-sm roll-qty-input requiredField" oninput="validateRollQty(this)" required>

@@ -291,7 +291,14 @@
                                     ${shiftsHtml}
                                 </select>
                             </div>
-                            <div class="col-md-5">
+                            <div class="col-md-2">
+                                <label class="font-weight-bold">Date <span class="text-danger">*</span></label>
+                                <input type="date" id="date_master_${item.item_id}"
+                                    class="form-control roll-date"
+                                    data-roll-id="${item.item_id}"
+                                    value="${dateValue}" min="${dateValue}" required>
+                            </div>
+                            <div class="col-md-3">
                                 <div class="bages-tot" style="text-align:right;">
                                     <span class="badge badge-info mr-2 p-2" style="font-size:0.9em;">Total Qty: ${totalQty}</span>
                                     <span class="badge badge-secondary mr-2 p-2" style="font-size:0.9em;">Used: ${totalUsedQty}</span>
@@ -313,7 +320,6 @@
                                         <th class="text-center">C&amp;S Item <span class="text-danger">*</span></th>
                                         <th class="text-center">Operator <span class="text-danger">*</span></th>
                                         <th class="text-center">Machine <span class="text-danger">*</span></th>
-                                        <th class="text-center">Date <span class="text-danger">*</span></th>
                                         <th class="text-center">Qty (Consume) <span class="text-danger">*</span></th>
                                         <th class="text-center">Qty (Produce) <span class="text-danger">*</span></th>
                                         <th class="text-center">Available</th>
@@ -324,6 +330,7 @@
                                     <tr>
                                         {{-- hidden fields per row --}}
                                         <input type="hidden" name="shift_id[]" class="row-shift-val" value="">
+                                        <input type="hidden" name="date[]" class="row-date-val" value="${dateValue}">
                                         <input type="hidden" name="roll_id[]" value="${rollIds}">
                                         <input type="hidden" name="row_raw_item_id[]" value="${item.item_id}">
                                         <td>
@@ -345,9 +352,6 @@
                                                 <option value="">Select</option>
                                                 ${machinesHtml}
                                             </select>
-                                        </td>
-                                        <td>
-                                            <input type="date" name="date[]" class="form-control form-control-sm move-next date roll-date" data-roll-id="${item.item_id}" value="${dateValue}" min="${dateValue}" required>
                                         </td>
                                         <td>
                                             <input type="number" step="any" name="printed_roll_qty[]"
@@ -388,6 +392,11 @@
             $('#row_printed_roll_' + itemId + ' .row-shift-val').val(shiftVal);
         }
 
+        function propagateDate(itemId) {
+            let dateVal = $('#date_master_' + itemId).val() || '';
+            $('#row_printed_roll_' + itemId + ' .row-date-val').val(dateVal);
+        }
+
         // Add a new detail row inside the table of a specific item card
         function addDetailRow(button, itemId, rollIds) {
             let operatorsHtml = `@foreach($operators as $val)<option value="{{$val->id}}">{{ $val->name }}</option>@endforeach`;
@@ -399,10 +408,12 @@
             let remaining = card.find('.remaining-display').first().text().trim() || '0';
             // Get current master shift value so new row is pre-synced
             let shiftVal  = $('#shift_master_' + itemId).val() || '';
+            let dateVal   = $('#date_master_' + itemId).val() || minDate;
 
             let newRow = `
                 <tr>
                     <input type="hidden" name="shift_id[]" class="row-shift-val" value="${shiftVal}">
+                    <input type="hidden" name="date[]" class="row-date-val" value="${dateVal}">
                     <input type="hidden" name="roll_id[]" value="${rollIds}">
                     <input type="hidden" name="row_raw_item_id[]" value="${itemId}">
                     <td>
@@ -424,9 +435,6 @@
                             <option value="">Select</option>
                             ${machinesHtml}
                         </select>
-                    </td>
-                    <td>
-                        <input type="date" name="date[]" class="form-control form-control-sm move-next date" value="${minDate}" min="${minDate}" required>
                     </td>
                     <td>
                         <input type="number" step="any" name="printed_roll_qty[]"
@@ -452,19 +460,16 @@
             $('.select2').select2();
         }
 
-        // Keep rollDateById in sync with the Printed Roll (main row) date input
+        // Keep rollDateById in sync with the Printed Roll master date input
         $(document).on('change', '.roll-date', function () {
             let rollId = $(this).data('roll-id');
             let val = $(this).val();
             if (!rollId || !val) return;
             rollDateById[rollId] = val;
+            propagateDate(rollId);
 
-            // Also update min on any already-added rows under the same Printed Roll card
             let cardBody = $(this).closest('.card-body');
-            cardBody.find('input[type="date"][name="date[]"]').each(function () {
-                $(this).attr('min', val);
-                if (!$(this).val()) $(this).val(val);
-            });
+            cardBody.find('.row-date-val').val(val);
         });
 
         function itemSelected(selectElement) {

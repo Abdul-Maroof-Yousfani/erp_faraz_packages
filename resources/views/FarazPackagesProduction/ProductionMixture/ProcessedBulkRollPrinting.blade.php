@@ -283,6 +283,7 @@
                 <input type="hidden" name="item_id[]" class="real-item-id" value="${item.item_id}">
                 <input type="hidden" name="roll_id[]" value="${rollIds}">
                 <input type="hidden" name="shift_id[]" class="section-shift-value" value="">
+                <input type="hidden" name="date[]" class="section-date-value" value="${dateValue}">
                 <div style="margin-top: 18px; margin-bottom: 6px;">
                     <h5 style="font-weight: 600; color: #444; border-left: 4px solid #7367f0; padding-left: 10px; margin: 0;">
                         Roll Printing Detail
@@ -297,7 +298,6 @@
                                 <th class="text-center">Type <span class="text-danger">*</span></th>
                                 <th class="text-center">Brand <span class="text-danger">*</span></th>
                                 <th class="text-center">Color</th>
-                                <th class="text-center">Date <span class="text-danger">*</span></th>
                                 <th class="text-center">Remarks</th>
                                 <th class="text-center">Roll Qty <span class="text-danger">*</span></th>
                                 <th class="text-center">Printed Roll Qty <span class="text-danger">*</span></th>
@@ -338,9 +338,6 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="date" name="date[]" class="form-control form-control-sm move-next date" value="${dateValue}" min="${dateValue}" required>
-                                </td>
-                                <td>
                                     <input type="text" name="remarks[]" class="form-control form-control-sm move-next">
                                 </td>
                                 <td>
@@ -379,7 +376,11 @@
                                     ${shiftsHtml}
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-2">
+                                <label class="font-weight-bold">Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control section-date-input" value="${dateValue}" min="${dateValue}" onchange="setSectionDate(this)" required>
+                            </div>
+                            <div class="col-md-2">
                                 <div class="bages-tot">
                                     <span class="badge badge-info mr-2 p-2" style="font-size: 0.9em;">Total Qty: ${totalQty}</span>
                                     <span class="badge badge-secondary mr-2 p-2" style="font-size: 0.9em;">Used: ${totalUsedQty}</span>
@@ -402,6 +403,11 @@
         function setSectionShift(selectElement) {
             let shiftId = $(selectElement).val();
             $(selectElement).closest('.card-body').find('.section-shift-value').val(shiftId);
+        }
+
+        function setSectionDate(inputElement) {
+            let dateVal = $(inputElement).val() || '';
+            $(inputElement).closest('.card-body').find('.section-date-value').val(dateVal);
         }
 
         function addRawMaterial() {
@@ -469,6 +475,11 @@
                                         </select>
                                     </div>
                                     <div class="col-md-3">
+                                        <label>Date <span class="text-danger">*</span></label>
+                                        <input type="date" id="date_master_${count}" class="form-control" value="{{ date('Y-m-d') }}" onchange="syncManualDate(${count})" required>
+                                        <input type="hidden" name="date[]" id="date_${count}" value="{{ date('Y-m-d') }}">
+                                    </div>
+                                    <div class="col-md-3">
                                         <label>Type <span class="text-danger">*</span></label>
                                         <select style="width: 100% !important;" name="type_id[]" id="type_id${count}" class="form-control requiredField select2">
                                             <option value="">Select</option>
@@ -497,13 +508,9 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-7">
                                         <label>Remarks</label>
                                         <input type="text" name="remarks[]" id="remarks_${count}" class="form-control move-next">
-                                    </div>
-                                    <div class="col-md-2">
-                                        <label>Date <span class="text-danger">*</span></label>
-                                        <input type="date" name="date[]" id="date_${count}" class="form-control move-next date" value="{{ date('Y-m-d') }}" required>
                                     </div>
                                 </div>
 
@@ -555,7 +562,8 @@
                 }
 
                
-                let dateInput = card.find('input[type="date"][name="date[]"]');
+                let dateInput = card.find('.section-date-input').first();
+                let hiddenDateInput = card.find('input[type="hidden"][name="date[]"]').first();
 
                 if (itemData.date) {
                     dateInput.val(itemData.date);
@@ -570,6 +578,8 @@
                 } else {
                     dateInput.attr('min', new Date().toISOString().split('T')[0]);
                 }
+
+                hiddenDateInput.val(dateInput.val());
 
                 console.log("haziq", itemData.id);
             }
@@ -678,6 +688,10 @@
             if (currentVal < 0) {
                 input.value = 0;
             }
+        }
+
+        function syncManualDate(rowCount) {
+            $('#date_' + rowCount).val($('#date_master_' + rowCount).val() || '');
         }
 
 

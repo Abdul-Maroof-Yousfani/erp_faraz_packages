@@ -60,16 +60,12 @@ $Operator   = [];
                                                    
                                                     
                                                     
-                                                        <div class="col-md-2">
-                                                            <label for="">Date</label>
-                                                            <input 
-                                                                type="date"
-                                                                id="date"
-                                                                class="form-control date"
-                                                                min="{{ $out_source_productions_item->date }}" 
-                                                                value="{{ $out_source_productions_item->date }}" 
-                                                            >
-                                                        </div>
+                                                        <input
+                                                            type="hidden"
+                                                            id="date"
+                                                            class="date"
+                                                            value="{{ $out_source_productions_item->date }}"
+                                                        >
                                                         <div class="col-md-2">
                                                             <label for="">Initial Qty</label>
                                                             <input 
@@ -93,6 +89,22 @@ $Operator   = [];
                                                             <input type="hidden" name="roll_id" value="{{ $out_source_productions_item->id }}">
                                                             <input type="hidden" name="cutting_type" value="{{ $cutting_type }}">
 
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <label for="">Shift</label>
+                                                            <select
+                                                                style="width: 100% !important;"
+                                                                name="master_shift_id"
+                                                                id="master_shift_id"
+                                                                class="form-control requiredField select2"
+                                                                onchange="syncMasterShift()">
+                                                                <option value="">Select</option>
+                                                                @foreach($shifts as $val)
+                                                                    <option value="{{$val->id}}">
+                                                                        {{ $val->shift_type_name }}
+                                                                    </option>
+                                                                @endforeach
+                                                            </select>
                                                         </div>
 
                                                     </div>
@@ -258,20 +270,13 @@ $global_avg_qty += $base_qty;
                                                     <div class="row">
                                                         <div class="col-md-2">
                                                             <label for="">Item</label>
-                                                             <select style="width: 100% !important;"
-                                                                name="item_id[]"
+                                                            <input
+                                                                type="text"
                                                                 id="item_id1"
-                                                                class="form-control requiredField select2" disabled>
-                                                                <option value="">Select</option>
-                                                                @foreach($sub_item as $val)
-                                                                    <option
-                                                                        value="{{ $val->id . '@' . $val->uom_name . '@' . $val->sub_ic }}"
-                                                                        {{ $out_source_productions_item->item_id == $val->id ? 'selected' : '' }}>
-                                                                        {{ $val->item_code . ' -- ' . $val->sub_ic }}
-                                                                    </option>
-                                                                @endforeach
-                                                            </select>
-                                                            <input type="hidden" name="item_id[]" value="{{ $val->id }}">
+                                                                class="form-control"
+                                                                value="{{ CommonHelper::get_item_name($out_source_productions_item->item_id) }}"
+                                                                readonly>
+                                                            <input type="hidden" name="item_id[]" value="{{ $out_source_productions_item->item_id }}">
                                                         </div>
                                                         
                                                         
@@ -306,36 +311,14 @@ $global_avg_qty += $base_qty;
                                                                 @endforeach
                                                             </select>
                                                         </div>
-                                                        <div class="col-md-1">
-                                                            <label for="">Shift</label>
-                                                             <select style="width: 100% !important;"
-                                                                name="shift_id[]"
-                                                                id="shift_id1"
-                                                                class="form-control requiredField select2">
-                                                                <option value="">Select</option>
-                                                                @foreach($shifts as $val)
-                                                                    <option
-                                                                        value="{{$val->id}}">
-                                                                        {{ $val->shift_type_name }}
-                                                                    </option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
+                                                        <input type="hidden" name="shift_id[]" id="shift_id1" class="row-shift-id" value="">
                                                        
-                                                        <div class="col-md-2">
-                                                            <label for="">Date</label>
-                                                            <input 
-                                                                type="date"
-                                                                name="date[]"
-                                                                id="date_1"
-                                                                class="form-control move-next date"
-                                                                value="{{ $out_source_productions_item->date }}"
-                                                                min="{{ $out_source_productions_item->date }}" 
-
-                                                                required 
-                                                            >
-                                                            
-                                                        </div>
+                                                        <input
+                                                            type="hidden"
+                                                            name="date[]"
+                                                            id="date_1"
+                                                            class="date"
+                                                            value="{{ $out_source_productions_item->date }}">
 
                                                         <div class="col-md-1">
                                                             <label for="">C&S Qty</label>
@@ -352,7 +335,7 @@ $global_avg_qty += $base_qty;
 
 
                                                         <div class="col-md-1">
-                                                            <label for="">Qty (Bags)</label>
+                                                            <label for="">Qty (KG)</label>
                                                             <input 
                                                                 type="text" 
                                                                 name="bags_qty[]"
@@ -494,35 +477,19 @@ $global_avg_qty += $base_qty;
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-1">
-                            <label for="">Shift</label>
-                                <select style="width: 100% !important;"
-                                name="shift_id[]"
-                                id="shift_id${count}"
-                                class="form-control requiredField select2">
-                                <option value="">Select</option>
-                                @foreach($shifts as $val)
-                                    <option
-                                        value="{{$val->id}}">
-                                        {{ $val->shift_type_name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                        <input
+                            type="hidden"
+                            name="shift_id[]"
+                            id="shift_id${count}"
+                            class="row-shift-id"
+                            value="${$('#master_shift_id').val() || ''}">
                         
-                        <div class="col-md-2">
-                            <label for="">Date</label>
-                            <input 
-                                type="date"
-                                name="date[]"
-                                id="date_${count}"
-                                class="form-control move-next date"
-                                value="{{ date('Y-m-d') }}" 
-                                required 
-
-                            >
-                            
-                        </div>
+                        <input
+                            type="hidden"
+                            name="date[]"
+                            id="date_${count}"
+                            class="date"
+                            value="{{ $out_source_productions_item->date }}">
 
                         <div class="col-md-1">
                             <label for="">C&S Qty</label>
@@ -596,10 +563,17 @@ $global_avg_qty += $base_qty;
                     </div>
                     `;
 
-            $('#out_source_production_data_to_finish_received').append(html)        
+            $('#out_source_production_data_to_finish_received').append(html)
+            syncMasterShift();
+            $('.select2').select2();
 
         count++
     }
+
+function syncMasterShift() {
+    let shiftId = $('#master_shift_id').val() || '';
+    $('.row-shift-id').val(shiftId);
+}
 
 function validateUsedQty(input) {
     let maxAllowed = parseFloat(input.getAttribute('data-max')) || 0;
@@ -702,6 +676,10 @@ $("[id^='qty_']").each(function (index) {
                 fields.eq(index + 1).focus(); // Move to next field
             }
         }
+    });
+
+    $(document).ready(function() {
+        syncMasterShift();
     });
 
 </script>

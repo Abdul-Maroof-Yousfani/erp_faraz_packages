@@ -98,6 +98,19 @@ if ($accType == 'client') {
                                                     @endforeach
                                                 </select>
                                             </div>
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                <label class="sf-label">Operator</label>
+                                                <span class="rflabelsteric"><strong>*</strong></span>
+                                                <select class="form-control select2 requiredField" name="operator_id"
+                                                    id="operator_id">
+                                                    <option value="">Select Operator</option>
+                                                    @foreach ($mixture_operators as $key => $value)
+                                                        <option value="{{ $value->id }}">
+                                                            {{ $value->name }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
 
 
 

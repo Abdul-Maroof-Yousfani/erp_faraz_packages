@@ -211,6 +211,22 @@ $global_avg_amt=0;
                                                             >
                                                         </div>
 
+                                                        <div class="col-md-2">
+                                                            <label for="">Shift</label>
+                                                            <select style="width: 100% !important;"
+                                                                name="master_shift_id"
+                                                                id="master_shift_id"
+                                                                class="form-control requiredField select2"
+                                                                onchange="syncMasterShift()">
+                                                                <option value="">Select</option>
+                                                                @foreach($shifts as $val)
+                                                                    <option value="{{$val->id}}">
+                                                                        {{ $val->shift_type_name }}
+                                                                    </option>
+                                                                @endforeach
+                                                            </select>
+                                                        </div>
+
 
                                                         <div class="col-md-2">
                                                             <label for="">Remaining No. of Printed Roll</label>
@@ -313,35 +329,15 @@ $global_avg_amt=0;
                                                                 @endforeach
                                                             </select>
                                                         </div>
-                                                        <div class="col-md-1">
-                                                            <label for="">Shift</label>
-                                                             <select style="width: 100% !important;"
-                                                                name="shift_id[]"
-                                                                id="shift_id1"
-                                                                class="form-control requiredField select2">
-                                                                <option value="">Select</option>
-                                                                @foreach($shifts as $val)
-                                                                    <option
-                                                                        value="{{$val->id}}">
-                                                                        {{ $val->shift_type_name }}
-                                                                    </option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
+                                                        <input type="hidden" name="shift_id[]" id="shift_id1" class="row-shift-id">
                                                        
-                                                        <div class="col-md-2">
-                                                            <label for="">Date</label>
-                                                            <input 
-                                                                type="date"
-                                                                name="date[]"
-                                                                id="date_1"
-                                                                class="form-control move-next date"
-                                                                value="{{ $out_source_productions_item->date }}"
-                                                                min="{{ $out_source_productions_item->date }}"
-                                                                required 
-                                                            >
-                                                            
-                                                        </div>
+                                                        <input 
+                                                            type="hidden"
+                                                            name="date[]"
+                                                            id="date_1"
+                                                            class="date"
+                                                            value="{{ $out_source_productions_item->date }}"
+                                                        >
 
                                                         <div class="col-md-1">
                                                             <label for="">Printed Roll Qty</label>
@@ -510,36 +506,15 @@ $global_avg_amt=0;
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-1">
-                            <label for="">Shift</label>
-                                <select style="width: 100% !important;"
-                                name="shift_id[]"
-                                id="shift_id${count}"
-                                class="form-control requiredField select2">
-                                <option value="">Select</option>
-                                @foreach($shifts as $val)
-                                    <option
-                                        value="{{$val->id}}">
-                                        {{ $val->shift_type_name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                        <input type="hidden" name="shift_id[]" id="shift_id${count}" class="row-shift-id" value="${$('#master_shift_id').val() || ''}">
                         
-                        <div class="col-md-2">
-                            <label for="">Date</label>
-                            <input 
-                                type="date"
-                                name="date[]"
-                                id="date_${count}"
-                                class="form-control move-next date"
-                                value="{{ $out_source_productions_item->date }}"
-                                min="{{ $out_source_productions_item->date }}"
-                                required 
-
-                            >
-                            
-                        </div>
+                        <input 
+                            type="hidden"
+                            name="date[]"
+                            id="date_${count}"
+                            class="date"
+                            value="{{ $out_source_productions_item->date }}"
+                        >
 
                         <div class="col-md-1">
                             <label for="">Printed Roll Qty</label>
@@ -614,6 +589,7 @@ $global_avg_amt=0;
                     `;
 
             $('#out_source_production_data_to_finish_received').append(html)        
+            syncMasterShift();
 
         count++
     }
@@ -720,6 +696,15 @@ $("[id^='no_of_roll_']").each(function (index) {
     function removeDiv(div) {
         $('#'+div).remove()
     }
+
+    function syncMasterShift() {
+        let shiftId = $('#master_shift_id').val() || '';
+        $('.row-shift-id').val(shiftId);
+    }
+
+    $(document).ready(function() {
+        syncMasterShift();
+    });
 
     
     
