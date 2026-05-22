@@ -86,9 +86,15 @@ $this->m = Session::get('run_company');
                                                                             class="fa-solid fa-ellipsis-vertical"></i></button>
                                                                     <ul class="dropdown-menu">
                                                                         <li>
-                                                                          
-                                                                                 <a href="rollPrinting?id=<?php    echo $Fil['id'] ?>&&m=<?php    echo $this->m?>">Process Roll Printing
-                                                                            </a>
+                                                                            @if(($Fil->subItem->subCategory->print_type ?? '') == 'Print')
+                                                                                <a href="processRollingNext?id=<?php echo $Fil['id'] ?>&&m=<?php echo $this->m ?>">
+                                                                                    Process Roll Printing
+                                                                                </a>
+                                                                            @else
+                                                                                <a href="processRollingNext?id=<?php echo $Fil['id'] ?>&&m=<?php echo $this->m ?>">
+                                                                                    Process Cutting & Sealing
+                                                                                </a>
+                                                                            @endif
                                                                             <a href="mixtureEdit?id=<?php    echo $Fil['id'] ?>&&m=<?php    echo $this->m?>">
                                                                             </a>
                                                                            

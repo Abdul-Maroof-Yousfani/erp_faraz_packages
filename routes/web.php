@@ -2246,6 +2246,7 @@ Route::group(['prefix' => 'far_production', 'middleware' => 'mysql2', 'before' =
     Route::get('/mixtureRolling', 'FarazProductionController@mixtureRolling');
     Route::get('/multiMixtureRolling', 'FarazProductionController@multiMixtureRolling');
     Route::get('/viewProductionRollingList', 'FarazProductionController@viewProductionRollingList');
+    Route::get('/processRollingNext', 'FarazProductionController@processRollingNext');
 
     // step 4: production roll printing module
     Route::get('/rollPrinting', 'FarazProductionController@rollPrinting');

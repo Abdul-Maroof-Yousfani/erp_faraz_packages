@@ -984,6 +984,7 @@ class FarazProductionController extends Controller
     public function viewProductionRollingList()
     {
         $rollingList = ProductionRolling::with('productionOrder')
+            ->with('subItem.subCategory')
             ->with('shift')
             ->withCount('printings as usage_count')
             ->where('status', '=', 1)
@@ -992,6 +993,21 @@ class FarazProductionController extends Controller
             ->get();
         $m = $this->m;
         return view('FarazPackagesProduction.ProductionMixture.viewProductionRolling', compact('rollingList', 'm'));
+    }
+
+    public function processRollingNext(Request $request)
+    {
+        $rolling = ProductionRolling::with('subItem.subCategory')->where('status', 1)->findOrFail($request->id);
+        $m = $request->m ?: $this->m;
+        $printType = $rolling->subItem->subCategory->print_type ?? '';
+
+        if ($printType === 'Print') {
+            return redirect()->to('far_production/rollPrinting?id=' . $rolling->id . '&&m=' . $m);
+        }
+
+        $printingId = $this->ensureNonPrintedRollPrinting($rolling);
+
+        return redirect()->to('far_production/cuttingAndSealing?id=' . $printingId . '&&m=' . $m);
     }
 
     public function viewProductionRollPrintingList(Request $request)
@@ -1239,6 +1255,12 @@ class FarazProductionController extends Controller
     {
         $m = $request->m;
 
+        $rolling = ProductionRolling::with('subItem.subCategory')->where('status', 1)->find($request->id);
+        if ($rolling && ($rolling->subItem->subCategory->print_type ?? '') !== 'Print') {
+            $printingId = $this->ensureNonPrintedRollPrinting($rolling);
+            return redirect()->to('far_production/cuttingAndSealing?id=' . $printingId . '&&m=' . $m);
+        }
+
 
 
         // Totals
@@ -1307,17 +1329,20 @@ class FarazProductionController extends Controller
         // Totals
         if ($id) {
             $out_source_productions_item = DB::connection('mysql2')
-                ->table('production_rolling')
+                ->table('production_rolling as pr')
+                ->join('subitem as s', 'pr.item_id', '=', 's.id')
+                ->join('sub_category as sc', 's.sub_category_id', '=', 'sc.id')
                 ->select(
-                    'item_id',
-                    DB::raw('GROUP_CONCAT(id ORDER BY date, id) as id'),
-                    DB::raw('SUM(COALESCE(roll_qty, rolls_qty_kg, 0)) as total_qty'),
-                    DB::raw('SUM(COALESCE(printed_rolls_qty_kg, 0)) as total_used_qty'),
-                    DB::raw('MIN(date) as date')
+                    'pr.item_id',
+                    DB::raw('GROUP_CONCAT(pr.id ORDER BY pr.date, pr.id) as id'),
+                    DB::raw('SUM(COALESCE(pr.roll_qty, pr.rolls_qty_kg, 0)) as total_qty'),
+                    DB::raw('SUM(COALESCE(pr.printed_rolls_qty_kg, 0)) as total_used_qty'),
+                    DB::raw('MIN(pr.date) as date')
                 )
-                ->where('roll_qty', '>', 0)
-                ->where('production_order_id', $id)
-                ->groupBy('item_id')
+                ->where('pr.roll_qty', '>', 0)
+                ->where('pr.production_order_id', $id)
+                ->where('sc.print_type', 'Print')
+                ->groupBy('pr.item_id')
                 ->get();
         } else {
             $out_source_productions_item = collect([]);
@@ -1368,6 +1393,7 @@ class FarazProductionController extends Controller
         $rollingRows = DB::connection('mysql2')
             ->table('production_rolling as pr')
             ->join('subitem as s', 'pr.item_id', '=', 's.id')
+            ->join('sub_category as sc', 's.sub_category_id', '=', 'sc.id')
             ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
             ->select(
                 'pr.id',
@@ -1381,6 +1407,7 @@ class FarazProductionController extends Controller
             )
             ->where('pr.production_order_id', $production_order_id)
             ->where('pr.roll_qty', '>', 0)
+            ->where('sc.print_type', 'Print')
             ->orderBy('s.item_code')
             ->orderBy('pr.date')
             ->orderBy('pr.id')
@@ -1425,6 +1452,8 @@ class FarazProductionController extends Controller
     {
         $m = $request->m;
         $production_order_id = $request->production_order_id;
+
+        $this->ensureNonPrintedRollPrintingsForOrder($production_order_id);
 
         $rollingRows = DB::connection('mysql2')
             ->table('production_rolling as pr')
@@ -1546,6 +1575,85 @@ class FarazProductionController extends Controller
             ->values();
 
         return response()->json(['items' => $items]);
+    }
+
+    private function ensureNonPrintedRollPrintingsForOrder($productionOrderId)
+    {
+        if (!$productionOrderId) {
+            return;
+        }
+
+        $rollingRows = ProductionRolling::with('subItem.subCategory')
+            ->where('status', 1)
+            ->where('production_order_id', $productionOrderId)
+            ->where('roll_qty', '>', 0)
+            ->get();
+
+        foreach ($rollingRows as $rolling) {
+            if (($rolling->subItem->subCategory->print_type ?? '') !== 'Print') {
+                $this->ensureNonPrintedRollPrinting($rolling);
+            }
+        }
+    }
+
+    private function ensureNonPrintedRollPrinting($rolling)
+    {
+        $existing = DB::connection('mysql2')
+            ->table('production_roll_printing')
+            ->where('production_rolling_id', $rolling->id)
+            ->where('status', 1)
+            ->where('type', 'Non-Printed')
+            ->orderBy('id')
+            ->first();
+
+        if ($existing) {
+            return $existing->id;
+        }
+
+        $totalRollQty = (float) ($rolling->roll_qty ?? $rolling->rolls_qty_kg ?? 0);
+        $usedRollQty = (float) ($rolling->printed_rolls_qty_kg ?? 0);
+        $remainingRollQty = round(max($totalRollQty - $usedRollQty, 0), 2);
+
+        if ($remainingRollQty <= 0) {
+            $latest = DB::connection('mysql2')
+                ->table('production_roll_printing')
+                ->where('production_rolling_id', $rolling->id)
+                ->where('status', 1)
+                ->orderByDesc('id')
+                ->first();
+
+            if ($latest) {
+                return $latest->id;
+            }
+        }
+
+        $printingId = DB::connection('mysql2')
+            ->table('production_roll_printing')
+            ->insertGetId([
+                'production_rolling_id' => $rolling->id,
+                'item_id' => $rolling->item_id,
+                'machine_id' => $rolling->machine_id,
+                'operator_id' => $rolling->operator_id,
+                'shift_id' => $rolling->shift_id,
+                'type' => 'Non-Printed',
+                'color_id' => null,
+                'brand_id' => null,
+                'remarks' => 'Auto skipped printing',
+                'no_of_roll' => $remainingRollQty,
+                'used_no_of_roll' => 0,
+                'date' => $rolling->date ?: date('Y-m-d'),
+                'status' => 1,
+                'username' => Auth::user()->name,
+            ]);
+
+        DB::connection('mysql2')
+            ->table('production_rolling')
+            ->where('id', $rolling->id)
+            ->update([
+                'printed_rolls_qty_kg' => DB::raw('ROUND(COALESCE(printed_rolls_qty_kg,0) + ' . $remainingRollQty . ', 2)'),
+            ]);
+
+        return $printingId;
     }
 
     public function getCuttingAndSealingItemsForBulkPacking(Request $request)

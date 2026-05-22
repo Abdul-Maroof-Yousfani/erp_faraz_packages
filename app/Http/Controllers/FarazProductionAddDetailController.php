@@ -2380,7 +2380,13 @@ class FarazProductionAddDetailController extends Controller
                 ->select(
                     'prp.id',
                     DB::raw('COALESCE(prp.no_of_roll, 0) as count_qty'),
-                    DB::raw('COALESCE(pr.rolls_qty_kg, pr.roll_qty, prp.no_of_roll, 0) as kg_qty')
+                    DB::raw('
+                        CASE
+                            WHEN COALESCE(pr.roll_qty, 0) > 0 AND COALESCE(pr.rolls_qty_kg, 0) > 0
+                                THEN COALESCE(prp.no_of_roll, 0) * (COALESCE(pr.rolls_qty_kg, 0) / COALESCE(pr.roll_qty, 0))
+                            ELSE COALESCE(prp.no_of_roll, 0)
+                        END as kg_qty
+                    ')
                 )
                 ->orderBy('prp.date')
                 ->orderBy('prp.id')
