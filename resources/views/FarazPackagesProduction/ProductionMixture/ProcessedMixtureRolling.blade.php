@@ -214,10 +214,12 @@ $allSubCategories = CommonHelper::get_all_sub_category()
                                                             <label for="">Date</label>
                                                             <input 
                                                                 type="date"
+                                                                name="date"
                                                                 id="date"
                                                                 class="form-control date"
                                                                 value="{{ $production_mixture->date }}" 
                                                                 min="{{ $production_mixture->date }}"
+                                                                required
                                                             >
                                                         </div>
 <div class="col-md-2">
@@ -448,12 +450,6 @@ $global_avg_amt=0;
                                                                 @endforeach
                                                             </select>
                                                         </div>
-                                                        <div class="rolling-field">
-                                                            <label for="">Date</label>
-                                                            <input type="date" name="date[]" id="date_1"
-                                                                class="form-control move-next date"
-                                                                value="{{ $production_mixture->date }}" min="{{ $production_mixture->date }}" required>
-                                                        </div>
                                                         <input type="hidden" name="mixture_qty[]" id="mixture_qty_1"
                                                             class="form-control move-next mixture_qty_1 requiredField"
                                                             onkeyup="cal_amt()" required>
@@ -560,12 +556,6 @@ $global_avg_amt=0;
                                     <option value="{{$val->id}}">{{ $val->name }}</option>
                                 @endforeach
                             </select>
-                        </div>
-                        <div class="rolling-field">
-                            <label for="">Date</label>
-                            <input type="date" name="date[]" id="date_${count}"
-                                class="form-control move-next date"
-                                value="{{$production_mixture->date}}" min="{{ $production_mixture->date }}" required>
                         </div>
                         <input type="hidden" name="mixture_qty[]" id="mixture_qty_${count}"
                             class="form-control move-next mixture_qty_${count} requiredField"

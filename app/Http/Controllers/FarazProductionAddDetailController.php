@@ -1139,6 +1139,7 @@ class FarazProductionAddDetailController extends Controller
             'raw_item_id' => 'required',
             'used_qty_total' => 'required',
             'shift_id' => 'required',
+            'date' => 'required|date',
         ]);
 
         DB::connection('mysql2')->beginTransaction();
@@ -1159,6 +1160,10 @@ class FarazProductionAddDetailController extends Controller
 
             // for rolling header linkage (same production order restriction already exists on selection)
             $productionOrderId = $productionMixtureRows->first()->production_order_id ?? null;
+            $rollingDateInput = $request->input('date');
+            $rollingDate = is_array($rollingDateInput)
+                ? ($rollingDateInput[0] ?? now()->format('Y-m-d'))
+                : ($rollingDateInput ?: now()->format('Y-m-d'));
 
             $rollingIds = [];
             foreach ($request->item_id as $key => $itemId) {
@@ -1182,7 +1187,7 @@ class FarazProductionAddDetailController extends Controller
                     'mixture_qty' => $mixtureQty,
                     'roll_qty' => $rollQty,
                     'rolls_qty_kg' => $request->roll_qty_kg[$key] ?? 0,
-                    'date' => $request->date[$key] ?? now(),
+                    'date' => $rollingDate,
                     'status' => 1,
                     'username' => Auth::user()->name,
                 ];
@@ -1200,7 +1205,7 @@ class FarazProductionAddDetailController extends Controller
                     $rollingId,
                     0,
                     $request->code,
-                    $request->date[$key] ?? now(),
+                    $rollingDate,
                     11, // IN
                     $finishDetail->rate ?? 0,
                     $itemId,
@@ -1268,7 +1273,7 @@ class FarazProductionAddDetailController extends Controller
                 ($rollingIds[0] ?? 0),
                 0,
                 $request->code,
-                now()->format('Y-m-d'),
+                $rollingDate,
                 9, // OUT
                 $rawDetail->rate ?? 0,
                 $rawItemId,
@@ -1839,6 +1844,10 @@ class FarazProductionAddDetailController extends Controller
 
                 $csQty = $request->qty[$key] ?? 0;   // raw qty
                 $galaQty = $request->gala_qty[$key] ?? 0; // produced qty
+                $rollIds = array_values(array_filter(array_unique(
+                    array_map('intval', explode(',', (string) ($request->roll_id[$key] ?? '')))
+                )));
+                $firstRollId = $rollIds[0] ?? 0;
 
                 // ========================
                 // CHECK STOCK (CUT/SEALED ITEM)
@@ -1860,7 +1869,7 @@ class FarazProductionAddDetailController extends Controller
                 // INSERT GALA CUTTING
                 // ========================
                 $data2 = [
-                    'cutting_sealing_id' => $request->roll_id[$key],
+                    'cutting_sealing_id' => $firstRollId,
                     'item_id' => $itemId,
                     'machine_id' => $request->machine_id[$key],
                     'operator_id' => $request->operator_id[$key] ?? null,
@@ -1879,7 +1888,7 @@ class FarazProductionAddDetailController extends Controller
                 // ========================
                 // STOCK OUT (CUT/SEALED ITEM)
                 // ========================
-                $rawDetail = CommonHelper::get_subitem_detail2($request->raw_item_id[0]);
+                $rawDetail = CommonHelper::get_subitem_detail2($request->raw_item_id[$key]);
 
                 ReuseableCode::postStock(
                     $galaId,
@@ -1911,20 +1920,43 @@ class FarazProductionAddDetailController extends Controller
                     $galaQty,
                     null
                 );
-                $qty = $request->qty[$key];
-                $RollId = $request->roll_id[$key];
 
-                // DB::connection('mysql2')
-                //     ->table('production_cutting_and_sealing')
-                //     ->where('id', $request->roll_id[$key])
-                //     ->increment('used_qty', $request->qty[$key]);
-
-                DB::connection('mysql2')
+                $remainingConsumeQty = (float) $csQty;
+                $cuttingRows = DB::connection('mysql2')
                     ->table('production_cutting_and_sealing')
-                    ->where('id', $RollId)
-                    ->update([
-                        'used_qty' => DB::raw("COALESCE(used_qty,0) + $qty")
-                    ]);
+                    ->whereIn('id', $rollIds)
+                    ->select('id', 'qty', DB::raw('ROUND(COALESCE(used_qty,0),2) as used_qty'))
+                    ->orderBy('date')
+                    ->orderBy('id')
+                    ->get();
+
+                foreach ($cuttingRows as $cuttingRow) {
+                    if ($remainingConsumeQty <= 0) {
+                        break;
+                    }
+
+                    $rowRemainingQty = round(max((float) $cuttingRow->qty - (float) $cuttingRow->used_qty, 0), 2);
+                    $consumeShare = round(min($remainingConsumeQty, $rowRemainingQty), 2);
+
+                    if ($consumeShare <= 0) {
+                        continue;
+                    }
+
+                    DB::connection('mysql2')
+                        ->table('production_cutting_and_sealing')
+                        ->where('id', $cuttingRow->id)
+                        ->update([
+                            'used_qty' => DB::raw("ROUND(COALESCE(used_qty,0) + {$consumeShare}, 2)")
+                        ]);
+
+                    $remainingConsumeQty = round($remainingConsumeQty - $consumeShare, 2);
+                }
+
+                if ($remainingConsumeQty > 0) {
+                    DB::connection('mysql2')->rollBack();
+                    return "Gala cutting quantity exceeds available C&S quantity for item " .
+                        CommonHelper::get_item_name($request->raw_item_id[$key]);
+                }
             }
 
             // wastage section

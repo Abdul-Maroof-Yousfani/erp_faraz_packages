@@ -207,7 +207,7 @@
                 let used      = parseFloat(item.total_used_qty) || 0;
                 let remaining = Math.round((total - used) * 100) / 100;
                 itemDropdown.append(
-                    `<option value="${item.item_id}">${item.item_code} -- ${item.sub_ic} (Remaining: ${remaining.toFixed(2)})</option>`
+                    `<option value="${item.item_id}">${item.sub_ic} (Remaining: ${remaining.toFixed(2)})</option>`
                 );
             });
 
@@ -244,12 +244,12 @@
         }
 
         function renderRow(index, item) {
-            let selectedOption = `<option value="${item.item_id}" selected>${item.item_code} -- ${item.sub_ic}</option>`;
+            let selectedOption = `<option value="${item.item_id}" selected>${item.sub_ic}</option>`;
 
             let operatorsHtml = `@foreach($operators as $val)<option value="{{$val->id}}">{{ $val->name }}</option>@endforeach`;
             let machinesHtml  = `@foreach($machines as $val)<option value="{{$val->id}}">{{ $val->name }}</option>@endforeach`;
             let shiftsHtml    = `@foreach($shifts as $val)<option value="{{$val->id}}">{{ $val->shift_type_name }}</option>@endforeach`;
-            let subItemHtml   = `@foreach($sub_item as $val)<option value="{{$val->id}}">{{ $val->item_code }} -- {{ $val->sub_ic }}</option>@endforeach`;
+            let subItemHtml   = `@foreach($sub_item as $val)<option value="{{$val->id}}">{{ $val->sub_ic }}@if(($val->type ?? '') == 'Gala Cutting') (Gala Cutting)@endif</option>@endforeach`;
 
             let dateValue    = item.date || "{{ date('Y-m-d') }}";
             let totalQty     = parseFloat(item.total_qty) || 0;
@@ -392,7 +392,7 @@
         function addDetailRow(button, itemId, rollIds) {
             let operatorsHtml = `@foreach($operators as $val)<option value="{{$val->id}}">{{ $val->name }}</option>@endforeach`;
             let machinesHtml  = `@foreach($machines as $val)<option value="{{$val->id}}">{{ $val->name }}</option>@endforeach`;
-            let subItemHtml   = `@foreach($sub_item as $val)<option value="{{$val->id}}">{{ $val->item_code }} -- {{ $val->sub_ic }}</option>@endforeach`;
+            let subItemHtml   = `@foreach($sub_item as $val)<option value="{{$val->id}}">{{ $val->sub_ic }}@if(($val->type ?? '') == 'Gala Cutting') (Gala Cutting)@endif</option>@endforeach`;
 
             let minDate   = rollDateById[itemId] || "{{ date('Y-m-d') }}";
             let card      = $(button).closest('.card');

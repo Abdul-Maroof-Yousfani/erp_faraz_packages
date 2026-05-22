@@ -1488,7 +1488,7 @@ class FarazProductionController extends Controller
         $m = $request->m;
         $production_order_id = $request->production_order_id;
 
-        $items = DB::connection('mysql2')
+        $sealingRows = DB::connection('mysql2')
             ->table('production_rolling as pr')
             ->join('production_roll_printing as prp', 'pr.id', '=', 'prp.production_rolling_id')
             ->join('production_cutting_and_sealing as pcs', 'prp.id', '=', 'pcs.printed_rolling_id')
@@ -1507,8 +1507,43 @@ class FarazProductionController extends Controller
             )
             ->where('pr.production_order_id', $production_order_id)
             ->where('pcs.qty', '>', 0)
+            ->whereRaw('COALESCE(pcs.qty,0) > COALESCE(pcs.used_qty,0)')
             ->where('sc.type', '=', 'Gala Cutting')
+            ->orderBy('s.sub_ic')
+            ->orderBy('pcs.date')
+            ->orderBy('pcs.id')
             ->get();
+
+        $items = $sealingRows
+            ->groupBy('item_id')
+            ->map(function ($rows) {
+                $first = $rows->first();
+
+                return [
+                    'item_id' => $first->item_id,
+                    'id' => $rows->pluck('id')->implode(','),
+                    'total_qty' => round((float) $rows->sum('total_qty'), 2),
+                    'total_used_qty' => round((float) $rows->sum('total_used_qty'), 2),
+                    'date' => $rows->min('date'),
+                    'item_code' => $first->item_code,
+                    'sub_ic' => $first->sub_ic,
+                    'uom_name' => $first->uom_name,
+                    'rows' => $rows->map(function ($row) {
+                        $qty = round((float) $row->total_qty, 2);
+                        $used = round((float) $row->total_used_qty, 2);
+
+                        return [
+                            'id' => $row->id,
+                            'item_id' => $row->item_id,
+                            'qty' => $qty,
+                            'used_qty' => $used,
+                            'remaining_qty' => max($qty - $used, 0),
+                            'date' => $row->date,
+                        ];
+                    })->values(),
+                ];
+            })
+            ->values();
 
         return response()->json(['items' => $items]);
     }
@@ -1664,8 +1699,11 @@ class FarazProductionController extends Controller
             ->where('c.status', '=', 1)
             ->where('s.status', '=', 1)
             ->where('u.status', '=', 1)
-            ->where('s.main_ic_id', '=', 8)
-            ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id')
+            ->where(function ($query) {
+                $query->where('s.main_ic_id', '=', 8)
+                    ->orWhere('sc.type', '=', 'Gala Cutting');
+            })
+            ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id', 'sc.type')
             // ->whereIn('c.id', $categories_id)
             ->groupBy('s.item_code')
             ->orderBy('s.id')
@@ -1735,8 +1773,11 @@ class FarazProductionController extends Controller
             ->where('c.status', '=', 1)
             ->where('s.status', '=', 1)
             ->where('u.status', '=', 1)
-            ->where('s.main_ic_id', '=', 8)
-            ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id')
+            ->where(function ($query) {
+                $query->where('s.main_ic_id', '=', 8)
+                    ->orWhere('sc.type', '=', 'Gala Cutting');
+            })
+            ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id', 'sc.type')
             // ->whereIn('c.id', $categories_id)
             ->groupBy('s.item_code')
             ->orderBy('s.id')

@@ -77,6 +77,18 @@
                                                                 </select>
                                                             </div>
 
+                                                            <div class="col-md-4">
+                                                                <label for="">Items</label>
+                                                                <span class="rflabelsteric"><strong>*</strong></span>
+                                                                <select class="form-control select2 requiredField"
+                                                                    id="sealing_item_filter"
+                                                                    multiple
+                                                                    data-placeholder="Select Items"
+                                                                    onchange="renderSelectedSealingItems()"
+                                                                    style="width: 100% !important;">
+                                                                </select>
+                                                            </div>
+
                                                         </div>
 
                                                         <div class="row">
@@ -640,6 +652,321 @@
             }
         });
 
+    </script>
+
+    <script>
+        function fetchRollingItems() {
+            let productionOrderId = $('#production_order_id').val();
+            $('#sealing_item_filter').empty().trigger('change.select2');
+            $('#out_source_production_data_to_finish_received').empty();
+            out_source_productions_items_js = [];
+
+            if (!productionOrderId) {
+                return;
+            }
+
+            $.ajax({
+                url: "{{ route('FarProduction.getSealingItems') }}",
+                type: "GET",
+                data: {
+                    production_order_id: productionOrderId,
+                    m: '{{ $m ?? 1 }}'
+                },
+                success: function (response) {
+                    out_source_productions_items_js = response.items || [];
+                    populateSealingItemDropdown(out_source_productions_items_js);
+
+                    if (out_source_productions_items_js.length === 0) {
+                        $('#out_source_production_data_to_finish_received').append(`
+                            <div class="col-12 text-center text-muted py-4" id="empty-state">
+                                No cutting and sealing items found for this production order.
+                            </div>
+                        `);
+                    }
+                }
+            });
+        }
+
+        function populateSealingItemDropdown(items) {
+            let itemDropdown = $('#sealing_item_filter');
+            itemDropdown.empty();
+
+            items.forEach(function (item) {
+                let total = parseFloat(item.total_qty) || 0;
+                let used = parseFloat(item.total_used_qty) || 0;
+                let remaining = Math.round((total - used) * 100) / 100;
+
+                itemDropdown.append(
+                    `<option value="${item.item_id}">${item.sub_ic} (Remaining: ${remaining.toFixed(2)})</option>`
+                );
+            });
+
+            itemDropdown.val(null).trigger('change.select2');
+            $('.select2').select2();
+        }
+
+        function renderSelectedSealingItems() {
+            let selectedItems = $('#sealing_item_filter').val() || [];
+            let container = $('#out_source_production_data_to_finish_received');
+            $('#empty-state').remove();
+
+            $('.card[data-item-id]').each(function () {
+                let itemId = String($(this).data('item-id'));
+                if (!selectedItems.includes(itemId)) {
+                    $(this).remove();
+                }
+            });
+
+            selectedItems.forEach(function (itemId, index) {
+                let rowId = `row_sealing_${itemId}`;
+                if ($('#' + rowId).length > 0) return;
+
+                let item = out_source_productions_items_js.find(function (row) {
+                    return String(row.item_id) === String(itemId);
+                });
+
+                if (item) {
+                    container.append(renderRow(index, item));
+                }
+            });
+
+            $('.select2').select2();
+        }
+
+        function renderRow(index, item) {
+            let selectedOption = `<option value="${item.item_id}" selected>${item.sub_ic}</option>`;
+            let operatorsHtml = `@foreach($operators as $val)<option value="{{$val->id}}">{{ $val->name }}</option>@endforeach`;
+            let machinesHtml = `@foreach($machines as $val)<option value="{{$val->id}}">{{ $val->name }}</option>@endforeach`;
+            let shiftsHtml = `@foreach($shifts as $val)<option value="{{$val->id}}">{{ $val->shift_type_name }}</option>@endforeach`;
+
+            let dateValue = item.date || "{{ date('Y-m-d') }}";
+            let totalQty = parseFloat(item.total_qty) || 0;
+            let totalUsedQty = parseFloat(item.total_used_qty) || 0;
+            let remaining = Math.round((totalQty - totalUsedQty) * 100) / 100;
+            let rollIds = item.rows && item.rows.length
+                ? item.rows.map(r => r.id).join(',')
+                : (item.id || '');
+            let rowId = `row_sealing_${item.item_id}`;
+            let shiftSelId = `shift_master_${item.item_id}`;
+
+            return `
+                <div class="card mb-3 shadow-sm border-0" id="${rowId}" data-item-id="${item.item_id}" style="border:1px solid #ddd;padding:23px 20px;background:#fff;box-shadow:1px 0px 4px #00000063;border-radius:10px;margin-bottom:40px;">
+                    <div class="card-body">
+                        <div class="row mb-3 align-items-end">
+                            <div class="col-md-4">
+                                <label class="font-weight-bold">C&amp;S Item <span class="text-danger">*</span></label>
+                                <select style="width:100% !important;" class="form-control item-select select2" disabled>
+                                    ${selectedOption}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="font-weight-bold">Shift <span class="text-danger">*</span></label>
+                                <select style="width:100% !important;" id="${shiftSelId}"
+                                    class="form-control requiredField select2 master-shift-select"
+                                    onchange="propagateShift('${item.item_id}')" required>
+                                    <option value="">Select Shift</option>
+                                    ${shiftsHtml}
+                                </select>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="bages-tot" style="text-align:right;">
+                                    <span class="badge badge-info mr-2 p-2" style="font-size:0.9em;">Total Qty: ${totalQty}</span>
+                                    <span class="badge badge-secondary mr-2 p-2" style="font-size:0.9em;">Used: ${totalUsedQty}</span>
+                                    <span class="badge badge-success p-2" style="font-size:0.9em;">Remaining: <span class="remaining-display">${remaining.toFixed(2)}</span></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:18px;margin-bottom:6px;">
+                            <h5 style="font-weight:600;color:#444;border-left:4px solid #7367f0;padding-left:10px;margin:0;">
+                                Gala Cutting Detail
+                            </h5>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm" style="font-size:0.88rem;margin-bottom:0;">
+                                <thead style="background:#f4f4f4;">
+                                    <tr>
+                                        <th class="text-center">Gala Item <span class="text-danger">*</span></th>
+                                        <th class="text-center">Operator <span class="text-danger">*</span></th>
+                                        <th class="text-center">Machine <span class="text-danger">*</span></th>
+                                        <th class="text-center">Date <span class="text-danger">*</span></th>
+                                        <th class="text-center">C&amp;S Qty <span class="text-danger">*</span></th>
+                                        <th class="text-center">Gala Qty <span class="text-danger">*</span></th>
+                                        <th class="text-center">Available</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody_${item.item_id}">
+                                    <tr>
+                                        <input type="hidden" name="shift_id[]" class="row-shift-val" value="">
+                                        <input type="hidden" name="roll_id[]" value="${rollIds}">
+                                        <input type="hidden" name="raw_item_id[]" value="${item.item_id}">
+                                        <td>
+                                            <select style="width:100% !important;" class="form-control item-select select2" disabled>
+                                                ${selectedOption}
+                                            </select>
+                                            <input type="hidden" name="item_id[]" class="real-item-id" value="${item.item_id}">
+                                        </td>
+                                        <td>
+                                            <select style="width:100% !important;" name="operator_id[]" class="form-control form-control-sm requiredField select2">
+                                                <option value="">Select</option>
+                                                ${operatorsHtml}
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select style="width:100% !important;" name="machine_id[]" class="form-control form-control-sm requiredField select2">
+                                                <option value="">Select</option>
+                                                ${machinesHtml}
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="date" name="date[]" class="form-control form-control-sm move-next date" value="${dateValue}" min="${dateValue}" required>
+                                        </td>
+                                        <td>
+                                            <input type="number" step="any" name="qty[]" class="form-control form-control-sm qty-input requiredField" oninput="validateRollQty(this)" required>
+                                        </td>
+                                        <td>
+                                            <input type="number" step="any" name="gala_qty[]" class="form-control form-control-sm gala-qty-input requiredField" required>
+                                        </td>
+                                        <td class="text-center" style="vertical-align:middle;">
+                                            <span class="badge badge-success p-2">${remaining.toFixed(2)}</span>
+                                        </td>
+                                        <td class="text-center" style="vertical-align:middle;">
+                                            <button type="button" class="btn btn-sm btn-success" onclick="addDetailRow(this, '${item.item_id}', '${rollIds}')">
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="text-right mt-2">
+                            <button type="button" class="btn btn-sm btn-danger" onclick="removeDiv('${rowId}')">
+                                <i class="fa fa-trash"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function propagateShift(itemId) {
+            let shiftVal = $('#shift_master_' + itemId).val();
+            $('#row_sealing_' + itemId + ' .row-shift-val').val(shiftVal);
+        }
+
+        function addDetailRow(button, itemId, rollIds) {
+            let item = out_source_productions_items_js.find(function (row) {
+                return String(row.item_id) === String(itemId);
+            });
+            let operatorsHtml = `@foreach($operators as $val)<option value="{{$val->id}}">{{ $val->name }}</option>@endforeach`;
+            let machinesHtml = `@foreach($machines as $val)<option value="{{$val->id}}">{{ $val->name }}</option>@endforeach`;
+            let selectedOption = item ? `<option value="${item.item_id}" selected>${item.sub_ic}</option>` : '';
+            let card = $(button).closest('.card');
+            let remaining = card.find('.remaining-display').first().text().trim() || '0';
+            let shiftVal = $('#shift_master_' + itemId).val() || '';
+            let dateValue = (item && item.date) ? item.date : "{{ date('Y-m-d') }}";
+
+            let newRow = `
+                <tr>
+                    <input type="hidden" name="shift_id[]" class="row-shift-val" value="${shiftVal}">
+                    <input type="hidden" name="roll_id[]" value="${rollIds}">
+                    <input type="hidden" name="raw_item_id[]" value="${itemId}">
+                    <td>
+                        <select style="width:100% !important;" class="form-control item-select select2" disabled>
+                            ${selectedOption}
+                        </select>
+                        <input type="hidden" name="item_id[]" class="real-item-id" value="${itemId}">
+                    </td>
+                    <td>
+                        <select style="width:100% !important;" name="operator_id[]" class="form-control form-control-sm requiredField select2">
+                            <option value="">Select</option>
+                            ${operatorsHtml}
+                        </select>
+                    </td>
+                    <td>
+                        <select style="width:100% !important;" name="machine_id[]" class="form-control form-control-sm requiredField select2">
+                            <option value="">Select</option>
+                            ${machinesHtml}
+                        </select>
+                    </td>
+                    <td>
+                        <input type="date" name="date[]" class="form-control form-control-sm move-next date" value="${dateValue}" min="${dateValue}" required>
+                    </td>
+                    <td>
+                        <input type="number" step="any" name="qty[]" class="form-control form-control-sm qty-input requiredField" oninput="validateRollQty(this)" required>
+                    </td>
+                    <td>
+                        <input type="number" step="any" name="gala_qty[]" class="form-control form-control-sm gala-qty-input requiredField" required>
+                    </td>
+                    <td class="text-center" style="vertical-align:middle;">
+                        <span class="badge badge-success p-2">${remaining}</span>
+                    </td>
+                    <td class="text-center" style="vertical-align:middle;">
+                        <button type="button" class="btn btn-sm btn-danger" onclick="$(this).closest('tr').remove(); validateAllQty();">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+
+            card.find('tbody').first().append(newRow);
+            $('.select2').select2();
+        }
+
+        function validateRollQty(inputElement) {
+            let card = $(inputElement).closest('.card');
+            let remaining = parseFloat(card.find('.remaining-display').first().text().trim()) || 0;
+            let parsedVal = parseFloat($(inputElement).val()) || 0;
+            let sum = 0;
+
+            card.find('input[name="qty[]"]').each(function () {
+                sum += parseFloat($(this).val()) || 0;
+            });
+
+            if (sum > remaining) {
+                alert("Total C&S Qty (" + sum + ") cannot exceed Remaining Qty (" + remaining + ") for this item.");
+                let excess = sum - remaining;
+                let newVal = parsedVal - excess;
+                $(inputElement).val(newVal > 0 ? newVal : 0);
+                return false;
+            }
+
+            return true;
+        }
+
+        function validateAllQty() {
+            let isValid = true;
+            $('.qty-input').each(function () {
+                if (!validateRollQty(this)) {
+                    isValid = false;
+                }
+            });
+            return isValid;
+        }
+
+        $('form').off('submit').on('submit', function (e) {
+            if (!validateAllQty()) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        function removeDiv(div) {
+            let row = $('#' + div);
+            let itemId = row.data('item-id');
+
+            if (itemId) {
+                let selectedItems = $('#sealing_item_filter').val() || [];
+                selectedItems = selectedItems.filter(function (id) {
+                    return String(id) !== String(itemId);
+                });
+                $('#sealing_item_filter').val(selectedItems).trigger('change.select2');
+            }
+
+            row.remove();
+        }
     </script>
 
 @endsection
