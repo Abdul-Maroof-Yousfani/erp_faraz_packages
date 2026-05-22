@@ -539,7 +539,7 @@ class FarazProductionController extends Controller
         $rawItemId = (int) ($request->query('raw_item_id') ?: 0);
         $prevDate = date('Y-m-d', strtotime($date . ' -1 day'));
 
-        $qtyExpr = "SUM(CASE WHEN si.pack_size IS NOT NULL AND si.pack_size > 0 THEN s.qty * si.pack_size ELSE s.qty END)";
+        $qtyExpr = "SUM(COALESCE(s.qty, 0))";
 
         $inTypes = [1, 4, 6, 10, 11];
         $outTypes = [2, 3, 5, 9];

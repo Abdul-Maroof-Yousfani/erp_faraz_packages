@@ -925,7 +925,7 @@ class FarazProductionAddDetailController extends Controller
                     ->insert($data2);
 
 
-                $availableQty = ReuseableCode::get_stock_with_pack_size($itemId, 0, $requiredQty, 0);
+                $availableQty = ReuseableCode::get_stock($itemId, 0, $requiredQty, 0);
 
                 if ($availableQty < 0) {
                     DB::connection('mysql2')->rollBack();
@@ -937,15 +937,6 @@ class FarazProductionAddDetailController extends Controller
 
                 $itemRate = $itemDetail->rate ?? 0;
                 $itemName = $itemDetail->sub_ic ?? '';
-                $packSize = (float) ($itemDetail->pack_size ?? 0);
-                // Convert KG -> bags using the item's pack_size (subitem.pack_size)
-                if ($packSize <= 0) {
-                    DB::connection('mysql2')->rollBack();
-                    return 'Pack size (subitem.pack_size) is missing/invalid for item ' . CommonHelper::get_item_name($itemId);
-                }
-                $requiredQtyInBags = (float) $requiredQty / $packSize;
-                // dd($requiredQtyInBags);
-
                 ReuseableCode::postStock(
                     $master_id,
                     0,
@@ -955,7 +946,7 @@ class FarazProductionAddDetailController extends Controller
                     $itemRate,
                     $itemId,
                     $itemName,
-                    $requiredQtyInBags,
+                    $requiredQty,
                     null
                 );
             }
@@ -1070,7 +1061,7 @@ class FarazProductionAddDetailController extends Controller
                     ->table('production_mixture_data')
                     ->insert($data2);
 
-                $availableQty = ReuseableCode::get_stock_with_pack_size($itemId, 0, $requiredQty, 0);
+                $availableQty = ReuseableCode::get_stock($itemId, 0, $requiredQty, 0);
 
                 if ($availableQty < 0) {
                     DB::connection('mysql2')->rollBack();
@@ -1084,17 +1075,6 @@ class FarazProductionAddDetailController extends Controller
                 $itemDetail = CommonHelper::get_subitem_detail2($itemId);
                 $itemRate = $itemDetail->rate ?? 0;
                 $itemName = $itemDetail->sub_ic ?? '';
-                $packSize = (float) ($itemDetail->pack_size ?? 0);
-                if ($packSize <= 0) {
-                    DB::connection('mysql2')->rollBack();
-                    Session::flash(
-                        'dataEdit',
-                        'Pack size (subitem.pack_size) is missing/invalid for item ' . CommonHelper::get_item_name($itemId)
-                    );
-                    return Redirect::to('far_production/viewProductionMixingList?m=' . $m);
-                }
-                $requiredQtyInBags = (float) $requiredQty / $packSize;
-
                 ReuseableCode::postStock(
                     $mixtureId,
                     0,
@@ -1104,7 +1084,7 @@ class FarazProductionAddDetailController extends Controller
                     $itemRate,
                     $itemId,
                     $itemName,
-                    $requiredQtyInBags,
+                    $requiredQty,
                     null
                 );
             }
@@ -1221,7 +1201,7 @@ class FarazProductionAddDetailController extends Controller
             $rawQty = (float) $request->used_qty_total;
 
 
-            $availableQty = ReuseableCode::get_stock_with_pack_size(
+            $availableQty = ReuseableCode::get_stock(
                 $rawItemId,
                 0,
                 $rawQty,
@@ -1369,6 +1349,7 @@ class FarazProductionAddDetailController extends Controller
                 // STOCK OUT (RAW ROLL)
                 // ───────────────────────────────────────────────
                 $rawDetail = CommonHelper::get_subitem_detail2($itemId);
+                $printedQtyKg = $this->rollingRollCountToKg($rowRollIds, $printedQty, $itemId);
                 ReuseableCode::postStock(
                     $printingId,
                     0,
@@ -1378,7 +1359,7 @@ class FarazProductionAddDetailController extends Controller
                     $rawDetail->rate ?? 0,
                     $itemId,
                     $rawDetail->sub_ic ?? '',
-                    $printedQty,
+                    $printedQtyKg,
                     null
                 );
 
@@ -1395,7 +1376,7 @@ class FarazProductionAddDetailController extends Controller
                     $finishDetail->rate ?? 0,
                     $itemId,
                     $finishDetail->sub_ic ?? '',
-                    $printedQty,
+                    $printedQtyKg,
                     $request->type_id[$key] ?? null
                 );
 
@@ -1490,10 +1471,16 @@ class FarazProductionAddDetailController extends Controller
                 // ========================
                 // CHECK STOCK (PRINTED ROLL)
                 // ========================
+                $printedRollQtyKg = $this->printedRollCountToKg(
+                    array_values(array_filter(array_map('intval', explode(',', (string) $request->roll_id)))),
+                    $request->no_of_roll[$key] ?? 0,
+                    $request->raw_item_id[0]
+                );
+
                 $availableQty = ReuseableCode::get_stock(
                     $request->raw_item_id[0],
                     0,
-                    $request->no_of_roll[$key],
+                    $printedRollQtyKg,
                     0
                 );
 
@@ -1537,7 +1524,7 @@ class FarazProductionAddDetailController extends Controller
                     $rawDetail->rate ?? 0,
                     $request->raw_item_id[0],
                     $rawDetail->sub_ic ?? '',
-                    $request->no_of_roll[$key],
+                    $printedRollQtyKg,
                     null
                 );
                 // ========================
@@ -1733,8 +1720,10 @@ class FarazProductionAddDetailController extends Controller
 
                 if (!$rawItemId || $totalConsume <= 0) continue;
 
+                $totalConsumeKg = $this->printedRollCountToKg($rollIdsArr, $totalConsume, $rawItemId);
+
                 // CHECK STOCK
-                $availableQty = ReuseableCode::get_stock($rawItemId, 0, $totalConsume, 0);
+                $availableQty = ReuseableCode::get_stock($rawItemId, 0, $totalConsumeKg, 0);
                 if ($availableQty < 0) {
                     DB::connection('mysql2')->rollBack();
                     return back()->withErrors(['error' =>
@@ -1752,7 +1741,7 @@ class FarazProductionAddDetailController extends Controller
                     $rawDetail->rate ?? 0,
                     $rawItemId,
                     $rawDetail->sub_ic ?? '',
-                    $totalConsume,
+                    $totalConsumeKg,
                     null
                 );
 
@@ -2082,6 +2071,7 @@ class FarazProductionAddDetailController extends Controller
 
 
                 $finishDetail = CommonHelper::get_subitem_detail2($itemId);
+                $packingBagsQtyKg = $this->packCountToKg($itemId, $request->bags_qty[$key] ?? 0, $request->qty[$key] ?? 0);
 
                 ReuseableCode::postStock(
                     $packingId,
@@ -2092,7 +2082,7 @@ class FarazProductionAddDetailController extends Controller
                     $finishDetail->rate ?? 0,
                     $itemId,
                     $finishDetail->sub_ic ?? '',
-                    $request->bags_qty[$key],
+                    $packingBagsQtyKg,
                     null
                 );
 
@@ -2347,6 +2337,86 @@ class FarazProductionAddDetailController extends Controller
             ]);
 
         return 'true';
+    }
+
+    private function packCountToKg($itemId, $qty, $fallbackKg = null)
+    {
+        $itemDetail = CommonHelper::get_subitem_detail2($itemId);
+        $packSize = (float) ($itemDetail->pack_size ?? 0);
+
+        if ($packSize <= 0) {
+            return round((float) ($fallbackKg ?? $qty), 2);
+        }
+
+        return round(((float) $qty) * $packSize, 2);
+    }
+
+    private function rollingRollCountToKg(array $rollingIds, $rollCount, $fallbackItemId)
+    {
+        return $this->countToKgFromSourceRows(
+            DB::connection('mysql2')
+                ->table('production_rolling')
+                ->whereIn('id', $rollingIds)
+                ->select(
+                    'id',
+                    DB::raw('COALESCE(roll_qty, 0) as count_qty'),
+                    DB::raw('COALESCE(rolls_qty_kg, 0) as kg_qty')
+                )
+                ->orderBy('date')
+                ->orderBy('id')
+                ->get(),
+            $rollCount,
+            $fallbackItemId
+        );
+    }
+
+    private function printedRollCountToKg(array $printingIds, $rollCount, $fallbackItemId)
+    {
+        return $this->countToKgFromSourceRows(
+            DB::connection('mysql2')
+                ->table('production_roll_printing as prp')
+                ->leftJoin('production_rolling as pr', 'pr.id', '=', 'prp.production_rolling_id')
+                ->whereIn('prp.id', $printingIds)
+                ->select(
+                    'prp.id',
+                    DB::raw('COALESCE(prp.no_of_roll, 0) as count_qty'),
+                    DB::raw('COALESCE(pr.rolls_qty_kg, pr.roll_qty, prp.no_of_roll, 0) as kg_qty')
+                )
+                ->orderBy('prp.date')
+                ->orderBy('prp.id')
+                ->get(),
+            $rollCount,
+            $fallbackItemId
+        );
+    }
+
+    private function countToKgFromSourceRows($sourceRows, $countQty, $fallbackItemId)
+    {
+        $remainingCount = (float) $countQty;
+        $kgQty = 0;
+
+        foreach ($sourceRows as $row) {
+            if ($remainingCount <= 0) {
+                break;
+            }
+
+            $rowCount = (float) ($row->count_qty ?? 0);
+            $rowKg = (float) ($row->kg_qty ?? 0);
+
+            if ($rowCount <= 0 || $rowKg <= 0) {
+                continue;
+            }
+
+            $shareCount = min($remainingCount, $rowCount);
+            $kgQty += $shareCount * ($rowKg / $rowCount);
+            $remainingCount -= $shareCount;
+        }
+
+        if ($kgQty > 0 && $remainingCount <= 0.000001) {
+            return round($kgQty, 2);
+        }
+
+        return $this->packCountToKg($fallbackItemId, $countQty);
     }
 
     private function recordProductionWastage($process, $itemId, $qty, $date, $productionOrderId = null, $remarks = null)

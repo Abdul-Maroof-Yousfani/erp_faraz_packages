@@ -373,31 +373,9 @@ if ($accType == 'client') {
                 return true;
             }
 
-            var instockinbag = parseFloat($('#instock' + number).val()) || 0;
-            var bagsize = parseFloat(
-                $('#item_id' + number).find(':selected').data('pack_size')
-            ) || 0;
+            var instock = parseFloat($('#instock' + number).val()) || 0;
             var qtyField = $('#required_qty' + number);
             var entered = parseFloat(qtyField.val()) || 0;
-
-            if (bagsize <= 0) {
-                if (entered > 0) {
-                    qtyField.val('');
-                    if (typeof Swal !== 'undefined') {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Pack size missing',
-                            text: 'Pack size (subitem.pack_size) is not configured for the selected raw material.'
-                        });
-                    } else {
-                        alert('Pack size (subitem.pack_size) is not configured for the selected raw material.');
-                    }
-                    return false;
-                }
-                return true;
-            }
-
-            var instock = instockinbag * bagsize;
 
             // If no quantity entered, nothing to validate
             if (!entered) {
