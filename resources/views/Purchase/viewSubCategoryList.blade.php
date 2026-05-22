@@ -35,6 +35,8 @@ if($accType == 'client'){
                                                     <th class="text-center">S.No</th>
                                                     <th class="text-center">Category</th>
                                                     <th class="text-center">Sub Category Name</th>
+                                                    <th class="text-center">Type</th>
+                                                    <th class="text-center">Print</th>
                                                     <th class="text-center">Transactions</th>
                                                     <th class="text-center">Action </th>
 
@@ -56,6 +58,8 @@ if($accType == 'client'){
                                                         <td><?php echo $Counter++;?></td>
                                                         <td><?php echo  $category_name;?></td>
                                                         <td><?php echo  $row->sub_category_name;?></td>
+                                                        <td><?php echo  $row->type ?: '-';?></td>
+                                                        <td><?php echo  $row->print_type ?: '-';?></td>
                                                         <td style="text-align: center"> @if($count>0){{'&#x2714;'}} @else {{'&#x2716;'}} @endif</td>
 
 

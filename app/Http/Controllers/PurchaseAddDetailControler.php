@@ -685,11 +685,13 @@ class PurchaseAddDetailControler extends Controller
         $m = $_GET['m'];
         $CategoryId = Input::get('CategoryId');
         $Type = Input::get('Type');
+        $PrintType = Input::get('PrintType');
         $SubCategoryName = Input::get('SubCategoryName');
 
         $SubCategoryInsert['category_id'] = $CategoryId;
         $SubCategoryInsert['sub_category_name'] = $SubCategoryName;
         $SubCategoryInsert['type'] = $Type;
+        $SubCategoryInsert['print_type'] = $PrintType;
 
 
 
@@ -699,7 +701,7 @@ class PurchaseAddDetailControler extends Controller
 
         CommonHelper::reconnectMasterDatabase();
         $Count = DB::Connection('mysql2')->selectOne('SELECT COUNT(sub_category_name) as data_count FROM sub_category
-        WHERE category_id = ' . $CategoryId . ' AND sub_category_name collate latin1_swedish_ci = "' . $SubCategoryName . '" AND type = "' . $Type . '"')->data_count;
+        WHERE category_id = ' . $CategoryId . ' AND sub_category_name collate latin1_swedish_ci = "' . $SubCategoryName . '" AND type = "' . $Type . '" AND COALESCE(print_type, "") = "' . $PrintType . '"')->data_count;
         //echo  $Count; die();
         if ($Count > 0) {
             Session::flash('dataDelete', $SubCategoryName . ' ' . 'Already Exists.');
@@ -4265,6 +4267,7 @@ public function updatePurchaseReturnDetail(Request $request)
         $id = $request->id;
         $data['sub_category_name'] = $request->SubCategoryName;
         $data['type'] = $request->Type;
+        $data['print_type'] = $request->PrintType;
 
         DB::Connection('mysql2')->table('sub_category')->where('id', $id)->update($data);
         return Redirect::to('purchase/viewSubCategoryList?pageType=view&&parentCode=95&&m=' . Session::get('run_company') . '#murtazaCorporation');

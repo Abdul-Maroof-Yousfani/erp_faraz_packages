@@ -26,13 +26,13 @@ use App\Helpers\CommonHelper;
                                             <?php echo Form::open(array('url' => 'pad/edit_sub?id=' . $id, 'id' => 'addCategoryForm'));?>
 
 
-                                            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                 <label>Category</label>
                                                 <input type="text" name="" id=""
                                                     value="{{CommonHelper::get_category_name($data->category_id)}}"
                                                     readonly class="form-control" onkeyup="" />
                                             </div>
-                                            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                 <label>Sub Category Name</label>
                                                 <span class="rflabelsteric"><strong>*</strong></span>
                                                 <input type="text" name="SubCategoryName" id="SubCategoryName"
@@ -40,7 +40,7 @@ use App\Helpers\CommonHelper;
                                                     class="form-control requiredField" onkeyup="" />
                                                 <span id="DuplicateMsg"></span>
                                             </div>
-                                            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                 <label>Type</label>
 
                                                 <select name="Type" id="Type" class="form-control select2">
@@ -50,6 +50,19 @@ use App\Helpers\CommonHelper;
                                                         Gala Cutting
                                                     </option>
 
+                                                </select>
+                                            </div>
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                <label>Print</label>
+
+                                                <select name="PrintType" id="PrintType" class="form-control select2">
+                                                    <option value="">Select Option</option>
+                                                    <option value="Print" {{ isset($data->print_type) && $data->print_type == 'Print' ? 'selected' : '' }}>
+                                                        Print
+                                                    </option>
+                                                    <option value="Non-Print" {{ isset($data->print_type) && $data->print_type == 'Non-Print' ? 'selected' : '' }}>
+                                                        Non-Print
+                                                    </option>
                                                 </select>
                                             </div>
 

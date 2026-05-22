@@ -38,7 +38,7 @@ if ($accType == 'client') {
                                                     <input type="hidden" name="parentCode"
                                                         value="<?php echo $_GET['parentCode']?>">
 
-                                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                         <label>Category</label>
                                                         <span class="rflabelsteric"><strong>*</strong></span>
                                                         <select name="CategoryId" id="CategoryId"
@@ -50,7 +50,7 @@ if ($accType == 'client') {
                                                             <?php endforeach;?>
                                                         </select>
                                                     </div>
-                                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                         <label>Sub Category Name</label>
                                                         <span class="rflabelsteric"><strong>*</strong></span>
                                                         <input type="text" name="SubCategoryName" id="SubCategoryName"
@@ -58,11 +58,19 @@ if ($accType == 'client') {
                                                             onkeyup="clearText();" />
                                                         <span id="DuplicateMsg"></span>
                                                     </div>
-                                                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                         <label for="">Type</label>
                                                         <select name="Type" id="Type" class="form-control select2">
                                                             <option value="">Select Option</option>
                                                             <option value="Gala Cutting">Gala Cutting</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                        <label for="">Print</label>
+                                                        <select name="PrintType" id="PrintType" class="form-control select2">
+                                                            <option value="">Select Option</option>
+                                                            <option value="Print">Print</option>
+                                                            <option value="Non-Print">Non-Print</option>
                                                         </select>
                                                     </div>
                                                     <div>&nbsp;</div>
