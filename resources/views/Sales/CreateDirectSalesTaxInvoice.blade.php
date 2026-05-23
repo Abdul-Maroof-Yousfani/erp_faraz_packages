@@ -349,7 +349,7 @@ use App\Helpers\ReuseableCode;
 											<table class="table table-bordered table-compact">
 												<thead>
 													<tr class="text-center">
-														<th colspan="12" class="text-center">Sales Invoice Detail</th>
+														<th colspan="13" class="text-center">Sales Invoice Detail</th>
 														<th class="text-center">
 															<span class="badge badge-success" id="span">1</span>
 														</th>
@@ -368,6 +368,8 @@ use App\Helpers\ReuseableCode;
 																class="rflabelsteric"><strong>*</strong></span></th>
 														<th class="text-center col-narrow">In Stock</th>
 														<th class="text-center col-narrow">Commission Rate</th>
+														<th class="text-center col-narrow">Rate Cal. By<span
+																class="rflabelsteric"><strong>*</strong></span></th>
 														<th class="text-center col-narrow">Rate<span
 																class="rflabelsteric"><strong>*</strong></span></th>
 														<th class="text-center col-narrow">Amount</th>
@@ -452,6 +454,14 @@ use App\Helpers\ReuseableCode;
 																name="commission[]" id="commission1" value="" />
 														</td>
 														<td>
+															<select name="rate_cal_by[]" id="rate_cal_by_1"
+																class="form-control" onchange="calculateLineAmount(this)">
+																<option value="1">By BAGS</option>
+																<option value="2">By KGS</option>
+																<option value="3">By LBS</option>
+															</select>
+														</td>
+														<td>
 															<input type="text" onkeyup="claculation('1')"
 																onblur="claculation('1')" class="form-control requiredField"
 																name="rate[]" id="rate1" min="1" value="">
@@ -494,7 +504,7 @@ use App\Helpers\ReuseableCode;
 												</tbody>
 												<tbody>
 													<tr style="font-size:large;font-weight: bold">
-														<td class="text-center" colspan="9">Total</td>
+														<td class="text-center" colspan="11">Total</td>
 														<td id="" class="text-right" colspan="2"><input readonly
 																class="form-control" type="text" id="net" /> </td>
 														<td></td>
@@ -693,6 +703,13 @@ use App\Helpers\ReuseableCode;
 															<input type="text" class="form-control" placeholder=""
 																name="commission[]" id="commission${Counter}" value="" />
 														</td>
+													<td>
+														<select name="rate_cal_by[]" id="rate_cal_by_${Counter}" class="form-control" onchange="calculateLineAmount(this)">
+															<option value="1">By BAGS</option>
+															<option value="2">By KGS</option>
+															<option value="3">By LBS</option>
+														</select>
+													</td>
 													<td>
 														<input type="text" onkeyup="claculation(${Counter})" onblur="claculation(${Counter})" class="form-control requiredField" name="rate[]" id="rate${Counter}"  min="1" value="">
 													</td>
@@ -1049,6 +1066,8 @@ use App\Helpers\ReuseableCode;
 				var packSize = parseFloat($('#pack_size' + number).val()) || 1;
 				var selectedUom = $('#uom_id' + number).val() || '';
 				var rate = ($('#rate' + number).val() || '').toString().replace(/,/g, '');
+				var rate_cal_by = $('#rate_cal_by_' + number).val() || "2";
+				var bags_qty = parseFloat($('#bag_qty' + number).val()) || 0;
 				var totalQty = parseFloat(qty) || 0;
 				rate = parseFloat(rate) || 0;
 
@@ -1059,7 +1078,18 @@ use App\Helpers\ReuseableCode;
 				var qty_lbs = parseFloat(totalQty) * 2.2 || 0;
 				$('#qty_lbs' + number).val(qty_lbs.toFixed(2));
 
-				var total = parseFloat(totalQty * rate).toFixed(2);
+				var multiplier = 0;
+				if (rate_cal_by === "1") {
+					multiplier = bags_qty;
+				}
+				else if (rate_cal_by === "2") {
+					multiplier = totalQty;
+				}
+				else if (rate_cal_by === "3") {
+					multiplier = qty_lbs;
+				}
+
+				var total = parseFloat(multiplier * rate).toFixed(2);
 				$('#amount' + number).val(total);
 
 				var amount = 0;
@@ -1077,6 +1107,13 @@ use App\Helpers\ReuseableCode;
 				net_amount();
 
 				//  toWords(1);
+			}
+
+			function calculateLineAmount(element) {
+				var rowCounter = (element.id || '').replace('rate_cal_by_', '');
+				if (rowCounter !== '') {
+					claculation(rowCounter);
+				}
 			}
 
 

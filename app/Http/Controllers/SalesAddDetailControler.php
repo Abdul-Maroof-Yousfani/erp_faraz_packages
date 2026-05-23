@@ -37,6 +37,7 @@ use Exception;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Config;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
@@ -2411,6 +2412,7 @@ class SalesAddDetailControler extends Controller
 
             $total_amount = 0;
             $total_commission_amount = 0;
+            $hasRateCalByColumn = Schema::connection('mysql2')->hasColumn('sales_tax_invoice_data', 'rate_cal_by');
             foreach ($request->item_id as $key => $value) {
                 # code...
 
@@ -2441,6 +2443,9 @@ class SalesAddDetailControler extends Controller
                 $sales_tax_invoice_data->tax_amount = $request->tax_amount[$key];
                 $sales_tax_invoice_data->amount = $amount;
                 $sales_tax_invoice_data->warehouse_id = $request->warehouse[$key];
+                if ($hasRateCalByColumn) {
+                    $sales_tax_invoice_data->rate_cal_by = (int) ($request->rate_cal_by[$key] ?? 2);
+                }
                 //    $sales_tax_invoice_data->bundles_id = $request->input('bundles_id' . $i);
                 $sales_tax_invoice_data->status = 1;
                 $sales_tax_invoice_data->date = date('Y-m-d');
