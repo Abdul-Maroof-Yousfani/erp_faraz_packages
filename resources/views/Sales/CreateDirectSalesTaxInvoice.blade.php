@@ -132,31 +132,25 @@ use App\Helpers\ReuseableCode;
 													onkeyup="calculate_due_date()" class="form-control requiredField"
 													placeholder="" name="gi_date" id="gi_date" value="" />
 											</div>
-
-										</div>
-
-
-										<div class="row">
-
-											<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+													<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
 												<label class="sf-label">Mode / Terms Of Payment <span
 														class="rflabelsteric"></label>
 												<input type="text" class="form-control" placeholder=""
 													name="model_terms_of_payment" id="model_terms_of_payment" value="" />
 											</div>
-											<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+											<div class="col-lg-3 col-md-2 col-sm-2 col-xs-12">
 												<label class="sf-label">Other Reference(s) <span
 														class="rflabelsteric"></label>
 												<input type="text" class="form-control" placeholder="" name="other_refrence"
 													id="other_refrence" value="" />
 											</div>
+										</div>
 
-											<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-												<label class="sf-label">Buyer's Order No<span
-														class="rflabelsteric"></span></label>
-												<input type="text" class="form-control" placeholder="" name="order_no"
-													id="order_no" value="" />
-											</div>
+
+										<div class="row">
+
+									
+									
 
 											<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
 												<label class="sf-label">Buyer's Order Date<span
@@ -184,6 +178,13 @@ use App\Helpers\ReuseableCode;
 													name="despacth_document_date" id="despacth_document_date" value="" />
 											</div>
 
+											<div class="col-lg-3 col-md-2 col-sm-2 col-xs-12">
+												<label class="sf-label">Destination<span
+														class="rflabelsteric"></span></label>
+												<input type="text" class="form-control" placeholder="" name="destination"
+													id="destination" value="" />
+											</div>
+
 
 
 
@@ -196,13 +197,6 @@ use App\Helpers\ReuseableCode;
 														class="rflabelsteric"></span></label>
 												<input type="text" class="form-control" placeholder=""
 													name="despacth_through" id="despacth_through" value="" />
-											</div>
-
-											<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-												<label class="sf-label">Destination<span
-														class="rflabelsteric"></span></label>
-												<input type="text" class="form-control" placeholder="" name="destination"
-													id="destination" value="" />
 											</div>
 
 
@@ -252,7 +246,7 @@ use App\Helpers\ReuseableCode;
 								</div>
 
 
-						<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12" id="buyers_ntn_wrapper">
+						<div class="col-lg-3 col-md-2 col-sm-2 col-xs-12" id="buyers_ntn_wrapper">
 								<label class="sf-label">Buyer's Ntn </label>
 								<input readonly type="text" class="form-control" placeholder=""
 									name="buyers_ntn" id="buyers_ntn" value="" />

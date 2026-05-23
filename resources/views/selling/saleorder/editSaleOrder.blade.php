@@ -209,7 +209,9 @@ $count = 1;
                                                                     <input readonly type="text" name="color[]" id="color{{ $count }}" class="form-control" />
                                                                 </td> --}}
                                                                 <td>
-                                                                    <input readonly class="form-control" onkeyup="calculation_amount()" type="text" name="qty[]" id="qty{{ $count }}" value="{{$value->qty}}">
+                                                                    <input class="form-control requiredField"
+                                                                        onchange="calculation_amount()" oninput="calculation_amount()" type="number"
+                                                                        name="qty[]" id="qty{{ $count }}" step="any" value="{{$value->qty}}">
                                                                     <input type="hidden" class="PackQty" name="pack_qty[]" id="pack_qty{{ $count }}" value="{{ $value->pack_size }}">
                                                                 </td>
                                                                 <td>
@@ -385,7 +387,7 @@ $count = 1;
                     </td>
                    
                     <td>
-                        <input readonly class="form-control" onkeyup="calculation_amount()" type="text" name="qty[]" id="qty${Counter}" value="">
+                        <input class="form-control requiredField" onkeyup="calculation_amount()" oninput="calculation_amount()" onchange="calculation_amount()" type="number" name="qty[]" id="qty${Counter}" step="any" value="">
                         <input type="hidden" name="pack_qty[]" id="pack_qty${Counter}">
                     </td>
                     <td>

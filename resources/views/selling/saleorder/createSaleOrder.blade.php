@@ -140,10 +140,10 @@
                                                             <tr>
                                                                 <th class="text-center col-sm-2">Category</th>
                                                                 <th class="text-center col-sm-2">Item</th>
-                                                                <th class="text-center">Qty</th>
+                                                                <th class="text-center">Bags Qty</th>
                                                                 <th class="text-center">UOM</th>
                                                                 {{-- <th class="text-center">Color</th> --}}
-                                                                <th class="text-center">Qty in UOM</th>
+                                                                <th class="text-center">KG Qty</th>
                                                                 <th class="text-center">Qty (lbs)</th>
                                                                 <th class="text-center">Rate Cal. By<span class="rflabelsteric"><strong>*</strong></span></th>
                                                                 <th class="text-center">Unit Price</th>

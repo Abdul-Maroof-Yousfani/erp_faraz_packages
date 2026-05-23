@@ -445,7 +445,7 @@ use App\Helpers\ReuseableCode;
                                                     <td  style="background-color: darkgray" class="text-right"  colspan="1"><input style="font-weight: bolder" class="form-control" readonly type="text" id="total_qty" value="{{ number_format($total_qty, 3, '.', '') }}" /> </td>
                                                     <td style="background-color: darkgray" class="text-right" colspan="1"></td>
                                                     <td   style="background-color: darkgray" class="text-right hidee nett"  colspan="4"><input style="font-weight: bolder" class="form-control text-right comma_seprated" readonly type="text" id="total_amount" value="{{$total}}" /></td>
-                                                    <td style="background-color: darkgray" class="text-right" colspan="1"></td>
+                                                    <td style="background-color: darkgray" class="text-right" colspan="4"></td>
 
 
                                                 </tr>
@@ -472,7 +472,7 @@ use App\Helpers\ReuseableCode;
                                                 <input type="hidden" id="so_advance_tax_amount" value="{{ $advance_tax }}" />
 
                                                 <tr>
-                                                    <td  class="text-right" colspan="5"></td>
+                                                    <td  class="text-right" colspan="8"></td>
                                                     <td class="text-right" colspan="2">Sales Tax {{ number_format($salesTaxRate,2) }}</td>
                                                     <td colspan="1"> <input style="font-weight: bolder" class="form-control text-right" readonly type="text" name="sales_tax" id="sales_tax" value="{{ $tax }}" /></td>
                                                     <td colspan="1"> <input type="hidden" name="sales_tax_rate" id="sales_tax_rate" value="{{ $salesTaxRate }}" /></td>
@@ -480,7 +480,7 @@ use App\Helpers\ReuseableCode;
                                                 </tr>
 
                                                 <tr>
-                                                    <td  class="text-right" colspan="5"></td>
+                                                    <td  class="text-right" colspan="8"></td>
                                                     <td class="text-right" colspan="2">Further Sales Tax {{ number_format($furtherTaxRate,2) }}</td>
                                                     <td class="text-right" colspan="1">
                                                         <input type="hidden" name="sales_tax_further_per" id="sales_tax_further_per" value="{{ $furtherTaxRate }}" />
@@ -491,7 +491,7 @@ use App\Helpers\ReuseableCode;
 
                                                 </tr>
                                                 <tr>
-                                                    <td  class="text-right" colspan="5"></td>
+                                                    <td  class="text-right" colspan="8"></td>
                                                     <td class="text-right" colspan="2">Advance Tax {{ number_format($advanceTaxRate,2) }}</td>
                                                     <td class="text-right" colspan="1">
 
@@ -502,7 +502,7 @@ use App\Helpers\ReuseableCode;
                                                     <td class="text-right" colspan="1"></td>
                                                 </tr>
                                                 <tr>
-                                                    <td  class="text-right" colspan="5"></td>
+                                                    <td  class="text-right" colspan="8"></td>
                                                     <td class="text-right" colspan="2">Cartage Amount</td>
 
                                                     <td colspan=""> <input class="form-control text-right" type="text" name="cartage_amount" id="cartage_amount" value="{{ number_format($cartageAmount, 3, '.', '') }}" readonly />
@@ -511,7 +511,7 @@ use App\Helpers\ReuseableCode;
                                                 </tr>
 
                                                 <tr>
-                                                    <td  class="text-right" colspan="5"></td>
+                                                    <td  class="text-right" colspan="8"></td>
                                                     <td  class="text-right" colspan="2">Amount After Tax</td>
                                                     <td colspan="1">   <input style="font-weight: bolder" class="form-control text-right" readonly type="text" name="grand" id="grand" value="{{ $amountAfterTax }}" /></td>
                                                     <td class="text-right" colspan="1"></td>
