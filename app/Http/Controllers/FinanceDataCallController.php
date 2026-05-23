@@ -777,7 +777,11 @@ class FinanceDataCallController extends Controller
                 $stock['discount_percent']=0;
                 $stock['discount_amount']=$row->discount_amount ;
                 $stock['amount']=$stockAmount;
-                $stock['warehouse_id']=$row->warehouse;
+                $resolvedWarehouseId = $this->resolveWarehouseIdForVoucherRow($row, $row->warehouse ?? 0);
+                if ($resolvedWarehouseId <= 0) {
+                    throw new \Exception('Warehouse is missing on purchase voucher item (ID: '.$row->id.').');
+                }
+                $stock['warehouse_id']=$resolvedWarehouseId;
                 $stock['description']=$row->description;
                 $stock['batch_code']=0;
                 $stock['status']=$status;
@@ -939,6 +943,30 @@ class FinanceDataCallController extends Controller
         return $stockAmount / $qtyKg;
     }
 
+    private function resolveWarehouseIdForVoucherRow($row, $masterWarehouseId = 0, $grnId = 0)
+    {
+        $warehouseId = (int) ($row->warehouse_id ?? 0);
+        if ($warehouseId <= 0) {
+            $warehouseId = (int) ($masterWarehouseId ?? 0);
+        }
+
+        if ($warehouseId <= 0 && !empty($row->grn_data_id)) {
+            $warehouseId = (int) DB::connection('mysql2')
+                ->table('grn_data')
+                ->where('id', $row->grn_data_id)
+                ->value('warehouse_id');
+        }
+
+        if ($warehouseId <= 0 && !empty($grnId)) {
+            $warehouseId = (int) DB::connection('mysql2')
+                ->table('goods_receipt_note')
+                ->where('id', $grnId)
+                ->value('warehouse_id');
+        }
+
+        return $warehouseId;
+    }
+
     public function approvePurchaseVoucherDetail(Request $request)
     {
         $master_id = $request->PvId;
@@ -962,6 +990,7 @@ class FinanceDataCallController extends Controller
             $sales_tax_amount = $purchase_voucher->sales_tax_amount;
             $supplier = $purchase_voucher->supplier;
             $description = $purchase_voucher->description;
+            $masterWarehouseId = (int) ($purchase_voucher->warehouse ?? 0);
             $supp_acc_id = CommonHelper::get_supplier_acc_id($supplier);
             $grn_data=  DB::Connection('mysql2')->table('goods_receipt_note')->where('id',$purchase_voucher->grn_id);
             $po_no= $grn_data->value('po_no');
@@ -1038,7 +1067,11 @@ class FinanceDataCallController extends Controller
                     $stock->discount_percent=0;
                     $stock->discount_amount=$value->discount_amount ;
                     $stock->amount=$stockAmount;
-                    $stock->warehouse_id=$value->warehouse_id;
+                    $resolvedWarehouseId = $this->resolveWarehouseIdForVoucherRow($value, $masterWarehouseId, $purchase_voucher->grn_id ?? 0);
+                    if ($resolvedWarehouseId <= 0) {
+                        throw new \Exception('Warehouse is missing on purchase voucher item (ID: '.$value->id.').');
+                    }
+                    $stock->warehouse_id=$resolvedWarehouseId;
                     $stock->description=$description;
                     $stock->batch_code=0;
                     $stock->status=1;

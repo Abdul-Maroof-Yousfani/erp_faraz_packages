@@ -248,7 +248,7 @@ use App\Helpers\ReuseableCode;
                                                             <?php  $count++; ?>
                                                         @endforeach
                                                         <tr class="text-center">
-                                                            <td class="text-center" colspan="8"></td>
+                                                            <td class="text-center" colspan="6"></td>
                                                             <td class="text-center" colspan="1">Total</td>
                                                             <td ><input type="text" maxlength="15" class="form-control text-right" name="Totalamount" value="<?php echo $TotAmt?>" id="Totalamount<?php echo $row1->grn_no?>" readonly="" ></td>
                                                         </tr>

@@ -15,6 +15,31 @@ $grn_no = 'grn' . ($str + 1) . date('my');
         background-color: #ddffdd;
         border-left: 6px solid #4CAF50;
     }
+    .grn-detail-scroll {
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: auto;
+        max-height: 520px;
+        scrollbar-color: #666 #e5e5e5;
+        scrollbar-width: thin;
+    }
+    .grn-detail-scroll table {
+        min-width: 1800px;
+    }
+    .grn-detail-scroll::-webkit-scrollbar {
+        height: 10px;
+        width: 10px;
+    }
+    .grn-detail-scroll::-webkit-scrollbar-track {
+        background: #e5e5e5;
+    }
+    .grn-detail-scroll::-webkit-scrollbar-thumb {
+        background: #666;
+        border-radius: 8px;
+    }
+    .grn-detail-scroll::-webkit-scrollbar-thumb:hover {
+        background: #4d4d4d;
+    }
 </style>
 @include('number_formate')
 @include('select2')
@@ -147,7 +172,7 @@ $grn_no = 'grn' . ($str + 1) . date('my');
 </div>
 <div class="row">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-        <div class="">
+        <div class="grn-detail-scroll">
             <table class="table table-bordered sf-table-list">
                 <thead>
                     <tr>

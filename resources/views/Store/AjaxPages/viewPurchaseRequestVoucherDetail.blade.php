@@ -77,11 +77,12 @@ if($_GET['pageType']=='viewlist'){
                 <div class="col-lg-4 col-md-4 col-sm-4 col-xs-6">
                     <div class="head-text">
                         <h3 class="subHeadingLabelClass" style="text-align: center;">Purchase Order</h3>
-                        <h4>
-                            <span style="font-size: 16px">FARAZ PACKAGES</span> <br>
+                        <h5 class="text-center" >
+                            <span style="font-size: 16px; text-align: center;">FARAZ PACKAGES</span> <br>
                             F-98 S.I.T.E KARACHI. <br>
-                            Phone: 0321-2254444, Email: farazpackages@gmail.com
-                        </h4>
+                            Phone: 0321-2254444,
+                            Email: farazpackages@gmail.com
+                        </h5>
                     </div>
                 </div>
                
