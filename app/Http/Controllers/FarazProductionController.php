@@ -2035,16 +2035,9 @@ class FarazProductionController extends Controller
             ->groupBy('s.item_code')
             ->orderBy('s.id')
             ->get();
+        $machines = $this->getDepartmentMachines('Gala Cutting Department');
 
-
-
-        $machines = DB::Connection('mysql2')->table('machine')
-            ->select('id', 'name')
-            ->where('status', '=', 1)->get();
-
-        $operators = DB::Connection('mysql2')->table('operators')
-            ->select('id', 'name')
-            ->where('status', '=', 1)->get();
+        $operators = $this->getDepartmentOperators('Gala Cutting Department');
 
         $shifts = DB::Connection('mysql')->table('shift_type')
             ->select('id', 'shift_type_name')
@@ -2113,13 +2106,9 @@ class FarazProductionController extends Controller
             ->orderBy('s.id')
             ->get();
 
-        $machines = DB::Connection('mysql2')->table('machine')
-            ->select('id', 'name')
-            ->where('status', '=', 1)->get();
+        $machines = $this->getDepartmentMachines('Gala Cutting Department');
 
-        $operators = DB::Connection('mysql2')->table('operators')
-            ->select('id', 'name')
-            ->where('status', '=', 1)->get();
+        $operators = $this->getDepartmentOperators('Gala Cutting Department');
 
         $shifts = DB::Connection('mysql')->table('shift_type')
             ->select('id', 'shift_type_name')
