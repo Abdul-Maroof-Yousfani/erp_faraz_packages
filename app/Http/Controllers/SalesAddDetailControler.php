@@ -2422,15 +2422,21 @@ class SalesAddDetailControler extends Controller
                 $sales_tax_invoice_data->item_id = $request->item_id[$key];
                 $sales_tax_invoice_data->description = '';
                 $sales_tax_invoice_data->bag_qty = $request->bag_qty[$key] ?? null;
-                $qty = $request->actual_qty[$key];
-                $rate = $request->rate[$key];
+                $qty = CommonHelper::check_str_replace($request->actual_qty[$key] ?? 0);
+                $rate = CommonHelper::check_str_replace($request->rate[$key] ?? 0);
                 $amount = $qty * $rate;
-                $commission_amount = $request->commission[$key] * $rate;
+                $commissionRate = CommonHelper::check_str_replace($request->commission[$key] ?? 0);
+                $commission_amount = $commissionRate * $rate;
                 $sales_tax_invoice_data->qty = $qty;
-                $sales_tax_invoice_data->uom = CommonHelper::get_uom_id($request->uom_id[$key]);
+                $uomName = trim((string)($request->uom_id[$key] ?? 'Kilogram'));
+                $uomId = CommonHelper::get_uom_id($uomName);
+                if (empty($uomId)) {
+                    $uomId = CommonHelper::get_uom_id('Kilogram');
+                }
+                $sales_tax_invoice_data->uom = $uomId;
                 // dd($sales_tax_invoice_data->uom);
                 $sales_tax_invoice_data->rate = $rate;
-                $sales_tax_invoice_data->commission = $request->commission[$key];
+                $sales_tax_invoice_data->commission = $commissionRate;
                 $sales_tax_invoice_data->tax = $request->tax[$key];
                 $sales_tax_invoice_data->tax_amount = $request->tax_amount[$key];
                 $sales_tax_invoice_data->amount = $amount;
@@ -2453,13 +2459,13 @@ class SalesAddDetailControler extends Controller
                     'supplier_id' => 0,
                     'customer_id' => $buyers_id,
                     'voucher_type' => 5,
-                    'rate' => $request->rate[$key],
+                    'rate' => $rate,
                     'sub_item_id' => $request->item_id[$key],
                     'batch_code' => 0,//$request->batch_code[$key] ?? '0',
-                    'qty' => $request->actual_qty[$key],
+                    'qty' => $qty,
                     'discount_percent' => '',
                     'discount_amount' => '',
-                    'amount' => $request->actual_qty[$key] * $request->rate[$key],
+                    'amount' => $amount,
                     'status' => 1,
                     'warehouse_id' => $request->warehouse[$key],
                     'username' => Auth::user()->username,

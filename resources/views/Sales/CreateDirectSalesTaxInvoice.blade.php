@@ -246,15 +246,15 @@ use App\Helpers\ReuseableCode;
 								</div>
 
 
-						<div class="col-lg-3 col-md-2 col-sm-2 col-xs-12" id="buyers_ntn_wrapper">
-								<label class="sf-label">Buyer's Ntn </label>
-								<input readonly type="text" class="form-control" placeholder=""
-									name="buyers_ntn" id="buyers_ntn" value="" />
-							</div>
+									<div class="col-lg-3 col-md-2 col-sm-2 col-xs-12" id="buyers_ntn_wrapper">
+											<label class="sf-label">Buyer's Ntn </label>
+											<input readonly type="text" class="form-control" placeholder=""
+												name="buyers_ntn" id="buyers_ntn" value="" />
+										</div>
 
-						</div>
+									</div>
 
-						<div class="row">
+									<div class="row">
 
 											<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
 												<label class="sf-label">Buyer's Sales Tax No </label>
@@ -360,7 +360,7 @@ use App\Helpers\ReuseableCode;
 														<th class="text-center col-narrow">Qty</th>
 														<th class="text-center col-narrow">UoM<span
 																class="rflabelsteric"><strong>*</strong></span></th>
-														<th class="text-center col-narrow">Qty in UOM<span
+														<th class="text-center col-narrow">KG Qty<span
 																class="rflabelsteric"><strong>*</strong></span></th>
 														<th class="text-center col-narrow">Qty (lbs)<span
 																class="rflabelsteric"><strong>*</strong></span></th>
@@ -403,15 +403,13 @@ use App\Helpers\ReuseableCode;
 																class="form-control" oninput="bag_qq(1)" />
 														</td>
 														<td>
-															<select name="uom_id[]" id="uom_id1"
-																class="form-control requiredField select2">
-																<option value="">Select UOM</option>
-															</select>
+															<input type="text" id="uom_id1" class="form-control" value="Kilogram" readonly />
+															<input type="hidden" name="uom_id[]" id="uom_hidden1" value="Kilogram" />
 														</td>
 														<td>
 															<input class="form-control requiredField"
-																onchange="bag_qq(1)" type="number" name="actual_qty[]"
-																id="actual_qty1" step="any" oninput="bag_qq(1)" />
+																onchange="claculation('1')" type="number" name="actual_qty[]"
+																id="actual_qty1" step="any" oninput="claculation('1')" />
 															<input type="hidden" class="PackQty" name="pack_qty[]"
 																id="pack_qty1">
 														</td>
@@ -659,15 +657,14 @@ use App\Helpers\ReuseableCode;
 						  <td>
 									<input type="text" name="bag_qty[]" id="bag_qty${Counter}" oninput="bag_qq(${Counter})" class="form-control" />
 								</td>
-			<td>
-														 <select name="uom_id[]" id="uom_id${Counter}" class="form-control requiredField select2">
-																<option value="">Select UOM</option>
-															</select>
+													<td>
+														<input type="text" id="uom_id${Counter}" class="form-control" value="Kilogram" readonly />
+														<input type="hidden" name="uom_id[]" id="uom_hidden${Counter}" value="Kilogram" />
 													</td>
 													<td>
 									<input class="form-control requiredField"
-										onchange="bag_qq(${Counter})" type="number" name="actual_qty[]"
-										id="actual_qty${Counter}" step="any" oninput="bag_qq(${Counter})" />
+										onchange="claculation(${Counter})" type="number" name="actual_qty[]"
+										id="actual_qty${Counter}" step="any" oninput="claculation(${Counter})" />
 									<input type="hidden" name="pack_qty[]" id="pack_qty${Counter}">
 								</td>
 								<td>
@@ -812,22 +809,16 @@ use App\Helpers\ReuseableCode;
 
 				$('#item_code' + index).val(uom[3]); // sub_ic from item data
 
-				// store both quantities in hidden attributes
+				// keep qty conversion source in hidden data
 				$('#uom_id' + index).data('qty1', uom[4]);
 				$('#uom_id' + index).data('qty2', uom[5]);
 
 				$('#pack_size' + index).val(1);
-
-				var uomDropdown = $('#uom_id' + index);
-				uomDropdown.html('<option value="">Select UOM</option>');
-
-				if (uom[1]) {
-					uomDropdown.append(new Option(uom[1], uom[1])); // first uom
-				}
-
-				if (uom[2] && uom[2] !== "null") {
-					uomDropdown.append(new Option(uom[2], uom[2])); // second uom
-				}
+				$('#uom_id' + index).val('Kilogram');
+				$('#uom_hidden' + index).val('Kilogram');
+				$('#pack_qty' + index).val(uom[4] || uom[5] || 0);
+				$('#actual_qty' + index).prop('readonly', false);
+				$('#qty_lbs' + index).prop('readonly', true);
 
 				bag_qq(index);
 			}
@@ -899,7 +890,7 @@ use App\Helpers\ReuseableCode;
 				else if (selectedUom.toLowerCase().includes('pcs') || selectedUom.toLowerCase().includes('pieces')) {
 					$('#qty_lbs' + counter).val((actual_qty * 2.2).toFixed(2));
 				} else {
-					// For other UOMs: use pack_qty
+					// For other UOMs: keep original bag x pack calculation
 					var total_qty = (bags_qty * pack_qty).toFixed(2);
 					$('#actual_qty' + counter).val(total_qty);
 					$('#qty_lbs' + counter).val((total_qty * 2.2).toFixed(2));
@@ -1066,6 +1057,7 @@ use App\Helpers\ReuseableCode;
 				}
 
 				var qty_lbs = parseFloat(totalQty) * 2.2 || 0;
+				$('#qty_lbs' + number).val(qty_lbs.toFixed(2));
 
 				var total = parseFloat(totalQty * rate).toFixed(2);
 				$('#amount' + number).val(total);
