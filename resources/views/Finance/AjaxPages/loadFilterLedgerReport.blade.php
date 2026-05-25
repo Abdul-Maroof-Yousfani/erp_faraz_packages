@@ -377,7 +377,7 @@ $m=Input::get('m');
         $PageTitle = 'Invoice';
         $type='Sales Tax Invoice';
         $so_data=  DB::Connection('mysql2')->table('sales_tax_invoice')->where('status',1)->where('gi_no',$trow->voucher_no)->select('id','so_no')->first();
-         $so=strtoupper($so_data->so_no);
+         $so=strtoupper($so_data->so_no ?? '');
 
         endif;
 
