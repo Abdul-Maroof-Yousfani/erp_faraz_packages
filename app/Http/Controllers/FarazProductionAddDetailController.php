@@ -2009,12 +2009,19 @@ class FarazProductionAddDetailController extends Controller
         try {
 
             foreach ($request->item_id as $key => $itemId) {
+                // Support both payload styles:
+                // 1) bulk forms: roll_id[] per row
+                // 2) single packing form: roll_id as scalar
+                $rollInput = is_array($request->roll_id ?? null)
+                    ? ($request->roll_id[$key] ?? '')
+                    : ($request->roll_id ?? '');
+
                 $sourceType = !empty($request->cutting_type)
                     ? (($request->cutting_type == 'gala cutting') ? 'gala' : 'cutting and sealing')
                     : ($request->secondary_cutting_type[$key] ?? 'cutting and sealing');
                 $sourceType = ($sourceType === 'gala cutting') ? 'gala' : $sourceType;
                 $rollIds = array_values(array_filter(array_unique(
-                    array_map('intval', explode(',', (string) ($request->roll_id[$key] ?? '')))
+                    array_map('intval', explode(',', (string) $rollInput))
                 )));
                 $firstRollId = $rollIds[0] ?? 0;
 
@@ -2061,7 +2068,7 @@ class FarazProductionAddDetailController extends Controller
                 ReuseableCode::postStock(
                     $packingId,
                     0,
-                    $request->roll_id[$key],
+                    $rollInput,
                     $request->date[$key] ?? now(),
                     9,
                     $rawDetail->rate ?? 0,
@@ -2078,7 +2085,7 @@ class FarazProductionAddDetailController extends Controller
                 ReuseableCode::postStock(
                     $packingId,
                     0,
-                    $request->roll_id[$key],
+                    $rollInput,
                     $request->date[$key] ?? now(),
                     11, // IN
                     $finishDetail->rate ?? 0,
