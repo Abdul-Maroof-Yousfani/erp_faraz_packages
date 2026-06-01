@@ -1576,6 +1576,8 @@ Route::group(['prefix' => 'sales', 'middleware' => 'mysql2', 'before' => 'csrf']
     // for credit no
     //te
     Route::get('/CreateCustomerCreditNote', 'SalesController@CreateCustomerCreditNote');
+    Route::get('/CreateCreditNote', 'SalesController@CreateCreditNote');
+    Route::get('/CreateCreditNoteForm', 'SalesController@CreateCreditNoteForm');
 
     // credit Not form
     Route::post('/addCustomerCredit_no', 'SalesController@addCustomerCredit_no');
@@ -1750,6 +1752,8 @@ Route::group(['prefix' => 'sad', 'middleware' => 'mysql2', 'before' => 'csrf'], 
 
     Route::post('/addSaleReceiptVoucherDetailAgainstSQ', 'SalesAddDetailControler@addSaleReceiptVoucherDetailAgainstSQ');
 
+    //credit note sales  
+    
 });
 Route::group(['prefix' => 'sdc', 'middleware' => 'mysql2', 'before' => 'csrf'], function () {
     Route::get('/getTopFiveSalesReport', 'SalesDataCallController@getTopFiveSalesReport');

@@ -77,7 +77,7 @@ class SaleHelper
                     onclick="creditSaleVoucherApprove('<?php echo $param1;?>','<?php echo $param2;?>')">
                 <span class="glyphicon glyphicon-ok"></span> Approve Voucher
             </button>
-            <?
+            <?php 
         }else{}
     }
 

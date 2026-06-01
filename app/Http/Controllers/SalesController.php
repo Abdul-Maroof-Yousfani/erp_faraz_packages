@@ -1779,6 +1779,71 @@ class SalesController extends Controller
             ->get();
         return view('Sales.CreateCustomerCreditNote', compact('sales_tax_invoice', 'customers'));
     }
+    public function CreateCreditNote()
+    {
+        $sales_tax_invoice = new SalesTaxInvoice();
+        $sales_tax_invoice = $sales_tax_invoice->SetConnection('mysql2');
+        $sales_tax_invoice = $sales_tax_invoice->where('status', 1)->get();
+        $customers = DB::Connection('mysql2')->table('customers')
+            ->where('status', 1)
+            ->orderBy('name')
+            ->select('id', 'name')
+            ->get();
+        return view('Sales.CreateCreditNote', compact('sales_tax_invoice', 'customers'));
+    }
+    public function CreateCreditNoteForm(Request $request)
+    {
+        $invoiceNo = $request->get('invoice_no');
+        $type = (int)$request->get('type');
+        $customerId = (int)$request->get('customer_id');
+
+        if (empty($invoiceNo) || empty($type) || empty($customerId)) {
+            return redirect()->back()->with('error', 'Please select customer and invoice first.');
+        }
+
+        if ($type === 1) {
+            $invoice = DB::Connection('mysql2')->table('delivery_note as a')
+                ->leftJoin('sales_order as b', 'a.master_id', '=', 'b.id')
+                ->where('a.status', 1)
+                ->where('b.status', 1)
+                ->where('b.buyers_id', $customerId)
+                ->where(function ($query) use ($invoiceNo) {
+                    $query->where('a.so_no', $invoiceNo)
+                        ->orWhere('a.gd_no', $invoiceNo);
+                })
+                ->select(
+                    'a.id',
+                    'a.gd_no as gi_no',
+                    'a.gd_date as gi_date',
+                    'b.buyers_id',
+                    'b.id as so_id'
+                )
+                ->first();
+        } else {
+            $invoice = (new SalesTaxInvoice())
+                ->setConnection('mysql2')
+                ->where('status', 1)
+                ->where('buyers_id', $customerId)
+                ->where(function ($query) use ($invoiceNo) {
+                    $query->where('so_no', $invoiceNo)
+                        ->orWhere('gi_no', $invoiceNo);
+                })
+                ->select('id', 'gi_no', 'gi_date', 'buyers_id', 'so_id')
+                ->first();
+        }
+
+        if (empty($invoice)) {
+            return redirect()->back()->with('error', 'Selected invoice not found for this customer.');
+        }
+
+        $invoiceLines = SalesHelper::get_data_from_invoice_data($invoice->id, $type);
+        $customer = DB::Connection('mysql2')->table('customers')
+            ->where('id', $customerId)
+            ->select('id', 'name')
+            ->first();
+
+        return view('Sales.CreateCreditNoteForm', compact('invoice', 'invoiceLines', 'customer', 'type'));
+    }
 
     public function addCustomerCredit_no(Request $request)
     {
