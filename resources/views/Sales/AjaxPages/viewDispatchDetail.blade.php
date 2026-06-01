@@ -301,7 +301,6 @@ $currentDate = date('Y-m-d');
                                                     <ul>
                                                         <li>
                                                             <div class="prenme">
-                                                                <p> For, Zahabiya Chemicals Industries<br> (Private) Limited
                                                                 </p>
                                                             </div>
                                                         </li>

@@ -6,7 +6,7 @@
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <ul class="cus-ul">
                 <li>
-                    <h1>Zahabiya Chemicals INDUSTRIES PVT LTD</h1>
+                    <h1>Faraz Packages</h1>
                 </li>
             </ul>
         </div>

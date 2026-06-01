@@ -53,6 +53,48 @@ $All = session()->all();
 
 @section('content')
     @include('select2')
+    <style>
+        .ledger-filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            margin-left: -8px;
+            margin-right: -8px;
+        }
+
+        .ledger-filter-row > [class*="col-"] {
+            padding-left: 8px;
+            padding-right: 8px;
+            margin-bottom: 12px;
+        }
+
+        .ledger-filter-row .form-control,
+        .ledger-filter-row .select2,
+        .ledger-filter-row .select2-container {
+            width: 100% !important;
+        }
+
+        .ledger-date-group .row {
+            margin-left: -8px;
+            margin-right: -8px;
+        }
+
+        .ledger-date-group .row > [class*="col-"] {
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+
+        .ledger-submit-btn {
+            width: 100%;
+            margin-top: 24px;
+        }
+
+        @media (max-width: 991px) {
+            .ledger-submit-btn {
+                margin-top: 0;
+            }
+        }
+    </style>
     <div class="well_N">
     <div class="dp_sdw">
         <div class="panel">
@@ -78,8 +120,8 @@ $All = session()->all();
                                 <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                     <div class="panel">
                                         <div class="panel-body">
-                                            <div class="row">
-                                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                            <div class="row ledger-filter-row">
+                                                <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12">
                                                     <label>Parent Account Head:</label>
                                                     <span class="rflabelsteric"><strong>*</strong></span>
                                                     <select class="form-control requiredField" name="account_id" id="account_id" onchange="">
@@ -89,7 +131,7 @@ $All = session()->all();
                                                         @endforeach
                                                     </select>
                                                 </div>
-                                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12">
                                                     <label>Tax:</label>
                                                     <select class="form-control select2" name="tax_mode" id="tax_mode">
                                                         <option value="all" {{ $taxMode === 'all' ? 'selected' : '' }}>All Vouchers</option>
@@ -97,7 +139,7 @@ $All = session()->all();
                                                         <option value="non_tax" {{ $taxMode === 'non_tax' ? 'selected' : '' }}>Non Tax</option>
                                                     </select>
                                                 </div>
-                                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" id="tax_filter_wrap" style="{{ $taxMode === 'with_tax' ? '' : 'display:none;' }}">
+                                                <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12" id="tax_filter_wrap" style="{{ $taxMode === 'with_tax' ? '' : 'display:none;' }}">
                                                     <label>Specific Tax:</label>
                                                     <select class="form-control select2" name="tax_filter" id="tax_filter">
                                                         <option value="">All Taxes</option>
@@ -108,7 +150,7 @@ $All = session()->all();
                                                         @endforeach
                                                     </select>
                                                 </div>
-                                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 hide">
+                                                <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12 hide">
                                                     <label>Cost Center</label>
                                                     <span class="rflabelsteric"><strong>*</strong></span>
                                                     <span id="Loader"></span>
@@ -129,21 +171,26 @@ $All = session()->all();
                                                 </div>
 
 
-                                                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                                <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12 ledger-date-group">
                                                     <div class="row">
-                                                        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                                             <label>From Date</label>
                                                             <input type="Date" name="fromDate" id="fromDate" min="<?php echo $AccYearFrom?>" max="<?php echo $AccYearTo;?>" value="<?php echo $currentMonthStartDate;?>" class="form-control"/>
                                                         </div>
+                                                    </div>
+                                                </div>
 
-                                                        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                                                <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12 ledger-date-group">
+                                                    <div class="row">
+                                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                                             <label>To Date</label>
                                                             <input type="Date" name="toDate" id="toDate" min="<?php echo $AccYearFrom?>" max="<?php echo $AccYearTo;?>" value="<?php echo $currentMonthEndDate;?>" class="form-control" />
                                                         </div>
-                                                        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
-                                                            <input type="button" value="Submit" class="btn btn-sm btn-primary" onclick="viewRangeWiseDataFilter();" style="margin-top: 32px;" />
-                                                        </div>
                                                     </div>
+                                                </div>
+
+                                                <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12">
+                                                    <input type="button" value="Submit" class="btn btn-sm btn-primary ledger-submit-btn" onclick="viewRangeWiseDataFilter();" />
                                                 </div>
                                             </div>
                                         </div>
@@ -203,14 +250,15 @@ $All = session()->all();
             <?php if($AccId !=""):?>
             viewRangeWiseDataFilter();
             <?php endif;?>
-            $('#account_id').select2();
-            $('#tax_mode').select2();
-            $('#tax_filter').select2();
-            $('#paid_to').select2();
+            $('#account_id').select2({ width: '100%' });
+            $('#tax_mode').select2({ width: '100%' });
+            $('#tax_filter').select2({ width: '100%' });
+            $('#paid_to').select2({ width: '100%' });
 
             $('#tax_mode').on('change', function () {
                 if ($(this).val() === 'with_tax') {
                     $('#tax_filter_wrap').show();
+                    $('#tax_filter').select2({ width: '100%' });
                 } else {
                     $('#tax_filter_wrap').hide();
                     $('#tax_filter').val('').trigger('change');

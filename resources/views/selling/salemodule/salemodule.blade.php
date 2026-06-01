@@ -58,7 +58,7 @@ $total_amount = 0;
                                                             </tr>
                                                             <tr>
                                                                 <th colspan="">COMPANY NAME: </th>
-                                                                <th colspan="4"><div class="premier_head"> <h2>Zahabiya Chemicals INDUSTRIES (PRIVATE) LIMITED</h2></div></th>
+                                                                <th colspan="4"><div class="premier_head"> <h2>Faraz Packages</h2></div></th>
                                                                 <th rowspan="5"> <div class="div_img"><?php echo CommonHelper::get_company_logo(Session::get('run_company'));?> </div> </th>
                                                             </tr>
                                                             <tr>
@@ -229,7 +229,7 @@ $total_amount = 0;
                                                                 <td class="dc_bor" colspan="0"></td>
                                                                 <td class="dc_bor" colspan="5">
                                                                     <div class="recived2">
-                                                                        <h2>For, Zahabiya Chemicals Industries (Private) Limited</h2>
+                                                                        <h2>For, ZFaraz Packages</h2>
                                                                         <p>Authorized Signature</p>
                                                                     </div>
                                                                 </td>

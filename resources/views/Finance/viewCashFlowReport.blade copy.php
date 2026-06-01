@@ -181,7 +181,7 @@ $AccYearTo = $AccYearDate->accyearto;
                                         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                             <div class="view_flow">
                                                 <div class="view_header">
-                                                    <h2>Zahabiya Chemicals Industries (Pvt.) Ltd.</h2>
+                                                    <h2>FARAZ PACKAGES</h2>
                                                     <h3>CASH FLOW</h3>
                                                     <h4>From July XXXX-2024 to XXXX-2024</h4>
                                                 </div>

@@ -144,7 +144,7 @@
                            
                                 <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
                                     <div class=" compmir">
-                                        <h5>Zahabiya Chemicalss</h5>
+                                        <h5>Faraz Packages</h5>
                                     </div>
                                 </div>
                                 <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8"></div>

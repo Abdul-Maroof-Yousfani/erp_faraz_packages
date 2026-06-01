@@ -160,7 +160,7 @@ $count = 1;
                                         <div class="row">
                                             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
                                                 <div class="">
-                                                    <h2>FOR Zahabiya Chemicals INDUSTRIES (PVT) LIMITED </h2>
+                                                    <h2>FOR FARAZ PACKAGES </h2>
                                                 </div>
                                             </div>
                                             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">

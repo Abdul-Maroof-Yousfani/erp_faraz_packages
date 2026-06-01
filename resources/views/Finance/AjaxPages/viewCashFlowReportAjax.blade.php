@@ -9,7 +9,7 @@ $count = 1;
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <div class="view_flow">
             <div class="view_header">
-                <h2>Zahabiya Chemicals Industries (Pvt.) Ltd.</h2>
+                <h2>Faraz Packages</h2>
                 <h3>CASH FLOW</h3>
                 <h4>From July {{CommonHelper::changeDateFormat($from)}} to {{CommonHelper::changeDateFormat($to)}}</h4>
             </div>
