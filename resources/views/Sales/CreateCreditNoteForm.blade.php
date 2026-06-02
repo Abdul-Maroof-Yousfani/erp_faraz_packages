@@ -215,7 +215,7 @@ $lineCounter = 1;
 
         $('#creditNoteForm').on('submit', function (e) {
             e.preventDefault();
-            alert('Discount note save backend next step me connect karenge. Abhi calculation form ready hai.');
+            alert('Backend Work in Progress');
         });
     </script>
 @endsection
