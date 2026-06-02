@@ -107,7 +107,10 @@ $type = $credit_note->type;
 
                                                                             $previous_return_qty = max((float)$return_qty - (float)$row->qty, 0);
                                                                             $balance_qty = max((float)$invoice_data->qty - $previous_return_qty, 0);
-
+                                                                            $rateCalBy = (int) ($invoice_data->rate_cal_by ?? 2);
+                                                                            $rateCalByLabel = $rateCalBy === 1 ? 'By BAGS' : ($rateCalBy === 3 ? 'By LBS' : 'By KGS');
+                                                                            $invoiceBagQty = (float) ($invoice_data->bag_qty ?? 0);
+                                                                            $invoiceQtyLbs = (float) ($invoice_data->qty_lbs ?? ((float) ($invoice_data->qty ?? 0) * 2.2));
 
                                                                         ?>
 
@@ -139,9 +142,11 @@ $type = $credit_note->type;
 
                                                                         <input type="hidden" name="gi_no{{$counter}}" value="{{$invoice_data->gi_no}}"/>
                                                                         <input type="hidden" name="gi_date{{$counter}}" value="{{$invoice_data->gi_date}}"/>
-
-
+                                                                        <input type="hidden" id="invoice_qty{{$counter}}" value="{{ number_format((float)($invoice_data->qty ?? 0), 2, '.', '') }}">
                                                                         <input type="hidden" id="actual_qty{{$counter}}" value="{{$balance_qty}}" name="actual_qty{{$counter}}">
+                                                                        <input type="hidden" id="rate_cal_by{{$counter}}" value="{{ $rateCalBy }}">
+                                                                        <input type="hidden" id="bag_qty{{$counter}}" value="{{ number_format($invoiceBagQty, 2, '.', '') }}">
+                                                                        <input type="hidden" id="qty_lbs{{$counter}}" value="{{ number_format($invoiceQtyLbs, 2, '.', '') }}">
 
                                                                         <h5>   <span></span><strong>(<?php echo $counter ?>). GI No. : </strong> {{$invoice_data->gi_no}}
                                                                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -172,6 +177,7 @@ $type = $credit_note->type;
                                                                             <th class="text-center" style="">Balance Qty</th>
                                                                             <th class="text-center" style="">QTY</th>
                                                                             <th class="text-center" style="">Rate</th>
+                                                                            <th class="text-center" style="">Rate Cal By</th>
                                                                             <th class="text-center" style="">Amount</th>
 
                                                                         </tr>
@@ -198,6 +204,7 @@ $type = $credit_note->type;
                                                                         <td class="text-center">{{ number_format((float)$balance_qty, 2) }}</td>
                                                                         <td><input onkeyup="calc('<?php echo $counter ?>');check_qty(this.id,'{{$counter}}')"  onblur="calc('<?php echo $counter ?>');check_qty(this.id,'{{$counter}}')" type="text" class="form-control number zerovalidate" name="itemQty[]" id="qty{{$counter}}" value="{{ $row->qty }}"/> </td>
                                                                         <td><input readonly type="text" class="form-control number" name="rate[]" value="{{$invoice_data->rate}}" id="rate{{$counter}}"/> </td>
+                                                                        <td><input readonly type="text" class="form-control" value="{{ $rateCalByLabel }}"/> </td>
                                                                         <td><input readonly type="text" value="{{ $row->amount }}" class="form-control number amount" name="amount[]" id="amount{{$counter}}"/> </td>
                                                                         <input type="hidden" value="0" name="discount_percent[]" id="discount_percent{{$counter}}"/>
                                                                         <input type="hidden" value="0" name="discount_amount[]" id="discount_amount{{$counter}}"/>
@@ -313,9 +320,21 @@ $type = $credit_note->type;
 
     function calc(count)
     {
-      var qty=  parseFloat($('#qty'+count).val());
-      var rate=  parseFloat($('#rate'+count).val());
-      var total=qty*rate;
+      var qty = parseFloat($('#qty'+count).val()) || 0;
+      var rate = parseFloat($('#rate'+count).val()) || 0;
+      var rateCalBy = parseInt($('#rate_cal_by' + count).val() || 2);
+      var bagQty = parseFloat($('#bag_qty' + count).val()) || 0;
+      var qtyLbs = parseFloat($('#qty_lbs' + count).val()) || 0;
+      var invoiceQty = parseFloat($('#invoice_qty' + count).val()) || 0;
+      var multiplier = qty;
+
+      if (rateCalBy === 1) {
+          multiplier = bagQty > 0 && invoiceQty > 0 ? ((qty / invoiceQty) * bagQty) : qty;
+      } else if (rateCalBy === 3) {
+          multiplier = qtyLbs > 0 && invoiceQty > 0 ? ((qty / invoiceQty) * qtyLbs) : (qty * 2.2);
+      }
+
+      var total = multiplier * rate;
       $('#amount'+count).val(total);
 
      var discount =parseFloat($('#discount_percent'+count).val());

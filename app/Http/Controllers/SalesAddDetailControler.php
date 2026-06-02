@@ -4839,7 +4839,23 @@ class SalesAddDetailControler extends Controller
                 throw new Exception('Return qty cannot be greater than balance qty for GI No. ' . $gi_no . '. Balance Qty: ' . number_format($balance_qty, 2));
             }
 
-            $amount = $qty * $rate;
+            $rateCalBy = (int) ($invoice_data->rate_cal_by ?? 2);
+            $bagQty = CommonHelper::check_str_replace($invoice_data->bag_qty ?? 0);
+            $qtyLbs = CommonHelper::check_str_replace($invoice_data->qty_lbs ?? ($invoice_data->qty * 2.2));
+            $invoiceQty = CommonHelper::check_str_replace($invoice_data->qty ?? 0);
+            $rateBasisQty = $qty;
+
+            if ($rateCalBy === 1) {
+                $rateBasisQty = ($bagQty > 0 && $invoiceQty > 0)
+                    ? (($qty / $invoiceQty) * $bagQty)
+                    : $qty;
+            } elseif ($rateCalBy === 3) {
+                $rateBasisQty = ($qtyLbs > 0 && $invoiceQty > 0)
+                    ? (($qty / $invoiceQty) * $qtyLbs)
+                    : ($qty * 2.2);
+            }
+
+            $amount = $rateBasisQty * $rate;
 
             // Save into credit_note_data table
             $credit_note_data = new CreditNoteData();
@@ -5039,7 +5055,23 @@ class SalesAddDetailControler extends Controller
                     throw new Exception('Return qty cannot be greater than balance qty for GI No. ' . $credit_note_data->voucher_no . '. Balance Qty: ' . number_format($balance_qty, 2));
                 }
 
-                $amount = $qty * $rate;
+                $rateCalBy = (int) ($invoice_data->rate_cal_by ?? 2);
+                $bagQty = CommonHelper::check_str_replace($invoice_data->bag_qty ?? 0);
+                $qtyLbs = CommonHelper::check_str_replace($invoice_data->qty_lbs ?? ($invoice_data->qty * 2.2));
+                $invoiceQty = CommonHelper::check_str_replace($invoice_data->qty ?? 0);
+                $rateBasisQty = $qty;
+
+                if ($rateCalBy === 1) {
+                    $rateBasisQty = ($bagQty > 0 && $invoiceQty > 0)
+                        ? (($qty / $invoiceQty) * $bagQty)
+                        : $qty;
+                } elseif ($rateCalBy === 3) {
+                    $rateBasisQty = ($qtyLbs > 0 && $invoiceQty > 0)
+                        ? (($qty / $invoiceQty) * $qtyLbs)
+                        : ($qty * 2.2);
+                }
+
+                $amount = $rateBasisQty * $rate;
 
                 $credit_note_data->qty = $qty;
                 $credit_note_data->invoice_qty = $invoice_data->qty;

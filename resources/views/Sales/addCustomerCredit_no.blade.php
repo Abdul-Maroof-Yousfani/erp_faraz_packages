@@ -85,6 +85,22 @@ if($accType == 'client') {
                                                                                 ? SalesHelper::get_batch_code($row, $type) 
                                                                                 : SalesHelper::get_batch_code($invoice_data->so_data_id, $type);
                                                                             $bacth = $bacth->batch_code ?? 0;
+                                                                            $rateCalBy = (int) ($invoice_data->rate_cal_by ?? 2);
+                                                                            $rateCalByLabel = $rateCalBy === 1 ? 'By BAGS' : ($rateCalBy === 3 ? 'By LBS' : 'By KGS');
+                                                                            $invoiceBagQty = (float) ($invoice_data->bag_qty ?? 0);
+                                                                            $invoiceQtyLbs = (float) ($invoice_data->qty_lbs ?? ((float) ($invoice_data->qty ?? 0) * 2.2));
+                                                                            $balanceQty = max((float) $invoice_data->qty - (float) $return_qty, 0);
+                                                                            $rateBasisQty = $balanceQty;
+                                                                            if ($rateCalBy === 1) {
+                                                                                $rateBasisQty = $invoiceBagQty > 0 && (float) $invoice_data->qty > 0
+                                                                                    ? (($balanceQty / (float) $invoice_data->qty) * $invoiceBagQty)
+                                                                                    : $balanceQty;
+                                                                            } elseif ($rateCalBy === 3) {
+                                                                                $rateBasisQty = $invoiceQtyLbs > 0 && (float) $invoice_data->qty > 0
+                                                                                    ? (($balanceQty / (float) $invoice_data->qty) * $invoiceQtyLbs)
+                                                                                    : ($balanceQty * 2.2);
+                                                                            }
+                                                                            $remainingAmount = $rateBasisQty * (float) ($invoice_data->rate ?? 0);
                                                                         ?>
 
                                                                         <input type="hidden" name="count[]" value="{{$counter}}">
@@ -95,8 +111,12 @@ if($accType == 'client') {
                                                                         <input type="hidden" name="batch_code{{$counter}}" value="{{$bacth}}"/>
                                                                         <input type="hidden" name="gi_no{{$counter}}" value="{{$invoice_data->gi_no}}"/>
                                                                         <input type="hidden" name="gi_date{{$counter}}" value="{{$invoice_data->gi_date}}"/>
+                                                                        <input type="hidden" id="invoice_qty{{$counter}}" value="{{ number_format((float)($invoice_data->qty ?? 0), 2, '.', '') }}">
                                                                         <input type="hidden" id="actual_qty{{$counter}}" name="actual_qty{{$counter}}" 
-                                                                               value="{{ $invoice_data->qty - $return_qty }}">
+                                                                               value="{{ $balanceQty }}">
+                                                                        <input type="hidden" id="rate_cal_by{{$counter}}" name="rate_cal_by{{$counter}}" value="{{ $rateCalBy }}">
+                                                                        <input type="hidden" id="bag_qty{{$counter}}" name="bag_qty{{$counter}}" value="{{ number_format($invoiceBagQty, 2, '.', '') }}">
+                                                                        <input type="hidden" id="qty_lbs{{$counter}}" name="qty_lbs{{$counter}}" value="{{ number_format($invoiceQtyLbs, 2, '.', '') }}">
 
                                                                         <h5>
                                                                             <strong>({{$counter}}). GI No.:</strong> {{$invoice_data->gi_no}}
@@ -121,6 +141,7 @@ if($accType == 'client') {
                                                                                     <th class="text-center">Balance Qty</th>
                                                                                     <th class="text-center">Return QTY</th>
                                                                                     <th class="text-center">Rate</th>
+                                                                                    <th class="text-center">Rate Cal By</th>
                                                                                     <th class="text-center">Amount</th>
                                                                                 </tr>
                                                                             </thead>
@@ -145,13 +166,13 @@ if($accType == 'client') {
                                                                                     </td>
                                                                                     <td class="text-center">{{ number_format((float)$invoice_data->qty, 2) }}</td>
                                                                                     <td class="text-center">{{ number_format((float)$return_qty, 2) }}</td>
-                                                                                    <td class="text-center">{{ number_format((float)($invoice_data->qty - $return_qty), 2) }}</td>
+                                                                                    <td class="text-center">{{ number_format((float)$balanceQty, 2) }}</td>
                                                                                     <td>
                                                                                         <input type="text" 
                                                                                                class="form-control number zerovalidate" 
                                                                                                name="qty{{$counter}}" 
                                                                                                id="qty{{$counter}}" 
-                                                                                               value="{{ number_format((float)($invoice_data->qty - $return_qty), 2, '.', '') }}"
+                                                                                               value="{{ number_format((float)$balanceQty, 2, '.', '') }}"
                                                                                                onkeyup="calculateRow({{$counter}})"
                                                                                                onblur="calculateRow({{$counter}})"/>
                                                                                     </td>
@@ -161,10 +182,13 @@ if($accType == 'client') {
                                                                                                id="rate{{$counter}}" 
                                                                                                value="{{$invoice_data->rate}}"/>
                                                                                     </td>
+                                                                                    <td class="text-center">
+                                                                                        <input readonly type="text" class="form-control" value="{{ $rateCalByLabel }}">
+                                                                                    </td>
                                                                                     <td>
                                                                                         <input readonly type="text" class="form-control number amount" 
                                                                                                name="amount{{$counter}}" 
-                                                                                               id="amount{{$counter}}" value=""/>
+                                                                                               id="amount{{$counter}}" value="{{ number_format((float)$remainingAmount, 2, '.', '') }}"/>
                                                                                     </td>
                                                                                 </tr>
                                                                             </tbody>
@@ -218,9 +242,11 @@ $(document).ready(function() {
     $('.number').number(true, 2);
 
     // Initialize calculations on page load
-    $('[id^=qty]').each(function() {
-        var rowNo = this.id.replace('qty', '');
-        if (rowNo) calculateRow(rowNo);
+    $('input[name^="qty"]').each(function() {
+        var rowNo = (this.id || '').replace('qty', '');
+        if (rowNo && /^\d+$/.test(rowNo)) {
+            calculateRow(rowNo);
+        }
     });
 });
 
@@ -229,6 +255,10 @@ function calculateRow(count) {
     var qty   = parseFloat($('#qty' + count).val()) || 0;
     var rate  = parseFloat($('#rate' + count).val()) || 0;
     var actualQty = parseFloat($('#actual_qty' + count).val()) || 0;
+    var rateCalBy = parseInt($('#rate_cal_by' + count).val() || 2);
+    var bagQty = parseFloat($('#bag_qty' + count).val()) || 0;
+    var qtyLbs = parseFloat($('#qty_lbs' + count).val()) || 0;
+    var invoiceQty = parseFloat($('#invoice_qty' + count).val()) || 0;
 
     // Prevent return qty from exceeding balance
     if (qty > actualQty) {
@@ -237,8 +267,14 @@ function calculateRow(count) {
         qty = actualQty;
     }
 
-    // Calculate Amount
-    var amount = qty * rate;
+    var multiplier = qty;
+    if (rateCalBy === 1) {
+        multiplier = bagQty > 0 && invoiceQty > 0 ? ((qty / invoiceQty) * bagQty) : qty;
+    } else if (rateCalBy === 3) {
+        multiplier = qtyLbs > 0 && invoiceQty > 0 ? ((qty / invoiceQty) * qtyLbs) : (qty * 2.2);
+    }
+
+    var amount = multiplier * rate;
     $('#amount' + count).val(amount.toFixed(2));
 }
 </script>

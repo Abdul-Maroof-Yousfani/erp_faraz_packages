@@ -41,6 +41,7 @@ use App\Models\SalesTaxInvoiceData;
 use App\Models\Sales_Order;
 use App\Models\Client;
 use Illuminate\Support\Facades\DB as FacadesDB;
+use Illuminate\Support\Facades\Schema;
 
 class SalesHelper
 {
@@ -410,15 +411,22 @@ class SalesHelper
 
     public static function get_data_from_invoice($id, $type)
     {
+        $salesInvoiceHasBagQty = Schema::connection('mysql2')->hasColumn('sales_tax_invoice_data', 'bag_qty');
+        $salesInvoiceHasQtyLbs = Schema::connection('mysql2')->hasColumn('sales_tax_invoice_data', 'qty_lbs');
+        $salesInvoiceHasRateCalBy = Schema::connection('mysql2')->hasColumn('sales_tax_invoice_data', 'rate_cal_by');
+
         if ($type == 1):
             return $acc_id = DB::Connection('mysql2')->table('delivery_note_data as a')
                 ->join('delivery_note as b', 'a.master_id', '=', 'b.id')
+                ->leftJoin('sales_order_data as sod', 'sod.id', '=', 'a.so_data_id')
                 ->select(
                     'a.id',
                     'a.gd_no as gi_no',
                     'b.gd_date as gi_date',
                     'a.qty',
-                    DB::raw('0 as bag_qty'),
+                    DB::raw('COALESCE(sod.length_bundle, 0) as bag_qty'),
+                    DB::raw('COALESCE(sod.qty_lbs, a.qty * 2.2) as qty_lbs'),
+                    DB::raw('COALESCE(sod.rate_cal_by, 2) as rate_cal_by'),
                     DB::raw('NULL as uom'),
                     'a.rate',
                     'a.tax',
@@ -437,12 +445,27 @@ class SalesHelper
 
             return $acc_id = DB::Connection('mysql2')->table('sales_tax_invoice_data as a')
                 ->join('sales_tax_invoice as b', 'a.master_id', '=', 'b.id')
+                ->leftJoin('sales_order_data as sod', 'sod.id', '=', 'a.so_data_id')
                 ->select(
                     'b.gi_no',
                     'a.id',
                     'b.gi_date',
                     'a.qty',
-                    'a.bag_qty',
+                    DB::raw(
+                        ($salesInvoiceHasBagQty
+                            ? 'COALESCE(a.bag_qty, sod.length_bundle, 0)'
+                            : 'COALESCE(sod.length_bundle, 0)') . ' as bag_qty'
+                    ),
+                    DB::raw(
+                        ($salesInvoiceHasQtyLbs
+                            ? 'COALESCE(a.qty_lbs, sod.qty_lbs, a.qty * 2.2)'
+                            : 'COALESCE(sod.qty_lbs, a.qty * 2.2)') . ' as qty_lbs'
+                    ),
+                    DB::raw(
+                        ($salesInvoiceHasRateCalBy
+                            ? 'COALESCE(a.rate_cal_by, sod.rate_cal_by, 2)'
+                            : 'COALESCE(sod.rate_cal_by, 2)') . ' as rate_cal_by'
+                    ),
                     'a.uom',
                     'a.rate',
                     'a.tax',
