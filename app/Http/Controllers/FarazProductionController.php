@@ -2021,6 +2021,19 @@ class FarazProductionController extends Controller
             ->orderBy('s.id')
             ->get();
 
+        $currentItem = null;
+        if (!empty($out_source_productions_item) && !empty($out_source_productions_item->item_id)) {
+            $currentItem = DB::Connection('mysql2')->table('subitem as s')
+                ->leftJoin(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
+                ->where('s.id', $out_source_productions_item->item_id)
+                ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id')
+                ->first();
+
+            if ($currentItem && !$sub_item->contains('id', $currentItem->id)) {
+                $sub_item->prepend($currentItem);
+            }
+        }
+
         $sub_item_wastage = DB::Connection('mysql2')->table('category as c')
             ->join('sub_category as sc', 'c.id', '=', 'sc.category_id')
             ->join('subitem as s', 'sc.id', '=', 's.sub_category_id')

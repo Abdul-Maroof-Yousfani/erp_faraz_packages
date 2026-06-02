@@ -246,7 +246,6 @@ $global_avg_amt=0;
                                                         <div class="col-md-2">
                                                             <label for="">Item</label>
                                                              <select style="width: 100% !important;"
-                                                                name="item_id[]"
                                                                 id="item_id1"
                                                                 class="form-control requiredField select2" disabled>
                                                                 <option value="">Select</option>
@@ -258,7 +257,7 @@ $global_avg_amt=0;
                                                                     </option>
                                                                 @endforeach
                                                             </select>
-                                                            <input type="hidden" name="item_id[]" value="{{ $val->id }}">
+                                                            <input type="hidden" name="item_id[]" value="{{ $out_source_productions_item->item_id }}">
                                                         </div>
                                                         
                                                         
