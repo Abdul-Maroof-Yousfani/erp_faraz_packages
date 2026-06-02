@@ -2684,6 +2684,41 @@ class PurchaseAddDetailControler extends Controller
                 $purchase_voucher_data = $request->input('demandDataSection_' . $i);
                 $TotAmount = 0;
                 foreach ($purchase_voucher_data as $row):
+                    $grnLine = DB::Connection('mysql2')->table('grn_data')->where('id', $request->input('grn_data_id_1_' . $row))->first();
+                    $poLine = !empty($grnLine) && !empty($grnLine->po_data_id)
+                        ? DB::Connection('mysql2')->table('purchase_request_data')->where('id', $grnLine->po_data_id)->first()
+                        : null;
+                    $purchaseRequest = !empty($good_recipt_not->po_no)
+                        ? DB::Connection('mysql2')->table('purchase_request')->where('purchase_request_no', $good_recipt_not->po_no)->first()
+                        : null;
+                    $currencyRate = (float) ($purchaseRequest->currency_rate ?? 1);
+                    $rateCalBy = (int) ($poLine->rate_cal_by ?? 2);
+                    $packSize = 0;
+                    if (!empty($poLine) && !empty($poLine->bags_qty) && (float) $poLine->bags_qty > 0) {
+                        $packSize = (float) $poLine->purchase_approve_qty / (float) $poLine->bags_qty;
+                    }
+                    if ($packSize <= 0 && !empty($grnLine->sub_item_id)) {
+                        $subItemDetail = CommonHelper::get_subitem_detail2($grnLine->sub_item_id);
+                        $packSize = (float) ($subItemDetail->pack_size ?? 0);
+                    }
+                    $receivedQty = max((float) ($grnLine->purchase_recived_qty ?? 0) - (float) ($grnLine->qc_qty ?? 0), 0);
+                    $returnQty = (float) ReuseableCode::purchase_return_qty($request->input('grn_data_id_1_' . $row));
+                    $actualQty = max($receivedQty - $returnQty, 0);
+                    $rateBasisQty = $actualQty;
+                    if ($rateCalBy === 1) {
+                        $rateBasisQty = $packSize > 0 ? ($actualQty / $packSize) : $actualQty;
+                    } elseif ($rateCalBy === 3) {
+                        $rateBasisQty = $actualQty * 2.2;
+                    }
+                    $lineRate = (float) CommonHelper::check_str_replace($request->input('rate_1_' . $row));
+                    $lineAmount = round($rateBasisQty * $lineRate * $currencyRate, 2);
+                    $discountPercent = (float) CommonHelper::check_str_replace($request->input('discount_percent' . $row));
+                    $discountAmount = (float) CommonHelper::check_str_replace($request->input('discount_amount' . $row));
+                    if ($discountAmount <= 0 && $discountPercent > 0) {
+                        $discountAmount = round(($lineAmount / 100) * $discountPercent, 2);
+                    }
+                    $netAmount = round($lineAmount - $discountAmount, 2);
+
                     $NewPurchaseVoucherData = new NewPurchaseVoucherData();
                     $NewPurchaseVoucherData = $NewPurchaseVoucherData->SetConnection('mysql2');
                     $NewPurchaseVoucherData->master_id = $master_id;
@@ -2692,14 +2727,17 @@ class PurchaseAddDetailControler extends Controller
                     $NewPurchaseVoucherData->category_id = $request->input('category_id_1_' . $row);
                     $NewPurchaseVoucherData->sub_item = $request->input('sub_item_id_1_' . $row);
                     $NewPurchaseVoucherData->uom = $request->input('uom_id_1_' . $row);
-                    $NewPurchaseVoucherData->qty = $request->input('qty_1_' . $row);
-                    $NewPurchaseVoucherData->rate = $request->input('rate_1_' . $row);
-                    $NewPurchaseVoucherData->amount = $request->input('amount' . $row);
-                    $NewPurchaseVoucherData->discount_amount = $request->input('discount_amount' . $row);
-                    $NewPurchaseVoucherData->net_amount = $request->input('net_amount' . $row);
+                    $NewPurchaseVoucherData->qty = $actualQty;
+                    $NewPurchaseVoucherData->bag_qty = $rateCalBy === 1 ? $rateBasisQty : (float) ($poLine->bags_qty ?? 0);
+                    $NewPurchaseVoucherData->lbs_qty = $rateCalBy === 3 ? $rateBasisQty : ($actualQty * 2.2);
+                    $NewPurchaseVoucherData->rate_cal_by = $rateCalBy;
+                    $NewPurchaseVoucherData->rate = $lineRate;
+                    $NewPurchaseVoucherData->amount = $lineAmount;
+                    $NewPurchaseVoucherData->discount_amount = $discountAmount;
+                    $NewPurchaseVoucherData->net_amount = $netAmount;
                     $NewPurchaseVoucherData->do_no = $request->input('do_no_pv_' . $row);
                     $NewPurchaseVoucherData->godown_no = $request->input('godown_no_pv_' . $row);
-                    $TotAmount += $request->input('net_amount' . $row);
+                    $TotAmount += $netAmount;
                     $NewPurchaseVoucherData->staus = 1;
                     $NewPurchaseVoucherData->pv_status = 2;
                     $NewPurchaseVoucherData->username = Auth::user()->name;

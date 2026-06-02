@@ -164,6 +164,7 @@ use App\Helpers\ReuseableCode;
                                                             <th style="width: 100px;" class="text-center">Godown No.</th>
                                                             <th style="width: 200px;" class="text-center">Qty. <span class="rflabelsteric"><strong>*</strong></span></th>
                                                             <th style="width: 200px;" class="text-center">Return Qty. <span class="rflabelsteric"><strong>*</strong></span></th>
+                                                            <th style="width: 140px;" class="text-center">Rate Cal. By</th>
                                                             <th style="width: 200px;" class="text-center">Rate. <span class="rflabelsteric"><strong>*</strong></span></th>
                                                             <th style="width: 200px;" class="text-center hide">Amount. <span class="rflabelsteric"><strong>*</strong></span></th>
                                                             <th style="width: 200px;" class="text-center hide">Discount Amount <span class="rflabelsteric"><strong>*</strong></span></th>
@@ -175,13 +176,31 @@ use App\Helpers\ReuseableCode;
                                                         @foreach(CommonHelper::get_grndata($id,$good_recipt_note->type) as $row1)
 
                                                             <?php
+                                                            $poLine = $row1->po_data_id ? DB::Connection('mysql2')->table('purchase_request_data')->where('id', $row1->po_data_id)->first() : null;
+                                                            $rate_cal_by = (int)($poLine->rate_cal_by ?? 2);
+                                                            $rate_cal_by_label = $rate_cal_by === 1 ? 'By BAGS' : ($rate_cal_by === 3 ? 'By LBS' : 'By KGS');
+                                                            $pack_size = 0;
+                                                            if (!empty($poLine) && !empty($poLine->bags_qty) && (float) $poLine->bags_qty > 0) {
+                                                                $pack_size = (float) $poLine->purchase_approve_qty / (float) $poLine->bags_qty;
+                                                            }
+                                                            if ($pack_size <= 0) {
+                                                                $subItemDetail = CommonHelper::get_subitem_detail2($row1->sub_item_id);
+                                                                $pack_size = (float) ($subItemDetail->pack_size ?? 0);
+                                                            }
                                                             $return_qty = ReuseableCode::purchase_return_qty($row1->id);
                                                             $qty = $row1->purchase_recived_qty - $row1->qc_qty;
                                                             $actual_qty = $qty-$return_qty;
 
+                                                            $rate_basis_qty = $actual_qty;
+                                                            if ($rate_cal_by === 1) {
+                                                                $rate_basis_qty = $pack_size > 0 ? ($actual_qty / $pack_size) : $actual_qty;
+                                                            } elseif ($rate_cal_by === 3) {
+                                                                $rate_basis_qty = $actual_qty * 2.2;
+                                                            }
+
                                                             $rate = $row1->rate;
 
-                                                            $amount = $actual_qty * $rate * $currency ;
+                                                            $amount = $rate_basis_qty * $rate * $currency;
                                                             $discount_percent = $row1->discount_percent;
 
                                                             if ($discount_percent > 0):
@@ -222,6 +241,12 @@ use App\Helpers\ReuseableCode;
 
                                                                 <td>
                                                                     <input readonly value="{{$return_qty}}"  type="number" step="0.01" name="return_qty_1_<?php echo $count ?>" id="qty_1_<?php echo $count ?>" class="form-control qty" />
+                                                                </td>
+
+                                                                <td class="text-center">
+                                                                    <span class="label label-info" style="display:inline-block;padding:4px 8px;">
+                                                                        {{ $rate_cal_by_label }}
+                                                                    </span>
                                                                 </td>
 
                                                                 <td>
