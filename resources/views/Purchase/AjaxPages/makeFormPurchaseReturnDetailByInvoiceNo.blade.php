@@ -59,6 +59,7 @@ $InvoiceDate = $makeGetValue[2] ?? '';
                     <th class="text-center">Purchase Qty</th>
                     <th class="text-center">Return Qty Sum Total</th>
                     <th class="text-center">Price</th>
+                    <th class="text-center">Rate Cal By</th>
                     <th class="text-center">Amount</th>
                     <th class="text-center">Purchase Remaining Qty</th>
                     <th class="text-center">Return Qty</th>
@@ -78,6 +79,11 @@ $InvoiceDate = $makeGetValue[2] ?? '';
                     $rate = $Fil->rate ?? 0;
                     $amount = $Fil->amount ?? 0;
                     $discountPercent = $Fil->discount_percent ?? 0;
+                    $rateCalBy = (int) ($Fil->rate_cal_by ?? 2);
+                    $sourceBagQty = (float) ($Fil->source_bag_qty ?? 0);
+                    $sourceLbsQty = (float) ($Fil->source_lbs_qty ?? (((float) $purchaseQty) * 2.2));
+                    $sourcePackSize = (float) ($Fil->source_pack_size ?? 0);
+                    $rateCalByLabel = $rateCalBy === 1 ? 'By BAGS' : ($rateCalBy === 3 ? 'By LBS' : 'By KGS');
                     $reurn = 0;
                     if (!empty($InvoiceId) && !empty($itemId)) {
                         $reurn = (float) DB::connection('mysql2')->table('purchase_return_data')
@@ -87,6 +93,21 @@ $InvoiceDate = $makeGetValue[2] ?? '';
                             ->sum('return_qty');
                     }
                     $remainingQty = max(((float) $purchaseQty) - $reurn, 0);
+                    $remainingRateBasisQty = $remainingQty;
+                    if ($rateCalBy === 1) {
+                        if ($sourcePackSize > 0) {
+                            $remainingRateBasisQty = $remainingQty / $sourcePackSize;
+                        } else {
+                            $remainingRateBasisQty = $sourceBagQty > 0 && $purchaseQty > 0
+                                ? (($remainingQty / $purchaseQty) * $sourceBagQty)
+                                : $remainingQty;
+                        }
+                    } elseif ($rateCalBy === 3) {
+                        $remainingRateBasisQty = $sourceLbsQty > 0 && $purchaseQty > 0
+                            ? (($remainingQty / $purchaseQty) * $sourceLbsQty)
+                            : ($remainingQty * 2.2);
+                    }
+                    $remainingAmount = $remainingRateBasisQty * (float) $rate;
                 ?>
                 <input type="hidden" name="grn_data_id[]" value="{{ $grnDataId }}"/>
                     <tr class="text-center">
@@ -115,7 +136,14 @@ $InvoiceDate = $makeGetValue[2] ?? '';
                             <input value="<?php echo $rate?>" type="hidden" name="Rate[]" id="rate_<?php echo $lineKey; ?>"/>
                         </td>
                         <td class="text-center">
-                            <input type="number" step="0.01" class="form-control" readonly name="Amount[]" id="amount_<?php echo $lineKey; ?>" data-base-amount="<?php echo number_format($amount,2,'.',''); ?>" value="<?php echo number_format($amount,2,'.',''); ?>"/>
+                            <input type="text" class="form-control" value="<?php echo $rateCalByLabel; ?>" readonly>
+                            <input type="hidden" name="rate_cal_by[]" id="rate_cal_by_<?php echo $lineKey; ?>" value="<?php echo $rateCalBy; ?>">
+                            <input type="hidden" name="source_bag_qty[]" id="source_bag_qty_<?php echo $lineKey; ?>" value="<?php echo $sourceBagQty; ?>">
+                            <input type="hidden" name="source_lbs_qty[]" id="source_lbs_qty_<?php echo $lineKey; ?>" value="<?php echo $sourceLbsQty; ?>">
+                            <input type="hidden" name="source_pack_size[]" id="source_pack_size_<?php echo $lineKey; ?>" value="<?php echo $sourcePackSize; ?>">
+                        </td>
+                        <td class="text-center">
+                            <input type="number" step="0.01" class="form-control" readonly name="Amount[]" id="amount_<?php echo $lineKey; ?>" data-base-amount="<?php echo number_format($remainingAmount,2,'.',''); ?>" value="<?php echo number_format($remainingAmount,2,'.',''); ?>"/>
                         </td>
 
                         <td>
@@ -257,13 +285,42 @@ $InvoiceDate = $makeGetValue[2] ?? '';
     {
         var qty = parseFloat($('#return_qty_' + Id).val());
         var rate = parseFloat($('#rate_' + Id).val());
+        var purchaseQty = parseFloat($('#purchase_recived_qty_' + Id).val());
+        var rateCalBy = parseInt($('#rate_cal_by_' + Id).val() || 2);
+        var sourceBagQty = parseFloat($('#source_bag_qty_' + Id).val());
+        var sourceLbsQty = parseFloat($('#source_lbs_qty_' + Id).val());
+        var sourcePackSize = parseFloat($('#source_pack_size_' + Id).val());
         if (isNaN(qty)) {
             qty = 0;
         }
         if (isNaN(rate)) {
             rate = 0;
         }
-        $('#amount_' + Id).val((qty * rate).toFixed(2));
+        if (isNaN(purchaseQty) || purchaseQty <= 0) {
+            purchaseQty = qty;
+        }
+        if (isNaN(sourceBagQty)) {
+            sourceBagQty = 0;
+        }
+        if (isNaN(sourceLbsQty)) {
+            sourceLbsQty = qty * 2.2;
+        }
+        if (isNaN(sourcePackSize)) {
+            sourcePackSize = 0;
+        }
+
+        var rateBasisQty = qty;
+        if (rateCalBy === 1) {
+            if (sourcePackSize > 0) {
+                rateBasisQty = qty / sourcePackSize;
+            } else {
+                rateBasisQty = sourceBagQty > 0 && purchaseQty > 0 ? ((qty / purchaseQty) * sourceBagQty) : qty;
+            }
+        } else if (rateCalBy === 3) {
+            rateBasisQty = sourceLbsQty > 0 && purchaseQty > 0 ? ((qty / purchaseQty) * sourceLbsQty) : (qty * 2.2);
+        }
+
+        $('#amount_' + Id).val((rateBasisQty * rate).toFixed(2));
         calculate_return_summary();
     }
 

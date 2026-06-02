@@ -909,20 +909,31 @@ function addDirectgrn()
 
         // Get GRN detail rows
         $DataDetail = DB::connection('mysql2')->table('grn_data as gd')
+            ->leftJoin('purchase_request_data as prd', 'prd.id', '=', 'gd.po_data_id')
+            ->leftJoin('new_purchase_voucher_data as npvd', function ($join) {
+                $join->on('npvd.grn_data_id', '=', 'gd.id')
+                    ->where('npvd.staus', 1)
+                    ->where('npvd.additional_exp', 0);
+            })
+            ->leftJoin('subitem as s', 's.id', '=', 'gd.sub_item_id')
             ->where('gd.master_id', $GrnId)
             ->where('gd.status', 1)
             ->select(
                 'gd.id as purchase_grn_data_id',
                 'gd.sub_item_id as sub_item',
                 'gd.purchase_recived_qty',
-                'gd.rate',
-                DB::raw('gd.purchase_recived_qty * gd.rate as amount'),
+                DB::raw('COALESCE(npvd.rate, prd.rate, gd.rate) as rate'),
+                DB::raw('COALESCE(npvd.net_amount, npvd.amount, prd.net_amount, prd.amount, gd.net_amount, gd.amount, gd.purchase_recived_qty * gd.rate) as amount'),
                 'gd.discount_percent',
                 'gd.discount_amount',
                 'gd.net_amount',
                 'gd.warehouse_id',
                 DB::raw('COALESCE(gd.batch_code, "") as batch_code'),
                 DB::raw('gd.purchase_recived_qty as qty'),
+                DB::raw('COALESCE(npvd.rate_cal_by, prd.rate_cal_by, 2) as rate_cal_by'),
+                DB::raw('COALESCE(npvd.bag_qty, prd.bags_qty, 0) as source_bag_qty'),
+                DB::raw('COALESCE(npvd.lbs_qty, prd.qty_lbs, gd.purchase_recived_qty * 2.2) as source_lbs_qty'),
+                DB::raw('COALESCE(s.pack_size, 0) as source_pack_size'),
                 'gd.do_no',
                 'gd.godown_no',
                 DB::raw('"" as grn_description')
@@ -1066,6 +1077,7 @@ function addDirectgrn()
             ->first();
 
         $DataDetail = DB::connection('mysql2')->table('new_purchase_voucher_data as npvd')
+            ->leftJoin('subitem as s', 's.id', '=', 'npvd.sub_item')
             ->where('npvd.staus', 1)
             ->where('npvd.master_id', $InvoiceId)
             ->where('npvd.additional_exp', 0)
@@ -1073,7 +1085,7 @@ function addDirectgrn()
                 'npvd.id as purchase_grn_data_id',
                 'npvd.sub_item',
                 DB::raw('COALESCE(npvd.qty, 0) as qty'),
-                DB::raw('CASE WHEN COALESCE(npvd.qty, 0) > 0 THEN COALESCE(npvd.net_amount, npvd.amount, 0) / npvd.qty ELSE COALESCE(npvd.rate, 0) END as rate'),
+                DB::raw('COALESCE(npvd.rate, 0) as rate'),
                 DB::raw('COALESCE(npvd.net_amount, npvd.amount, 0) as amount'),
                 'npvd.do_no',
                 'npvd.godown_no',
@@ -1083,6 +1095,10 @@ function addDirectgrn()
                 DB::raw('COALESCE(npvd.warehouse_id, 0) as warehouse_id'),
                 DB::raw('"" as batch_code'),
                 DB::raw('COALESCE(npvd.qty, 0) as purchase_recived_qty'),
+                DB::raw('COALESCE(npvd.rate_cal_by, 2) as rate_cal_by'),
+                DB::raw('COALESCE(npvd.bag_qty, 0) as source_bag_qty'),
+                DB::raw('COALESCE(npvd.lbs_qty, npvd.qty * 2.2) as source_lbs_qty'),
+                DB::raw('COALESCE(s.pack_size, 0) as source_pack_size'),
                 DB::raw('"" as grn_description')
             )
             ->get();

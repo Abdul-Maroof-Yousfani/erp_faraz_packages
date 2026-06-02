@@ -3315,7 +3315,26 @@ class PurchaseAddDetailControler extends Controller
                 return Redirect::back()->withInput();
             }
 
-            $computedAmount = (float) $request->input('Rate')[$row] * $requestedReturnQty;
+            $rate = (float) $request->input('Rate')[$row];
+            $rateCalBy = (int) ($request->input('rate_cal_by')[$row] ?? 2);
+            $sourceBagQty = (float) ($request->input('source_bag_qty')[$row] ?? 0);
+            $sourceLbsQty = (float) ($request->input('source_lbs_qty')[$row] ?? ($purchaseQty * 2.2));
+            $sourcePackSize = (float) ($request->input('source_pack_size')[$row] ?? 0);
+            $rateBasisQty = $requestedReturnQty;
+            if ($rateCalBy === 1) {
+                if ($sourcePackSize > 0) {
+                    $rateBasisQty = $requestedReturnQty / $sourcePackSize;
+                } else {
+                    $rateBasisQty = $sourceBagQty > 0 && $purchaseQty > 0
+                        ? (($requestedReturnQty / $purchaseQty) * $sourceBagQty)
+                        : $requestedReturnQty;
+                }
+            } elseif ($rateCalBy === 3) {
+                $rateBasisQty = $sourceLbsQty > 0 && $purchaseQty > 0
+                    ? (($requestedReturnQty / $purchaseQty) * $sourceLbsQty)
+                    : ($requestedReturnQty * 2.2);
+            }
+            $computedAmount = $rate * $rateBasisQty;
             $amount = (float) ($request->input('Amount')[$row] ?? $computedAmount);
             if ($amount <= 0 && $requestedReturnQty > 0) {
                 $amount = $computedAmount;
@@ -3337,7 +3356,7 @@ class PurchaseAddDetailControler extends Controller
                 'warehouse_id' => $request->input('WarehouseId')[$row],
                 'batch_code' => $batchCode,
                 'recived_qty' => $request->input('PurchaseRecQty')[$row],
-                'rate' => $request->input('Rate')[$row],
+                'rate' => $rate,
                 'amount' => $amount,
                 'discount_percent' => $dicount_percent,
                 'discount_amount' => $dicount_amount,
@@ -3365,7 +3384,7 @@ class PurchaseAddDetailControler extends Controller
                 'voucher_date' => $request->PurchaseReturnDate,
                 'supplier_id' => $SupplierId,
                 'voucher_type' => 2,
-                'rate' => $request->input('Rate')[$row],
+                'rate' => $rate,
                 'sub_item_id' => $request->input('SubItemId')[$row],
                 'batch_code' => $request->input('BatchCode')[$row],
                 'qty' => $requestedReturnQty,
@@ -3882,6 +3901,10 @@ public function updatePurchaseReturnDetail(Request $request)
             $purchaseQty      = (float) ($request->input('PurchaseRecQty')[$index] ?? 0);
             $subItemId        = $request->input('SubItemId')[$index] ?? 0;
             $rate             = (float) ($request->input('Rate')[$index] ?? 0);
+            $rateCalBy        = (int) ($request->input('rate_cal_by')[$index] ?? 2);
+            $sourceBagQty     = (float) ($request->input('source_bag_qty')[$index] ?? 0);
+            $sourceLbsQty     = (float) ($request->input('source_lbs_qty')[$index] ?? ($purchaseQty * 2.2));
+            $sourcePackSize   = (float) ($request->input('source_pack_size')[$index] ?? 0);
             $grnDataId        = $request->input('grn_data_id')[$index] ?? 0;
             $warehouseId      = $request->input('WarehouseId')[$index] ?? 0;
             $batchCode        = trim($request->input('BatchCode')[$index] ?? 'NA');
@@ -3902,7 +3925,21 @@ public function updatePurchaseReturnDetail(Request $request)
                 throw new \Exception("Return quantity exceeds remaining stock for item ID: {$subItemId}");
             }
 
-            $amount          = $rate * $requestedReturnQty;
+            $rateBasisQty = $requestedReturnQty;
+            if ($rateCalBy === 1) {
+                if ($sourcePackSize > 0) {
+                    $rateBasisQty = $requestedReturnQty / $sourcePackSize;
+                } else {
+                    $rateBasisQty = $sourceBagQty > 0 && $purchaseQty > 0
+                        ? (($requestedReturnQty / $purchaseQty) * $sourceBagQty)
+                        : $requestedReturnQty;
+                }
+            } elseif ($rateCalBy === 3) {
+                $rateBasisQty = $sourceLbsQty > 0 && $purchaseQty > 0
+                    ? (($requestedReturnQty / $purchaseQty) * $sourceLbsQty)
+                    : ($requestedReturnQty * 2.2);
+            }
+            $amount          = $rate * $rateBasisQty;
             $discount_amount = ($amount * $discount_percent) / 100;
             $net_amount      = $amount - $discount_amount;
 
