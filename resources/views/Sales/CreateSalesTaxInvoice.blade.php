@@ -343,6 +343,7 @@ use App\Helpers\FinanceHelper;
                                                     <th class="text-center" >Return QTY</th>
                                                     <th class="text-center" >QTY. <span class="rflabelsteric"><strong>*</strong></span></th>
                                                     <th class="text-center">Rate</th>
+                                                    <th class="text-center">Rate Cal By</th>
                                                     <th class="text-center" colspan="3">Net Amount</th>
 
                                                 </tr>
@@ -392,18 +393,31 @@ use App\Helpers\FinanceHelper;
                                                 <input type="hidden" name="item_desc<?php echo $id_count?>" id="item_desc" value='<?php echo $row1->desc?>'/>
                                                 <?php
                                                 $line_qty = $dn_qty - $return_qty;
-                                                $amount = $dn_rate * $line_qty;
+                                                $rateCalBy = (int) ($row1->rate_cal_by ?? 2);
+                                                $bagQty = (float) ($row1->bag_qty ?? 0);
+                                                $qtyLbs = (float) ($row1->qty_lbs ?? ($line_qty * 2.2));
+                                                $baseQty = $line_qty;
+                                                if ($rateCalBy === 1) {
+                                                    $baseQty = $bagQty > 0 ? $bagQty : $line_qty;
+                                                } elseif ($rateCalBy === 3) {
+                                                    $baseQty = $qtyLbs > 0 ? $qtyLbs : ($line_qty * 2.2);
+                                                }
+                                                $amount = $dn_rate * $baseQty;
                                                 $discount_amount = 0;
-                                                $tax_amount = $row1->tax_amount ?? 0;
-                                                $further_tax_amount = $row1->sales_tax_further ?? 0;
                                                 $lineSalesTaxRate = $row1->tax ?? ($delivery_not->sales_tax_rate ?? $sales_order->sales_tax_rate ?? 0);
                                                 $lineFurtherTaxRate = $row1->sales_tax_further_per ?? ($delivery_not->sales_tax_further_per ?? 0);
+                                                $tax_amount = ($amount / 100) * $lineSalesTaxRate;
+                                                $further_tax_amount = ($amount / 100) * $lineFurtherTaxRate;
                                                 $net_amount = $amount;
+                                                $rateCalByLabel = $rateCalBy === 1 ? 'By BAGS' : ($rateCalBy === 3 ? 'By LBS' : 'By KGS');
                                                 ?>
                                                 <input type="hidden" class="form-control" name="tax_percent{{$id_count}}" id="tax_percent{{$id_count}}" value="{{ $lineSalesTaxRate }}"/>
                                                 <input type="hidden" class="form-control" name="tax_amount{{$id_count}}" id="tax_amount{{$id_count}}" value="{{$tax_amount}}"/>
                                                 <input type="hidden" class="form-control" name="sales_tax_further_per{{$id_count}}" id="sales_tax_further_per{{$id_count}}" value="{{ $lineFurtherTaxRate }}"/>
                                                 <input type="hidden" class="form-control" name="sales_tax_further{{$id_count}}" id="sales_tax_further{{$id_count}}" value="{{$further_tax_amount}}"/>
+                                                <input type="hidden" class="form-control" name="rate_cal_by{{$id_count}}" id="rate_cal_by{{$id_count}}" value="{{ $rateCalBy }}"/>
+                                                <input type="hidden" class="form-control" name="bag_qty{{$id_count}}" id="bag_qty{{$id_count}}" value="{{ $bagQty }}"/>
+                                                <input type="hidden" class="form-control" name="qty_lbs{{$id_count}}" id="qty_lbs{{$id_count}}" value="{{ $qtyLbs }}"/>
 
                                                 <tr>
                                                     <td class="text-center" class="text-center"><?php echo $counter ?></td>
@@ -430,6 +444,9 @@ use App\Helpers\FinanceHelper;
                                                     </td>
                                                     <td class="text-right">
                                                         <input readonly type="text" class="form-control" name="rate{{$id_count}}" id="rate{{$id_count}}" value="{{$row1->rate}}"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <input readonly type="text" class="form-control" value="{{ $rateCalByLabel }}"/>
                                                     </td>
                                                     <td class="text-right" colspan="3">
                                                         <input readonly type="text" class="form-control amount comma_seprated" name="net_amount{{$id_count}}" id="net_amount{{$id_count}}" value="{{ $net_amount }}"/>
@@ -522,17 +539,35 @@ use App\Helpers\FinanceHelper;
                                                 <input type="hidden" name="warehouse_id{{$id_count}}" id="warehouse_id{{$id_count}}" value="{{$bundle_data->warehouse_id }}"/>
                                                 <input type="hidden" name="item_desc<?php echo $id_count?>" id="item_desc{{$id_count}}" value="<?php echo $bundle_data->desc?>"/>
                                                 <?php
+                                                $bundleSourceLine = DB::Connection('mysql2')
+                                                    ->table('sales_order_data')
+                                                    ->where('id', $bundle_data->so_data_id)
+                                                    ->select('rate_cal_by', 'qty_lbs', 'length_bundle')
+                                                    ->first();
                                                 $line_qty = $dn_qty - $return_qty;
-                                                $amount = $dn_rate * $line_qty;
-                                                $tax_amount = $bundle_data->tax_amount ?? 0;
-                                                $further_tax_amount = $bundle_data->sales_tax_further ?? 0;
+                                                $rateCalBy = (int) ($bundleSourceLine->rate_cal_by ?? 2);
+                                                $bagQty = (float) ($bundleSourceLine->length_bundle ?? 0);
+                                                $qtyLbs = (float) ($bundleSourceLine->qty_lbs ?? ($line_qty * 2.2));
+                                                $baseQty = $line_qty;
+                                                if ($rateCalBy === 1) {
+                                                    $baseQty = $bagQty > 0 ? $bagQty : $line_qty;
+                                                } elseif ($rateCalBy === 3) {
+                                                    $baseQty = $qtyLbs > 0 ? $qtyLbs : ($line_qty * 2.2);
+                                                }
+                                                $amount = $dn_rate * $baseQty;
                                                 $lineSalesTaxRate = $bundle_data->tax ?? ($delivery_not->sales_tax_rate ?? $sales_order->sales_tax_rate ?? 0);
                                                 $lineFurtherTaxRate = $bundle_data->sales_tax_further_per ?? ($delivery_not->sales_tax_further_per ?? 0);
+                                                $tax_amount = ($amount / 100) * $lineSalesTaxRate;
+                                                $further_tax_amount = ($amount / 100) * $lineFurtherTaxRate;
+                                                $rateCalByLabel = $rateCalBy === 1 ? 'By BAGS' : ($rateCalBy === 3 ? 'By LBS' : 'By KGS');
                                                 ?>
                                                 <input type="hidden" class="form-control" name="tax_percent{{$id_count}}" id="tax_percent{{$id_count}}" value="{{ $lineSalesTaxRate }}"/>
                                                 <input type="hidden" class="form-control" name="tax_amount{{$id_count}}" id="tax_amount{{$id_count}}" value="{{ $tax_amount }}"/>
                                                 <input type="hidden" class="form-control" name="sales_tax_further_per{{$id_count}}" id="sales_tax_further_per{{$id_count}}" value="{{ $lineFurtherTaxRate }}"/>
                                                 <input type="hidden" class="form-control" name="sales_tax_further{{$id_count}}" id="sales_tax_further{{$id_count}}" value="{{ $further_tax_amount }}"/>
+                                                <input type="hidden" class="form-control" name="rate_cal_by{{$id_count}}" id="rate_cal_by{{$id_count}}" value="{{ $rateCalBy }}"/>
+                                                <input type="hidden" class="form-control" name="bag_qty{{$id_count}}" id="bag_qty{{$id_count}}" value="{{ $bagQty }}"/>
+                                                <input type="hidden" class="form-control" name="qty_lbs{{$id_count}}" id="qty_lbs{{$id_count}}" value="{{ $qtyLbs }}"/>
 
                                                 {{--hidden data End --}}
 
@@ -567,6 +602,9 @@ use App\Helpers\FinanceHelper;
                                                     <td class="text-right">
                                                         <input readonly type="text" class="form-control" name="rate{{$id_count}}" id="rate{{$id_count}}" value="{{$dn_rate}}"/>
                                                     </td>
+                                                    <td class="text-center">
+                                                        <input readonly type="text" class="form-control" value="{{ $rateCalByLabel }}"/>
+                                                    </td>
                                                     <td class="text-right">
                                                         <input readonly type="text" class="form-control amount comma_seprated" name="net_amount{{$id_count}}" id="net_amount{{$id_count}}" value="{{$net_amount}}"/>
                                                     </td>
@@ -584,8 +622,9 @@ use App\Helpers\FinanceHelper;
                                                 <input type="hidden" name="count" id="count" value="{{$id_count}}"/>
                                                 <tr class="invoice-total-row">
 
-                                                    <td id="total_" style="background-color: darkgray" class="text-center" colspan="8">Total</td>
+                                                    <td id="total_" style="background-color: darkgray" class="text-center" colspan="9">Total</td>
                                                     <td style="font-weight: bolder" colspan="1"> <input readonly type="text" id="total_qty" class="form-control"  value=""/></td>
+                                                    <td colspan="1"></td>
                                                     <td colspan="1"></td>
                                                     <td class="text-right" style="font-weight: bolder" colspan="1"> <input readonly type="text" id="total_amount" class="form-control text-right comma_seprated"  value=""/></td>
 
@@ -599,7 +638,7 @@ use App\Helpers\FinanceHelper;
                                                 @endphp
                                                 @if(($summarySalesTaxRate ?? 0) > 0)
                                                     <tr>
-                                                        <td class="text-right invoice-summary-label" colspan="10">Sales Tax {{ number_format($summarySalesTaxRate,2) }}</td>
+                                                        <td class="text-right invoice-summary-label" colspan="11">Sales Tax {{ number_format($summarySalesTaxRate,2) }}</td>
                                                         <td class="text-right" colspan="1">
                                                             <input readonly type="text" class="form-control text-right comma_seprated" name="sales_tax" id="sales_tax" value="0" />
                                                         </td>
@@ -610,7 +649,7 @@ use App\Helpers\FinanceHelper;
 
                                                 @if(($summaryFurtherTaxRate ?? 0) > 0)
                                                     <tr>
-                                                        <td class="text-right invoice-summary-label" colspan="10">Further Sales Tax {{ number_format($summaryFurtherTaxRate,2) }}</td>
+                                                        <td class="text-right invoice-summary-label" colspan="11">Further Sales Tax {{ number_format($summaryFurtherTaxRate,2) }}</td>
                                                         <td class="text-right" colspan="1">
                                                             <input readonly type="text" class="form-control text-right comma_seprated" name="sales_tax_further" id="sales_tax_further" value="0" />
                                                         </td>
@@ -622,7 +661,7 @@ use App\Helpers\FinanceHelper;
 
                                                 @if($delivery_not->advance_tax_amount > 0)
                                                     <tr>
-                                                        <td class="text-right invoice-summary-label" colspan="10">Advance Tax {{ number_format($delivery_not->advance_tax_rate,2) }}</td>
+                                                        <td class="text-right invoice-summary-label" colspan="11">Advance Tax {{ number_format($delivery_not->advance_tax_rate,2) }}</td>
                                                         <td class="text-right" colspan="1">
                                                             
                                                         <input type="hidden" name="advance_tax_rate" id="advance_tax_rate" value="{{ $delivery_not->advance_tax_rate }}" />
@@ -633,7 +672,7 @@ use App\Helpers\FinanceHelper;
                                                 @endif
                                                 @if($delivery_not->cartage_amount >0)
                                                     <tr>
-                                                        <td class="text-right invoice-summary-label" colspan="10">Cartage Amount</td>
+                                                        <td class="text-right invoice-summary-label" colspan="11">Cartage Amount</td>
                                                         <td colspan="1"> <input class="form-control text-right" type="text" name="cartage_amount" id="cartage_amount" value="{{ $delivery_not->cartage_amount }}" readonly />
                                                         </td>
                                                     </tr>
@@ -641,7 +680,7 @@ use App\Helpers\FinanceHelper;
 
                                                 <tr class="invoice-grand-row">
 
-                                                    <td class="text-center" colspan="10">Grand Total</td>
+                                                    <td class="text-center" colspan="11">Grand Total</td>
                                                     <td colspan="1"> <input disabled type="text" class="form-control text-right comma_seprated" name="" id="grand_total"/></td>
                                                 </tr>
                                             </table>
@@ -1083,7 +1122,18 @@ use App\Helpers\FinanceHelper;
         {
             var send_qty = parseNumber($('#qty'+num).val());
             var rate = parseNumber($('#rate'+num).val());
-            var total = send_qty * rate;
+            var rateCalBy = parseInt($('#rate_cal_by' + num).val() || 2);
+            var bagQty = parseNumber($('#bag_qty' + num).val());
+            var qtyLbs = parseNumber($('#qty_lbs' + num).val());
+            var multiplier = send_qty;
+
+            if (rateCalBy === 1) {
+                multiplier = bagQty > 0 ? bagQty : send_qty;
+            } else if (rateCalBy === 3) {
+                multiplier = qtyLbs > 0 ? qtyLbs : (send_qty * 2.2);
+            }
+
+            var total = multiplier * rate;
 
             var x = parseNumber($('#discount_percent'+num).val());
 
@@ -1096,6 +1146,8 @@ use App\Helpers\FinanceHelper;
             }
 
             $('#net_amount'+num).val(total);
+            $('#tax_amount'+num).val((total / 100 * parseNumber($('#tax_percent'+num).val())).toFixed(3));
+            $('#sales_tax_further'+num).val((total / 100 * parseNumber($('#sales_tax_further_per'+num).val())).toFixed(3));
 
             net();
             toWords(1);

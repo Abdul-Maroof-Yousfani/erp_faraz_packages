@@ -3099,7 +3099,16 @@ class SalesAddDetailControler extends Controller
 
             $qty   = $request->actual_qty[$key] ?? 0;
             $rate  = $request->rate[$key] ?? 0;
-            $amount = $request->amount[$key] ?? ($qty * $rate);
+            $rateCalBy = (int) ($request->rate_cal_by[$key] ?? 2);
+            $bagQty = CommonHelper::check_str_replace($request->bag_qty[$key] ?? 0);
+            $qtyLbs = CommonHelper::check_str_replace($request->qty_lbs[$key] ?? ($qty * 2.2));
+            $baseQty = $qty;
+            if ($rateCalBy === 1) {
+                $baseQty = $bagQty > 0 ? $bagQty : $qty;
+            } elseif ($rateCalBy === 3) {
+                $baseQty = $qtyLbs > 0 ? $qtyLbs : ($qty * 2.2);
+            }
+            $amount = $baseQty * $rate;
             $commission = $request->commission[$key] ?? 0;
             $commission_amount = $commission * $rate;
 
@@ -3110,13 +3119,16 @@ class SalesAddDetailControler extends Controller
             $detail->groupby       = 1;
             $detail->gi_no         = $gi_no;
             $detail->item_id       = $item_id;
-            $detail->bag_qty       = $request->bag_qty[$key] ?? null;
+            $detail->bag_qty       = $bagQty ?: null;
             $detail->qty           = $qty;
             $detail->rate          = $rate;
             $detail->amount        = $amount;
             $detail->commission    = $commission;
             $detail->tax           = $request->tax[$key] ?? 0;
-            $detail->tax_amount    = $request->tax_amount[$key] ?? 0;
+            $detail->tax_amount    = (($amount / 100) * ($request->tax[$key] ?? 0));
+            if (Schema::connection('mysql2')->hasColumn('sales_tax_invoice_data', 'rate_cal_by')) {
+                $detail->rate_cal_by = $rateCalBy;
+            }
             $detail->warehouse_id  = $request->warehouse[$key] ?? null;
             $detail->uom           = isset($request->uom_id[$key]) 
                                      ? CommonHelper::get_uom_id($request->uom_id[$key]) 
@@ -3143,7 +3155,7 @@ class SalesAddDetailControler extends Controller
                     'qty' => $request->actual_qty[$key],
                     'discount_percent' => '',
                     'discount_amount' => '',
-                    'amount' => $request->actual_qty[$key] * $request->rate[$key],
+                'amount' => $amount,
                     'status' => 1,
                     'warehouse_id' => $request->warehouse[$key],
                     'username' => Auth::user()->username,
@@ -3551,22 +3563,39 @@ class SalesAddDetailControler extends Controller
 
                 $qty = CommonHelper::check_str_replace($request->input('qty' . $i));
                 $rate = CommonHelper::check_str_replace($request->input('rate' . $i));
-                $amount = CommonHelper::check_str_replace($request->input('net_amount' . $i));
+                $rateCalBy = (int) ($request->input('rate_cal_by' . $i) ?? 2);
+                $bagQty = CommonHelper::check_str_replace($request->input('bag_qty' . $i) ?? 0);
+                $qtyLbs = CommonHelper::check_str_replace($request->input('qty_lbs' . $i) ?? ($qty * 2.2));
+                $baseQty = $qty;
+                if ($rateCalBy === 1) {
+                    $baseQty = $bagQty > 0 ? $bagQty : $qty;
+                } elseif ($rateCalBy === 3) {
+                    $baseQty = $qtyLbs > 0 ? $qtyLbs : ($qty * 2.2);
+                }
+                $amount = $baseQty * $rate;
                 $sales_tax_invoice_data->qty = $qty;
 
                 $sales_tax_invoice_data->rate = $rate;
-                $sales_tax_invoice_data->tax = $request->input('tax_percent' . $i);
-                $sales_tax_invoice_data->tax_amount = $request->input('tax_amount' . $i);
-                $sales_tax_invoice_data->sales_tax_further_per = $request->input('sales_tax_further_per' . $i);
-                $sales_tax_invoice_data->sales_tax_further = $request->input('sales_tax_further' . $i);
+                $taxPercent = CommonHelper::check_str_replace($request->input('tax_percent' . $i) ?? 0);
+                $furtherTaxPercent = CommonHelper::check_str_replace($request->input('sales_tax_further_per' . $i) ?? 0);
+                $sales_tax_invoice_data->tax = $taxPercent;
+                $sales_tax_invoice_data->tax_amount = ($amount / 100) * $taxPercent;
+                $sales_tax_invoice_data->sales_tax_further_per = $furtherTaxPercent;
+                $sales_tax_invoice_data->sales_tax_further = ($amount / 100) * $furtherTaxPercent;
                 $sales_tax_invoice_data->amount = $amount;
                 $sales_tax_invoice_data->warehouse_id = $request->input('warehouse_id' . $i);
                 $sales_tax_invoice_data->bundles_id = $request->input('bundles_id' . $i);
+                if (Schema::connection('mysql2')->hasColumn('sales_tax_invoice_data', 'bag_qty')) {
+                    $sales_tax_invoice_data->bag_qty = $bagQty ?: null;
+                }
+                if (Schema::connection('mysql2')->hasColumn('sales_tax_invoice_data', 'rate_cal_by')) {
+                    $sales_tax_invoice_data->rate_cal_by = $rateCalBy;
+                }
                 $sales_tax_invoice_data->status = 1;
                 $sales_tax_invoice_data->date = date('Y-m-d');
                 $sales_tax_invoice_data->username = Auth::user()->name;
                 $sales_tax_invoice_data->save();
-                $total_amount += $qty * $rate;
+                $total_amount += $amount;
             endfor;
 
             $supply_chain_finance = DB::Connection('mysql2')->table('stock')->whereIn('main_id', $update_id)->get();
@@ -3591,7 +3620,7 @@ class SalesAddDetailControler extends Controller
                 ->join('sales_tax_invoice_data as b', 'a.id', '=', 'b.master_id')
                 ->join('subitem as c', 'b.item_id', '=', 'c.id')
                 ->join('category as d', 'd.id', '=', 'c.main_ic_id')
-                ->select(DB::raw('SUM(b.rate*b.qty) as amount'), 'b.item_id', 'a.gi_date', 'd.revenue_acc_id')
+                ->select(DB::raw('SUM(b.amount) as amount'), 'b.item_id', 'a.gi_date', 'd.revenue_acc_id')
                 ->where('a.gi_no', $gi_no)
                 ->where('a.status', 1)
                 ->groupBy('d.id')
@@ -3931,7 +3960,7 @@ class SalesAddDetailControler extends Controller
                 $sales_tax_invoice_data->date = date('Y-m-d');
                 $sales_tax_invoice_data->username = Auth::user()->name;
                 $sales_tax_invoice_data->save();
-                $total_amount += $qty * $rate;
+                $total_amount += $amount;
             endfor;
 
             $transactionfordelete = new Transactions();
@@ -3960,7 +3989,7 @@ class SalesAddDetailControler extends Controller
                 ->join('sales_tax_invoice_data as b', 'a.id', '=', 'b.master_id')
                 ->join('subitem as c', 'b.item_id', '=', 'c.id')
                 ->join('category as d', 'd.id', '=', 'c.main_ic_id')
-                ->select(DB::raw('SUM(b.rate*b.qty) as amount'), 'b.item_id', 'a.gi_date', 'd.revenue_acc_id')
+                ->select(DB::raw('SUM(b.amount) as amount'), 'b.item_id', 'a.gi_date', 'd.revenue_acc_id')
                 ->where('a.gi_no', $gi_no)
                 ->where('a.status', 1)
                 ->groupBy('d.id')

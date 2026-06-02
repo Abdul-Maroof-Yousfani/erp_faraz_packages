@@ -1375,6 +1375,7 @@ class SalesController extends Controller
         $sale_order_data = DB::Connection('mysql2')->select('select a.item_id,a.groupby,b.id,b.master_id,b.bundles_id,a.id as so_data_id,a.desc,
         b.gd_no,sum(b.qty) as qty,a.master_id as so_id,b.warehouse_id,b.rate,b.tax,sum(b.tax_amount) as tax_amount,
         b.sales_tax_further_per,sum(b.sales_tax_further) as sales_tax_further,b.advance_tax_rate,sum(b.advance_tax_amount) as advance_tax_amount,
+        a.rate_cal_by,a.qty_lbs,a.length_bundle as bag_qty,
         c.product_name,c.bundle_unit,c.qty as bqty,
         c.rate as bundle_rate,c.amount as bundle_amount ,c.discount_percent as b_percent,c.discount_amount as b_dis_amount,c.net_amount as b_net, s.hs_code_id,pt.type,s.pack_size,s.primary_pack_type,s.color
 
@@ -1397,7 +1398,7 @@ class SalesController extends Controller
         and b.status=1
 
         and d.id in (' . $ids . ')
-        group by  a.groupby
+        group by  a.id
         ');
 
         // echo "<pre>"; print_r($sale_order_data); die;
