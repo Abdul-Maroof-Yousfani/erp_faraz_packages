@@ -111,6 +111,9 @@ $m=Input::get('m');
         }
 
         $quarter = $quarterQuery->orderBy('v_date')->get();
+        $showChequeColumns = collect($quarter)->contains(function ($row) {
+            return in_array((int) ($row->voucher_type ?? 0), [2, 3], true);
+        });
 
         $quarterVoucherNos = collect($quarter)->pluck('voucher_no')->filter()->unique()->values()->all();
         $ledgerItemDetails = [];
@@ -252,6 +255,10 @@ $m=Input::get('m');
             <th style="width: 100px" class="text-center">Voucher No</th>
             <th style="width: 120px" class="text-center">Date</th>
             <th style="width: 220px" class="text-center">Description</th>
+            <?php if($showChequeColumns): ?>
+            <th style="width: 140px" class="text-center">Cheque No</th>
+            <th style="width: 120px" class="text-center">Cheque Date</th>
+            <?php endif; ?>
             <th style="width: 120px" class="text-center hide">V Type</th>
             <th style="width: 120px" class="text-center hide">Cheque No</th>
             <th style="width: 120px" class="text-center hide">Description</th>
@@ -367,7 +374,7 @@ $m=Input::get('m');
           else:
         $cheque_no='';
          endif;
-        $cheque_date=$cheque_date;
+        $cheque_date = $cheque_data->cheque_date ?? '';
         CommonHelper::reconnectMasterDatabase();
         endif;
 
@@ -472,6 +479,26 @@ $m=Input::get('m');
                     }
                     ?>
             </td>
+            <?php if($showChequeColumns): ?>
+            <td class="text-left">
+                <?php
+                if (in_array((int) $trow->voucher_type, [2, 3], true) && $cheque_no !== '') {
+                    echo e($cheque_no);
+                } else {
+                    echo '-';
+                }
+                ?>
+            </td>
+            <td class="text-center">
+                <?php
+                if (in_array((int) $trow->voucher_type, [2, 3], true) && $cheque_date !== '' && $cheque_date !== '0000-00-00') {
+                    echo date_format(date_create($cheque_date), 'd-m-Y');
+                } else {
+                    echo '-';
+                }
+                ?>
+            </td>
+            <?php endif; ?>
             <td class="text-center hide">{{$type}}</td>
             <td class="text-left hide"><?php echo $cheque_no.'</br>';if ($cheque_date!='0000-00-00' && $cheque_date!=''): date_format(date_create($cheque_date), 'd-m-Y');endif; ?></td>
             <td class="text-left hide">
@@ -512,7 +539,7 @@ $m=Input::get('m');
 
         <?php endforeach; ?>
         <tr>
-            <td class="text-center" colspan="3"><b style="font-size: large;">TOTAL</b></td>
+            <td class="text-center" colspan="<?php echo $showChequeColumns ? 5 : 3; ?>"><b style="font-size: large;">TOTAL</b></td>
             <td class="text-right" colspan="1"><b style="font-size: large;"><?php echo  number_format($total_debit,2) ?></b></td>
             <td class="text-right" colspan="1"><b style="font-size: large;"><?php echo  number_format($total_credit,2) ?></b></td>
             <td  class="text-center" colspan="1"><b style="font-size: large;color: #ff9999"><?php  echo  number_format($total_debit-$total_credit) ?></b></td>
