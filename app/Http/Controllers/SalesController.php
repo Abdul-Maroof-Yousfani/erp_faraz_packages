@@ -1524,6 +1524,11 @@ class SalesController extends Controller
 
         if (count($Checking) > 1) {
             $si = DB::Connection('mysql2')->table('sales_tax_invoice')->where('gi_no', $Checking[1])->select('id')->first();
+            if (!$si || empty($si->id)) {
+                return view('Sales.AjaxPages.popupMessage', [
+                    'message' => 'Sales invoice record was not found.',
+                ]);
+            }
             $id = $si->id;
         } else {
             $id = $Checking[0];
@@ -1531,6 +1536,12 @@ class SalesController extends Controller
         $sales_tax_invoice = new SalesTaxInvoice();
         $sales_tax_invoice = $sales_tax_invoice->SetConnection('mysql2');
         $sales_tax_invoice = $sales_tax_invoice->where('id', $id)->first();
+
+        if (!$sales_tax_invoice) {
+            return view('Sales.AjaxPages.popupMessage', [
+                'message' => 'Sales invoice record was not found.',
+            ]);
+        }
 
         $sales_tax_invoice_data = DB::Connection('mysql2')->select('
             SELECT 
@@ -2142,9 +2153,33 @@ class SalesController extends Controller
     public function viewCreditNoteDetail()
     {
         $id = Input::get('id');
+        $checking = explode(',', $id);
+        if (count($checking) > 1) {
+            $creditNote = DB::Connection('mysql2')->table('credit_note')
+                ->where('cr_no', $checking[1])
+                ->select('id')
+                ->first();
+
+            if (!$creditNote || empty($creditNote->id)) {
+                return view('Sales.AjaxPages.popupMessage', [
+                    'message' => 'Credit note record was not found.',
+                ]);
+            }
+
+            $id = $creditNote->id;
+        } else {
+            $id = $checking[0];
+        }
+
         $creit_note = new CreditNote();
         $creit_note = $creit_note->SetConnection('mysql2');
         $creit_note = $creit_note->where('id', $id)->first();
+
+        if (!$creit_note) {
+            return view('Sales.AjaxPages.popupMessage', [
+                'message' => 'Credit note record was not found.',
+            ]);
+        }
 
         $credit_note_data = new CreditNoteData();
         $credit_note_data = $credit_note_data->SetConnection('mysql2');

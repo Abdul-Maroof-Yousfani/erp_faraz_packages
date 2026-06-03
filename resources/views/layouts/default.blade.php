@@ -445,6 +445,11 @@ if (!empty($_GET['pageType'])) {
 }
         ?>
 
+			if (!url || !String(url).trim()) {
+				jQuery('#showDetailModelOneParamerter .modal-body').html('<div class="alert alert-warning" style="margin:20px;">Detail view is not configured for this voucher.</div>');
+				return;
+			}
+
 
 			$.ajax({
 				url: '<?php echo url('/')?>/' + url + '',
@@ -461,6 +466,9 @@ if (!empty($_GET['pageType'])) {
 
 
 
+				}
+				,error: function () {
+					jQuery('#showDetailModelOneParamerter .modal-body').html('<div class="alert alert-danger" style="margin:20px;">Unable to load details right now. Please try again.</div>');
 				}
 			});
 		}

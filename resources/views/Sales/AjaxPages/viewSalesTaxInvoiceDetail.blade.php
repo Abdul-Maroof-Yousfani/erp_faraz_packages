@@ -10,6 +10,19 @@ $currentDate = date('Y-m-d');
 $total_expense =0;
 $AmountInWordsMain =0;
 
+if (empty($sales_tax_invoice)) {
+?>
+<div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="alert alert-warning" style="margin: 20px;">
+            Sales invoice record was not found.
+        </div>
+    </div>
+</div>
+<?php
+    return;
+}
+
 ?>
 
 

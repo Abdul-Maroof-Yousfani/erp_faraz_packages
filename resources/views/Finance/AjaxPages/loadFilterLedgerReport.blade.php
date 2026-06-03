@@ -417,8 +417,10 @@ $m=Input::get('m');
         endif;
 
         if ($trow->voucher_type==7):
+        $detail='sales/viewCreditNoteDetail';
+        $PageTitle = 'Credit Note Detail';
         $type='Credit Note';
-                endif;
+        endif;
 
         if ($trow->voucher_type==2):
         $PayType= DB::Connection('mysql2')->table('new_pv')->where('pv_no',$trow->voucher_no)->select('payment_type')->first();

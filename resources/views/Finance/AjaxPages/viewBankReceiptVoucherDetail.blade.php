@@ -7,6 +7,20 @@ $currentDate = date('Y-m-d');
 FinanceHelper::companyDatabaseConnection($m);
 $rvs = DB::table('rvs')->where('id','=',$id)->get();
 FinanceHelper::reconnectMasterDatabase();
+
+if ($rvs->isEmpty()) {
+?>
+<div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="alert alert-warning" style="margin: 20px;">
+            Bank receipt voucher record was not found.
+        </div>
+    </div>
+</div>
+<?php
+    return;
+}
+
 foreach ($rvs as $row) {
 ?>
 <div class="row">

@@ -4,6 +4,19 @@ use App\Helpers\StoreHelper;
 $id = $_GET['id'];
 $m = $_GET['m'];
 $currentDate = date('Y-m-d');
+
+if (empty($creit_note)) {
+?>
+<div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="alert alert-warning" style="margin: 20px;">
+            Credit note record was not found.
+        </div>
+    </div>
+</div>
+<?php
+    return;
+}
 ?>
 
 
