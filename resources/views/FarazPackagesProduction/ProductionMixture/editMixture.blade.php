@@ -112,6 +112,20 @@ $rowCount = max($mixtureData->count(), 1);
                                                     @endforeach
                                                 </select>
                                             </div>
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                <label class="sf-label">Shift</label>
+                                                <span class="rflabelsteric"><strong>*</strong></span>
+                                                <select class="form-control select2 requiredField" name="shift_id"
+                                                    id="shift_id">
+                                                    <option value="">Select Shift</option>
+                                                    @foreach ($shifts as $key => $value)
+                                                        <option value="{{ $value->id }}"
+                                                            @if (($mixture->shift_id ?? null) == $value->id) selected @endif>
+                                                            {{ $value->shift_type_name }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
 
                                             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                                 <label class="sf-label">Description</label>

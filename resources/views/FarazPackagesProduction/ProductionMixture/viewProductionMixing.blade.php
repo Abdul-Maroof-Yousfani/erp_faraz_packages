@@ -67,6 +67,7 @@ $this->m = Session::get('run_company');
                                                     <th class="text-center">Produced Mixture</th>
                                                     <th class="text-center">Mixing No</th>
                                                     <th class="text-center">Prod. Order No.</th>
+                                                    <th class="text-center">Shift</th>
                                                     <th class="text-center">Produced Qty</th>
                                                     <th class="text-center">Used In Next Step</th>
                                                     <th class="text-center">Useable Qty</th>
@@ -90,6 +91,7 @@ $this->m = Session::get('run_company');
                                                             <td>{{CommonHelper::get_item_name($Fil->produced_item_id)}}</td>
                                                             <td> {{$Fil->pm_no}} </td>
                                                             <td>{{ optional($Fil->productionOrder)->pr_no }} </td>
+                                                            <td>{{ optional($Fil->shift)->shift_type_name ?? '-' }}</td>
                                                             <td class="text-right">{{ number_format($Fil->qty ?? 0, 2) }}</td>
                                                             <td class="text-center">
                                                                 @if(($Fil->used_qty ?? 0) > 0)

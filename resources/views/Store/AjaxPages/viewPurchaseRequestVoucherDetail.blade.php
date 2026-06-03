@@ -280,8 +280,8 @@ if($_GET['pageType']=='viewlist'){
                                         <td style="text-align:center"><?php echo $rate_cal_label;?></td>
                                         <td style="text-align:center">{{ $cur }} {{ number_format($row1->rate, 3) }}</td>
                                         <td style="text-align:center">{{ $cur }} {{ number_format($row1->net_amount, 3) }}</td>
-                                        <td style="text-align:center"><?php echo $row1->do_no ?? '-';?></td>
-                                        <td style="text-align:center"><?php echo $row1->godown_no ?? '-';?></td>
+                                        <td style="text-align:center"><?php echo !empty($row1->do_no) ? $row1->do_no : '-';?></td>
+                                        <td style="text-align:center"><?php echo !empty($row1->godown_no) ? $row1->godown_no : '-';?></td>
                                         <td style="text-align:center"><?php echo $warehouse_name;?></td>
                                     </tr>
                                     <?php

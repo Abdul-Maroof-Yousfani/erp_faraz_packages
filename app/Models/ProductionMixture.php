@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ShiftType;
 
 class ProductionMixture extends Model
 {
@@ -24,6 +25,11 @@ class ProductionMixture extends Model
     public function productionOrder()
     {
         return $this->belongsTo(ProductionOrder::class, 'production_order_id');
+    }
+
+    public function shift()
+    {
+        return $this->belongsTo(ShiftType::class, 'shift_id');
     }
 
     public function productionRollings()

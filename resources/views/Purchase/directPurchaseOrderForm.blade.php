@@ -346,7 +346,7 @@ endif;
                                                         <th class="text-center nowrap col-narrow" style="font-size:0.9rem;">Amount (PKR)<span class="rflabelsteric"><strong>*</strong></span></th>
                                                         <th class="text-center nowrap col-narrow" style="font-size:0.9rem;">Net Amount (PKR)<span class="rflabelsteric"><strong>*</strong></span></th>
                                                         <th class="text-center nowrap col-narrow" style="font-size:0.85rem;">DO No.</th>
-                                                        <th class="text-center nowrap col-narrow" style="font-size:0.85rem;">Godown No.<span class="rflabelsteric"><strong>*</strong></span></th>
+                                                        <th class="text-center nowrap col-narrow" style="font-size:0.85rem;">Godown No.</th>
                                                         <th class="text-center nowrap" style="width:11%;font-size:0.9rem;">Location<span class="rflabelsteric"><strong>*</strong></span></th>
                                                         <th class="text-center" style="width:50px;font-size:0.9rem;">Action</th>
                                                     </tr>
@@ -431,7 +431,7 @@ endif;
                                                             <input type="text" class="form-control" name="do_no[]" id="do_no1" placeholder="DO No." />
                                                         </td>
                                                         <td>
-                                                            <input type="text" class="form-control requiredField" name="godown_no[]" id="godown_no1" placeholder="Godown No." required />
+                                                            <input type="text" class="form-control" name="godown_no[]" id="godown_no1" placeholder="Godown No." />
                                                         </td>
                                                         <td>
                                                             <select required class="form-control select2"
@@ -602,7 +602,7 @@ endif;
                 '<input type="text" class="form-control" name="do_no[]" id="do_no' + Counter + '" placeholder="DO No.">' +
                 '</td>' +
                 '<td>' +
-                '<input type="text" class="form-control requiredField" name="godown_no[]" id="godown_no' + Counter + '" placeholder="Godown No." required>' +
+                '<input type="text" class="form-control" name="godown_no[]" id="godown_no' + Counter + '" placeholder="Godown No.">' +
                 '</td>' +
                 '<td>' +
                 '<select name="warehouse_id[]" id="warehouse_' + Counter + '" class="form-control select2">' +

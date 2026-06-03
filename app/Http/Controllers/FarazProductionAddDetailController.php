@@ -871,6 +871,7 @@ class FarazProductionAddDetailController extends Controller
         try {
 
             $m = $_GET['m'];
+            $shiftId = $request->filled('shift_id') ? (int) $request->shift_id : null;
 
             $data = [
                 'pm_no' => strip_tags($request->mixing_no),
@@ -878,6 +879,7 @@ class FarazProductionAddDetailController extends Controller
                 'production_order_id' => strip_tags($request->production_order_id),
                 'mixture_machine_id' => strip_tags($request->mixture_machine_id),
                 'operator_id' => strip_tags($request->operator_id),
+                'shift_id' => $shiftId,
                 'date' => strip_tags($request->mixing_date),
                 'qty' => strip_tags($request->qty),
                 'description' => strip_tags($request->description),
@@ -978,6 +980,7 @@ class FarazProductionAddDetailController extends Controller
         try {
             $m = $request->input('m', $_GET['m'] ?? '');
             $mixtureId = (int) $request->input('mixture_id');
+            $shiftId = $request->filled('shift_id') ? (int) $request->shift_id : null;
 
             $existing = DB::connection('mysql2')
                 ->table('production_mixture')
@@ -1010,6 +1013,7 @@ class FarazProductionAddDetailController extends Controller
                 'production_order_id' => strip_tags($request->production_order_id),
                 'mixture_machine_id' => strip_tags($request->mixture_machine_id),
                 'operator_id' => strip_tags($request->operator_id),
+                'shift_id' => $shiftId,
                 'date' => strip_tags($request->mixing_date),
                 'qty' => strip_tags($request->qty),
                 'description' => strip_tags($request->description ?? ''),

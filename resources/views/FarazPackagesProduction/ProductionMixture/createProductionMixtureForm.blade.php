@@ -111,6 +111,22 @@ if ($accType == 'client') {
                                                     @endforeach
                                                 </select>
                                             </div>
+                                    
+                                        </div>
+                                        <div class="row">
+                                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                                <label class="sf-label">Shift</label>
+                                                <span class="rflabelsteric"><strong>*</strong></span>
+                                                <select class="form-control select2 requiredField" name="shift_id"
+                                                    id="shift_id">
+                                                    <option value="">Select Shift</option>
+                                                    @foreach ($shifts as $key => $value)
+                                                        <option value="{{ $value->id }}">
+                                                            {{ $value->shift_type_name }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
 
 
 

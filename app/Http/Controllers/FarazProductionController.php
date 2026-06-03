@@ -356,9 +356,15 @@ class FarazProductionController extends Controller
             ->select('id', 'pr_no')->get();
         $mixture_machines = $this->getMixtureDepartmentMachines();
         $mixture_operators = $this->getDepartmentOperators('Mixture Department');
+        $shifts = DB::connection('mysql')
+            ->table('shift_type')
+            ->where('status', 1)
+            ->select('id', 'shift_type_name')
+            ->orderBy('shift_type_name')
+            ->get();
         $pm_no = CommonHelper::generateProductionMixtureNumber();
 
-        return view('FarazPackagesProduction.ProductionMixture.createProductionMixtureForm', compact('sub_item', 'raw_material', 'production_order', 'mixture_machines', 'mixture_operators', 'pm_no'));
+        return view('FarazPackagesProduction.ProductionMixture.createProductionMixtureForm', compact('sub_item', 'raw_material', 'production_order', 'mixture_machines', 'mixture_operators', 'shifts', 'pm_no'));
     }
 
     public function getProductionMixtureRawStock(Request $request)
@@ -391,6 +397,7 @@ class FarazProductionController extends Controller
     public function viewProductionMixingList()
     {
         $mixingList = ProductionMixture::with('productionOrder')
+            ->with('shift')
             ->withCount('productionRollings as usage_count')
             ->select('production_mixture.*')
             ->selectRaw('(COALESCE(qty, 0) - COALESCE(used_qty, 0)) as remaining_qty')
@@ -449,6 +456,12 @@ class FarazProductionController extends Controller
 
         $mixture_machines = $this->getMixtureDepartmentMachines($mixture->mixture_machine_id);
         $mixture_operators = $this->getDepartmentOperators('Mixture Department');
+        $shifts = DB::connection('mysql')
+            ->table('shift_type')
+            ->where('status', 1)
+            ->select('id', 'shift_type_name')
+            ->orderBy('shift_type_name')
+            ->get();
 
         return view('FarazPackagesProduction.ProductionMixture.editMixture', compact(
             'mixture',
@@ -458,6 +471,7 @@ class FarazProductionController extends Controller
             'production_order',
             'mixture_machines',
             'mixture_operators',
+            'shifts',
             'm'
         ));
     }

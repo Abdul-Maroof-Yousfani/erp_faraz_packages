@@ -815,8 +815,10 @@ class StoreAddDetailControler extends Controller
                 $purch_request_data->status=1;
                 $purch_request_data->date=date('Y-m-d');
                 $purch_request_data->username=Auth::user()->name;
-                $purch_request_data->do_no = $request->input('do_no')[$key] ?? null;
-                $purch_request_data->godown_no = $request->input('godown_no')[$key] ?? null;
+                $doNo = trim((string) ($request->input('do_no')[$key] ?? ''));
+                $godownNo = trim((string) ($request->input('godown_no')[$key] ?? ''));
+                $purch_request_data->do_no = $doNo !== '' ? $doNo : null;
+                $purch_request_data->godown_no = $godownNo !== '' ? $godownNo : null;
                 $purch_request_data->warehouse_id = $request->input('warehouse_id')[$key] ?? null;
                 $purch_request_data->save();
                  endforeach;
