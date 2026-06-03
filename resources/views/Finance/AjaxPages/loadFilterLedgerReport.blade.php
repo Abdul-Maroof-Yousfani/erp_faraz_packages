@@ -296,7 +296,7 @@ $m=Input::get('m');
                 endif;
                 endif;
                 ?>
-                <?php if ($balance>=0): echo number_format($balance,2); else:  echo '('.number_format($balance*-1,2).')';  endif;  ?>
+                <?php echo number_format(abs($balance),2); ?>
             </td>
         </tr>
         <?php
@@ -514,8 +514,8 @@ $m=Input::get('m');
                     // endif;
                 ?>
             </td>
-            <td class="text-right"><?php if($trow->debit_credit==1){ $debit=$trow->amount; echo number_format($trow->amount,2); $total_debit+=$trow->amount;} ?></td>
-            <td class="text-right"><?php if($trow->debit_credit==0){ $credit=$trow->amount; echo number_format($trow->amount,2); $total_credit+=$trow->amount;} ?></td>
+            <td class="text-right"><?php if($trow->debit_credit==1){ $debit=$trow->amount; echo number_format($trow->amount,2).' Dr'; $total_debit+=$trow->amount;} ?></td>
+            <td class="text-right"><?php if($trow->debit_credit==0){ $credit=$trow->amount; echo number_format($trow->amount,2).' Cr'; $total_credit+=$trow->amount;} ?></td>
             <?php
 
 
@@ -529,12 +529,7 @@ $m=Input::get('m');
                     else:
                 $balance=$debit-$credit+$balance;
                     endif;
-                if ($balance>=0):
-                echo number_format($balance,2);
-
-                else:
-                echo '('.number_format($balance*-1,2).')';
-                endif;
+                echo number_format(abs($balance),2);
                 ?></td>
 
         </tr>
@@ -544,7 +539,7 @@ $m=Input::get('m');
             <td class="text-center" colspan="<?php echo $showChequeColumns ? 5 : 3; ?>"><b style="font-size: large;">TOTAL</b></td>
             <td class="text-right" colspan="1"><b style="font-size: large;"><?php echo  number_format($total_debit,2) ?></b></td>
             <td class="text-right" colspan="1"><b style="font-size: large;"><?php echo  number_format($total_credit,2) ?></b></td>
-            <td  class="text-center" colspan="1"><b style="font-size: large;color: #ff9999"><?php  echo  number_format($total_debit-$total_credit) ?></b></td>
+            <td  class="text-center" colspan="1"><b style="font-size: large;color: #ff9999"><?php  echo  number_format(abs($total_debit-$total_credit),2) ?></b></td>
 
         </tr>
 
