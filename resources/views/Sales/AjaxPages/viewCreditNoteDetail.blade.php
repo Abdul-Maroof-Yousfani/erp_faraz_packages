@@ -82,7 +82,7 @@ if (empty($creit_note)) {
                                     $SoNo = "";
                                     if($creit_note->so_id > 0):
                                     $SoData = CommonHelper::get_single_row('sales_order','id',$creit_note->so_id);
-                                    $SoNo = $SoData->so_no;
+                                    $SoNo = optional($SoData)->so_no ?? "";
                                     else:
                                     $SoNo = "";
                                     endif;
@@ -93,9 +93,9 @@ if (empty($creit_note)) {
                                             <?php
 
                                             $pos_data=     DB::Connection('mysql2')->table('pos')->where('id',$creit_note->pos_id)->select('pos_no','customer_name')->first();
-                                            $customer_name='('.$pos_data->customer_name.')';
+                                            $customer_name = !empty(optional($pos_data)->customer_name) ? '('.$pos_data->customer_name.')' : '';
                                             ?>
-                                            <td class="text-left" style="width:50%;"><?php echo strtoupper($pos_data->pos_no);?></td>
+                                            <td class="text-left" style="width:50%;"><?php echo strtoupper(optional($pos_data)->pos_no ?? '');?></td>
                                         @else
 
                                             <td class="text-left" style="width:50%;">SO NO.</td>
@@ -194,17 +194,23 @@ if (empty($creit_note)) {
                                 }
 
                                         $Stock = DB::Connection('mysql2')->table('stock')->where('master_id',$row1->id)->first();
+                                        $warehouseId = optional($Stock)->warehouse_id;
 
                                 ?>
                                 <tr>
                                     <td class="text-center" class="text-center"><?php echo $counter++;?></td>
                                     <td onclick="" class="text-left">
+                                        <?php if(!empty($warehouseId)): ?>
                                         <a target="_blank"
-                                     href="<?php echo url('store/fullstockReportView?sub_item_id='.$row1->item.'&&m='.Session::get('run_company').'&&warehouse_id='.$Stock->warehouse_id)?>">
-                                     <?php echo CommonHelper::get_item_name($row1->item);?></a></td>
+                                     href="<?php echo url('store/fullstockReportView?sub_item_id='.$row1->item.'&&m='.Session::get('run_company').'&&warehouse_id='.$warehouseId)?>">
+                                     <?php echo CommonHelper::get_item_name($row1->item);?></a>
+                                        <?php else: ?>
+                                            <?php echo CommonHelper::get_item_name($row1->item);?>
+                                        <?php endif; ?>
+                                    </td>
                                     <td class="text-center"><?php echo number_format((float)($VoucherQty->bag_qty ?? 0), 2);?></td>
-                                    <td class="ShowHide" style=""><?php echo $VoucherQty->qty?></td>
-                                    <td class="text-center"><?php echo CommonHelper::get_name_warehouse($Stock->warehouse_id)?></td>
+                                    <td class="ShowHide" style=""><?php echo number_format((float)($VoucherQty->qty ?? 0), 2)?></td>
+                                    <td class="text-center"><?php echo !empty($warehouseId) ? CommonHelper::get_name_warehouse($warehouseId) : 'N/A'?></td>
                                     <td> <?php echo number_format($row1->qty)?></td>
                                     <td class="text-right"><?php echo number_format($row1->rate,2);?></td>
                                     <td class="text-right"><?php echo number_format($row1->amount,2); $TotalAmount+=$row1->amount;?></td>
