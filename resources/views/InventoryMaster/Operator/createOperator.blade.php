@@ -70,7 +70,7 @@
                                                                 <select name="department_id[]" id="department_id" class="form-control select2" multiple required>
                                                                     @foreach($departments as $department)
                                                                         <option value="{{ $department->id }}" {{ in_array($department->id, old('department_id', [])) ? 'selected' : '' }}>
-                                                                            {{ $department->department_name }}
+                                                                        {{ $department->department_name }}
                                                                         </option>
                                                                     @endforeach
                                                                 </select>
