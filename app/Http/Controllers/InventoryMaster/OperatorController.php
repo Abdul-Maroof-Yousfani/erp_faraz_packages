@@ -32,16 +32,31 @@ class OperatorController extends Controller
             //     $data = $data->where('er.rate_date', '<=', $request->to_date);
             // }
 
-            $data = $data->orderBy('operators.id', 'desc')->get();
+            $data = $data->orderBy('operators.name')->get();
             $departmentNames = $this->getDepartments()
                 ->pluck('department_name', 'id')
                 ->toArray();
 
-            foreach ($data as $row) {
-                $row->department_name = isset($departmentNames[$row->department_id])
-                    ? $departmentNames[$row->department_id]
-                    : '-';
-            }
+            $data = $data->groupBy('name')->map(function ($rows, $name) use ($departmentNames) {
+                $deptList = $rows->pluck('department_id')
+                    ->map(function ($deptId) use ($departmentNames) {
+                        return $departmentNames[$deptId] ?? null;
+                    })
+                    ->filter()
+                    ->unique()
+                    ->sort()
+                    ->values();
+
+                $editRow = $rows->first(function ($row) {
+                    return !empty($row->department_id);
+                });
+
+                return (object) [
+                    'name' => $name,
+                    'department_name' => $deptList->isNotEmpty() ? $deptList->implode(', ') : '-',
+                    'id' => $editRow ? $editRow->id : $rows->first()->id,
+                ];
+            })->values();
 
             return view('InventoryMaster.Operator.ajax.listOperatorAjax', compact('data'));
         }
@@ -129,7 +144,22 @@ class OperatorController extends Controller
             return redirect()->back()->withErrors('Record not found')->withInput();
         }
 
-        return view('InventoryMaster.Operator.updateOperator', compact('Operator', 'departments'));
+        $operatorDepartmentIds = Operator::where('name', $Operator->name)
+            ->where('status', 1)
+            ->whereNotNull('department_id')
+            ->pluck('department_id')
+            ->map(function ($id) {
+                return (int) $id;
+            })
+            ->unique()
+            ->values()
+            ->toArray();
+
+        if (empty($operatorDepartmentIds) && !empty($Operator->department_id)) {
+            $operatorDepartmentIds = [(int) $Operator->department_id];
+        }
+
+        return view('InventoryMaster.Operator.updateOperator', compact('Operator', 'departments', 'operatorDepartmentIds'));
     }
 
     /**
@@ -143,7 +173,8 @@ class OperatorController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required',
-            'department_id' => 'required',
+            'department_id' => 'required|array|min:1',
+            'department_id.*' => 'required',
         ]);
 
         try {
@@ -151,22 +182,50 @@ class OperatorController extends Controller
                 return redirect()->back()->withErrors($validator)->withInput();
             }
 
-            $Operator = Operator::find($id);
+            $Operator = Operator::where('id', $id)->where('status', 1)->first();
 
             if (!$Operator) {
                 return redirect()->back()->withErrors('Record not found')->withInput();
             }
 
-            $Operator->update([
-                'name' => $request->name,
-                'department_id' => $request->department_id,
-                'status' => 1,
-                'username' => Auth()->user()->name,
-            ]);
+            $oldName = $Operator->name;
+            $newName = $request->name;
+            $departmentIds = array_unique(array_filter((array) $request->department_id));
 
-            return redirect('InventoryMaster/Operator/')->with('success', 'Record updated successfully');
+            DB::connection('mysql2')->transaction(function () use ($oldName, $newName, $departmentIds) {
+                Operator::where('name', $oldName)
+                    ->where('status', 1)
+                    ->whereNotIn('department_id', $departmentIds)
+                    ->update([
+                        'status' => 0,
+                        'username' => Auth()->user()->name,
+                    ]);
+
+                foreach ($departmentIds as $departmentId) {
+                    $row = Operator::where('name', $oldName)
+                        ->where('department_id', $departmentId)
+                        ->first();
+
+                    if ($row) {
+                        $row->update([
+                            'name' => $newName,
+                            'department_id' => $departmentId,
+                            'status' => 1,
+                            'username' => Auth()->user()->name,
+                        ]);
+                    } else {
+                        Operator::create([
+                            'name' => $newName,
+                            'department_id' => $departmentId,
+                            'status' => 1,
+                            'username' => Auth()->user()->name,
+                        ]);
+                    }
+                }
+            });
+
+            return redirect('InventoryMaster/Operator/')->with('success', 'Operator departments updated successfully');
         } catch (QueryException $e) {
-            // Log or handle the exception as needed
             return redirect()->back()->withErrors('Error updating record. Please try again.')->withInput();
         }
     }

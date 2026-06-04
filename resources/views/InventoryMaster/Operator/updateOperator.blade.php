@@ -68,29 +68,33 @@
                                                             <div class="form-group">
                                                                 <label class="col-sm-4 control-label">Department</label>
                                                                 <div class="col-sm-8">
-                                                                    <select name="department_id" id="department_id" class="form-control select2" required>
-                                                                        <option value="">Select Department</option>
+                                                                    @php
+                                                                        $selectedDepartmentIds = array_map('intval', (array) old('department_id', $operatorDepartmentIds));
+                                                                    @endphp
+                                                                    <select name="department_id[]" id="department_id" class="form-control select2" multiple required>
                                                                         @foreach($departments as $department)
-                                                                            <option value="{{ $department->id }}" {{ old('department_id', $Operator->department_id) == $department->id ? 'selected' : '' }}>
+                                                                            <option value="{{ $department->id }}" {{ in_array((int) $department->id, $selectedDepartmentIds, true) ? 'selected' : '' }}>
                                                                                 {{ $department->department_name }}
                                                                             </option>
                                                                         @endforeach
                                                                     </select>
+                                                                    <small class="text-muted">Multiple departments select kar sakte hain.</small>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-12 padtb text-right">
-                                                            <div class="col-md-9"></div>    
-                                                            <div class="col-md-3 my-lab">
+                                                    </div><br><br>
+
+                                                    <div class="row">
+                                                        <div class="col-md-4 padtb text-right">
+                                                            <div class="col-md-9"></div>
+                                                            <div class="col-md-3 my-lab" style="display: flex;">
                                                                 <button type="submit" class="btn btn-primary mr-1" data-dismiss="modal">Save</button>
                                                                 <a href="{{ route('Operator.cancel') }}" class="btnn btn-secondary">Cancel</a>
-                                                        </div>    
-                                                </div>
-                                                       
-                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
-                                                
-                                            </div>        
+                                            </div>
                                         </div>
                                     </div>
                                 </form>
@@ -104,7 +108,13 @@
 
 <script>
     $(document).ready(function () {
-        $('#department_id').select2();
+        var selectedDepartmentIds = @json($selectedDepartmentIds);
+        $('#department_id').select2({
+            placeholder: 'Select Department(s)'
+        });
+        if (selectedDepartmentIds.length) {
+            $('#department_id').val(selectedDepartmentIds).trigger('change');
+        }
     });
 </script>
 @endsection
