@@ -1316,9 +1316,9 @@ class FarazProductionController extends Controller
             ->orderBy('s.id')
             ->get();
 
-        $machines = $this->getDepartmentMachines('Rolling Department');
+        $machines = $this->getDepartmentMachines('Printing Department');
 
-        $operators = $this->getDepartmentOperators('Rolling Department');
+        $operators = $this->getDepartmentOperators('Printing Department');
 
         $shifts = DB::Connection('mysql')->table('shift_type')
             ->select('id', 'shift_type_name')
@@ -1384,9 +1384,9 @@ class FarazProductionController extends Controller
             ->orderBy('s.id')
             ->get();
 
-        $machines = $this->getDepartmentMachines('Rolling Department');
+        $machines = $this->getDepartmentMachines('Printing Department');
 
-        $operators = $this->getDepartmentOperators('Rolling Department');
+        $operators = $this->getDepartmentOperators('Printing Department');
 
         $shifts = DB::Connection('mysql')->table('shift_type')
             ->select('id', 'shift_type_name')

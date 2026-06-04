@@ -67,14 +67,14 @@
                                                         <div class="form-group">
                                                             <label class="col-sm-4 control-label">Department</label>
                                                             <div class="col-sm-8">
-                                                                <select name="department_id" id="department_id" class="form-control select2" required>
-                                                                    <option value="">Select Department</option>
+                                                                <select name="department_id[]" id="department_id" class="form-control select2" multiple required>
                                                                     @foreach($departments as $department)
-                                                                        <option value="{{ $department->id }}" {{ old('department_id') == $department->id ? 'selected' : '' }}>
+                                                                        <option value="{{ $department->id }}" {{ in_array($department->id, old('department_id', [])) ? 'selected' : '' }}>
                                                                             {{ $department->department_name }}
                                                                         </option>
                                                                     @endforeach
                                                                 </select>
+                                                                <small class="text-muted">Multiple departments select kar sakte hain.</small>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -108,7 +108,9 @@
 
 <script>
     $(document).ready(function () {
-        $('#department_id').select2();
+        $('#department_id').select2({
+            placeholder: 'Select Department(s)'
+        });
     });
 </script>
 @endsection

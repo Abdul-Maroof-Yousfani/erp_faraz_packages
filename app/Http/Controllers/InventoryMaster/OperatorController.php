@@ -72,7 +72,8 @@ class OperatorController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required',
-            'department_id' => 'required',
+            'department_id' => 'required|array|min:1',
+            'department_id.*' => 'required',
         ]);
     
         try {
@@ -81,18 +82,20 @@ class OperatorController extends Controller
                 return redirect()->back()->withErrors($validator)->withInput();
             }
 
-        
+            $departmentIds = array_unique(array_filter((array) $request->department_id));
+
+            DB::connection('mysql2')->transaction(function () use ($request, $departmentIds) {
+                foreach ($departmentIds as $departmentId) {
+                    Operator::create([
+                        'name' => $request->name,
+                        'department_id' => $departmentId,
+                        'status' => 1,
+                        'username' => Auth()->user()->name,
+                    ]);
+                }
+            });
     
-            $data = Operator::create(
-                [
-                    'name' => $request->name, 
-                    'department_id' => $request->department_id,
-                    'status' => 1, 
-                    'username' => Auth()->user()->name,
-                ]
-            );            
-    
-            return redirect()->back()->with('success', 'Record inserted successfully');
+            return redirect()->back()->with('success', 'Operator assigned to selected departments successfully');
         } catch (QueryException $e) {
             // Log or handle the exception as needed
             return redirect()->back()->withErrors('Error inserting record. Please try again.')->withInput();
