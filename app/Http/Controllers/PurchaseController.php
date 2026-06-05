@@ -770,6 +770,7 @@ class PurchaseController extends Controller
             'originalAfterTaxAmount'
         ));
     }
+    
 
 
     public function editGoodsReceiptNoteWithoutPOForm($id)
