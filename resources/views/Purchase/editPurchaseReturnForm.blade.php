@@ -111,6 +111,15 @@
                                                                         $purchaseBagQty = (float) $Fil->recived_qty / (float) $Fil->source_pack_size;
                                                                     }
                                                                     $purchaseLbsQty = (float) ($Fil->source_lbs_qty ?? ((float) $Fil->recived_qty * 2.2));
+                                                                    $expectedLbsQty = (float) $Fil->recived_qty * 2.2;
+                                                                    if ((float) $Fil->recived_qty > 0) {
+                                                                        $lbsRatio = $purchaseLbsQty / (float) $Fil->recived_qty;
+                                                                        if ($purchaseLbsQty <= 0 || abs($lbsRatio - 2.2) > 0.05) {
+                                                                            $purchaseLbsQty = $expectedLbsQty;
+                                                                        }
+                                                                    } else {
+                                                                        $purchaseLbsQty = $expectedLbsQty;
+                                                                    }
                                                                     $rateCalBy = (int) ($Fil->rate_cal_by ?? 2);
                                                                     $rateCalByLabel = $rateCalBy === 1 ? 'By BAGS' : ($rateCalBy === 3 ? 'By LBS' : 'By KGS');
                                                                 @endphp

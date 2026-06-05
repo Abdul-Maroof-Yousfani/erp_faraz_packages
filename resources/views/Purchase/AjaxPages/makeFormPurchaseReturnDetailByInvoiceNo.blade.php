@@ -85,6 +85,15 @@ $InvoiceDate = $makeGetValue[2] ?? '';
                     $sourceBagQty = (float) ($Fil->source_bag_qty ?? 0);
                     $sourceLbsQty = (float) ($Fil->source_lbs_qty ?? (((float) $purchaseQty) * 2.2));
                     $sourcePackSize = (float) ($Fil->source_pack_size ?? 0);
+                    $expectedLbsQty = ((float) $purchaseQty) * 2.2;
+                    if ($purchaseQty > 0) {
+                        $lbsRatio = $sourceLbsQty / $purchaseQty;
+                        if ($sourceLbsQty <= 0 || abs($lbsRatio - 2.2) > 0.05) {
+                            $sourceLbsQty = $expectedLbsQty;
+                        }
+                    } else {
+                        $sourceLbsQty = $expectedLbsQty;
+                    }
                     $purchaseBagQty = $sourceBagQty > 0
                         ? $sourceBagQty
                         : ($sourcePackSize > 0 ? ($purchaseQty / $sourcePackSize) : 0);
