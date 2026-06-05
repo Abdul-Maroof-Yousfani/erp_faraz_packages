@@ -78,12 +78,15 @@
                                                                 <th>Item Name</th>
                                                                 <th>Location</th>
                                                                 <th class="hide">Batch Code</th>
-                                                                <th>Received Qty</th>
+                                                                <th>Bags</th>
+                                                                <th>Qty KGs</th>
+                                                                <th>Qty LBS</th>
                                                                 <th>Return Qty Sum Total</th>
                                                                 <th>Price</th>
+                                                                <th>Rate Cal By</th>
                                                                 <th>Amount</th>
-                                                                <th>Stock Qty</th>
-                                                                <th>Return Qty</th>
+                                                                <th>Remaining KGs</th>
+                                                                <th>Return Qty KGs</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -92,6 +95,7 @@
                                                             @endphp
                                                             @foreach($Detail as $Fil)
                                                                 @php
+                                                                    $lineKey = $loop->index;
                                                                     $currentInvoiceId = $Master->purchase_invoice_id ?? $Master->grn_id;
                                                                     $alreadyReturned = (float) DB::connection('mysql2')
                                                                         ->table('purchase_return_data')
@@ -102,6 +106,13 @@
                                                                         ->sum('return_qty');
 
                                                                     $remainingQty = max((float)$Fil->recived_qty - $alreadyReturned, 0);
+                                                                    $purchaseBagQty = (float) ($Fil->source_bag_qty ?? 0);
+                                                                    if ($purchaseBagQty <= 0 && (float) ($Fil->source_pack_size ?? 0) > 0) {
+                                                                        $purchaseBagQty = (float) $Fil->recived_qty / (float) $Fil->source_pack_size;
+                                                                    }
+                                                                    $purchaseLbsQty = (float) ($Fil->source_lbs_qty ?? ((float) $Fil->recived_qty * 2.2));
+                                                                    $rateCalBy = (int) ($Fil->rate_cal_by ?? 2);
+                                                                    $rateCalByLabel = $rateCalBy === 1 ? 'By BAGS' : ($rateCalBy === 3 ? 'By LBS' : 'By KGS');
                                                                 @endphp
 
                                                                 <tr class="text-center">
@@ -125,40 +136,55 @@
 
                                                                     <td class="hide">
                                                                         {{ $Fil->batch_code }}
-                                                                        <input type="hidden" name="BatchCode[]" id="BatchCode{{ $Fil->grn_data_id }}" value="{{ $Fil->batch_code }}">
+                                                                        <input type="hidden" name="BatchCode[]" id="BatchCode{{ $lineKey }}" value="{{ $Fil->batch_code }}">
+                                                                    </td>
+
+                                                                    <td class="text-center">
+                                                                        {{ number_format($purchaseBagQty, 2) }}
                                                                     </td>
 
                                                                     <td class="text-center">
                                                                         {{ number_format($Fil->recived_qty, 2) }}
-                                                                        <input type="hidden" name="PurchaseRecQty[]" id="purchase_recived_qty_{{ $Fil->grn_data_id }}" value="{{ $Fil->recived_qty }}">
+                                                                        <input type="hidden" name="PurchaseRecQty[]" id="purchase_recived_qty_{{ $lineKey }}" value="{{ $Fil->recived_qty }}">
                                                                     </td>
 
+                                                                    <td class="text-center">{{ number_format($purchaseLbsQty, 2) }}</td>
+
                                                                     <td class="text-center">{{ number_format($alreadyReturned, 2) }}</td>
-                                                                    <input type="hidden" id="return_{{ $Fil->id }}" value="{{ $alreadyReturned }}">
+                                                                    <input type="hidden" id="return_{{ $lineKey }}" value="{{ $alreadyReturned }}">
 
                                                                     <td class="text-center">
                                                                         {{ number_format($Fil->rate, 2) }}
-                                                                        <input type="hidden" name="Rate[]" id="rate_{{ $Fil->grn_data_id }}" value="{{ $Fil->rate }}">
+                                                                        <input type="hidden" name="Rate[]" id="rate_{{ $lineKey }}" value="{{ $Fil->rate }}">
+                                                                    </td>
+
+                                                                    <td class="text-center">
+                                                                        <input type="text" class="form-control text-end" value="{{ $rateCalByLabel }}" readonly>
+                                                                        <small class="text-muted" id="rate_basis_note_{{ $lineKey }}">Rate Qty: 0.00 {{ $rateCalBy === 1 ? 'BAGS' : ($rateCalBy === 3 ? 'LBS' : 'KGS') }}</small>
+                                                                        <input type="hidden" name="rate_cal_by[]" id="rate_cal_by_{{ $lineKey }}" value="{{ $rateCalBy }}">
+                                                                        <input type="hidden" name="source_bag_qty[]" id="source_bag_qty_{{ $lineKey }}" value="{{ number_format($purchaseBagQty, 2, '.', '') }}">
+                                                                        <input type="hidden" name="source_lbs_qty[]" id="source_lbs_qty_{{ $lineKey }}" value="{{ number_format($purchaseLbsQty, 2, '.', '') }}">
+                                                                        <input type="hidden" name="source_pack_size[]" id="source_pack_size_{{ $lineKey }}" value="{{ number_format((float) ($Fil->source_pack_size ?? 0), 2, '.', '') }}">
                                                                     </td>
 
                                                                     <td>
                                                                         <input type="number" step="0.01" class="form-control text-end" readonly 
-                                                                               name="Amount[]" id="amount_{{ $Fil->grn_data_id }}" 
+                                                                               name="Amount[]" id="amount_{{ $lineKey }}" 
                                                                                value="{{ number_format($Fil->amount, 2, '.', '') }}">
                                                                     </td>
 
                                                                     <td>
                                                                         <input type="number" class="form-control text-end" readonly 
-                                                                               id="stock_qty{{ $Fil->grn_data_id }}" name="stock_qty[]" 
+                                                                               id="stock_qty{{ $lineKey }}" name="stock_qty[]" 
                                                                                value="{{ number_format($remainingQty, 2, '.', '') }}">
                                                                     </td>
 
                                                                     <td>
                                                                         <input type="number" step="any" class="form-control text-end ReturnQty" 
-                                                                               id="return_qty_{{ $Fil->grn_data_id }}" 
+                                                                               id="return_qty_{{ $lineKey }}" 
                                                                                name="ReturnQty[]" 
                                                                                value="{{ $Fil->return_qty ?? 0 }}" 
-                                                                               onkeyup="check_val('{{ $Fil->grn_data_id }}')">
+                                                                               onkeyup="check_val('{{ $lineKey }}')">
                                                                         <input type="hidden" name="LoopVal[]" value="{{ $loop->index }}">
                                                                     </td>
 
@@ -219,6 +245,24 @@
                                                     </thead>
                                                     <tbody>
                                                         <tr>
+                                                            <td>Total Return Bags</td>
+                                                            <td class="text-end">
+                                                                <input type="text" class="form-control text-end" id="return_bag_qty" value="0.00" readonly>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Total Return KGs</td>
+                                                            <td class="text-end">
+                                                                <input type="text" class="form-control text-end" id="return_qty_kg_total" value="0.00" readonly>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Total Return LBS</td>
+                                                            <td class="text-end">
+                                                                <input type="text" class="form-control text-end" id="return_qty_lbs_total" value="0.00" readonly>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
                                                             <td>Return Amount Before Tax</td>
                                                             <td class="text-end">
                                                                 <input type="text" class="form-control text-end" id="return_before_tax" value="0.00" readonly>
@@ -269,6 +313,45 @@
 </div>
 
 <script>
+    function get_quantity_meta(Id, qty) {
+        const purchaseQty = parseFloat($('#purchase_recived_qty_' + Id).val()) || 0;
+        const rateCalBy = parseInt($('#rate_cal_by_' + Id).val() || 2);
+        const sourceBagQty = parseFloat($('#source_bag_qty_' + Id).val()) || 0;
+        const sourceLbsQty = parseFloat($('#source_lbs_qty_' + Id).val()) || ((parseFloat(qty) || 0) * 2.2);
+        const sourcePackSize = parseFloat($('#source_pack_size_' + Id).val()) || 0;
+        const qtyKg = parseFloat(qty) || 0;
+
+        let bagQty = 0;
+        if (sourcePackSize > 0) {
+            bagQty = qtyKg / sourcePackSize;
+        } else if (sourceBagQty > 0 && purchaseQty > 0) {
+            bagQty = (qtyKg / purchaseQty) * sourceBagQty;
+        }
+
+        const lbsQty = sourceLbsQty > 0 && purchaseQty > 0
+            ? ((qtyKg / purchaseQty) * sourceLbsQty)
+            : (qtyKg * 2.2);
+
+        let rateBasisQty = qtyKg;
+        let rateBasisLabel = 'KGS';
+
+        if (rateCalBy === 1) {
+            rateBasisQty = bagQty;
+            rateBasisLabel = 'BAGS';
+        } else if (rateCalBy === 3) {
+            rateBasisQty = lbsQty;
+            rateBasisLabel = 'LBS';
+        }
+
+        return {
+            bagQty: bagQty,
+            qtyKg: qtyKg,
+            qtyLbs: lbsQty,
+            rateBasisQty: rateBasisQty,
+            rateBasisLabel: rateBasisLabel
+        };
+    }
+
     function check_val(Id) {
         const stockQty     = parseFloat($('#stock_qty' + Id).val()) || 0;
         const returnQty    = parseFloat($('#return_qty_' + Id).val()) || 0;
@@ -290,30 +373,49 @@
     function update_line_amount(Id) {
         const qty  = parseFloat($('#return_qty_' + Id).val()) || 0;
         const rate = parseFloat($('#rate_' + Id).val()) || 0;
-        $('#amount_' + Id).val((qty * rate).toFixed(2));
+        const quantityMeta = get_quantity_meta(Id, qty);
+
+        $('#amount_' + Id).val((quantityMeta.rateBasisQty * rate).toFixed(2));
+        $('#rate_basis_note_' + Id).text('Rate Qty: ' + quantityMeta.rateBasisQty.toFixed(2) + ' ' + quantityMeta.rateBasisLabel);
         calculate_return_summary();
     }
 
     function calculate_return_summary() {
         const taxPercent = parseFloat($('#original_sales_tax_percent').val()) || 0;
         let returnBeforeTax = 0;
+        let returnBagQty = 0;
+        let returnQtyKgTotal = 0;
+        let returnQtyLbsTotal = 0;
 
-        // Sum amount of all rows (since this is edit mode, all rows are active)
         $('input[name="Amount[]"]').each(function() {
             returnBeforeTax += parseFloat($(this).val()) || 0;
         });
 
+        $('input[name="ReturnQty[]"]').each(function(index) {
+            const quantityMeta = get_quantity_meta(index, parseFloat($(this).val()) || 0);
+            returnBagQty += quantityMeta.bagQty;
+            returnQtyKgTotal += quantityMeta.qtyKg;
+            returnQtyLbsTotal += quantityMeta.qtyLbs;
+        });
+
         const returnTaxAmount = (returnBeforeTax * taxPercent) / 100;
 
+        $('#return_bag_qty').val(returnBagQty.toFixed(2));
+        $('#return_qty_kg_total').val(returnQtyKgTotal.toFixed(2));
+        $('#return_qty_lbs_total').val(returnQtyLbsTotal.toFixed(2));
         $('#return_before_tax').val(returnBeforeTax.toFixed(2));
+        $('#return_sales_tax_percent').val(taxPercent.toFixed(2));
         $('#return_sales_tax').val(returnTaxAmount.toFixed(2));
         $('#return_after_tax').val((returnBeforeTax + returnTaxAmount).toFixed(2));
     }
 
     $(document).ready(function() {
+        $('input[name="ReturnQty[]"]').each(function(index) {
+            update_line_amount(index);
+        });
+
         calculate_return_summary();
 
-        // Recalculate when any return qty changes
         $('.ReturnQty').on('keyup change', function() {
             calculate_return_summary();
         });

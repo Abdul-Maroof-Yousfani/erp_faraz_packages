@@ -722,8 +722,53 @@ class PurchaseController extends Controller
     public function editPurchaseReturnForm($id, $PrNo)
     {
         $Master = DB::Connection('mysql2')->table('purchase_return')->where('status', 1)->where('id', $id)->first();
-        $Detail = DB::Connection('mysql2')->table('purchase_return_data')->where('status', 1)->where('master_id', $id)->get();
-        return view('Purchase.editPurchaseReturnForm', compact('Master', 'Detail'));
+        $PurchaseInvoiceData = null;
+
+        if (!empty($Master->purchase_invoice_id)) {
+            $PurchaseInvoiceData = DB::Connection('mysql2')
+                ->table('new_purchase_voucher')
+                ->where('status', 1)
+                ->where('id', $Master->purchase_invoice_id)
+                ->first();
+        }
+
+        $Detail = DB::Connection('mysql2')->table('purchase_return_data as prd')
+            ->leftJoin('grn_data as gd', 'gd.id', '=', 'prd.grn_data_id')
+            ->leftJoin('purchase_request_data as po', 'po.id', '=', 'gd.po_data_id')
+            ->leftJoin('new_purchase_voucher_data as npvd', function ($join) use ($Master) {
+                $join->on('npvd.id', '=', 'prd.grn_data_id');
+                if (!empty($Master->purchase_invoice_id)) {
+                    $join->where('npvd.master_id', '=', $Master->purchase_invoice_id);
+                }
+            })
+            ->leftJoin('subitem as s', 's.id', '=', 'prd.sub_item_id')
+            ->where('prd.status', 1)
+            ->where('prd.master_id', $id)
+            ->select(
+                'prd.*',
+                DB::raw('COALESCE(npvd.rate_cal_by, po.rate_cal_by, 2) as rate_cal_by'),
+                DB::raw('COALESCE(npvd.bag_qty, po.bags_qty, 0) as source_bag_qty'),
+                DB::raw('COALESCE(npvd.lbs_qty, po.qty_lbs, gd.purchase_recived_qty * 2.2, prd.recived_qty * 2.2) as source_lbs_qty'),
+                DB::raw('COALESCE(s.pack_size, 0) as source_pack_size')
+            )
+            ->get();
+
+        $originalBeforeTaxAmount = (float) ($Master->before_tax_amount ?? $Detail->sum('net_amount'));
+        $originalTaxAmount = (float) ($Master->sales_tax_amount ?? 0);
+        $originalTaxPercent = $originalBeforeTaxAmount > 0
+            ? round(($originalTaxAmount / $originalBeforeTaxAmount) * 100, 2)
+            : 0;
+        $originalAfterTaxAmount = (float) ($Master->after_tax_amount ?? ($originalBeforeTaxAmount + $originalTaxAmount));
+
+        return view('Purchase.editPurchaseReturnForm', compact(
+            'Master',
+            'Detail',
+            'PurchaseInvoiceData',
+            'originalBeforeTaxAmount',
+            'originalTaxAmount',
+            'originalTaxPercent',
+            'originalAfterTaxAmount'
+        ));
     }
 
 

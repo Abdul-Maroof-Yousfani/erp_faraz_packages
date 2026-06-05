@@ -56,13 +56,15 @@ $InvoiceDate = $makeGetValue[2] ?? '';
                     <th class="text-center">Item Name</th>
                     <th class="text-center">Location</th>
                     <th class="text-center hide">Batch Code</th>
-                    <th class="text-center">Purchase Qty</th>
+                    <th class="text-center">Bags</th>
+                    <th class="text-center">Qty KGs</th>
+                    <th class="text-center">Qty LBS</th>
                     <th class="text-center">Return Qty Sum Total</th>
                     <th class="text-center">Price</th>
                     <th class="text-center">Rate Cal By</th>
                     <th class="text-center">Amount</th>
-                    <th class="text-center">Purchase Remaining Qty</th>
-                    <th class="text-center">Return Qty</th>
+                    <th class="text-center">Remaining KGs</th>
+                    <th class="text-center">Return Qty KGs</th>
                     <th class="text-center">Enable/Disable</th>
                 </thead>
                 <tbody>
@@ -83,6 +85,9 @@ $InvoiceDate = $makeGetValue[2] ?? '';
                     $sourceBagQty = (float) ($Fil->source_bag_qty ?? 0);
                     $sourceLbsQty = (float) ($Fil->source_lbs_qty ?? (((float) $purchaseQty) * 2.2));
                     $sourcePackSize = (float) ($Fil->source_pack_size ?? 0);
+                    $purchaseBagQty = $sourceBagQty > 0
+                        ? $sourceBagQty
+                        : ($sourcePackSize > 0 ? ($purchaseQty / $sourcePackSize) : 0);
                     $rateCalByLabel = $rateCalBy === 1 ? 'By BAGS' : ($rateCalBy === 3 ? 'By LBS' : 'By KGS');
                     $reurn = 0;
                     if (!empty($InvoiceId) && !empty($itemId)) {
@@ -126,9 +131,11 @@ $InvoiceDate = $makeGetValue[2] ?? '';
                             <?php echo $batchCode; ?>
                             <input type="hidden" name="BatchCode[]" id="BatchCode<?php echo $lineKey?>" value="<?php echo $batchCode; ?>">
                         </td>
+                        <td class="text-center"><?php echo number_format($purchaseBagQty,2);?></td>
                         <td class="text-center"><?php echo number_format($purchaseQty,2);?>
                             <input value="<?php echo $purchaseQty?>" type="hidden" name="PurchaseRecQty[]" id="purchase_recived_qty_<?php echo $lineKey; ?>"/>
                         </td>
+                        <td class="text-center"><?php echo number_format($sourceLbsQty,2);?></td>
                         <td class="text-center"><?php echo number_format($reurn,2); ?></td>
                         <input type="hidden" id="return_<?php echo $lineKey; ?>" value="<?php echo $reurn; ?>"/>
 
@@ -137,6 +144,7 @@ $InvoiceDate = $makeGetValue[2] ?? '';
                         </td>
                         <td class="text-center">
                             <input type="text" class="form-control" value="<?php echo $rateCalByLabel; ?>" readonly>
+                            <small class="text-muted" id="rate_basis_note_<?php echo $lineKey; ?>">Rate Qty: 0.00 <?php echo $rateCalBy === 1 ? 'BAGS' : ($rateCalBy === 3 ? 'LBS' : 'KGS'); ?></small>
                             <input type="hidden" name="rate_cal_by[]" id="rate_cal_by_<?php echo $lineKey; ?>" value="<?php echo $rateCalBy; ?>">
                             <input type="hidden" name="source_bag_qty[]" id="source_bag_qty_<?php echo $lineKey; ?>" value="<?php echo $sourceBagQty; ?>">
                             <input type="hidden" name="source_lbs_qty[]" id="source_lbs_qty_<?php echo $lineKey; ?>" value="<?php echo $sourceLbsQty; ?>">
@@ -210,7 +218,25 @@ $InvoiceDate = $makeGetValue[2] ?? '';
                     <th colspan="2" class="text-center">Current Return Summary</th>
                 </tr>
             </thead>
-            <tbody>
+                                                    <tbody>
+                <tr>
+                    <td>Total Return Bags</td>
+                    <td>
+                        <input type="text" class="form-control text-right" id="return_bag_qty" value="0.00" readonly>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Total Return KGs</td>
+                    <td>
+                        <input type="text" class="form-control text-right" id="return_qty_kg_total" value="0.00" readonly>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Total Return LBS</td>
+                    <td>
+                        <input type="text" class="form-control text-right" id="return_qty_lbs_total" value="0.00" readonly>
+                    </td>
+                </tr>
                 <tr>
                     <td>Return Amount Before Tax</td>
                     <td>
@@ -285,16 +311,23 @@ $InvoiceDate = $makeGetValue[2] ?? '';
     {
         var qty = parseFloat($('#return_qty_' + Id).val());
         var rate = parseFloat($('#rate_' + Id).val());
+        var quantityMeta = get_quantity_meta(Id, qty);
+        var rateBasisQty = quantityMeta.rateBasisQty;
+
+        $('#amount_' + Id).val((rateBasisQty * rate).toFixed(2));
+        $('#rate_basis_note_' + Id).text('Rate Qty: ' + rateBasisQty.toFixed(2) + ' ' + quantityMeta.rateBasisLabel);
+        calculate_return_summary();
+    }
+
+    function get_quantity_meta(Id, qty) {
         var purchaseQty = parseFloat($('#purchase_recived_qty_' + Id).val());
         var rateCalBy = parseInt($('#rate_cal_by_' + Id).val() || 2);
         var sourceBagQty = parseFloat($('#source_bag_qty_' + Id).val());
         var sourceLbsQty = parseFloat($('#source_lbs_qty_' + Id).val());
         var sourcePackSize = parseFloat($('#source_pack_size_' + Id).val());
+
         if (isNaN(qty)) {
             qty = 0;
-        }
-        if (isNaN(rate)) {
-            rate = 0;
         }
         if (isNaN(purchaseQty) || purchaseQty <= 0) {
             purchaseQty = qty;
@@ -309,19 +342,35 @@ $InvoiceDate = $makeGetValue[2] ?? '';
             sourcePackSize = 0;
         }
 
-        var rateBasisQty = qty;
-        if (rateCalBy === 1) {
-            if (sourcePackSize > 0) {
-                rateBasisQty = qty / sourcePackSize;
-            } else {
-                rateBasisQty = sourceBagQty > 0 && purchaseQty > 0 ? ((qty / purchaseQty) * sourceBagQty) : qty;
-            }
-        } else if (rateCalBy === 3) {
-            rateBasisQty = sourceLbsQty > 0 && purchaseQty > 0 ? ((qty / purchaseQty) * sourceLbsQty) : (qty * 2.2);
+        var bagQty = 0;
+        if (sourcePackSize > 0) {
+            bagQty = qty / sourcePackSize;
+        } else if (sourceBagQty > 0 && purchaseQty > 0) {
+            bagQty = (qty / purchaseQty) * sourceBagQty;
         }
 
-        $('#amount_' + Id).val((rateBasisQty * rate).toFixed(2));
-        calculate_return_summary();
+        var lbsQty = sourceLbsQty > 0 && purchaseQty > 0
+            ? ((qty / purchaseQty) * sourceLbsQty)
+            : (qty * 2.2);
+
+        var rateBasisQty = qty;
+        var rateBasisLabel = 'KGS';
+
+        if (rateCalBy === 1) {
+            rateBasisQty = bagQty;
+            rateBasisLabel = 'BAGS';
+        } else if (rateCalBy === 3) {
+            rateBasisQty = lbsQty;
+            rateBasisLabel = 'LBS';
+        }
+
+        return {
+            bagQty: bagQty,
+            qtyKg: qty,
+            qtyLbs: lbsQty,
+            rateBasisQty: rateBasisQty,
+            rateBasisLabel: rateBasisLabel
+        };
     }
 
     function ChkUnChk(Id) {
@@ -334,6 +383,7 @@ $InvoiceDate = $makeGetValue[2] ?? '';
             $('#return_qty_' + Id).val('0.00');
             $('#amount_' + Id).val('0.00');
         }
+        update_line_amount(Id);
         calculate_return_summary();
     }
 
@@ -341,14 +391,24 @@ $InvoiceDate = $makeGetValue[2] ?? '';
     {
         var originalSalesTaxPercent = parseFloat($('#original_sales_tax_percent').val()) || 0;
         var returnBeforeTax = 0;
+        var returnBagQty = 0;
+        var returnQtyKgTotal = 0;
+        var returnQtyLbsTotal = 0;
 
         $('input[name="enable_disable[]"]:checked').each(function () {
             var rowId = $(this).val();
             returnBeforeTax += parseFloat($('#amount_' + rowId).val()) || 0;
+            var quantityMeta = get_quantity_meta(rowId, parseFloat($('#return_qty_' + rowId).val()) || 0);
+            returnBagQty += quantityMeta.bagQty;
+            returnQtyKgTotal += quantityMeta.qtyKg;
+            returnQtyLbsTotal += quantityMeta.qtyLbs;
         });
 
         var returnSalesTax = (returnBeforeTax * originalSalesTaxPercent) / 100;
 
+        $('#return_bag_qty').val(returnBagQty.toFixed(2));
+        $('#return_qty_kg_total').val(returnQtyKgTotal.toFixed(2));
+        $('#return_qty_lbs_total').val(returnQtyLbsTotal.toFixed(2));
         $('#return_before_tax').val(returnBeforeTax.toFixed(2));
         $('#return_sales_tax_percent').val(originalSalesTaxPercent.toFixed(2));
         $('#return_sales_tax').val(returnSalesTax.toFixed(2));
@@ -366,6 +426,10 @@ $InvoiceDate = $makeGetValue[2] ?? '';
 
     $(document).ready(function () {
         $('#addPurchaseReturnDetail').on('submit', validateForm);
+        $('input[name="rate_cal_by[]"]').each(function () {
+            var rowId = $(this).attr('id').replace('rate_cal_by_', '');
+            update_line_amount(rowId);
+        });
         calculate_return_summary();
     });
 
