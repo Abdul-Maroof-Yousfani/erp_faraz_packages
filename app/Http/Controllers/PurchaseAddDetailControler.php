@@ -3304,17 +3304,20 @@ class PurchaseAddDetailControler extends Controller
         $PurchaseReturnDate = $request->PurchaseReturnDate;
         $SupplierId = $request->supplier;
         $supp_id = CommonHelper::get_supplier_acc_id($SupplierId);
-        $PurchaseInvoiceId = $request->PurchaseInvoiceId ?? $request->GrnId;
-        $PurchaseInvoiceNo = $request->PurchaseInvoiceNo ?? $request->GrnNo;
-        $PurchaseInvoiceDate = $request->PurchaseInvoiceDate ?? $request->GrnDate;
+        $PurchaseInvoiceId = $request->PurchaseInvoiceId ?? 0;
+        $PurchaseInvoiceNo = $request->PurchaseInvoiceNo ?? '';
+        $PurchaseInvoiceDate = $request->PurchaseInvoiceDate ?? '';
+        $GrnId = $request->GrnId ?? $PurchaseInvoiceId;
+        $GrnNo = $request->GrnNo ?? $PurchaseInvoiceNo;
+        $GrnDate = $request->GrnDate ?? $PurchaseInvoiceDate;
         $Remarks = $request->Remarks;
-        $PurchaseReturnInsert['grn_id'] = $PurchaseInvoiceId;
+        $PurchaseReturnInsert['grn_id'] = $GrnId;
         $PurchaseReturnInsert['purchase_invoice_id'] = $PurchaseInvoiceId;
         $PurchaseReturnInsert['pr_no'] = $PurchaseReturnNo;
         $PurchaseReturnInsert['pr_date'] = $PurchaseReturnDate;
         $PurchaseReturnInsert['supplier_id'] = $SupplierId;
-        $PurchaseReturnInsert['grn_no'] = $PurchaseInvoiceNo;
-        $PurchaseReturnInsert['grn_date'] = $PurchaseInvoiceDate;
+        $PurchaseReturnInsert['grn_no'] = $GrnNo;
+        $PurchaseReturnInsert['grn_date'] = $GrnDate;
         $PurchaseReturnInsert['remarks'] = $Remarks;
         $PurchaseReturnInsert['created_date'] = date('Y-m-d');
         $PurchaseReturnInsert['status'] = 1;
@@ -3331,10 +3334,10 @@ class PurchaseAddDetailControler extends Controller
 
             $requestedReturnQty = (float) $request->input('ReturnQty')[$row];
             $purchaseQty = (float) $request->input('PurchaseRecQty')[$row];
+            $grnDataId = $request->input('grn_data_id')[$row] ?? 0;
             $alreadyReturnedQty = (float) DB::connection('mysql2')->table('purchase_return_data')
                 ->where('status', 1)
-                ->where('purchase_invoice_id', $PurchaseInvoiceId)
-                ->where('sub_item_id', $request->input('SubItemId')[$row])
+                ->where('grn_data_id', $grnDataId)
                 ->sum('return_qty');
             $remainingQty = max($purchaseQty - $alreadyReturnedQty, 0);
 
@@ -3378,7 +3381,7 @@ class PurchaseAddDetailControler extends Controller
             (
                 'master_id' => $master_id,
                 'pr_no' => $PurchaseReturnNo,
-                'grn_data_id' => $request->input('grn_data_id')[$row],
+                'grn_data_id' => $grnDataId,
                 'purchase_invoice_id' => $PurchaseInvoiceId,
                 'sub_item_id' => $request->input('SubItemId')[$row],
                 'description' => $request->input('item_desc')[$row],
@@ -3883,20 +3886,23 @@ public function updatePurchaseReturnDetail(Request $request)
         $EditId              = $request->EditId;
         $SupplierId          = $request->supplier;
         $supp_id             = CommonHelper::get_supplier_acc_id($SupplierId);
-        $PurchaseInvoiceId   = $request->PurchaseInvoiceId ?? $request->GrnId ?? 0;
-        $PurchaseInvoiceNo   = $request->PurchaseInvoiceNo ?? $request->GrnNo;
-        $PurchaseInvoiceDate = $request->PurchaseInvoiceDate ?? $request->GrnDate;
+        $PurchaseInvoiceId   = $request->PurchaseInvoiceId ?? 0;
+        $PurchaseInvoiceNo   = $request->PurchaseInvoiceNo ?? '';
+        $PurchaseInvoiceDate = $request->PurchaseInvoiceDate ?? '';
+        $GrnId               = $request->GrnId ?? $PurchaseInvoiceId;
+        $GrnNo               = $request->GrnNo ?? $PurchaseInvoiceNo;
+        $GrnDate             = $request->GrnDate ?? $PurchaseInvoiceDate;
         $Remarks             = $request->Remarks ?? '';
 
         // Update Master Table
         DB::connection('mysql2')->table('purchase_return')->where('id', $EditId)->update([
-            'grn_id'              => $PurchaseInvoiceId,
+            'grn_id'              => $GrnId,
             'purchase_invoice_id' => $PurchaseInvoiceId,
             'pr_no'               => $PurchaseReturnNo,
             'pr_date'             => $PurchaseReturnDate,
             'supplier_id'         => $SupplierId,
-            'grn_no'              => $PurchaseInvoiceNo,
-            'grn_date'            => $PurchaseInvoiceDate,
+            'grn_no'              => $GrnNo,
+            'grn_date'            => $GrnDate,
             'remarks'             => $Remarks,
             'username'            => Auth::user()->name,
             // 'updated_date'        => now(),
@@ -3939,8 +3945,7 @@ public function updatePurchaseReturnDetail(Request $request)
             // Calculate already returned quantity (excluding current edit)
             $alreadyReturnedQty = (float) DB::connection('mysql2')->table('purchase_return_data')
                 ->where('status', 1)
-                ->where('purchase_invoice_id', $PurchaseInvoiceId)
-                ->where('sub_item_id', $subItemId)
+                ->where('grn_data_id', $grnDataId)
                 ->where('master_id', '!=', $EditId)
                 ->sum('return_qty');
 

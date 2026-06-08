@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Input;
 use Auth;
 use DB;
@@ -876,9 +877,7 @@ function addDirectgrn()
         $id = $_GET['supplier_id'];
         echo '<option value="">Select GRN No</option>';
 
-        $GoodsReceiptNote = new GoodsReceiptNote();
-        $GoodsReceiptNote = $GoodsReceiptNote->SetConnection('mysql2');
-        $rows = $GoodsReceiptNote
+        $rows = DB::connection('mysql2')->table('goods_receipt_note')
             ->where('status', 1)
             ->where('supplier_id', $id)
             ->whereIn('grn_status', [2, 3])
@@ -907,67 +906,50 @@ function addDirectgrn()
             ->where('id', $GrnId)
             ->first();
 
-        // Get GRN detail rows
         $DataDetail = DB::connection('mysql2')->table('grn_data as gd')
             ->leftJoin('purchase_request_data as prd', 'prd.id', '=', 'gd.po_data_id')
-            ->leftJoin('new_purchase_voucher_data as npvd', function ($join) {
-                $join->on('npvd.grn_data_id', '=', 'gd.id')
-                    ->where('npvd.staus', 1)
-                    ->where('npvd.additional_exp', 0);
-            })
             ->leftJoin('subitem as s', 's.id', '=', 'gd.sub_item_id')
-            ->where('gd.master_id', $GrnId)
             ->where('gd.status', 1)
+            ->where('gd.master_id', $GrnId)
             ->select(
                 'gd.id as purchase_grn_data_id',
                 'gd.sub_item_id as sub_item',
-                'gd.purchase_recived_qty',
-                DB::raw('COALESCE(npvd.rate, prd.rate, gd.rate) as rate'),
-                DB::raw('COALESCE(npvd.net_amount, npvd.amount, prd.net_amount, prd.amount, gd.net_amount, gd.amount, gd.purchase_recived_qty * gd.rate) as amount'),
-                'gd.discount_percent',
-                'gd.discount_amount',
-                'gd.net_amount',
-                'gd.warehouse_id',
+                DB::raw('COALESCE(gd.purchase_recived_qty, 0) as purchase_recived_qty'),
+                DB::raw('COALESCE(prd.rate, gd.rate, 0) as rate'),
+                DB::raw('COALESCE(gd.net_amount, gd.amount, gd.purchase_recived_qty * gd.rate, 0) as amount'),
+                DB::raw('COALESCE(gd.discount_percent, 0) as discount_percent'),
+                DB::raw('COALESCE(gd.discount_amount, 0) as discount_amount'),
+                DB::raw('COALESCE(gd.net_amount, gd.amount, 0) as net_amount'),
+                DB::raw('COALESCE(gd.warehouse_id, 0) as warehouse_id'),
                 DB::raw('COALESCE(gd.batch_code, "") as batch_code'),
-                DB::raw('gd.purchase_recived_qty as qty'),
-                DB::raw('COALESCE(npvd.rate_cal_by, prd.rate_cal_by, 2) as rate_cal_by'),
-                DB::raw('COALESCE(npvd.bag_qty, prd.bags_qty, 0) as source_bag_qty'),
-                DB::raw('COALESCE(npvd.lbs_qty, prd.qty_lbs, gd.purchase_recived_qty * 2.2) as source_lbs_qty'),
+                DB::raw('COALESCE(gd.purchase_recived_qty, 0) as qty'),
+                DB::raw('COALESCE(prd.rate_cal_by, 2) as rate_cal_by'),
+                DB::raw('COALESCE(prd.bags_qty, 0) as source_bag_qty'),
+                DB::raw('COALESCE(prd.qty_lbs, gd.purchase_recived_qty * 2.2, 0) as source_lbs_qty'),
                 DB::raw('COALESCE(s.pack_size, 0) as source_pack_size'),
-                'gd.do_no',
-                'gd.godown_no',
+                DB::raw('COALESCE(gd.do_no, "") as do_no'),
+                DB::raw('COALESCE(gd.godown_no, "") as godown_no'),
                 DB::raw('"" as grn_description')
             )
             ->get();
 
-        // For tax summary — try to get from linked PO
         $originalBeforeTaxAmount = (float) $DataDetail->sum('amount');
-        $originalTaxAmount       = 0;
-        $originalTaxPercent      = 0;
-
-        if ($DataMaster && $DataMaster->po_no) {
-            $po = DB::connection('mysql2')->table('purchase_request')
-                ->where('purchase_request_no', $DataMaster->po_no)
-                ->where('status', 1)
-                ->select('sales_tax', 'sales_tax_amount')
-                ->first();
-            if ($po) {
-                $originalTaxPercent = (float) ($po->sales_tax ?? 0);
-                $originalTaxAmount  = ($originalBeforeTaxAmount * $originalTaxPercent) / 100;
-            }
-        }
+        $originalTaxAmount = 0;
+        $originalTaxPercent = 0;
         $originalAfterTaxAmount = $originalBeforeTaxAmount + $originalTaxAmount;
 
-        // Use GrnId as InvoiceId so the existing blade/controller works seamlessly
-        $InvoiceId   = $GrnId;
-        $InvoiceNo   = $GrnNo;
-        $InvoiceDate = $GrnDate;
+        $InvoiceId = 0;
+        $InvoiceNo = '';
+        $InvoiceDate = '';
 
         CommonHelper::reconnectMasterDatabase();
 
         return view('Purchase.AjaxPages.makeFormPurchaseReturnDetailByInvoiceNo', compact(
             'DataMaster',
             'DataDetail',
+            'GrnId',
+            'GrnNo',
+            'GrnDate',
             'InvoiceId',
             'InvoiceNo',
             'InvoiceDate',

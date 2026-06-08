@@ -3,16 +3,26 @@ use App\Helpers\CommonHelper;
 use App\Helpers\ReuseableCode;
 
 $m = $_GET['m'];
+$InvoiceId = $InvoiceId ?? 0;
+$InvoiceNo = $InvoiceNo ?? '';
+$InvoiceDate = $InvoiceDate ?? '';
+$GrnId = $GrnId ?? $InvoiceId;
+$GrnNo = $GrnNo ?? $InvoiceNo;
+$GrnDate = $GrnDate ?? $InvoiceDate;
 
-// Support both GRN-based and Invoice-based calls
-if (isset($_GET['GrnValue'])) {
-    $makeGetValue = explode('*', $_GET['GrnValue']);
-} else {
-    $makeGetValue = explode('*', $_GET['PurchaseInvoiceNo'] ?? '');
+if (!$InvoiceId && isset($_GET['PurchaseInvoiceNo'])) {
+    $makeGetValue = explode('*', $_GET['PurchaseInvoiceNo']);
+    $InvoiceId = $makeGetValue[0] ?? 0;
+    $InvoiceNo = $makeGetValue[1] ?? '';
+    $InvoiceDate = $makeGetValue[2] ?? '';
 }
-$InvoiceId   = $makeGetValue[0] ?? 0;
-$InvoiceNo   = $makeGetValue[1] ?? '';
-$InvoiceDate = $makeGetValue[2] ?? '';
+
+if (!$GrnId && isset($_GET['GrnValue'])) {
+    $makeGetValue = explode('*', $_GET['GrnValue']);
+    $GrnId = $makeGetValue[0] ?? 0;
+    $GrnNo = $makeGetValue[1] ?? '';
+    $GrnDate = $makeGetValue[2] ?? '';
+}
 ?>
 @include('number_formate')
 @include('select2')
@@ -30,15 +40,15 @@ $InvoiceDate = $makeGetValue[2] ?? '';
         <input type="date" id="PurchaseReturnDate" name="PurchaseReturnDate" value="<?php echo date('Y-m-d')?>" class="form-control">
     </div>
     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
-        <label for="">Purchase Invoice Date</label>
-        <input type="date" id="InvoiceDate" name="InvoiceDate" value="<?php echo $InvoiceDate?>" class="form-control" readonly>
+        <label for=""><?php echo !empty($InvoiceId) ? 'Purchase Invoice Date' : 'GRN Date'; ?></label>
+        <input type="date" id="InvoiceDate" name="InvoiceDate" value="<?php echo !empty($InvoiceDate) ? $InvoiceDate : $GrnDate; ?>" class="form-control" readonly>
         <input type="hidden" id="PurchaseInvoiceNo"   name="PurchaseInvoiceNo"   value="<?php echo $InvoiceNo?>"   class="form-control" readonly>
         <input type="hidden" id="PurchaseInvoiceId"   name="PurchaseInvoiceId"   value="<?php echo $InvoiceId?>"   class="form-control" readonly>
         <input type="hidden" id="PurchaseInvoiceDate" name="PurchaseInvoiceDate" value="<?php echo $InvoiceDate?>" class="form-control" readonly>
         {{-- GRN aliases so controller fallback works for both flows --}}
-        <input type="hidden" name="GrnId"   value="<?php echo $InvoiceId?>">
-        <input type="hidden" name="GrnNo"   value="<?php echo $InvoiceNo?>">
-        <input type="hidden" name="GrnDate" value="<?php echo $InvoiceDate?>">
+        <input type="hidden" name="GrnId"   value="<?php echo $GrnId?>">
+        <input type="hidden" name="GrnNo"   value="<?php echo $GrnNo?>">
+        <input type="hidden" name="GrnDate" value="<?php echo $GrnDate?>">
     </div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <label for="">Remarks</label>
@@ -99,11 +109,10 @@ $InvoiceDate = $makeGetValue[2] ?? '';
                         : ($sourcePackSize > 0 ? ($purchaseQty / $sourcePackSize) : 0);
                     $rateCalByLabel = $rateCalBy === 1 ? 'By BAGS' : ($rateCalBy === 3 ? 'By LBS' : 'By KGS');
                     $reurn = 0;
-                    if (!empty($InvoiceId) && !empty($itemId)) {
+                    if (!empty($grnDataId)) {
                         $reurn = (float) DB::connection('mysql2')->table('purchase_return_data')
                             ->where('status', 1)
-                            ->where('purchase_invoice_id', $InvoiceId)
-                            ->where('sub_item_id', $itemId)
+                            ->where('grn_data_id', $grnDataId)
                             ->sum('return_qty');
                     }
                     $remainingQty = max(((float) $purchaseQty) - $reurn, 0);
