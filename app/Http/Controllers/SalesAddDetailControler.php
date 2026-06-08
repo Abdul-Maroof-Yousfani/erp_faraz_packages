@@ -4891,35 +4891,30 @@ class SalesAddDetailControler extends Controller
 
             $detail_id = $credit_note_data->id;
 
-            // ====================== Insert into Stock Table ======================
-            $item_type = CommonHelper::get_item_type($item_id);
+            // Sales return must increase inventory and appear in stock reports.
+            $stock = [
+                'main_id'        => $master_id,
+                'master_id'      => $detail_id,
+                'voucher_no'     => $request->credit_not_no,
+                'voucher_date'   => $request->credit_date,
+                'supplier_id'    => 0,
+                'customer_id'    => $request->byer_id,
+                'batch_code'     => $batch_code,
+                'voucher_type'   => 6,
+                'rate'           => $rate,
+                'sub_item_id'    => $item_id,
+                'qty'            => $qty,
+                'amount'         => $amount,
+                'status'         => 1,
+                'warehouse_id'   => $warehouse_id,
+                'username'       => Auth::user()->username ?? Auth::user()->name,
+                'created_date'   => date('Y-m-d'),
+                'opening'        => 0,
+            ];
 
-            if ($item_type != 2) {
+            DB::connection('mysql2')->table('stock')->insert($stock);
 
-                $stock = [
-                    'main_id'        => $master_id,
-                    'master_id'      => $detail_id,
-                    'voucher_no'     => $request->credit_not_no,
-                    'voucher_date'   => $request->credit_date,
-                    'supplier_id'    => 0,
-                    'customer_id'    => $request->byer_id,
-                    'batch_code'     => $batch_code,
-                    'voucher_type'   => 6,                    // Credit Note Voucher Type
-                    'rate'           => $rate,
-                    'sub_item_id'    => $item_id,
-                    'qty'            => $qty,
-                    'amount'         => $amount,              // Important: Using calculated amount from form
-                    'status'         => 1,
-                    'warehouse_id'   => $warehouse_id,
-                    'username'       => Auth::user()->username ?? Auth::user()->name,
-                    'created_date'   => date('Y-m-d'),
-                    'opening'        => 0,
-                ];
-
-                DB::connection('mysql2')->table('stock')->insert($stock);
-
-                $total_amount += $amount;
-            }
+            $total_amount += $amount;
 
             $savedRows++;
         }
@@ -5089,14 +5084,36 @@ class SalesAddDetailControler extends Controller
 
                 $stockTable = new Stock();
                 $stockTable = $stockTable->setConnection('mysql2');
-                $stockTable = $stockTable->where('main_id', $id)->where('master_id', $credit_note_data->id)->where('voucher_no', $cr_no)->first();
+                $stockTable = $stockTable
+                    ->where('main_id', $id)
+                    ->where('master_id', $credit_note_data->id)
+                    ->where('voucher_no', $cr_no)
+                    ->where('voucher_type', 6)
+                    ->first();
 
-                if (!is_null($stockTable)) {
-                    $stockTable->qty = $qty;
-                    $stockTable->rate = $rate;
-                    $stockTable->amount = $amount;
-                    $stockTable->save();
+                if (is_null($stockTable)) {
+                    $stockTable = new Stock();
+                    $stockTable = $stockTable->setConnection('mysql2');
+                    $stockTable->main_id = $id;
+                    $stockTable->master_id = $credit_note_data->id;
+                    $stockTable->voucher_no = $cr_no;
+                    $stockTable->voucher_date = $credit_note->cr_date;
+                    $stockTable->supplier_id = 0;
+                    $stockTable->customer_id = $credit_note->buyer_id;
+                    $stockTable->batch_code = $credit_note_data->batch_code;
+                    $stockTable->voucher_type = 6;
+                    $stockTable->sub_item_id = $credit_note_data->item;
+                    $stockTable->warehouse_id = $invoice_data->warehouse_id ?? 0;
+                    $stockTable->status = 1;
+                    $stockTable->username = Auth::user()->username ?? Auth::user()->name;
+                    $stockTable->created_date = date('Y-m-d');
+                    $stockTable->opening = 0;
                 }
+
+                $stockTable->qty = $qty;
+                $stockTable->rate = $rate;
+                $stockTable->amount = $amount;
+                $stockTable->save();
             }
 
             if (empty($credit_note->so_id) && !empty($resolved_so_id)) {
