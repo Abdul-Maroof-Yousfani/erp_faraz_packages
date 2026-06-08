@@ -1310,6 +1310,14 @@ class PurchaseAddDetailControler extends Controller
 
             $master_id = DB::table('goods_receipt_note')->insertGetId($data1);
 
+            $purchaseRequestHeader = DB::connection('mysql2')
+                ->table('purchase_request')
+                ->where('status', 1)
+                ->where('purchase_request_no', $prNo)
+                ->select('currency_rate')
+                ->first();
+            $currencyRate = (float) ($purchaseRequestHeader->currency_rate ?? 1);
+
 
 
             $variableCheck = 0;
@@ -1348,8 +1356,29 @@ class PurchaseAddDetailControler extends Controller
                 }
 
                 $rate = $purchase_request_data_check->rate;
+                $rateCalBy = (int) ($purchase_request_data_check->rate_cal_by ?? 2);
+                $purchaseApproveQty = (float) ($purchase_request_data_check->purchase_approve_qty ?? 0);
+                $sourceBagQty = (float) ($purchase_request_data_check->bags_qty ?? 0);
+                $sourceLbsQty = (float) ($purchase_request_data_check->qty_lbs ?? 0);
 
-                $amount = $rate * $purchase_recived_qty;
+                $rateBasisQty = (float) $purchase_recived_qty;
+                if ($rateCalBy === 1) {
+                    $packSize = ($purchaseApproveQty > 0 && $sourceBagQty > 0)
+                        ? ($purchaseApproveQty / $sourceBagQty)
+                        : 0;
+                    $rateBasisQty = $packSize > 0 ? ($purchase_recived_qty / $packSize) : $rateBasisQty;
+                } elseif ($rateCalBy === 3) {
+                    $rateBasisQty = ($purchaseApproveQty > 0 && $sourceLbsQty > 0)
+                        ? (($purchase_recived_qty / $purchaseApproveQty) * $sourceLbsQty)
+                        : ($purchase_recived_qty * 2.2);
+                }
+
+                $amount = round($rate * $rateBasisQty * $currencyRate, 2);
+                $discount_amount = (float) $discount_amount;
+                if ($discount_amount <= 0 && (float) $discount_percent > 0) {
+                    $discount_amount = round(($amount * (float) $discount_percent) / 100, 2);
+                }
+                $after_discount_amount = round($amount - $discount_amount, 2);
                 $data2['master_id'] = $master_id;
                 $data2['po_data_id'] = $po_data_id;
                 $data2['grn_no'] = $grn_no;

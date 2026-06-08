@@ -251,7 +251,23 @@ $delivery_detail=$good_receipt_note->delivery_detail;
                                                                 <td> <input type="date"  id="expiry_datees{{$row->id}}" class="form-control" name="expiry_date{{$row->id}}" value="{{ $row->expiry_date }}"/> </td>
 
 
-                                                                <?php  $purchase_approve_qty = DB::Connection('mysql2')->table('purchase_request_data')->where('id',$row->po_data_id)->first()->purchase_approve_qty; ?>
+                                                                <?php  $purchaseRequestLine = DB::Connection('mysql2')->table('purchase_request_data')->where('id',$row->po_data_id)->first(); ?>
+                                                                <?php  $purchase_approve_qty = $purchaseRequestLine->purchase_approve_qty; ?>
+                                                                <?php  $rateCalBy = (int) ($row->rate_cal_by ?? $purchaseRequestLine->rate_cal_by ?? 2); ?>
+                                                                <?php  $sourceBagQty = (float) ($row->source_bag_qty ?? $purchaseRequestLine->bags_qty ?? 0); ?>
+                                                                <?php  $sourceLbsQty = (float) ($row->source_lbs_qty ?? $purchaseRequestLine->qty_lbs ?? 0); ?>
+                                                                <?php  $sourceApproveQty = (float) ($row->source_approve_qty ?? $purchase_approve_qty ?? 0); ?>
+                                                                <?php
+                                                                    $rateBasisQty = (float) $row->purchase_recived_qty;
+                                                                    if ($rateCalBy === 1) {
+                                                                        $packSize = ($sourceApproveQty > 0 && $sourceBagQty > 0) ? ($sourceApproveQty / $sourceBagQty) : 0;
+                                                                        $rateBasisQty = $packSize > 0 ? ($row->purchase_recived_qty / $packSize) : $rateBasisQty;
+                                                                    } elseif ($rateCalBy === 3) {
+                                                                        $rateBasisQty = ($sourceApproveQty > 0 && $sourceLbsQty > 0)
+                                                                            ? (($row->purchase_recived_qty / $sourceApproveQty) * $sourceLbsQty)
+                                                                            : ($row->purchase_recived_qty * 2.2);
+                                                                    }
+                                                                ?>
                                                                 <td class="text-center">{{number_format($purchase_approve_qty,2)}}
                                                                     <input value="{{$purchase_approve_qty}}" type="hidden" name="approved_qty_<?php echo $row->id; ?>" id="approved_qty_<?php echo $row->id; ?>"/>
                                                                 </td>
@@ -270,7 +286,7 @@ $delivery_detail=$good_receipt_note->delivery_detail;
                                                                   requiredFieldrequiredField rec_qty_<?php echo $counter ?>" type="text" value="{{$row->purchase_recived_qty}}"/> </td>
                                                                 <!--Balance Quantity Receivable-->
                                                                 <td class="ShowHideRate"><input type="text" class="form-control" name="rate<?php echo $row->id?>" id="rate<?php echo $row->id?>" value="<?php echo $row->rate?>" readonly></td>
-                                                                <td class="ShowHideAmount"><input type="text" class="form-control" name="amount<?php echo $row->id?>" id="amount<?php echo $row->id?>" value="<?php echo $row->amount?>" readonly></td>
+                                                                <td class="ShowHideAmount"><input type="text" class="form-control" name="amount<?php echo $row->id?>" id="amount<?php echo $row->id?>" value="<?php echo $rateBasisQty * $row->rate?>" readonly></td>
                                                                 <td class="ShowHideDiscountPercent"><input type="text" onkeyup="discount_percent(this.id)" class="form-control" name="discount_percent<?php echo $row->id?>" id="discount_percent<?php echo $row->id?>" value="<?php echo number_format($row->discount_percent,2)?>" readonly></td>
                                                                 <td class="ShowHideDiscountAmount"><input type="text" class="form-control" name="discount_amount<?php echo $row->id?>" id="discount_amount<?php echo $row->id?>" value="<?php echo $row->discount_amount?>" readonly></td>
                                                                 <td class="ShowHideNetAmount"><input type="text" class="form-control net_amount_dis" name="after_discount_amount<?php echo $row->id?>" id="after_dis_amountt_<?php echo $row->id?>" value="<?php echo $row->net_amount?>" readonly></td>
@@ -294,6 +310,10 @@ $delivery_detail=$good_receipt_note->delivery_detail;
 
 
                                                             <input type="hidden" id="amount_<?php echo $row->id ?>" value="{{$row->net_amount}}" />
+                                                            <input type="hidden" id="rate_cal_by<?php echo $row->id; ?>" value="<?php echo $rateCalBy; ?>" />
+                                                            <input type="hidden" id="source_bag_qty<?php echo $row->id; ?>" value="<?php echo number_format($sourceBagQty, 2, '.', ''); ?>" />
+                                                            <input type="hidden" id="source_lbs_qty<?php echo $row->id; ?>" value="<?php echo number_format($sourceLbsQty, 2, '.', ''); ?>" />
+                                                            <input type="hidden" id="source_approve_qty<?php echo $row->id; ?>" value="<?php echo number_format($sourceApproveQty, 2, '.', ''); ?>" />
 
 
 
@@ -464,7 +484,7 @@ $delivery_detail=$good_receipt_note->delivery_detail;
             Amount = 0;
             var Qty = parseFloat($('#rec_qty_'+Id).val());
             var Rate = parseFloat($('#rate'+Id).val());
-            Amount = (Qty*Rate).toFixed(2);
+            Amount = (grnRateBasisQty(Id, Qty) * Rate).toFixed(2);
             if(isNaN(Amount))
             {
                 $('#amount'+Id).val(0);
@@ -591,6 +611,29 @@ $delivery_detail=$good_receipt_note->delivery_detail;
         }
 
 
+        function grnRateBasisQty(number, recQty)
+        {
+            var rateCalBy = parseInt($('#rate_cal_by' + number).val() || 2);
+            var approveQty = parseFloat($('#source_approve_qty' + number).val()) || 0;
+            var sourceBagQty = parseFloat($('#source_bag_qty' + number).val()) || 0;
+            var sourceLbsQty = parseFloat($('#source_lbs_qty' + number).val()) || 0;
+
+            if (rateCalBy === 1)
+            {
+                var packSize = (approveQty > 0 && sourceBagQty > 0) ? (approveQty / sourceBagQty) : 0;
+                return packSize > 0 ? (recQty / packSize) : recQty;
+            }
+
+            if (rateCalBy === 3)
+            {
+                return (approveQty > 0 && sourceLbsQty > 0)
+                    ? ((recQty / approveQty) * sourceLbsQty)
+                    : (recQty * 2.2);
+            }
+
+            return recQty;
+        }
+
         function discount_percent(id)
         {
             var  number= id.replace("discount_percent","");
@@ -679,7 +722,7 @@ $delivery_detail=$good_receipt_note->delivery_detail;
             //var  qty=$('#purchase_approve_qty_'+number).val();
             var  rate=$('#rate'+number).val();
 
-            var total=parseFloat(rec_qty*rate).toFixed(2);
+            var total=parseFloat(grnRateBasisQty(number, rec_qty)*rate).toFixed(2);
 
             $('#amount'+number).val(total);
 

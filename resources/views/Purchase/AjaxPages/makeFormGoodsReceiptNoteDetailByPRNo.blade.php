@@ -258,6 +258,21 @@ $grn_no = 'grn' . ($str + 1) . date('my');
                                 <td class="text-center">{{$purchase_recived_qty}}</td>
 
                                 <?php        $remaining_qty = $row->purchase_approve_qty - $purchase_recived_qty ?>
+                                <?php
+                                $rateCalBy = (int) ($row->rate_cal_by ?? 2);
+                                $sourceBagQty = (float) ($row->source_bag_qty ?? 0);
+                                $sourceLbsQty = (float) ($row->source_lbs_qty ?? 0);
+                                $purchaseApproveQty = (float) ($row->purchase_approve_qty ?? 0);
+                                $rateBasisQty = (float) $remaining_qty;
+                                if ($rateCalBy === 1) {
+                                    $packSize = ($purchaseApproveQty > 0 && $sourceBagQty > 0) ? ($purchaseApproveQty / $sourceBagQty) : 0;
+                                    $rateBasisQty = $packSize > 0 ? ($remaining_qty / $packSize) : $rateBasisQty;
+                                } elseif ($rateCalBy === 3) {
+                                    $rateBasisQty = ($purchaseApproveQty > 0 && $sourceLbsQty > 0)
+                                        ? (($remaining_qty / $purchaseApproveQty) * $sourceLbsQty)
+                                        : ($remaining_qty * 2.2);
+                                }
+                                ?>
                                 <!--Quantity Received-->
                                 <td><input onkeyup="calculation('<?php echo $row->id; ?>');ShowAmount('<?php        echo $row->id?>')"
                                         onblur="calculation('<?php echo $row->id; ?>');ShowAmount('<?php        echo $row->id?>')"
@@ -270,11 +285,11 @@ $grn_no = 'grn' . ($str + 1) . date('my');
                                         value="<?php        echo $row->rate?>" readonly></td>
                                 <td class="ShowHideAmount"><input style="width: 130px !important;" type="text"
                                         class="form-control" name="amount<?php        echo $row->id?>" id="amount<?php        echo $row->id?>"
-                                        value="<?php        echo $remaining_qty * $row->rate * $purchaseRequestDetail->currency_rate?>"
+                                        value="<?php        echo $rateBasisQty * $row->rate * $purchaseRequestDetail->currency_rate?>"
                                         readonly></td>
 
                                 <?php
-                                $amount = $remaining_qty * $row->rate;
+                                $amount = $rateBasisQty * $row->rate * $purchaseRequestDetail->currency_rate;
                                 $discount_percent = $row->discount_percent;
                                 if ($discount_percent > 0):
                                     $discount_amount = ($amount / 100) * $discount_percent;
@@ -318,6 +333,10 @@ $grn_no = 'grn' . ($str + 1) . date('my');
 
                             <input style="width: 130px !important;" type="hidden" id="amount_<?php        echo $row->id ?>"
                                 value="{{$row->net_amount}}" />
+                            <input type="hidden" id="rate_cal_by<?php echo $row->id; ?>" value="<?php echo $rateCalBy; ?>">
+                            <input type="hidden" id="source_bag_qty<?php echo $row->id; ?>" value="<?php echo number_format($sourceBagQty, 2, '.', ''); ?>">
+                            <input type="hidden" id="source_lbs_qty<?php echo $row->id; ?>" value="<?php echo number_format($sourceLbsQty, 2, '.', ''); ?>">
+                            <input type="hidden" id="source_approve_qty<?php echo $row->id; ?>" value="<?php echo number_format($purchaseApproveQty, 2, '.', ''); ?>">
                             <input style="width: 130px !important;" type="hidden" name="exchange_rate" id="exchange_rate"
                                 value="{{$currency_rate}}">
 
@@ -425,7 +444,11 @@ $grn_no = 'grn' . ($str + 1) . date('my');
         Amount = 0;
         var Qty = parseFloat($('#rec_qty_' + Id).val());
         var Rate = parseFloat($('#rate' + Id).val());
-        Amount = (Qty * Rate).toFixed(2);
+        var Currency = parseFloat($('#currency').val());
+        if (isNaN(Currency) || Currency <= 0) {
+            Currency = 1;
+        }
+        Amount = (grnRateBasisQty(Id, Qty) * Rate * Currency).toFixed(2);
         if (isNaN(Amount)) {
             $('#amount' + Id).val(0);
         }
@@ -547,6 +570,26 @@ $grn_no = 'grn' . ($str + 1) . date('my');
     }
 
 
+    function grnRateBasisQty(number, recQty) {
+        var rateCalBy = parseInt($('#rate_cal_by' + number).val() || 2);
+        var approveQty = parseFloat($('#source_approve_qty' + number).val()) || 0;
+        var sourceBagQty = parseFloat($('#source_bag_qty' + number).val()) || 0;
+        var sourceLbsQty = parseFloat($('#source_lbs_qty' + number).val()) || 0;
+
+        if (rateCalBy === 1) {
+            var packSize = (approveQty > 0 && sourceBagQty > 0) ? (approveQty / sourceBagQty) : 0;
+            return packSize > 0 ? (recQty / packSize) : recQty;
+        }
+
+        if (rateCalBy === 3) {
+            return (approveQty > 0 && sourceLbsQty > 0)
+                ? ((recQty / approveQty) * sourceLbsQty)
+                : (recQty * 2.2);
+        }
+
+        return recQty;
+    }
+
     function discount_percent(id) {
         var number = id.replace("discount_percent", "");
         var amount = $('#amount' + number).val();
@@ -622,10 +665,13 @@ $grn_no = 'grn' . ($str + 1) . date('my');
         //ABDUL
         //var  qty=$('#purchase_approve_qty_'+number).val();
         var rate = $('#rate' + number).val();
-        var currency = $('#currency').val();
+        var currency = parseFloat($('#currency').val());
+        if (isNaN(currency) || currency <= 0) {
+            currency = 1;
+        }
 
 
-        var total = parseFloat(rec_qty * rate * currency).toFixed(2);
+        var total = parseFloat(grnRateBasisQty(number, rec_qty) * rate * currency).toFixed(2);
 
         $('#amount' + number).val(total);
 

@@ -711,7 +711,17 @@ class PurchaseController extends Controller
 
         $grn_data = new GRNData();
         $grn_data = $grn_data->SetConnection('mysql2');
-        $detail_data = $grn_data->where('master_id', $id)->get();
+        $detail_data = DB::connection('mysql2')->table('grn_data as gd')
+            ->leftJoin('purchase_request_data as prd', 'prd.id', '=', 'gd.po_data_id')
+            ->where('gd.master_id', $id)
+            ->select(
+                'gd.*',
+                DB::raw('COALESCE(prd.rate_cal_by, 2) as rate_cal_by'),
+                DB::raw('COALESCE(prd.bags_qty, 0) as source_bag_qty'),
+                DB::raw('COALESCE(prd.qty_lbs, gd.purchase_recived_qty * 2.2) as source_lbs_qty'),
+                DB::raw('COALESCE(prd.purchase_approve_qty, gd.purchase_approved_qty, 0) as source_approve_qty')
+            )
+            ->get();
         $accounts = new Account();
         $accounts = $accounts->SetConnection('mysql2');
         $accounts = $accounts->where('status', 1)->get();
