@@ -2631,7 +2631,7 @@ echo "aa"; die;
             ' . $category_join . '
             ' . $item_join . '
             where b.status=1
-            and a.status=1
+            and a.status in (1,3)
            ' . $category_clause . '
             ' . $item_clause . '
             ' . $location_caluse . '
@@ -2693,7 +2693,7 @@ echo "aa"; die;
         b.id=a.sub_item_id
 
         where b.status=1
-        and a.status=1
+        and a.status in (1,3)
         '.$sub_item_clause.'
         group by a.sub_item_id, a.warehouse_id');
 

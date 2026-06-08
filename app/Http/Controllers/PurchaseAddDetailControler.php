@@ -3391,6 +3391,7 @@ class PurchaseAddDetailControler extends Controller
                 'discount_amount' => $dicount_amount,
                 'net_amount' => $amount - $dicount_amount,
                 'return_qty' => $requestedReturnQty,
+                'status' => 1,
             );
             $net_amount = $amount - $dicount_amount;
             $total += $net_amount;
@@ -3400,11 +3401,6 @@ class PurchaseAddDetailControler extends Controller
             $itemDescription = $request->input('item_desc')[$row] ?? '';
             
 
-            $status = 1;
-            $type = CommonHelper::get_item_type($request->input('SubItemId')[$row]);
-            if ($type == 2):
-                $status = 3;
-            endif;
             $stock = array
             (
                 'main_id' => $master_id,
@@ -3423,7 +3419,7 @@ class PurchaseAddDetailControler extends Controller
                 'discount_amount' => $dicount_amount,
                 'amount' => $amount - $dicount_amount,
 
-                'status' => $status,
+                'status' => 1,
                 'warehouse_id' => $warehouseId,
                 'description' => $itemDescription,
                 'username' => Auth::user()->username,
@@ -3989,6 +3985,7 @@ public function updatePurchaseReturnDetail(Request $request)
                 'discount_amount'    => $discount_amount,
                 'net_amount'         => $net_amount,
                 'return_qty'         => $requestedReturnQty,
+                'status'             => 1,
             ]);
 
             $total += $net_amount;

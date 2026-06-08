@@ -2761,7 +2761,7 @@ class CommonHelper
 
 
         $data = $stock = DB::Connection('mysql2')->selectOne('select sum(qty)qty from stock
-        where status=1  and voucher_type="' . $voucher_type . '" and sub_item_id="' . $item . '" and warehouse_id="' . $warehouse . '"  group by sub_item_id');
+        where status in (1,3) and voucher_type="' . $voucher_type . '" and sub_item_id="' . $item . '" and warehouse_id="' . $warehouse . '"  group by sub_item_id');
         if (!empty($data->qty)):
 
             return $data->qty;
@@ -2775,7 +2775,7 @@ class CommonHelper
 
 
         $data = $stock = DB::Connection('mysql2')->selectOne('select sum(amount)amount from stock
-        where status=1  and voucher_type="' . $voucher_type . '" and sub_item_id="' . $item . '" and warehouse_id="' . $warehouse . '"  group by sub_item_id');
+        where status in (1,3) and voucher_type="' . $voucher_type . '" and sub_item_id="' . $item . '" and warehouse_id="' . $warehouse . '"  group by sub_item_id');
         if (!empty($data->amount)):
 
             return $data->amount;
@@ -2787,14 +2787,14 @@ class CommonHelper
     public static function get_current_stock_for_production_mix($item)
     {
         $in = DB::Connection('mysql2')->table('stock')
-            ->where('status', 1)
+            ->whereIn('status', [1, 3])
             ->whereIn('voucher_type', [1, 4, 6, 3, 10, 11])
             ->where('sub_item_id', $item)
             ->select(DB::raw('COALESCE(SUM(qty), 0) as qty'))
             ->first();
 
         $out = DB::Connection('mysql2')->table('stock')
-            ->where('status', 1)
+            ->whereIn('status', [1, 3])
             ->whereIn('voucher_type', [2, 5, 9, 8])
             ->where('sub_item_id', $item)
             ->select(DB::raw('COALESCE(SUM(qty), 0) as qty'))
