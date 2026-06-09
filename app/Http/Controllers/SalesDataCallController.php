@@ -2933,10 +2933,11 @@ class SalesDataCallController extends Controller
         $FromDate = $request->FromDate;
         $ToDate = $request->ToDate;
         $m = $request->m;
-        $DnData = DB::Connection('mysql2')->select('select a.gd_no,a.gd_date,a.buyers_id,a.so_no,a.so_date,b.* from delivery_note a
-                                                    Inner join delivery_note_data b on b.master_id = a.id
-                                                    where a.status = 1
-                                                    and a.gd_date between "'.$FromDate.'" and "'.$ToDate.'"');
+        $DnData = DB::Connection('mysql2')->select('select sum(b.amount) net_amount,b.so_id,a.id dn_id,a.* from delivery_note a
+                                                    INNER JOIN delivery_note_data b ON b.master_id = a.id
+                                                    WHERE a.status = 1
+                                                    and a.gd_date between "'.$FromDate.'" and "'.$ToDate.'"
+                                                    GROUP BY a.id');
 
         return view('Sales.AjaxPages.getDnDetailDateWise',compact('DnData','m'));
     }
