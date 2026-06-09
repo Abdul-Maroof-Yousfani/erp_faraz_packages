@@ -4048,6 +4048,13 @@ echo "aa"; die;
         return Schema::connection('mysql2')->hasColumn('gate_pass_data', $column);
     }
 
+    private function filterGatePassDataColumns(array $data)
+    {
+        return collect($data)->filter(function ($value, $column) {
+            return $this->gatePassDataHasColumn($column);
+        })->all();
+    }
+
     public function createGatePassForm(Request $request){
 
         $m = $request->input('m', $_GET['m'] ?? Session::get('run_company'));
@@ -5036,6 +5043,12 @@ echo "aa"; die;
               $itemRows = $this->attachItemPurposes($itemRows, $request, $request->gate_pass_type);
               $itemRows = $this->attachItemBagQtys($itemRows, $request, $request->gate_pass_type);
 
+            if ($itemRows->isEmpty()) {
+                DB::connection('mysql2')->rollBack();
+                CommonHelper::reconnectMasterDatabase();
+                return redirect()->back()->withInput()->with('error', 'No gate pass items found for the selected source.');
+            }
+
             $gatePassData = [
                 'gate_pass_no' => $gatePassNo,
                 'gate_pass_type' => $request->gate_pass_type,
@@ -5103,7 +5116,7 @@ echo "aa"; die;
                     $gatePassDetail['party_id'] = $this->resolveGatePassPartyId($request->gate_pass_type, $itemRow, $partyId);
                 }
 
-                DB::connection('mysql2')->table('gate_pass_data')->insert($gatePassDetail);
+                DB::connection('mysql2')->table('gate_pass_data')->insert($this->filterGatePassDataColumns($gatePassDetail));
             }
 
             if ((string) $request->gate_pass_type === '1') {
@@ -5120,7 +5133,13 @@ echo "aa"; die;
         } catch (\Throwable $e) {
             DB::connection('mysql2')->rollBack();
             CommonHelper::reconnectMasterDatabase();
-            return redirect()->back()->with('error', 'Gate pass could not be saved.');
+            \Log::error('Gate pass save failed', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+            $errorMessage = config('app.debug') ? $e->getMessage() : 'Gate pass could not be saved.';
+            return redirect()->back()->withInput()->with('error', $errorMessage);
         }
     }
 
@@ -5246,6 +5265,12 @@ echo "aa"; die;
               $itemRows = $this->attachItemPurposes($itemRows, $request, $request->gate_pass_type);
               $itemRows = $this->attachItemBagQtys($itemRows, $request, $request->gate_pass_type);
 
+            if ($itemRows->isEmpty()) {
+                DB::connection('mysql2')->rollBack();
+                CommonHelper::reconnectMasterDatabase();
+                return redirect()->back()->withInput()->with('error', 'No gate pass items found for the selected source.');
+            }
+
             $gatePassData = [
                 'gate_pass_no' => $gatePass->gate_pass_no,
                 'gate_pass_type' => $request->gate_pass_type,
@@ -5313,7 +5338,7 @@ echo "aa"; die;
                     $gatePassDetail['party_id'] = $this->resolveGatePassPartyId($request->gate_pass_type, $itemRow, $partyId);
                 }
 
-                DB::connection('mysql2')->table('gate_pass_data')->insert($gatePassDetail);
+                DB::connection('mysql2')->table('gate_pass_data')->insert($this->filterGatePassDataColumns($gatePassDetail));
             }
 
             if ((string) $request->gate_pass_type === '1') {
@@ -5330,7 +5355,13 @@ echo "aa"; die;
         } catch (\Throwable $e) {
             DB::connection('mysql2')->rollBack();
             CommonHelper::reconnectMasterDatabase();
-            return redirect()->back()->with('error', 'Gate pass could not be updated.');
+            \Log::error('Gate pass update failed', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+            $errorMessage = config('app.debug') ? $e->getMessage() : 'Gate pass could not be updated.';
+            return redirect()->back()->withInput()->with('error', $errorMessage);
         }
     }
 

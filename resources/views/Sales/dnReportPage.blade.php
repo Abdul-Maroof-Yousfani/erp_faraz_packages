@@ -5,8 +5,9 @@ use App\Helpers\ReuseableCode;
 $export=ReuseableCode::check_rights(260);
 
 $accType = Auth::user()->acc_type;
+$m = request()->query('m', Auth::user()->company_id);
 if($accType == 'client'){
-    $m = $_GET['m'];
+    $m = request()->query('m', Auth::user()->company_id);
 }else{
     $m = Auth::user()->company_id;
 }
@@ -98,7 +99,7 @@ $currentMonthEndDate   = date('Y-m-t');
                                                                         <td><?php echo date_format(date_create($Fil->so_date), 'd-m-Y')?></td>
                                                                         <td><?php echo $Fil->gd_no?></td>
                                                                         <td><?php echo date_format(date_create($Fil->gd_date), 'd-m-Y')?></td>
-                                                                        <td><?php echo $Customer->name;?></td>
+                                                                        <td><?php echo $Customer->name ?? '-';?></td>
                                                                         <td><?php echo $Fil->net_amount+$Fil->sales_tax_amount; $TotalDnAmount+=$Fil->net_amount+$Fil->sales_tax_amount;?></td>
                                                                         <td><?php echo SalesHelper::get_sales_return_dn($Fil->dn_id); $TotalDnAmountReturn+=SalesHelper::get_sales_return_dn($Fil->dn_id);?></td>
                                                                         <td><?php echo SalesHelper::get_sales_inv_amount($Fil->so_id); $TotalStiAmount+=SalesHelper::get_sales_inv_amount($Fil->so_id);?></td>
@@ -144,7 +145,7 @@ $currentMonthEndDate   = date('Y-m-t');
         {
             var FromDate = $('#FromDate').val();
             var ToDate = $('#ToDate').val();
-            var m = '<?php echo $_GET['m']?>';
+            var m = '<?php echo $m?>';
 
             $('#GetDataAjax').html('<tr><td colspan="10"><div class="row"><div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center"><div class="loader"></div></div></div></div></td><tr>');
             $('#PoStatusError').html('');

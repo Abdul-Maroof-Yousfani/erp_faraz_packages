@@ -179,7 +179,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
                                     </thead>
                                     <tbody id="gatePassItemsBody">
                                         <tr>
-                                            <td colspan="8" class="text-center text-muted">Select a source to load items.</td>
+                                            <td colspan="9" class="text-center text-muted">Select a source to load items.</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -224,13 +224,12 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
                         <div class="panel panel-default">
                             <div class="panel-heading">
                                 <strong class="small text-uppercase">Vehicle Details</strong>
-                                <span class="text-muted small">optional</span>
                             </div>
                             <div class="panel-body">
                                 <div class="row">
                                     <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
                                         <label class="control-label small" for="vehicle_no">Vehicle No</label>
-                                        <input type="text" class="form-control" id="vehicle_no" name="vehicle_no" placeholder="Vehicle number" value="{{ $vehicleNo ?? '' }}">
+                                        <input type="text" class="form-control" id="vehicle_no" name="vehicle_no" required placeholder="Vehicle number" value="{{ $vehicleNo ?? '' }}">
                                     </div>
                                     <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
                                         <label class="control-label small" for="vehicle_type">Vehicle Type</label>
@@ -245,10 +244,6 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
                                         <input type="text" class="form-control" id="vehicle_contact" name="vehicle_contact" placeholder="Optional contact" value="{{ $vehicleContact ?? '' }}">
                                     </div>
                                 </div>
-                                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                        <label class="control-label small" for="description">Description</label>
-                                        <textarea class="form-control" id="description" name="description" placeholder="Add gate pass description">{{ $description ?? '' }}</textarea>
-                                    </div>
                                 <div class="row hide">
                                     <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                                         <label class="control-label small" for="transporter_name">Transporter / Company</label>
@@ -586,7 +581,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
 
     function resetGatePassForm() {
         document.getElementById('gatePassForm').reset();
-        document.getElementById('gatePassItemsBody').innerHTML = '<tr><td colspan="8" class="text-center text-muted">Select a source to load items.</td></tr>';
+        document.getElementById('gatePassItemsBody').innerHTML = '<tr><td colspan="9" class="text-center text-muted">Select a source to load items.</td></tr>';
         document.getElementById('manualGatePassBody').innerHTML = '';
         $('#sales_invoice_id').val(null).trigger('change');
         $('#delivery_note_id').val(null).trigger('change');
