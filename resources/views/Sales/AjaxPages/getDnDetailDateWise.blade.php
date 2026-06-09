@@ -15,7 +15,7 @@ $sti = DB::Connection('mysql2')->table('sales_tax_invoice_data')->where('status'
 
 ?>
 <tr>
-    <td class="text-center"><?php echo $counter++;?></td>
+     <td class="text-center"><?php echo $counter++;?></td>
     <td class="text-center"><?php echo strtoupper($row1->so_no);?></td>
     <td class="text-center"><?php echo  CommonHelper::changeDateFormat($row1->so_date);?></td>
     <td class="text-center"><?php echo strtoupper($row1->gd_no);?></td>
