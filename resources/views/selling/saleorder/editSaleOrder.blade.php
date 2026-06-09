@@ -17,6 +17,65 @@ $count = 1;
     .my-lab label {
     padding-top:0px; 
 }
+
+    .sale-order-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-color: #5f5f5f #d7d7d7;
+        scrollbar-width: auto;
+    }
+
+    .sale-order-table-wrap::-webkit-scrollbar {
+        height: 12px;
+    }
+
+    .sale-order-table-wrap::-webkit-scrollbar-track {
+        background: #d7d7d7;
+        border-radius: 8px;
+    }
+
+    .sale-order-table-wrap::-webkit-scrollbar-thumb {
+        background: #5f5f5f;
+        border-radius: 8px;
+        border: 2px solid #d7d7d7;
+    }
+
+    .sale-order-table-wrap::-webkit-scrollbar-thumb:hover {
+        background: #444444;
+    }
+
+    .sale-order-table {
+        min-width: 1800px;
+        table-layout: auto;
+    }
+
+    .sale-order-table th,
+    .sale-order-table td {
+        white-space: nowrap;
+        vertical-align: middle !important;
+    }
+
+    .sale-order-table .form-control,
+    .sale-order-table .select2-container {
+        min-width: 140px;
+    }
+
+    .sale-order-table .category,
+    .sale-order-table .item_id,
+    .sale-order-table .item-sale-tax-group,
+    .sale-order-table .select2-container {
+        min-width: 190px;
+    }
+
+    .sale-order-table input[name="pack_size[]"],
+    .sale-order-table input[name="qty[]"],
+    .sale-order-table input[name="qty_lbs[]"],
+    .sale-order-table input[name="rate[]"],
+    .sale-order-table input[name="total[]"],
+    .sale-order-table input[name="item_tax_amount[]"] {
+        min-width: 135px;
+    }
 </style>
     
     <div class="row">
@@ -143,9 +202,11 @@ $count = 1;
                                         <div class="lineHeight">&nbsp;</div>
                                         <div class="row">
                                             <div class="col-md-12">
-                                                <table class="userlittab table table-bordered sf-table-list">
+                                                <div class="sale-order-table-wrap">
+                                                <table class="userlittab table table-bordered sf-table-list sale-order-table">
                                                     <thead>
                                                         <tr>
+                                                            <th class="text-center col-sm-2">Category</th>
                                                             <th class="text-center col-sm-2">Item</th>
                                                                 <th class="text-center">Bags Qty</th>
                                                                 <th class="text-center">UOM</th>
@@ -172,21 +233,33 @@ $count = 1;
                                                                         ? number_format($value->qty / 10, 2, '.', '')
                                                                         : number_format($value->qty / ($packQty ?: 1), 2, '.', ''));
                                                                 $selectedItemId = explode('@', (string) $value->item_id)[0];
-                                                                $selectedItemExists = $sub_item->contains('id', (int) $selectedItemId);
+                                                                $selectedCategoryId = (int) ($value->main_ic_id ?? 0);
+                                                                $rowItems = $sub_item->where('main_ic_id', $selectedCategoryId);
+                                                                $selectedItemInRowItems = $rowItems->contains('id', (int) $selectedItemId);
                                                                 $selectedSalesTaxGroup = (int) ($value->sales_tax_group ?? 0);
                                                                 $selectedSalesTaxRate = (float) ($value->tax ?? 0);
                                                                 $selectedRateCalBy = $value->rate_cal_by ?? 1;
                                                             @endphp
                                                             <tr id="RemoveRows{{$count}}" class="m-tab main">
+                                                                <td style="width: 15%;">
+                                                                    <select onchange="load_sale_order_items('category_id{{$count}}')"
+                                                                        class="form-control requiredField category select2"
+                                                                        name="category[]" id="category_id{{$count}}">
+                                                                        <option value="">Select</option>
+                                                                        @foreach (CommonHelper::get_all_category() as $category)
+                                                                            <option @if($selectedCategoryId === (int) $category->id) selected @endif value="{{ $category->id }}">{{ $category->main_ic }}</option>
+                                                                        @endforeach
+                                                                    </select>
+                                                                </td>
                                                                 <td style="width: 18%">
                                                                     <select onchange="get_item_name({{$count}})" class="form-control select2 item_id itemsclass " name="item_id[]" id="item_id{{$count}}">
                                                                         <option value="">Select</option>
-                                                                        @if(!$selectedItemExists && $selectedItemId)
+                                                                        @if(!$selectedItemInRowItems && $selectedItemId)
                                                                             <option selected value="{{ $selectedItemId . '@' . $value->uom_name . '@' . $value->sub_ic . '@' . $value->pack_size . '@@' . $value->color }}">
                                                                                 {{ $value->item_code . ' -- ' . $value->sub_ic . ' ' . $value->pack_size . ' ' . $value->uom_name . ' ' . $value->color }}
                                                                             </option>
                                                                         @endif
-                                                                        @foreach($sub_item as $val)
+                                                                        @foreach($rowItems as $val)
                                                                             <option @if($selectedItemId == $val->id) selected @endif
                                                                                 value="{{ $val->id . '@' . $val->uom_name . '@' . $val->sub_ic. '@' . $val->pack_size . '@' . $val->type. '@' . $val->color }}">
                                                                                 {{ $val->item_code . ' -- ' . $val->sub_ic . ' ' . $val->pack_size . ' ' . $val->uom_name . ' ' . $val->type. ' ' . $val->color }}
@@ -270,6 +343,7 @@ $count = 1;
                                                         @endforeach
                                                     </tbody>
                                                 </table>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="row">
@@ -367,13 +441,16 @@ $count = 1;
              $('#more_details').append(`
                 <tr class="m-tab main" id="RemoveRows${Counter}">
                     <td style="width: 15%">
-                        <select onchange="get_item_name(${Counter})" class="form-control  item_id itemsclass" name="item_id[]" id="item_id${Counter}">
+                        <select onchange="load_sale_order_items('category_id${Counter}')" class="form-control requiredField category select2" name="category[]" id="category_id${Counter}">
                             <option value="">Select</option>
-                            @foreach($sub_item as $val)
-                                <option value="{{ $val->id . '@' . $val->uom_name . '@' . $val->sub_ic. '@' . $val->pack_size . '@' . $val->type. '@' . $val->color }}">
-                                    {{ $val->item_code . ' -- ' . $val->sub_ic . ' ' . $val->pack_size . ' ' . $val->uom_name . ' ' . $val->type. ' ' . $val->color }}
-                                </option>
+                            @foreach (CommonHelper::get_all_category() as $category)
+                                <option value="{{ $category->id }}">{{ $category->main_ic }}</option>
                             @endforeach
+                        </select>
+                    </td>
+                    <td style="width: 15%">
+                        <select onchange="get_item_name(${Counter})" class="form-control item_id itemsclass select2" name="item_id[]" id="item_id${Counter}">
+                            <option value="">Select</option>
                         </select>                  
                     </td>
                     <input style="display: none" class="form-control" type="text" name="item_code[]" id="item_code${Counter}" value="">
@@ -423,11 +500,30 @@ $count = 1;
                         </a>
                     </td>
                 </tr> `);
-            $('.select2').select2();    
+            $('#category_id' + Counter).select2();
+            $('#item_id' + Counter).select2();
+            $('#rate_cal_by_' + Counter).select2();
+            $('#item_sale_tax_group' + Counter).select2();
             Counter++;
             calculation_amount();
                                                    
         } 
+
+        function load_sale_order_items(categoryId) {
+            var indexVal = categoryId.replace("category_id", "");
+            $('#item_id' + indexVal).html('<option value="">Select</option>').val('').trigger('change.select2');
+            $('#uom_id' + indexVal).val('');
+            $('#item_code' + indexVal).val('');
+            $('#pack_size' + indexVal).val('');
+            $('#qty' + indexVal).val('');
+            $('#qty_lbs' + indexVal).val('');
+            $('#item_sale_tax_group' + indexVal).val('').trigger('change.select2');
+            $('#item_sale_tax_rate' + indexVal).val(0);
+            $('#item_tax_amount' + indexVal).val('');
+            $('#rate_cal_by_' + indexVal).val('1').trigger('change.select2');
+            $('#pack_qty' + indexVal).val('');
+            get_sub_item(categoryId);
+        }
 
         function RemoveSection(row) {
             var element = document.getElementById("RemoveRows" + row);

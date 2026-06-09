@@ -281,6 +281,10 @@ $m=Input::get('m');
         <tr>
             <td></td>
             <td class="text-left" colspan="2">Opening Balance</td>
+            <?php if($showChequeColumns): ?>
+            <td class="text-center">-</td>
+            <td class="text-center">-</td>
+            <?php endif; ?>
             <td class="text-right"><?php if ($amount>=0): echo number_format($amount,2); $balance=$amount;  endif; ?></td>
             <td class="text-right"><?php if ($amount < 0): $balance=$amount;     $amount=$amount*-1;  echo number_format($amount,2);   endif; ?></td>
             <td class="text-right">

@@ -5019,11 +5019,14 @@ echo "aa"; die;
                   $partyId = $partyId ?: null;
               }
 
-              $manualRows = $this->collectManualGatePassRows($request, $m);
-              if (!empty($manualRows['error'])) {
-                  DB::connection('mysql2')->rollBack();
-                  CommonHelper::reconnectMasterDatabase();
-                  return redirect()->back()->withInput()->with('error', $manualRows['error']);
+              $manualRows = ['rows' => []];
+              if ((string) $request->gate_pass_type === '3' || count((array) $request->input('manual_description', [])) > 0) {
+                  $manualRows = $this->collectManualGatePassRows($request, $m);
+                  if (!empty($manualRows['error'])) {
+                      DB::connection('mysql2')->rollBack();
+                      CommonHelper::reconnectMasterDatabase();
+                      return redirect()->back()->withInput()->with('error', $manualRows['error']);
+                  }
               }
 
               if (!empty($manualRows['rows'])) {
@@ -5226,11 +5229,14 @@ echo "aa"; die;
                   $partyId = $partyId ?: null;
               }
 
-              $manualRows = $this->collectManualGatePassRows($request, $m);
-              if (!empty($manualRows['error'])) {
-                  DB::connection('mysql2')->rollBack();
-                  CommonHelper::reconnectMasterDatabase();
-                  return redirect()->back()->withInput()->with('error', $manualRows['error']);
+              $manualRows = ['rows' => []];
+              if ((string) $request->gate_pass_type === '3' || count((array) $request->input('manual_description', [])) > 0) {
+                  $manualRows = $this->collectManualGatePassRows($request, $m);
+                  if (!empty($manualRows['error'])) {
+                      DB::connection('mysql2')->rollBack();
+                      CommonHelper::reconnectMasterDatabase();
+                      return redirect()->back()->withInput()->with('error', $manualRows['error']);
+                  }
               }
 
               if (!empty($manualRows['rows'])) {

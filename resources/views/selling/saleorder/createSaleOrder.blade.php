@@ -11,6 +11,65 @@
         .my-lab label {
             padding-top: 0px;
         }
+
+        .sale-order-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-color: #5f5f5f #d7d7d7;
+            scrollbar-width: auto;
+        }
+
+        .sale-order-table-wrap::-webkit-scrollbar {
+            height: 12px;
+        }
+
+        .sale-order-table-wrap::-webkit-scrollbar-track {
+            background: #d7d7d7;
+            border-radius: 8px;
+        }
+
+        .sale-order-table-wrap::-webkit-scrollbar-thumb {
+            background: #5f5f5f;
+            border-radius: 8px;
+            border: 2px solid #d7d7d7;
+        }
+
+        .sale-order-table-wrap::-webkit-scrollbar-thumb:hover {
+            background: #444444;
+        }
+
+        .sale-order-table {
+            min-width: 1800px;
+            table-layout: auto;
+        }
+
+        .sale-order-table th,
+        .sale-order-table td {
+            white-space: nowrap;
+            vertical-align: middle !important;
+        }
+
+        .sale-order-table .form-control,
+        .sale-order-table .select2-container {
+            min-width: 140px;
+        }
+
+        .sale-order-table .category,
+        .sale-order-table .item_id,
+        .sale-order-table .item-sale-tax-group,
+        .sale-order-table .select2-container {
+            min-width: 190px;
+        }
+
+        .sale-order-table input[name="pack_size[]"],
+        .sale-order-table input[name="qty[]"],
+        .sale-order-table input[name="qty_lbs[]"],
+        .sale-order-table input[name="rate[]"],
+        .sale-order-table input[name="total[]"],
+        .sale-order-table input[name="item_tax_amount[]"] {
+            min-width: 135px;
+        }
     </style>
     <div class="row">
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
@@ -131,11 +190,11 @@
                                             </div>
                                             
                                          </div>
-                                         <br>
+                                        <br>
                                         <div class="row">
                                             <div class="col-md-12 ">
-                                                <div>
-                                                    <table class="table" id="more_details">
+                                                <div class="sale-order-table-wrap">
+                                                    <table class="table sale-order-table" id="more_details">
                                                         <thead>
                                                             <tr>
                                                                 <th class="text-center col-sm-2">Category</th>

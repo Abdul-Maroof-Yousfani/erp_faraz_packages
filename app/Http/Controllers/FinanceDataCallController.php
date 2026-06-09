@@ -1046,7 +1046,8 @@ class FinanceDataCallController extends Controller
                     $qtyKg = $this->cleanVoucherNumber($value->qty);
                     $exp_amount_apply = $this->allocatedExpenseAmount($lineNetAmount, $item_amount, $exp_amount);
                     $stockAmount = $lineNetAmount + $exp_amount_apply;
-                    $stockRate = $this->stockRateFromKgQty($stockAmount, $qtyKg, $value->rate);
+                    // $stockRate = $this->stockRateFromKgQty($stockAmount, $qtyKg, $value->rate);
+                    $stockRate = $value->rate;
 
                     $credit_amount+=$lineNetAmount;
 

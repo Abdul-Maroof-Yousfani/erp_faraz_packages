@@ -337,7 +337,7 @@ class SalesOrderController extends Controller
                     $query->orWhereIn('s.id', $selected_item_ids);
                 }
             })
-            ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id','pt.type','s.pack_size','s.primary_pack_type','s.color')
+            ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id','pt.type','s.pack_size','s.primary_pack_type','s.color', 's.main_ic_id')
             // ->groupBy('s.item_code')
             ->orderBy('s.id')
             ->get();
