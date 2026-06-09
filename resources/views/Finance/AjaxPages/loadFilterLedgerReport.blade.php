@@ -133,6 +133,35 @@ $m=Input::get('m');
                 $ledgerItemDetails[$ledgerItem->voucher_no][] = $ledgerItem;
             }
 
+            $salesInvoiceLedgerItems = DB::Connection('mysql2')->table('sales_tax_invoice_data as stid')
+                ->join('sales_tax_invoice as sti', 'sti.id', '=', 'stid.master_id')
+                ->join('subitem as si', 'si.id', '=', 'stid.item_id')
+                ->where('stid.status', 1)
+                ->where('sti.status', 1)
+                ->whereIn('sti.gi_no', $quarterVoucherNos)
+                ->select('sti.gi_no as voucher_no', 'si.sub_ic', 'stid.rate', DB::raw('SUM(stid.qty) as qty'), DB::raw('SUM(stid.amount) as amount'))
+                ->groupBy('sti.gi_no', 'si.sub_ic', 'stid.rate')
+                ->orderBy('si.sub_ic')
+                ->orderBy('stid.rate')
+                ->get();
+
+            foreach ($salesInvoiceLedgerItems as $salesInvoiceLedgerItem) {
+                if (empty($ledgerItemDetails[$salesInvoiceLedgerItem->voucher_no])) {
+                    $ledgerItemDetails[$salesInvoiceLedgerItem->voucher_no] = [];
+                }
+
+                $alreadyExists = collect($ledgerItemDetails[$salesInvoiceLedgerItem->voucher_no])->contains(function ($existingItem) use ($salesInvoiceLedgerItem) {
+                    return (string) ($existingItem->sub_ic ?? '') === (string) ($salesInvoiceLedgerItem->sub_ic ?? '')
+                        && (float) ($existingItem->rate ?? 0) === (float) ($salesInvoiceLedgerItem->rate ?? 0)
+                        && (float) ($existingItem->qty ?? 0) === (float) ($salesInvoiceLedgerItem->qty ?? 0)
+                        && (float) ($existingItem->amount ?? 0) === (float) ($salesInvoiceLedgerItem->amount ?? 0);
+                });
+
+                if (!$alreadyExists) {
+                    $ledgerItemDetails[$salesInvoiceLedgerItem->voucher_no][] = $salesInvoiceLedgerItem;
+                }
+            }
+
             $purchaseVoucherRows = DB::Connection('mysql2')->table('new_purchase_voucher as npv')
                 ->whereIn('npv.pv_no', $quarterVoucherNos)
                 ->select('npv.pv_no', 'npv.supplier')
@@ -300,7 +329,7 @@ $m=Input::get('m');
                 endif;
                 endif;
                 ?>
-                <?php echo number_format(abs($balance),2); ?>
+                <?php echo number_format(abs($balance),2) . ($balance < 0 ? ' Cr' : ($balance > 0 ? ' Dr' : '')); ?>
             </td>
         </tr>
         <?php
@@ -472,7 +501,7 @@ $m=Input::get('m');
                                 $detailParts[] = e($paymentTerm);
                             }
 
-                            $itemDetails[] = implode(' | ', $detailParts);
+                            $itemDetails[] = implode(', ', $detailParts);
                         }
                     }
 
@@ -518,8 +547,8 @@ $m=Input::get('m');
                     // endif;
                 ?>
             </td>
-            <td class="text-right"><?php if($trow->debit_credit==1){ $debit=$trow->amount; echo number_format($trow->amount,2).' Dr'; $total_debit+=$trow->amount;} ?></td>
-            <td class="text-right"><?php if($trow->debit_credit==0){ $credit=$trow->amount; echo number_format($trow->amount,2).' Cr'; $total_credit+=$trow->amount;} ?></td>
+            <td class="text-right"><?php if($trow->debit_credit==1){ $debit=$trow->amount; echo number_format($trow->amount,2); $total_debit+=$trow->amount;} ?></td>
+            <td class="text-right"><?php if($trow->debit_credit==0){ $credit=$trow->amount; echo number_format($trow->amount,2); $total_credit+=$trow->amount;} ?></td>
             <?php
 
 
@@ -533,7 +562,7 @@ $m=Input::get('m');
                     else:
                 $balance=$debit-$credit+$balance;
                     endif;
-                echo number_format(abs($balance),2);
+                echo number_format(abs($balance),2) . ($balance < 0 ? ' Cr' : ($balance > 0 ? ' Dr' : ''));
                 ?></td>
 
         </tr>
@@ -543,7 +572,7 @@ $m=Input::get('m');
             <td class="text-center" colspan="<?php echo $showChequeColumns ? 5 : 3; ?>"><b style="font-size: large;">TOTAL</b></td>
             <td class="text-right" colspan="1"><b style="font-size: large;"><?php echo  number_format($total_debit,2) ?></b></td>
             <td class="text-right" colspan="1"><b style="font-size: large;"><?php echo  number_format($total_credit,2) ?></b></td>
-            <td  class="text-center" colspan="1"><b style="font-size: large;color: #ff9999"><?php  echo  number_format(abs($total_debit-$total_credit),2) ?></b></td>
+            <td  class="text-center" colspan="1"><b style="font-size: large;color: #ff9999"><?php  echo  number_format(abs($balance),2) . ($balance < 0 ? ' Cr' : ($balance > 0 ? ' Dr' : '')) ?></b></td>
 
         </tr>
 
