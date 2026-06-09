@@ -20,7 +20,7 @@ $sti = DB::Connection('mysql2')->table('sales_tax_invoice_data')->where('status'
     <td class="text-center"><?php echo  CommonHelper::changeDateFormat($row1->so_date);?></td>
     <td class="text-center"><?php echo strtoupper($row1->gd_no);?></td>
     <td class="text-center"><?php echo  CommonHelper::changeDateFormat($row1->gd_date);?></td>
-    <td><?php echo $Customer->name?></td>
+    <td><?php echo $Customer->name ?? '-'?></td>
     <td><?php echo $row1->desc;//echo CommonHelper::get_item_name($row1->sub_item_id);?></td>
 
     <?php $sub_ic_detail=CommonHelper::get_subitem_detail($row1->item_id);
