@@ -492,8 +492,7 @@ $m=Input::get('m');
                             $amount = isset($ledgerItem->amount) ? (float) $ledgerItem->amount : ($qty * $rate);
                             $detailParts = [
                                 e($ledgerItem->sub_ic ?? ''),
-                                number_format($qty, 2) . ' KG',
-                                number_format($rate, 2),
+                                number_format($qty, 2) . ' KGS @ ' . number_format($rate, 2),
                                 number_format($amount, 2),
                             ];
 
