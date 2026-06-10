@@ -178,6 +178,7 @@ class SalesEditDetailController extends Controller
                 }
 
                 $average_cost = ReuseableCode::average_cost_sales($item_id, $warehouse_id, 0);
+                $stock_amount = $qty * $average_cost;
 
                 $stock_rows[] = [
                     'main_id' => $id,
@@ -187,13 +188,14 @@ class SalesEditDetailController extends Controller
                     'supplier_id' => 0,
                     'customer_id' => $buyers_id,
                     'voucher_type' => 5,
-                    'rate' => $send_rate,
+                    'rate' => $average_cost,
                     'sub_item_id' => $item_id,
                     'batch_code' => '',
                     'qty' => $qty,
+                    'amount_before_discount' => $stock_amount,
                     'discount_percent' => $send_discount,
                     'discount_amount' => 0,
-                    'amount' => $qty * $average_cost,
+                    'amount' => $stock_amount,
                     'status' => 1,
                     'warehouse_id' => $warehouse_id,
                     'username' => Auth::user()->username ?? Auth::user()->name,

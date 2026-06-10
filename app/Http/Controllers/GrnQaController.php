@@ -329,11 +329,16 @@ class GrnQaController extends Controller
                 if ($accepted_qty > 0) {
                     // Calculate amounts based on accepted quantity
                     $unit_rate = floatval($grn_item->rate ?? 0);
-                    $proportional_amount = $accepted_qty * $unit_rate;
+                    $received_qty = floatval($grn_item->purchase_recived_qty ?? 0);
+                    $line_amount = floatval($grn_item->amount ?? 0);
+                    $line_discount_amount = floatval($grn_item->discount_amount ?? 0);
+                    $line_net_amount = floatval($grn_item->net_amount ?? 0);
+                    $qty_ratio = $received_qty > 0 ? ($accepted_qty / $received_qty) : 0;
+                    $proportional_amount = $qty_ratio * $line_amount;
                     $discount_percent = floatval($grn_item->discount_percent ?? 0);
-                    $proportional_discount_amount = ($proportional_amount / 100) * $discount_percent;
-                    $proportional_net_amount = $proportional_amount - $proportional_discount_amount;
-                    $stock_rate = $unit_rate;
+                    $proportional_discount_amount = $qty_ratio * $line_discount_amount;
+                    $proportional_net_amount = $qty_ratio * $line_net_amount;
+                    $stock_rate = $accepted_qty > 0 ? ($proportional_net_amount / $accepted_qty) : $unit_rate;
                     
                     // Check if purchase voucher data already exists for this item
                     $existing_pv_data = DB::Connection('mysql2')->table('new_purchase_voucher_data')

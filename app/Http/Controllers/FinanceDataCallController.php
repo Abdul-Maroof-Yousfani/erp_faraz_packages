@@ -983,8 +983,12 @@ class FinanceDataCallController extends Controller
     public function approvePurchaseVoucherDetail(Request $request)
     {
         $master_id = $request->PvId;
-        $grn_no = NewPurchaseVoucher::where('id',$master_id)->value('grn_no');
-        if ($grn_no!=0):
+        $purchaseVoucherHeader = NewPurchaseVoucher::where('id', $master_id)
+            ->select('grn_no', 'grn_id')
+            ->first();
+        $hasGrn = !empty($purchaseVoucherHeader->grn_no) || !empty($purchaseVoucherHeader->grn_id);
+
+        if (!$hasGrn):
             $this->direct_invoice_approve($master_id);
         return;
         endif;
@@ -1071,43 +1075,7 @@ class FinanceDataCallController extends Controller
                     $transaction->voucher_type=4;
                     $transaction->save();
 
-                    $lineNetAmount = $this->cleanVoucherNumber($value->net_amount);
-                    $qtyKg = $this->cleanVoucherNumber($value->qty);
-                    $exp_amount_apply = $this->allocatedExpenseAmount($lineNetAmount, $item_amount, $exp_amount);
-                    $stockAmount = $lineNetAmount + $exp_amount_apply;
-                    // $stockRate = $this->stockRateFromKgQty($stockAmount, $qtyKg, $value->rate);
-                    $stockRate = $value->rate;
-
-                    $credit_amount+=$lineNetAmount;
-
-
-                    $stock = new Stock();
-                    $stock=$stock->SetConnection('mysql2');
-
-                    $stock->voucher_no=$value->pv_no;
-                    $stock->main_id=$value->master_id;
-                    $stock->master_id=$value->id;
-                    $stock->supplier_id=$supplier;
-                    $stock->voucher_date=$purchase_date;
-                    $stock->voucher_type=1;
-                    $stock->sub_item_id=$value->sub_item;
-                    $stock->qty=$qtyKg;
-                    $stock->rate=$stockRate;
-                    $stock->amount_before_discount=$value->amount;
-                    $stock->discount_percent=0;
-                    $stock->discount_amount=$value->discount_amount ;
-                    $stock->amount=$stockAmount;
-                    $resolvedWarehouseId = $this->resolveWarehouseIdForVoucherRow($value, $masterWarehouseId, $purchase_voucher->grn_id ?? 0);
-                    if ($resolvedWarehouseId <= 0) {
-                        throw new \Exception('Warehouse is missing on purchase voucher item (ID: '.$value->id.').');
-                    }
-                    $stock->warehouse_id=$resolvedWarehouseId;
-                    $stock->description=$description;
-                    $stock->batch_code=0;
-                    $stock->status=1;
-                    $stock->created_date=date('Y-m-d');
-                    $stock->username=Auth::user()->name;
-                    $stock->save();
+                    $credit_amount+=$this->cleanVoucherNumber($value->net_amount);
 
                 }
 
