@@ -738,6 +738,7 @@ class FinanceDataCallController extends Controller
          $sales_tax_amount = $grn[0]->sales_tax_amount;
          $supplier = $grn[0]->supplier;
          $supplier_acc_id = CommonHelper::get_supplier_acc_id($supplier);
+         $this->assertValidAccount($supplier_acc_id, 'supplier');
          $desc = $grn[0]->description;
          $pv_no = $grn[0]->pv_no;
          $pv_date = $grn[0]->pv_date;
@@ -749,6 +750,11 @@ class FinanceDataCallController extends Controller
             DB::Connection('mysql2')->table('stock')
                 ->where('main_id', $id)
                 ->where('voucher_type', 1)
+                ->where('status', 1)
+                ->update(['status' => 0]);
+            DB::Connection('mysql2')->table('transactions')
+                ->where('voucher_no', $pv_no)
+                ->where('voucher_type', 4)
                 ->where('status', 1)
                 ->update(['status' => 0]);
 
@@ -805,7 +811,7 @@ class FinanceDataCallController extends Controller
                 $data4=array
                 (
                     'master_id'=>$id,
-                    'acc_id'=>$row1->acc_id,
+                    'acc_id'=>$this->assertValidAccount($row1->acc_id, 'purchase item'),
                     'acc_code'=>FinanceHelper::getAccountCodeByAccId($row1->acc_id),
                     'cost_center'=>$row1->sub_item_id,
                     'particulars'=>$desc,
@@ -836,12 +842,12 @@ class FinanceDataCallController extends Controller
                     $data5=array
                     (
                         'master_id'=>$id,
-                        'acc_id'=>$row1->category_id,
+                        'acc_id'=>$this->assertValidAccount($row1->category_id, 'additional expense'),
                         'acc_code'=>FinanceHelper::getAccountCodeByAccId($row1->category_id),
                         'cost_center'=>0,
                         'particulars'=>$desc,
                         'opening_bal'=>0,
-                        'debit_credit'=>0,
+                        'debit_credit'=>1,
                         'amount'=>$row1->net_amount,
                         'voucher_no'=>$row1->pv_no,
                         'voucher_type'=>4,
@@ -855,9 +861,11 @@ class FinanceDataCallController extends Controller
                  //   $total_amount+=$row1->net_amount;
                 endforeach;
 
-            if ($sales_tax_acc_id!=0):
+            if ($sales_tax_acc_id!=0 && $sales_tax_amount > 0):
+                $this->assertValidAccount($sales_tax_acc_id, 'sales tax');
                 $transaction=new Transactions();
                 $transaction=$transaction->SetConnection('mysql2');
+                $transaction->master_id=$id;
                 $transaction->voucher_no=$pv_no;
                 $transaction->v_date=$pv_date;
                 $transaction->acc_id=$sales_tax_acc_id;
@@ -866,6 +874,8 @@ class FinanceDataCallController extends Controller
                 $transaction->opening_bal=0;
                 $transaction->debit_credit=1;
                 $transaction->amount=$sales_tax_amount;
+                $transaction->date=date('Y-m-d');
+                $transaction->action='insert';
                 $transaction->username=Auth::user()->name;;
                 $transaction->status=1;
                 $transaction->voucher_type=4;
@@ -876,6 +886,7 @@ class FinanceDataCallController extends Controller
 
                 $transaction=new Transactions();
                 $transaction=$transaction->SetConnection('mysql2');
+                $transaction->master_id=$id;
                 $transaction->voucher_no=$pv_no;
                 $transaction->v_date=$pv_date;
                 $transaction->acc_id=$supplier_acc_id ;
@@ -884,6 +895,8 @@ class FinanceDataCallController extends Controller
                 $transaction->opening_bal=0;
                 $transaction->debit_credit=0;
                 $transaction->amount=$total_amount;
+                $transaction->date=date('Y-m-d');
+                $transaction->action='insert';
                 $transaction->username=Auth::user()->name;;
                 $transaction->voucher_type=4;
                 $transaction->status=1;
@@ -992,6 +1005,7 @@ class FinanceDataCallController extends Controller
             $description = $purchase_voucher->description;
             $masterWarehouseId = (int) ($purchase_voucher->warehouse ?? 0);
             $supp_acc_id = CommonHelper::get_supplier_acc_id($supplier);
+            $this->assertValidAccount($supp_acc_id, 'supplier');
             $grn_data=  DB::Connection('mysql2')->table('goods_receipt_note')->where('id',$purchase_voucher->grn_id);
             $po_no= $grn_data->value('po_no');
             $dept_id =  $grn_data->value('sub_department_id');
@@ -1003,9 +1017,19 @@ class FinanceDataCallController extends Controller
                 // $data = DB::Connection('mysql2')->selectRaw('select net_amount,category_id ,sub_item from new_purchase_voucher_data
                 // where master_id="'.$master_id.'" and additional_exp=0 ');
                 $data = DB::connection('mysql2')->table('new_purchase_voucher_data')->where([['master_id',$master_id],['additional_exp', 0 ]])->get();
+                $itemAccountMap = DB::connection('mysql2')->table('subitem as s')
+                    ->join('category as c', 'c.id', '=', 's.main_ic_id')
+                    ->whereIn('s.id', $data->pluck('sub_item')->filter()->all())
+                    ->pluck('c.acc_id', 's.id');
+
                 DB::Connection('mysql2')->table('stock')
                     ->where('main_id', $master_id)
                     ->where('voucher_type', 1)
+                    ->where('status', 1)
+                    ->update(['status' => 0]);
+                DB::Connection('mysql2')->table('transactions')
+                    ->where('voucher_no', $pv_no)
+                    ->where('voucher_type', 4)
                     ->where('status', 1)
                     ->update(['status' => 0]);
 
@@ -1028,15 +1052,20 @@ class FinanceDataCallController extends Controller
 
                     $transaction=new Transactions();
                     $transaction=$transaction->SetConnection('mysql2');
+                    $itemAccId = (int) ($itemAccountMap[$value->sub_item] ?? 0);
+                    $this->assertValidAccount($itemAccId, 'purchase item for sub item ID '.$value->sub_item);
                     $transaction->master_id=$master_id;
                     $transaction->voucher_no=$value->pv_no;
                     $transaction->v_date=$purchase_date;
-                    $transaction->acc_id=$value->sub_item;
-                    $transaction->acc_code=FinanceHelper::getAccountCodeByAccId($value->sub_item);
+                    $transaction->acc_id=$itemAccId;
+                    $transaction->acc_code=FinanceHelper::getAccountCodeByAccId($itemAccId);
+                    $transaction->cost_center=$value->sub_item;
                     $transaction->particulars= $desc;
                     $transaction->opening_bal=0;
                     $transaction->debit_credit=1;
                     $transaction->amount=$value->net_amount;
+                    $transaction->date=date('Y-m-d');
+                    $transaction->action='insert';
                     $transaction->username=Auth::user()->name;;
                     $transaction->status=1;
                     $transaction->voucher_type=4;
@@ -1082,9 +1111,11 @@ class FinanceDataCallController extends Controller
 
                 }
 
-                if ($sales_tax_acc_id!=0):
+                if ($sales_tax_acc_id!=0 && $sales_tax_amount > 0):
+                    $this->assertValidAccount($sales_tax_acc_id, 'sales tax');
                     $transaction=new Transactions();
                     $transaction=$transaction->SetConnection('mysql2');
+                    $transaction->master_id=$master_id;
                     $transaction->voucher_no=$pv_no;
                     $transaction->v_date=$purchase_date;
                     $transaction->acc_id=$sales_tax_acc_id;
@@ -1093,6 +1124,8 @@ class FinanceDataCallController extends Controller
                     $transaction->opening_bal=0;
                     $transaction->debit_credit=1;
                     $transaction->amount=$sales_tax_amount;
+                    $transaction->date=date('Y-m-d');
+                    $transaction->action='insert';
                     $transaction->username=Auth::user()->name;;
                     $transaction->status=1;
                     $transaction->voucher_type=4;
@@ -1109,6 +1142,8 @@ class FinanceDataCallController extends Controller
 
                     $transaction=new Transactions();
                     $transaction=$transaction->SetConnection('mysql2');
+                    $this->assertValidAccount($exp->category_id, 'additional expense');
+                    $transaction->master_id=$master_id;
                     $transaction->voucher_no=$pv_no;
                     $transaction->v_date=$purchase_date;
                     $transaction->acc_id=$exp->category_id;
@@ -1117,6 +1152,8 @@ class FinanceDataCallController extends Controller
                     $transaction->opening_bal=0;
                     $transaction->debit_credit=1;
                     $transaction->amount=$exp->net_amount;
+                    $transaction->date=date('Y-m-d');
+                    $transaction->action='insert';
                     $transaction->username=Auth::user()->name;;
                     $transaction->status=1;
                     $transaction->voucher_type=4;
@@ -1129,6 +1166,7 @@ class FinanceDataCallController extends Controller
 
                 $transaction=new Transactions();
                 $transaction=$transaction->SetConnection('mysql2');
+                $transaction->master_id=$master_id;
                 $transaction->voucher_no=$pv_no;
                 $transaction->v_date=$purchase_date;
                 $transaction->acc_id=$supp_acc_id;
@@ -1137,6 +1175,8 @@ class FinanceDataCallController extends Controller
                 $transaction->opening_bal=0;
                 $transaction->debit_credit=0;
                 $transaction->amount=$credit_amount;
+                $transaction->date=date('Y-m-d');
+                $transaction->action='insert';
                 $transaction->username=Auth::user()->name;;
                 $transaction->voucher_type=4;
                 $transaction->status=1;
@@ -1191,6 +1231,21 @@ class FinanceDataCallController extends Controller
             dd($e->getMessage());
 
         }
+    }
+
+    private function assertValidAccount($accId, $context = 'account')
+    {
+        $accId = (int) $accId;
+        if ($accId <= 0) {
+            throw new \Exception('Missing ' . $context . ' account.');
+        }
+
+        $accCode = FinanceHelper::getAccountCodeByAccId($accId);
+        if ($accCode === '' || trim($accCode) === '-1') {
+            throw new \Exception('Account code not found for ' . $context . ' account ID ' . $accId . '.');
+        }
+
+        return $accId;
     }
 
 

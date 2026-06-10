@@ -229,10 +229,10 @@ use App\Helpers\ReuseableCode;
                                                                     <input type="hidden" name="uom_id_1_<?php echo $count ?>" id="uom_id_1_<?php echo $count ?>" value="{{$sub_ic_detail[0]}}" />
                                                                 </td>
                                                                 <td>
-                                                                    <input type="text" class="form-control" name="do_no_pv_<?php echo $count ?>" id="do_no_pv_<?php echo $count ?>" value="{{ $row1->do_no ?? '' }}" placeholder="DO No." />
+                                                                    <input type="text" class="form-control" readonly name="do_no_pv_<?php echo $count ?>" id="do_no_pv_<?php echo $count ?>" value="{{ $row1->do_no ?? '' }}" placeholder="DO No." />
                                                                 </td>
                                                                 <td>
-                                                                    <input type="text" class="form-control" name="godown_no_pv_<?php echo $count ?>" id="godown_no_pv_<?php echo $count ?>" value="{{ $row1->godown_no ?? '' }}" placeholder="Godown No." />
+                                                                    <input type="text" class="form-control" readonly name="godown_no_pv_<?php echo $count ?>" id="godown_no_pv_<?php echo $count ?>" value="{{ $row1->godown_no ?? '' }}" placeholder="Godown No." />
                                                                 </td>
 
                                                                 <td>
