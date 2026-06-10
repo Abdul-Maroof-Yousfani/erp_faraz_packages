@@ -333,7 +333,7 @@ class GrnQaController extends Controller
                     $discount_percent = floatval($grn_item->discount_percent ?? 0);
                     $proportional_discount_amount = ($proportional_amount / 100) * $discount_percent;
                     $proportional_net_amount = $proportional_amount - $proportional_discount_amount;
-                    $stock_rate = $accepted_qty > 0 ? ($proportional_net_amount / $accepted_qty) : $unit_rate;
+                    $stock_rate = $unit_rate;
                     
                     // Check if purchase voucher data already exists for this item
                     $existing_pv_data = DB::Connection('mysql2')->table('new_purchase_voucher_data')

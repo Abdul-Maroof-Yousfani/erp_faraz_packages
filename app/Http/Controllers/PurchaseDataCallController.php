@@ -2234,7 +2234,7 @@ echo "aa"; die;
                     $proportional_amount = $qty_ratio * $line_amount;
                     $proportional_discount_amount = $qty_ratio * $line_discount_amount;
                     $proportional_net_amount = $qty_ratio * $line_net_amount;
-                    $stock_rate = $accepted_qty > 0 ? ($proportional_net_amount / $accepted_qty) : (float) CommonHelper::check_str_replace($row->rate ?? 0);
+                    $stock_rate = (float) CommonHelper::check_str_replace($row->rate ?? 0);
                     
                     $stock['voucher_no']=$row->grn_no;
                     $stock['main_id']=$id;
@@ -3491,14 +3491,15 @@ echo "aa"; die;
                  $qty = $row->purchase_recived_qty;
                 endif;
                 $qty = (float) CommonHelper::check_str_replace($qty);
-                $amount =(float) CommonHelper::check_str_replace($row->rate) * $qty;
-                if ($row->discount_percent>0):
-                    $discount_amount= ($amount / 100) * $row->discount_percent;
-                else:
-                    $discount_amount=0;
-                endif;
-                $net_amount = $amount -$discount_amount;
-                $stock_rate = $qty > 0 ? ($net_amount / $qty) : (float) CommonHelper::check_str_replace($row->rate);
+                $received_qty = (float) CommonHelper::check_str_replace($row->purchase_recived_qty ?? 0);
+                $line_amount = (float) CommonHelper::check_str_replace($row->amount ?? 0);
+                $line_discount_amount = (float) CommonHelper::check_str_replace($row->discount_amount ?? 0);
+                $line_net_amount = (float) CommonHelper::check_str_replace($row->net_amount ?? 0);
+                $qty_ratio = $received_qty > 0 ? ($qty / $received_qty) : 0;
+                $amount = round($qty_ratio * $line_amount, 2);
+                $discount_amount = round($qty_ratio * $line_discount_amount, 2);
+                $net_amount = round($qty_ratio * $line_net_amount, 2);
+                $stock_rate = (float) CommonHelper::check_str_replace($row->rate ?? 0);
 
                 $stock['qty']=$qty;
                 $stock['rate']=$stock_rate;
