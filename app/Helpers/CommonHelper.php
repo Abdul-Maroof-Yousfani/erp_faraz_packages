@@ -2453,7 +2453,6 @@ class CommonHelper
         $customer = new Customer();
         $customer = $customer->SetConnection('mysql2');
         return $customer = $customer->where('status', 1)->get();
-
     }
     public static function client_name($id)
     {
