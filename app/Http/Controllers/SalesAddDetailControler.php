@@ -69,6 +69,112 @@ class SalesAddDetailControler extends Controller
 
     }
 
+    private function isActiveAccountWithCode($accId)
+    {
+        $accId = (int) $accId;
+        if ($accId <= 0) {
+            return false;
+        }
+
+        $account = DB::connection('mysql2')
+            ->table('accounts')
+            ->where('id', $accId)
+            ->where('status', 1)
+            ->select('code')
+            ->first();
+
+        if (!$account) {
+            return false;
+        }
+
+        $code = trim((string) ($account->code ?? ''));
+        return $code !== '' && $code !== '-1';
+    }
+
+    private function accountCodeOrFail($accId, $context = 'account')
+    {
+        if (!$this->isActiveAccountWithCode($accId)) {
+            throw new \Exception('Account code not found for ' . $context . ' account ID ' . (int) $accId . '.');
+        }
+
+        return FinanceHelper::getAccountCodeByAccId($accId);
+    }
+
+    private function resolveSalesRevenueAccountId($preferredAccId = 0, $fallbackAccId = 0)
+    {
+        $preferredAccId = (int) $preferredAccId;
+        if ($this->isActiveAccountWithCode($preferredAccId)) {
+            return $preferredAccId;
+        }
+
+        $fallbackAccId = (int) $fallbackAccId;
+        if ($this->isActiveAccountWithCode($fallbackAccId)) {
+            return $fallbackAccId;
+        }
+
+        $localSalesAccId = (int) DB::connection('mysql2')
+            ->table('accounts')
+            ->where('status', 1)
+            ->where('code', '5-2')
+            ->value('id');
+
+        if ($this->isActiveAccountWithCode($localSalesAccId)) {
+            return $localSalesAccId;
+        }
+
+        throw new \Exception('Sales revenue account is missing. Please configure a valid revenue account.');
+    }
+
+    private function resolveAccountIdByCode($code)
+    {
+        $code = trim((string) $code);
+        if ($code === '') {
+            return 0;
+        }
+
+        return (int) DB::connection('mysql2')
+            ->table('accounts')
+            ->where('status', 1)
+            ->where('code', $code)
+            ->value('id');
+    }
+
+    private function resolveAdvanceTaxAccountId()
+    {
+        $advanceTaxAccId = $this->resolveAccountIdByCode('1-3-3');
+        if ($this->isActiveAccountWithCode($advanceTaxAccId)) {
+            return $advanceTaxAccId;
+        }
+
+        throw new \Exception('Advance tax account is missing. Please configure account code 1-3-3.');
+    }
+
+    private function resolveFurtherSalesTaxAccountId($salesOrderId)
+    {
+        $salesOrderId = (int) $salesOrderId;
+        if ($salesOrderId <= 0) {
+            throw new \Exception('Sales order is required to resolve further sales tax account.');
+        }
+
+        $furtherTaxAccId = (int) DB::connection('mysql2')
+            ->table('sales_order as so')
+            ->leftJoin('gst as ft', 'so.further_taxes_group', '=', 'ft.id')
+            ->where('so.status', 1)
+            ->where('so.id', $salesOrderId)
+            ->value('ft.acc_id');
+
+        if ($this->isActiveAccountWithCode($furtherTaxAccId)) {
+            return $furtherTaxAccId;
+        }
+
+        $salesTaxAccId = $this->resolveAccountIdByCode('1-3-2-2');
+        if ($this->isActiveAccountWithCode($salesTaxAccId)) {
+            return $salesTaxAccId;
+        }
+
+        throw new \Exception('Further sales tax account is missing. Please configure a valid GST account.');
+    }
+
     /**
      * Show the application dashboard.
      *
@@ -1342,8 +1448,8 @@ class SalesAddDetailControler extends Controller
                     }
 
 
-                $average_cost = ReuseableCode::average_cost_sales($item_id, $warehouse_id, 0);
-                $stock_amount = $qty * $average_cost;
+                $stock_amount = (float) $send_amount;
+                $stock_rate = $qty > 0 ? ($stock_amount / $qty) : 0;
 
                 // Prepare stock movement row
                 $stock_rows[] = [
@@ -1354,7 +1460,7 @@ class SalesAddDetailControler extends Controller
                     'supplier_id' => 0,
                     'customer_id' => $buyers_id,
                     'voucher_type' => 5,
-                    'rate' => $average_cost,
+                    'rate' => $stock_rate,
                     'sub_item_id' => $item_id,
                     'batch_code' => '', // extend later when supporting batches
                     'qty' => $qty,
@@ -3628,14 +3734,20 @@ class SalesAddDetailControler extends Controller
                 ->groupBy('d.id')
                 ->get();
 
+            $invoiceRevenueAccId = (int) ($request->acc_id ?? 0);
+            $defaultRevenueAccId = 0;
             foreach ($t_data as $revenue):
+                $resolvedRevenueAccId = $this->resolveSalesRevenueAccountId($revenue->revenue_acc_id, $invoiceRevenueAccId);
+                if ($defaultRevenueAccId <= 0) {
+                    $defaultRevenueAccId = $resolvedRevenueAccId;
+                }
 
                 $transaction = new Transactions();
                 $transaction = $transaction->SetConnection('mysql2');
                 $transaction->voucher_no = $gi_no;
                 $transaction->v_date = $request->gi_date;
-                $transaction->acc_id = $revenue->revenue_acc_id;
-                $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($revenue->revenue_acc_id);
+                $transaction->acc_id = $resolvedRevenueAccId;
+                $transaction->acc_code = $this->accountCodeOrFail($resolvedRevenueAccId, 'sales revenue');
                 $transaction->particulars = $request->description;
                 $transaction->opening_bal = 0;
                 $transaction->debit_credit = 0;
@@ -3663,7 +3775,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->voucher_no = $gi_no;
                 $transaction->v_date = $request->gi_date;
                 $transaction->acc_id = $sales_tac_acc_id;
-                $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($sales_tac_acc_id);
+                $transaction->acc_code = $this->accountCodeOrFail($sales_tac_acc_id, 'sales tax');
                 $transaction->particulars = $request->description;
                 $transaction->opening_bal = 0;
                 $transaction->debit_credit = 0;
@@ -3677,33 +3789,14 @@ class SalesAddDetailControler extends Controller
             endif;
             $sales_tax_further = CommonHelper::check_str_replace($request->sales_tax_further);
             if ($sales_tax_further > 0):
-
-                // $acc_id = DB::Connection('mysql2')->table('sales_order as so')
-                //     ->join('further_taxes as ft', 'so.further_taxes_group', '=', 'ft.id')
-                //     ->where('ft.status', 1)
-                //     ->where('so.status', 1)
-                //     ->where('so.id', $request->sales_order_id)
-                //     ->select('ft.acc_id')
-                //     ->first()->acc_id;
-
-                $acc_id = DB::Connection('mysql2')->table('sales_order as so')
-                    ->join('gst as ft', 'so.further_taxes_group', '=', 'ft.id')
-                    ->where('ft.status', 1)
-                    ->where('so.status', 1)
-                    ->where('so.id', $request->sales_order_id)
-                    ->select('ft.acc_id')
-                    ->first()->acc_id;
-
-                $sales_tac_acc_id_further = DB::Connection('mysql2')->table('accounts')->where('status', 1)->
-                    where('id', $acc_id) //where('name','Additional Sales Tax Receivable (3%)')
-                    ->select('id')->first()->id;
+                $sales_tac_acc_id_further = $this->resolveFurtherSalesTaxAccountId($request->sales_order_id);
 
                 $transaction = new Transactions();
                 $transaction = $transaction->SetConnection('mysql2');
                 $transaction->voucher_no = $gi_no;
                 $transaction->v_date = $request->gi_date;
                 $transaction->acc_id = $sales_tac_acc_id_further;
-                $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($sales_tac_acc_id_further);
+                $transaction->acc_code = $this->accountCodeOrFail($sales_tac_acc_id_further, 'further sales tax');
                 $transaction->particulars = $request->description;
                 $transaction->opening_bal = 0;
                 $transaction->debit_credit = 0;
@@ -3714,6 +3807,48 @@ class SalesAddDetailControler extends Controller
                 $transaction->save();
                 $total_amount += $sales_tax_further;
 
+            endif;
+
+            $advanceTaxAmount = CommonHelper::check_str_replace($request->advance_tax_amount);
+            if ($advanceTaxAmount > 0):
+                $advanceTaxAccId = $this->resolveAdvanceTaxAccountId();
+
+                $transaction = new Transactions();
+                $transaction = $transaction->SetConnection('mysql2');
+                $transaction->voucher_no = $gi_no;
+                $transaction->v_date = $request->gi_date;
+                $transaction->acc_id = $advanceTaxAccId;
+                $transaction->acc_code = $this->accountCodeOrFail($advanceTaxAccId, 'advance tax');
+                $transaction->particulars = $request->description;
+                $transaction->opening_bal = 0;
+                $transaction->debit_credit = 0;
+                $transaction->amount = $advanceTaxAmount;
+                $transaction->username = Auth::user()->name;
+                $transaction->status = 100;
+                $transaction->voucher_type = 6;
+                $transaction->save();
+                $total_amount += $advanceTaxAmount;
+            endif;
+
+            $cartageAmount = CommonHelper::check_str_replace($request->cartage_amount);
+            if ($cartageAmount > 0):
+                $cartageAccId = $this->resolveSalesRevenueAccountId($defaultRevenueAccId, $invoiceRevenueAccId);
+
+                $transaction = new Transactions();
+                $transaction = $transaction->SetConnection('mysql2');
+                $transaction->voucher_no = $gi_no;
+                $transaction->v_date = $request->gi_date;
+                $transaction->acc_id = $cartageAccId;
+                $transaction->acc_code = $this->accountCodeOrFail($cartageAccId, 'cartage');
+                $transaction->particulars = $request->description;
+                $transaction->opening_bal = 0;
+                $transaction->debit_credit = 0;
+                $transaction->amount = $cartageAmount;
+                $transaction->username = Auth::user()->name;
+                $transaction->status = 100;
+                $transaction->voucher_type = 6;
+                $transaction->save();
+                $total_amount += $cartageAmount;
             endif;
 
             $Loop = Input::get('account_id');
@@ -3735,7 +3870,7 @@ class SalesAddDetailControler extends Controller
                     $transaction->voucher_no = $gi_no;
                     $transaction->v_date = $request->gi_date;
                     $transaction->acc_id = Input::get('account_id')[$Counta];
-                    $transaction->acc_code = FinanceHelper::getAccountCodeByAccId(Input::get('account_id')[$Counta]);
+                    $transaction->acc_code = $this->accountCodeOrFail(Input::get('account_id')[$Counta], 'additional expense');
                     $transaction->particulars = $request->description;
                     $transaction->opening_bal = 0;
                     $transaction->debit_credit = 0;
@@ -3756,7 +3891,7 @@ class SalesAddDetailControler extends Controller
             $transaction->voucher_no = $gi_no;
             $transaction->v_date = $request->gi_date;
             $transaction->acc_id = $customer_acc_id;
-            $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($customer_acc_id);
+            $transaction->acc_code = $this->accountCodeOrFail($customer_acc_id, 'customer');
             $transaction->particulars = $request->description;
             $transaction->opening_bal = 0;
             $transaction->debit_credit = 1;
@@ -3788,7 +3923,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->voucher_no = $gi_no;
                 $transaction->v_date = $request->gi_date;
                 $transaction->acc_id = $row->cogs_acc_id;
-                $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($row->cogs_acc_id);
+                $transaction->acc_code = $this->accountCodeOrFail($row->cogs_acc_id, 'COGS');
                 $transaction->particulars = $request->description;
                 $transaction->opening_bal = 0;
                 $transaction->debit_credit = 1;
@@ -3806,7 +3941,7 @@ class SalesAddDetailControler extends Controller
                     $transaction->voucher_no = $gi_no;
                     $transaction->v_date = $request->gi_date;
                     $transaction->acc_id = $row->acc_id;
-                    $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($row->acc_id);
+                    $transaction->acc_code = $this->accountCodeOrFail($row->acc_id, 'inventory');
                     $transaction->particulars = $request->description;
                     $transaction->opening_bal = 0;
                     $transaction->debit_credit = 0;
@@ -3997,14 +4132,20 @@ class SalesAddDetailControler extends Controller
                 ->groupBy('d.id')
                 ->get();
 
+            $invoiceRevenueAccId = (int) ($request->acc_id ?? 0);
+            $defaultRevenueAccId = 0;
             foreach ($t_data as $revenue):
+                $resolvedRevenueAccId = $this->resolveSalesRevenueAccountId($revenue->revenue_acc_id, $invoiceRevenueAccId);
+                if ($defaultRevenueAccId <= 0) {
+                    $defaultRevenueAccId = $resolvedRevenueAccId;
+                }
 
                 $transaction = new Transactions();
                 $transaction = $transaction->SetConnection('mysql2');
                 $transaction->voucher_no = $gi_no;
                 $transaction->v_date = $request->gi_date;
-                $transaction->acc_id = $revenue->revenue_acc_id;
-                $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($revenue->revenue_acc_id);
+                $transaction->acc_id = $resolvedRevenueAccId;
+                $transaction->acc_code = $this->accountCodeOrFail($resolvedRevenueAccId, 'sales revenue');
                 $transaction->particulars = $request->description;
                 $transaction->opening_bal = 0;
                 $transaction->debit_credit = 0;
@@ -4033,7 +4174,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->voucher_no = $gi_no;
                 $transaction->v_date = $request->gi_date;
                 $transaction->acc_id = $sales_tac_acc_id;
-                $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($sales_tac_acc_id);
+                $transaction->acc_code = $this->accountCodeOrFail($sales_tac_acc_id, 'sales tax');
                 $transaction->particulars = $request->description;
                 $transaction->opening_bal = 0;
                 $transaction->debit_credit = 0;
@@ -4049,25 +4190,14 @@ class SalesAddDetailControler extends Controller
             $sales_tax_further = CommonHelper::check_str_replace($request->sales_tax_further);
 
             if ($sales_tax_further > 0):
-
-                $acc_id = DB::Connection('mysql2')->table('sales_order as so')
-                    ->join('further_taxes as ft', 'so.further_taxes_group', '=', 'ft.id')
-                    ->where('ft.status', 1)
-                    ->where('so.status', 1)
-                    ->where('so.id', $request->sales_order_id)
-                    ->select('ft.acc_id')
-                    ->first()->acc_id;
-
-                $sales_tac_acc_id_further = DB::Connection('mysql2')->table('accounts')->where('status', 1)->
-                    where('id', $acc_id) //where('name','Additional Sales Tax Receivable (3%)')
-                    ->select('id')->first()->id;
+                $sales_tac_acc_id_further = $this->resolveFurtherSalesTaxAccountId($request->sales_order_id);
 
                 $transaction = new Transactions();
                 $transaction = $transaction->SetConnection('mysql2');
                 $transaction->voucher_no = $gi_no;
                 $transaction->v_date = $request->gi_date;
                 $transaction->acc_id = $sales_tac_acc_id_further;
-                $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($sales_tac_acc_id_further);
+                $transaction->acc_code = $this->accountCodeOrFail($sales_tac_acc_id_further, 'further sales tax');
                 $transaction->particulars = $request->description;
                 $transaction->opening_bal = 0;
                 $transaction->debit_credit = 0;
@@ -4078,6 +4208,48 @@ class SalesAddDetailControler extends Controller
                 $transaction->save();
                 $total_amount += $sales_tax_further;
 
+            endif;
+
+            $advanceTaxAmount = CommonHelper::check_str_replace($request->advance_tax_amount);
+            if ($advanceTaxAmount > 0):
+                $advanceTaxAccId = $this->resolveAdvanceTaxAccountId();
+
+                $transaction = new Transactions();
+                $transaction = $transaction->SetConnection('mysql2');
+                $transaction->voucher_no = $gi_no;
+                $transaction->v_date = $request->gi_date;
+                $transaction->acc_id = $advanceTaxAccId;
+                $transaction->acc_code = $this->accountCodeOrFail($advanceTaxAccId, 'advance tax');
+                $transaction->particulars = $request->description;
+                $transaction->opening_bal = 0;
+                $transaction->debit_credit = 0;
+                $transaction->amount = $advanceTaxAmount;
+                $transaction->username = Auth::user()->name;
+                $transaction->status = 100;
+                $transaction->voucher_type = 6;
+                $transaction->save();
+                $total_amount += $advanceTaxAmount;
+            endif;
+
+            $cartageAmount = CommonHelper::check_str_replace($request->cartage_amount);
+            if ($cartageAmount > 0):
+                $cartageAccId = $this->resolveSalesRevenueAccountId($defaultRevenueAccId, $invoiceRevenueAccId);
+
+                $transaction = new Transactions();
+                $transaction = $transaction->SetConnection('mysql2');
+                $transaction->voucher_no = $gi_no;
+                $transaction->v_date = $request->gi_date;
+                $transaction->acc_id = $cartageAccId;
+                $transaction->acc_code = $this->accountCodeOrFail($cartageAccId, 'cartage');
+                $transaction->particulars = $request->description;
+                $transaction->opening_bal = 0;
+                $transaction->debit_credit = 0;
+                $transaction->amount = $cartageAmount;
+                $transaction->username = Auth::user()->name;
+                $transaction->status = 100;
+                $transaction->voucher_type = 6;
+                $transaction->save();
+                $total_amount += $cartageAmount;
             endif;
 
             $Loop = Input::get('account_id');
@@ -4100,7 +4272,7 @@ class SalesAddDetailControler extends Controller
                     $transaction->voucher_no = $gi_no;
                     $transaction->v_date = $request->gi_date;
                     $transaction->acc_id = Input::get('account_id')[$Counta];
-                    $transaction->acc_code = FinanceHelper::getAccountCodeByAccId(Input::get('account_id')[$Counta]);
+                    $transaction->acc_code = $this->accountCodeOrFail(Input::get('account_id')[$Counta], 'additional expense');
                     $transaction->particulars = $request->description;
                     $transaction->opening_bal = 0;
                     $transaction->debit_credit = 0;
@@ -4121,7 +4293,7 @@ class SalesAddDetailControler extends Controller
             $transaction->voucher_no = $gi_no;
             $transaction->v_date = $request->gi_date;
             $transaction->acc_id = $customer_acc_id;
-            $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($customer_acc_id);
+            $transaction->acc_code = $this->accountCodeOrFail($customer_acc_id, 'customer');
             $transaction->particulars = $request->description;
             $transaction->opening_bal = 0;
             $transaction->debit_credit = 1;
@@ -4152,7 +4324,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->voucher_no = $gi_no;
                 $transaction->v_date = $request->gi_date;
                 $transaction->acc_id = $row->cogs_acc_id;
-                $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($row->cogs_acc_id);
+                $transaction->acc_code = $this->accountCodeOrFail($row->cogs_acc_id, 'COGS');
                 $transaction->particulars = $request->description;
                 $transaction->opening_bal = 0;
                 $transaction->debit_credit = 1;
@@ -4170,7 +4342,7 @@ class SalesAddDetailControler extends Controller
                     $transaction->voucher_no = $gi_no;
                     $transaction->v_date = $request->gi_date;
                     $transaction->acc_id = $row->acc_id;
-                    $transaction->acc_code = FinanceHelper::getAccountCodeByAccId($row->acc_id);
+                    $transaction->acc_code = $this->accountCodeOrFail($row->acc_id, 'inventory');
                     $transaction->particulars = $request->description;
                     $transaction->opening_bal = 0;
                     $transaction->debit_credit = 0;

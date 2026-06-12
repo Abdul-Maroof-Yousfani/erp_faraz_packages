@@ -309,7 +309,8 @@ if (empty($sales_tax_invoice)) {
 
                                         <?php
                                         $total_expense = 0;
-                                        $total_before_tax += $row->rate * $row->qty;
+                                        $line_amount = (float) ($row->amount ?? (($row->rate ?? 0) * ($row->qty ?? 0)));
+                                        $total_before_tax += $line_amount;
                                         $total_tax += $row->tax_amount;
                                         $total_after_tax += ($row->amount + $row->tax_amount + $row->sales_tax_further);
                                         $bags = $row->bag_qty ?? (($row->final_pack_size > 0) ? ($row->qty / $row->final_pack_size) : 0);
@@ -332,7 +333,7 @@ if (empty($sales_tax_invoice)) {
                                             <td style="border:1px solid black;">{{ $uomName ?: 'N/A' }}</td>
                                             <td class="text-right" style="border:1px solid black;">{{ $row->qty }}</td>
                                             <td class="text-right" style="border:1px solid black;">{{ number_format($row->rate,2) }}</td>
-                                            <td class="text-right" style="border:1px solid black;">{{ number_format($row->rate * $row->qty,2) }}</td>
+                                            <td class="text-right" style="border:1px solid black;">{{ number_format($line_amount,2) }}</td>
                                             {{-- <td class="text-right" style="border:1px solid black;">{{ $row->tax }}</td> --}}
                                             {{-- <td class="text-right" style="border:1px solid black;">{{ number_format($row->tax_amount,2) }}</td> --}}
                                             <td class="text-right hide" style="border:1px solid black;">{{ $row->sales_tax_further_per }}</td>

@@ -270,7 +270,8 @@ $AmountInWordsMain =0;
 
                                         <?php
                                         $total_expense = 0;
-                                        $total_before_tax += $row->rate * $row->qty;
+                                        $line_amount = (float) ($row->amount ?? (($row->rate ?? 0) * ($row->qty ?? 0)));
+                                        $total_before_tax += $line_amount;
                                         $total_tax += $row->tax_amount;
                                         $total_after_tax += ($row->amount + $row->tax_amount + $row->sales_tax_further);
                                         ?>
@@ -283,7 +284,7 @@ $AmountInWordsMain =0;
                                             <td style="border:1px solid black;">{{ CommonHelper::get_uom_name($row->uom) ??  CommonHelper::get_uom($row->item_id) }}</td>
                                             <td class="text-right" style="border:1px solid black;">{{ $row->qty }}</td>
                                             <td class="text-right" style="border:1px solid black;">{{ number_format($row->rate,2) }}</td>
-                                            <td class="text-right" style="border:1px solid black;">{{ number_format($row->rate * $row->qty,2) }}</td>
+                                            <td class="text-right" style="border:1px solid black;">{{ number_format($line_amount,2) }}</td>
                                             <td class="text-right" style="border:1px solid black;">{{ $row->tax }}</td>
                                             <td class="text-right" style="border:1px solid black;">{{ number_format($row->tax_amount,2) }}</td>
                                             <td class="text-right" style="border:1px solid black;">{{ $row->sales_tax_further_per }}</td>

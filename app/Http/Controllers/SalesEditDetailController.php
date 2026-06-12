@@ -177,8 +177,8 @@ class SalesEditDetailController extends Controller
                     throw new \Exception("Insufficient stock for item ID {$item_id} (requested: {$qty}, available: {$available_qty})");
                 }
 
-                $average_cost = ReuseableCode::average_cost_sales($item_id, $warehouse_id, 0);
-                $stock_amount = $qty * $average_cost;
+                $stock_amount = (float) $send_amount;
+                $stock_rate = $qty > 0 ? ($stock_amount / $qty) : 0;
 
                 $stock_rows[] = [
                     'main_id' => $id,
@@ -188,7 +188,7 @@ class SalesEditDetailController extends Controller
                     'supplier_id' => 0,
                     'customer_id' => $buyers_id,
                     'voucher_type' => 5,
-                    'rate' => $average_cost,
+                    'rate' => $stock_rate,
                     'sub_item_id' => $item_id,
                     'batch_code' => '',
                     'qty' => $qty,
