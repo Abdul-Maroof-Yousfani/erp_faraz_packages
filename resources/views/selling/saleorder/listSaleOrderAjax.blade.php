@@ -28,7 +28,9 @@
                         {{-- <a class="" href="{{route('saleOrderSectionA', $sale_order->id)}}" target="_blank">
                             Section A / B
                         </a> --}}
-                        <a href="{{route('editSaleOrder', $sale_order->id)}}" class="" target="_blank"> Edit</a>
+                        @if(empty($sale_order->has_delivery_note))
+                            <a href="{{route('editSaleOrder', $sale_order->id)}}" class="" target="_blank"> Edit</a>
+                        @endif
                         <a href="#" class="">Delete</a>
                     </li>
                 </ul>

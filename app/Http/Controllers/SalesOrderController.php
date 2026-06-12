@@ -40,7 +40,17 @@ class SalesOrderController extends Controller
         if ($request->ajax()) {
             $sale_orders = DB::Connection('mysql2')->table('sales_order')
                 ->join('customers', 'sales_order.buyers_id', 'customers.id')
-                ->where('sales_order.status', 1)->select('sales_order.*', 'customers.name');
+                ->where('sales_order.status', 1)
+                ->select(
+                    'sales_order.*',
+                    'customers.name',
+                    DB::raw("EXISTS (
+                        SELECT 1
+                        FROM delivery_note
+                        WHERE delivery_note.master_id = sales_order.id
+                          AND delivery_note.status = 1
+                    ) as has_delivery_note")
+                );
             // if(!empty($request->to) && !empty($request->from)){
             //     $from = $request->from;
             //     $to = $request->to;
