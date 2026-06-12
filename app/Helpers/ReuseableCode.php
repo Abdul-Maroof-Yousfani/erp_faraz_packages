@@ -307,7 +307,46 @@ class ReuseableCode
 
     public static function purchase_return_qty($id)
     {
-        return DB::Connection('mysql2')->table('purchase_return_data')->where('grn_data_id', $id)->where('status', 1)->sum('return_qty');
+        return self::purchase_return_qty_from_grn_line($id);
+    }
+
+    public static function purchase_return_qty_from_grn_line($grnDataId, $excludeMasterId = 0)
+    {
+        $query = DB::Connection('mysql2')->table('purchase_return_data as prd')
+            ->join('purchase_return as pr', 'pr.id', '=', 'prd.master_id')
+            ->where('prd.status', 1)
+            ->where('pr.status', 1)
+            ->where('prd.grn_data_id', $grnDataId)
+            ->where(function ($query) {
+                $query->whereNull('pr.purchase_invoice_id')
+                    ->orWhere('pr.purchase_invoice_id', 0);
+            });
+
+        if ((int) $excludeMasterId > 0) {
+            $query->where('prd.master_id', '!=', (int) $excludeMasterId);
+        }
+
+        return (float) $query->sum('prd.return_qty');
+    }
+
+    public static function purchase_return_qty_from_invoice_line($purchaseInvoiceDataId, $purchaseInvoiceId = 0, $excludeMasterId = 0)
+    {
+        $query = DB::Connection('mysql2')->table('purchase_return_data as prd')
+            ->join('purchase_return as pr', 'pr.id', '=', 'prd.master_id')
+            ->where('prd.status', 1)
+            ->where('pr.status', 1)
+            ->where('prd.grn_data_id', $purchaseInvoiceDataId)
+            ->where('pr.purchase_invoice_id', '>', 0);
+
+        if ((int) $purchaseInvoiceId > 0) {
+            $query->where('pr.purchase_invoice_id', (int) $purchaseInvoiceId);
+        }
+
+        if ((int) $excludeMasterId > 0) {
+            $query->where('prd.master_id', '!=', (int) $excludeMasterId);
+        }
+
+        return (float) $query->sum('prd.return_qty');
     }
 
 

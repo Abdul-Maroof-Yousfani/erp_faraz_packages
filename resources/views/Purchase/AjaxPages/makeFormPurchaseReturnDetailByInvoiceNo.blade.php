@@ -110,10 +110,7 @@ if (!$GrnId && isset($_GET['GrnValue'])) {
                     $rateCalByLabel = $rateCalBy === 1 ? 'By BAGS' : ($rateCalBy === 3 ? 'By LBS' : 'By KGS');
                     $reurn = 0;
                     if (!empty($grnDataId)) {
-                        $reurn = (float) DB::connection('mysql2')->table('purchase_return_data')
-                            ->where('status', 1)
-                            ->where('grn_data_id', $grnDataId)
-                            ->sum('return_qty');
+                        $reurn = ReuseableCode::purchase_return_qty_from_invoice_line($grnDataId, $InvoiceId);
                     }
                     $remainingQty = max(((float) $purchaseQty) - $reurn, 0);
                     $remainingRateBasisQty = $remainingQty;

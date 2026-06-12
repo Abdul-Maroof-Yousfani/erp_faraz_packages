@@ -3755,6 +3755,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->username = Auth::user()->name;
                 $transaction->status = 100;
                 $transaction->voucher_type = 6;
+                $transaction->date = date('Y-m-d');
                 $transaction->save();
             endforeach;
 
@@ -3783,6 +3784,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->username = Auth::user()->name;
                 $transaction->status = 100;
                 $transaction->voucher_type = 6;
+                $transaction->date = date('Y-m-d');
                 $transaction->save();
                 $total_amount += $sales_tax;
 
@@ -3804,6 +3806,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->username = Auth::user()->name;
                 $transaction->status = 100;
                 $transaction->voucher_type = 6;
+                $transaction->date = date('Y-m-d');
                 $transaction->save();
                 $total_amount += $sales_tax_further;
 
@@ -3826,6 +3829,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->username = Auth::user()->name;
                 $transaction->status = 100;
                 $transaction->voucher_type = 6;
+                $transaction->date = date('Y-m-d');
                 $transaction->save();
                 $total_amount += $advanceTaxAmount;
             endif;
@@ -3847,6 +3851,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->username = Auth::user()->name;
                 $transaction->status = 100;
                 $transaction->voucher_type = 6;
+                $transaction->date = date('Y-m-d');
                 $transaction->save();
                 $total_amount += $cartageAmount;
             endif;
@@ -3878,6 +3883,7 @@ class SalesAddDetailControler extends Controller
                     $transaction->username = Auth::user()->name;
                     $transaction->status = 100;
                     $transaction->voucher_type = 6;
+                    $transaction->date = date('Y-m-d');
                     $transaction->save();
                     $total_amount += Input::get('expense_amount')[$Counta];
                     $Counta++;
@@ -3899,6 +3905,7 @@ class SalesAddDetailControler extends Controller
             $transaction->username = Auth::user()->name;
             $transaction->status = 100;
             $transaction->voucher_type = 6;
+            $transaction->date = date('Y-m-d');
             $transaction->save();
 
             $data2['sales_tax_invoice'] = 2;
@@ -3931,6 +3938,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->username = Auth::user()->name;
                 $transaction->status = 100;
                 $transaction->voucher_type = 8;
+                $transaction->date = date('Y-m-d');
                 $transaction->save();
                 $cogs_total += $row->amount;
 
@@ -3949,6 +3957,7 @@ class SalesAddDetailControler extends Controller
                     $transaction->username = Auth::user()->name;
                     $transaction->status = 100;
                     $transaction->voucher_type = 8;
+                    $transaction->date = date('Y-m-d');
                     $transaction->save();
                 endif;
             endforeach;

@@ -187,7 +187,7 @@ use App\Helpers\ReuseableCode;
                                                                 $subItemDetail = CommonHelper::get_subitem_detail2($row1->sub_item_id);
                                                                 $pack_size = (float) ($subItemDetail->pack_size ?? 0);
                                                             }
-                                                            $return_qty = ReuseableCode::purchase_return_qty($row1->id);
+                                                            $return_qty = ReuseableCode::purchase_return_qty_from_grn_line($row1->id);
                                                             $qty = $row1->purchase_recived_qty - $row1->qc_qty;
                                                             $actual_qty = $qty-$return_qty;
 
@@ -284,26 +284,25 @@ use App\Helpers\ReuseableCode;
                                                             $SalesTaxAmount = 0;
                                                             $NetTot = 0;
                                                             $SalesTaxAccId = 0;
-                                                            if($purchase_reqiest->sales_tax_amount != 0)
-                                                            {
-
-                                                                $SalesTaxId = $purchase_reqiest->sales_tax;
-                                                                $SalesTaxAccId = $purchase_reqiest->sales_tax_acc_id;
-                                                                $SalesTaxAmount = $purchase_reqiest->sales_tax_amount;
-                                                                $sales_tax_amount=($TotAmt/100)*$purchase_reqiest->sales_tax;
-                                                                $NetTot = $TotAmt+$sales_tax_amount;
-                                                            }else{
-                                                                $SalesTaxId = 0;
-                                                                $NetTot = $TotAmt+$sales_tax_amount;
-                                                                $SalesTaxAmount = 0;
-                                                                $SalesTaxAccId = 0;
+                                                            $rawSalesTax = (string) ($purchase_reqiest->sales_tax ?? '0');
+                                                            $rawSalesTaxParts = explode('@', $rawSalesTax);
+                                                            $SalesTaxId = (float) ($rawSalesTaxParts[0] ?? 0);
+                                                            $SalesTaxAccId = (int) ($purchase_reqiest->sales_tax_acc_id ?? 0);
+                                                            if ($SalesTaxAccId === 0 && !empty($rawSalesTaxParts[1])) {
+                                                                $SalesTaxAccId = (int) $rawSalesTaxParts[1];
                                                             }
+                                                            $SalesTaxAmount = (float) ($purchase_reqiest->sales_tax_amount ?? 0);
+                                                            if ($SalesTaxAmount <= 0 && $SalesTaxId > 0) {
+                                                                $SalesTaxAmount = ($TotAmt / 100) * $SalesTaxId;
+                                                            }
+                                                            $sales_tax_amount = $SalesTaxAmount;
+                                                            $NetTot = $TotAmt + $sales_tax_amount;
                                                             ?>
                                                             <td colspan="1">Sales Taxes</td>
                                                             <td colspan="3"><select name="SalesTaxesAccId<?php echo $sales_tax_count?>" class="form-control <?php echo $SalesTaxAccId;?>" id="SalesTaxesAccId<?php echo $good_recipt_note->grn_no?>" onchange="sales_tax_calc('<?php echo $good_recipt_note->grn_no?>')">
                                                                     <option value="">Select Head</option>
                                                                     @foreach(FinanceHelper::get_accounts() as $row)
-                                                                        <option @if($row->id == 903) selected @endif value="{{ $row->id}}">{{ ucwords($row->name)}}</option>
+                                                                        <option @if($row->id == $SalesTaxAccId) selected @endif value="{{ $row->id}}">{{ ucwords($row->name)}}</option>
                                                                     @endforeach
                                                                 </select>
                                                             </td>

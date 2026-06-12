@@ -2731,7 +2731,7 @@ class PurchaseAddDetailControler extends Controller
                         $packSize = (float) ($subItemDetail->pack_size ?? 0);
                     }
                     $receivedQty = max((float) ($grnLine->purchase_recived_qty ?? 0) - (float) ($grnLine->qc_qty ?? 0), 0);
-                    $returnQty = (float) ReuseableCode::purchase_return_qty($request->input('grn_data_id_1_' . $row));
+                    $returnQty = (float) ReuseableCode::purchase_return_qty_from_grn_line($request->input('grn_data_id_1_' . $row));
                     $actualQty = max($receivedQty - $returnQty, 0);
                     $rateBasisQty = $actualQty;
                     if ($rateCalBy === 1) {
@@ -3335,10 +3335,9 @@ class PurchaseAddDetailControler extends Controller
             $requestedReturnQty = (float) $request->input('ReturnQty')[$row];
             $purchaseQty = (float) $request->input('PurchaseRecQty')[$row];
             $grnDataId = $request->input('grn_data_id')[$row] ?? 0;
-            $alreadyReturnedQty = (float) DB::connection('mysql2')->table('purchase_return_data')
-                ->where('status', 1)
-                ->where('grn_data_id', $grnDataId)
-                ->sum('return_qty');
+            $alreadyReturnedQty = (int) $PurchaseInvoiceId > 0
+                ? ReuseableCode::purchase_return_qty_from_invoice_line($grnDataId, $PurchaseInvoiceId)
+                : ReuseableCode::purchase_return_qty_from_grn_line($grnDataId);
             $remainingQty = max($purchaseQty - $alreadyReturnedQty, 0);
 
             if ($requestedReturnQty > $remainingQty) {
@@ -3943,11 +3942,9 @@ public function updatePurchaseReturnDetail(Request $request)
             $itemDesc         = $request->input('item_desc')[$index] ?? '';
 
             // Calculate already returned quantity (excluding current edit)
-            $alreadyReturnedQty = (float) DB::connection('mysql2')->table('purchase_return_data')
-                ->where('status', 1)
-                ->where('grn_data_id', $grnDataId)
-                ->where('master_id', '!=', $EditId)
-                ->sum('return_qty');
+            $alreadyReturnedQty = (int) $PurchaseInvoiceId > 0
+                ? ReuseableCode::purchase_return_qty_from_invoice_line($grnDataId, $PurchaseInvoiceId, $EditId)
+                : ReuseableCode::purchase_return_qty_from_grn_line($grnDataId, $EditId);
 
             $remainingQty = max($purchaseQty - $alreadyReturnedQty, 0);
 

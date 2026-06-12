@@ -708,7 +708,9 @@ class PurchaseEditDetailControler extends Controller
             $purchase_orde->destination=$request->destination;
             $purchase_orde->currency_id = $currency[0];
             $purchase_orde->currency_rate = $currency[1];
-            $purchase_orde->sales_tax=$request->sales_taxx;
+            $salesTaxx = explode('@', (string) $request->sales_taxx);
+            $purchase_orde->sales_tax = (float) ($salesTaxx[0] ?? 0);
+            $purchase_orde->sales_tax_acc_id = (int) ($salesTaxx[1] ?? 0);
             $sales_tax_amount=CommonHelper::check_str_replace($request->sales_amount_td);
             $purchase_orde->sales_tax_amount=$sales_tax_amount;
 

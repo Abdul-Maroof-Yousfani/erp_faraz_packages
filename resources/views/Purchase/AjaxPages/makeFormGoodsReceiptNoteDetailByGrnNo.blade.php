@@ -53,9 +53,8 @@ $GrnDate = $makeGetValue[2];
                         <td class="text-center"><?php echo number_format($Fil->purchase_recived_qty,2);?>
                             <input value="<?php echo $Fil->purchase_recived_qty?>" type="hidden" name="PurchaseRecQty[]" id="purchase_recived_qty_<?php echo $Fil->id; ?>"/>
                         </td>
-                        <?php $reurn=0; ?>
-                        <?php $return_qty=DB::Connection('mysql2')->selectOne('select sum(return_qty)qty from purchase_return_data where status=1 and grn_data_id="'.$Fil->id.'" group by grn_data_id') ?>
-                        <td class="text-center">@if(!empty($return_qty->qty)){{$reurn=$return_qty->qty}} @else <?php  ?> @endif</td>
+                        <?php $reurn = ReuseableCode::purchase_return_qty_from_grn_line($Fil->id); ?>
+                        <td class="text-center">{{ number_format($reurn, 2) }}</td>
                             <input type="hidden" id="return_<?php echo $Fil->id; ?>" value="{{$reurn}}"/>
 
                         <td style="display: none" class="text-center"><?php echo number_format($Fil->rate,2);?>
