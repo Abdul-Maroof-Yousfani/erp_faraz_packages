@@ -37,6 +37,7 @@ use DB;
 use Config;
 use Session;
 use PDF;
+use Carbon\Carbon;
 class FinanceDataCallController extends Controller
 {
     /**
@@ -6566,7 +6567,7 @@ function vendor_summery(Request $request)
                     $AccCode = DB::Connection('mysql2')->table('accounts')->where('id',$acc_id)->select('code')->first();
                     $data['debit_credit']=$nature;
                     $data['amount']=$amount;
-                    $data['v_date']=$AccYearFrom;
+                    $data['v_date']=Carbon::now()->startOfMonth()->format('Y-m-d');
                     $data['opening_bal']=1;
                     $data['username'] = Auth::user()->name;
                     $data['date']=date('Y-m-d');

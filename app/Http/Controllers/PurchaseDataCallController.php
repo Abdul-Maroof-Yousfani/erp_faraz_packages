@@ -2975,9 +2975,10 @@ echo "aa"; die;
         $category_id = $_GET['category']; //$request->category;
         $data=DB::Connection('mysql2')->table('subitem as a')
         ->join('uom as b','a.uom','=','b.id')
+        ->leftJoin('packaging_type as pt', 'a.primary_pack_type', '=', 'pt.id')
         ->where('a.main_ic_id',$category_id)
         ->where('a.status',1)
-        ->select('a.id','a.sub_ic','a.item_code','b.uom_name','a.sub_ic', 'a.pack_size')
+        ->select('a.id','a.sub_ic','a.item_code','b.uom_name','a.pack_size','a.color','pt.type')
         ->get();
         return response()->json($data);
     }

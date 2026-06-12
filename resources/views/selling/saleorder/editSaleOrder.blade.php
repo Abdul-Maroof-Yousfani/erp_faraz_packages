@@ -255,14 +255,25 @@ $count = 1;
                                                                     <select onchange="get_item_name({{$count}})" class="form-control select2 item_id itemsclass " name="item_id[]" id="item_id{{$count}}">
                                                                         <option value="">Select</option>
                                                                         @if(!$selectedItemInRowItems && $selectedItemId)
-                                                                            <option selected value="{{ $selectedItemId . '@' . $value->uom_name . '@' . $value->sub_ic . '@' . $value->pack_size . '@@' . $value->color }}">
-                                                                                {{ $value->item_code . ' -- ' . $value->sub_ic . ' ' . $value->pack_size . ' ' . $value->uom_name . ' ' . $value->color }}
+                                                                            <option selected
+                                                                                data-item-code="{{ $value->item_code }}"
+                                                                                data-uom-name="{{ $value->uom_name }}"
+                                                                                data-pack-size="{{ $value->pack_size }}"
+                                                                                data-type=""
+                                                                                data-color="{{ $value->color }}"
+                                                                                value="{{ $selectedItemId . '@' . $value->uom_name . '@' . $value->sub_ic . '@' . $value->pack_size . '@@' . $value->color }}">
+                                                                                {{ $value->sub_ic }}
                                                                             </option>
                                                                         @endif
                                                                         @foreach($rowItems as $val)
                                                                             <option @if($selectedItemId == $val->id) selected @endif
+                                                                                data-item-code="{{ $val->item_code }}"
+                                                                                data-uom-name="{{ $val->uom_name }}"
+                                                                                data-pack-size="{{ $val->pack_size }}"
+                                                                                data-type="{{ $val->type }}"
+                                                                                data-color="{{ $val->color }}"
                                                                                 value="{{ $val->id . '@' . $val->uom_name . '@' . $val->sub_ic. '@' . $val->pack_size . '@' . $val->type. '@' . $val->color }}">
-                                                                                {{ $val->item_code . ' -- ' . $val->sub_ic . ' ' . $val->pack_size . ' ' . $val->uom_name . ' ' . $val->type. ' ' . $val->color }}
+                                                                                {{ $val->sub_ic }}
                                                                             </option>
                                                                         @endforeach
                                                                     </select>                  
@@ -509,8 +520,75 @@ $count = 1;
                                                    
         } 
 
+        function buildSaleOrderItemLabel(item) {
+            return (item.sub_ic || '').trim();
+        }
+
+        function createSaleOrderItemOption(item) {
+            var label = buildSaleOrderItemLabel(item);
+            return $('<option>', {
+                value: [
+                    item.id || '',
+                    item.uom_name || '',
+                    item.sub_ic || '',
+                    item.pack_size || '',
+                    item.type || '',
+                    item.color || ''
+                ].join('@'),
+                text: label || 'Select'
+            }).attr({
+                'data-item-code': item.item_code || '',
+                'data-uom-name': item.uom_name || '',
+                'data-pack-size': item.pack_size || '',
+                'data-type': item.type || '',
+                'data-color': item.color || ''
+            });
+        }
+
+        function fetchSaleOrderItems(categoryId, selectedItemId = '') {
+            return $.ajax({
+                url: '{{ url("/pdc/get_sub_category") }}',
+                type: 'GET',
+                dataType: 'json',
+                data: { category: categoryId }
+            }).then(function (response) {
+                return (response || []).map(function (item) {
+                    item.id = String(item.id || '');
+                    item.selected = selectedItemId !== '' && item.id === String(selectedItemId);
+                    return item;
+                });
+            });
+        }
+
+        function populateSaleOrderItems(indexVal, items, selectedItemId = '') {
+            var itemSelect = $('#item_id' + indexVal);
+            var currentSelectedOption = itemSelect.find('option:selected').clone();
+            itemSelect.empty().append('<option value="">Select</option>');
+
+            $.each(items, function (_, item) {
+                var option = createSaleOrderItemOption(item);
+                if (selectedItemId !== '' && String(item.id) === String(selectedItemId)) {
+                    option.prop('selected', true);
+                }
+                itemSelect.append(option);
+            });
+
+            var hasSelectedItem = selectedItemId !== '' && itemSelect.find('option').filter(function () {
+                var optionValue = ($(this).val() || '').split('@')[0];
+                return optionValue === String(selectedItemId);
+            }).length > 0;
+
+            if (!hasSelectedItem && currentSelectedOption.length && selectedItemId !== '') {
+                currentSelectedOption.prop('selected', true);
+                itemSelect.append(currentSelectedOption);
+            }
+
+            itemSelect.trigger('change.select2');
+        }
+
         function load_sale_order_items(categoryId) {
             var indexVal = categoryId.replace("category_id", "");
+            var selectedCategoryId = $('#'+categoryId).val() || '';
             $('#item_id' + indexVal).html('<option value="">Select</option>').val('').trigger('change.select2');
             $('#uom_id' + indexVal).val('');
             $('#item_code' + indexVal).val('');
@@ -522,7 +600,17 @@ $count = 1;
             $('#item_tax_amount' + indexVal).val('');
             $('#rate_cal_by_' + indexVal).val('1').trigger('change.select2');
             $('#pack_qty' + indexVal).val('');
-            get_sub_item(categoryId);
+
+            if (!selectedCategoryId) {
+                calculation_amount();
+                return;
+            }
+
+            fetchSaleOrderItems(selectedCategoryId).done(function (items) {
+                populateSaleOrderItems(indexVal, items);
+            }).fail(function (xhr) {
+                console.error('load_sale_order_items failed', xhr.status, xhr.responseText);
+            });
         }
 
         function RemoveSection(row) {
@@ -582,21 +670,35 @@ $count = 1;
     }
 
     function get_item_name(index) {
-            var item = $('#item_id' + index).val();
+            var itemSelect = $('#item_id' + index);
+            var item = itemSelect.val();
 
-            var uom = item.split('@');
-            console.log(uom);
-            $('#uom_id' + index).val(uom[1]);
-            $('#item_code' + index).val(uom[2]);
-            $('#qty' + index).val(uom[3]);
-            $('#pack_qty' + index).val(uom[3]);
-            $('#qty_lbs' + index).val((parseFloat(uom[3] || 0) * 2.2).toFixed(2));
-            $('#color' + index).val(uom[5]);
+            if (!item) {
+                $('#uom_id' + index).val('');
+                $('#item_code' + index).val('');
+                $('#pack_qty' + index).val('');
+                $('#qty' + index).val('');
+                $('#qty_lbs' + index).val('');
+                $('#pack_size' + index).val('');
+                calculation_amount();
+                return;
+            }
+
+            var selectedOption = itemSelect.find('option:selected');
+            var uomName = selectedOption.data('uom-name') || '';
+            var itemCode = selectedOption.data('item-code') || '';
+            var packQty = parseFloat(selectedOption.data('pack-size') || 0);
+            var itemColor = selectedOption.data('color') || '';
+
+            $('#uom_id' + index).val(uomName);
+            $('#item_code' + index).val(itemCode);
+            $('#pack_qty' + index).val(packQty || '');
+            $('#qty' + index).val(packQty || 0);
+            $('#qty_lbs' + index).val((packQty * 2.2).toFixed(2));
+            $('#color' + index).val(itemColor);
             $('#pack_size' + index).val(1);
-            console.log(index);
 
             bag_qq(index);
-
         }
 
         function get_item_name1(index) {
@@ -798,6 +900,22 @@ function calculation_amount(index) {
 
     
     $('#further_taxes_group').trigger('change')
+    $('.main').each(function () {
+        var rowId = this.id.replace('RemoveRows', '');
+        var categoryId = $('#category_id' + rowId).val();
+        var itemValue = $('#item_id' + rowId).val() || '';
+        var selectedItemId = itemValue ? itemValue.split('@')[0] : '';
+
+        if (!categoryId) {
+            return;
+        }
+
+        fetchSaleOrderItems(categoryId, selectedItemId).done(function (items) {
+            populateSaleOrderItems(rowId, items, selectedItemId);
+        }).fail(function (xhr) {
+            console.error('initial item load failed', xhr.status, xhr.responseText);
+        });
+    });
    setTimeout(() => {
     //    $('.category').trigger('change')
        calculation_amount(1)

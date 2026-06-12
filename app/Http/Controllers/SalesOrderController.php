@@ -313,15 +313,6 @@ class SalesOrderController extends Controller
             ->where('sales_order_data.status', 1)
             ->get();
 
-        $selected_item_ids = $sales_order_data->pluck('item_id')
-            ->map(function ($item_id) {
-                return (int) explode('@', (string) $item_id)[0];
-            })
-            ->filter()
-            ->unique()
-            ->values()
-            ->all();
-
         $sub_item = DB::Connection('mysql2')->table('category as c')
             ->join('sub_category as sc', 'c.id', '=', 'sc.category_id')
             ->join('subitem as s', 'sc.id', '=', 's.sub_category_id')
@@ -331,12 +322,6 @@ class SalesOrderController extends Controller
             ->where('c.status', '=', 1)
             ->where('s.status', '=', 1)
             ->where('u.status', '=', 1)
-            ->where(function ($query) use ($selected_item_ids) {
-                $query->where('s.main_ic_id', '=', 8);
-                if (!empty($selected_item_ids)) {
-                    $query->orWhereIn('s.id', $selected_item_ids);
-                }
-            })
             ->select('s.id', 's.sub_ic', 's.uom', 's.item_code', 'u.uom_name', 's.hs_code_id','pt.type','s.pack_size','s.primary_pack_type','s.color', 's.main_ic_id')
             // ->groupBy('s.item_code')
             ->orderBy('s.id')
