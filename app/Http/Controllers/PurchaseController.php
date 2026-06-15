@@ -339,8 +339,12 @@ class PurchaseController extends Controller
         $supplier = Supplier::where('id', $id)->first();
         $supplier_info = SupplierInfo::where('supp_id', $id)->first();
         $transactions = Transactions::where('acc_id', $supplier->acc_id)->where('opening_bal', 1)->first();
+        $isMarkedAsCustomer = DB::Connection('mysql2')->table('customers')
+            ->where('acc_id', $supplier->acc_id)
+            ->where('status', 1)
+            ->exists();
 
-        return view('Purchase.AjaxPages.editSupplierForm', compact('countries', 'id', 'supplier', 'supplier_info', 'transactions'));
+        return view('Purchase.AjaxPages.editSupplierForm', compact('countries', 'id', 'supplier', 'supplier_info', 'transactions', 'isMarkedAsCustomer'));
     }
 
     public function viewSupplierFormlist($id)

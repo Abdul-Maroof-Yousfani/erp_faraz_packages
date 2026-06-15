@@ -8,6 +8,10 @@ $accType = Auth::user()->acc_type;
 //     $m = Auth::user()->company_id;
 // }
 $supplier = DB::connection('mysql2')->table('supplier')->where('id',$id)->first();
+$isMarkedAsCustomer = DB::connection('mysql2')->table('customers')
+    ->where('acc_id', $supplier->acc_id ?? 0)
+    ->where('status', 1)
+    ->exists();
 
 $m=Session::get('run_company');
 ?>
@@ -81,8 +85,12 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
                                                                     <label>Products/ Services Provided</label>
                                                                     <p id="">{{ $supplier->product_services_provided }}</p>
                                                                 </div>
-        
-        
+                                                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                                                                    <label>Mark As Customer</label>
+                                                                    <p id="">{{ $isMarkedAsCustomer ? 'Yes' : 'No' }}</p>
+                                                                </div>
+
+
                                                             </div>
                                                         </div>
                                                     </div>

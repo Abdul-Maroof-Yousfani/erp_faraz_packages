@@ -113,7 +113,7 @@ if ($accType == 'client') {
                                                                             class="rflabelsteric"><strong></strong></span>
                                                                         <input id="Telephone" name="mobile_no" type="text"
                                                                             class="form-control" 
-                                                                            value="{{ $supplier->mobile_no ?? '0' }}"
+                                                                            value="{{ $supplier->mobile_no ?? '' }}"
                                                                             onkeyup="validateField('2', 'Telephone')">
                                                                     </div>
 
@@ -121,7 +121,7 @@ if ($accType == 'client') {
                                                                         <label>Email</label>
                                                                         <input id="Email" name="email" type="email"
                                                                             class="form-control "
-                                                                            value="{{ $supplier->email }}">
+                                                                            value="{{ $supplier->email ?? '' }}">
                                                                     </div>
 
                                                                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
@@ -130,6 +130,17 @@ if ($accType == 'client') {
                                                                             name="product_services_provided" type="text"
                                                                             class="form-control"
                                                                             value="{{ $supplier->product_services_provided }}">
+                                                                    </div>
+                                                                    <div class="col-lg-12 col-md-3 col-sm-3 col-xs-3" style="margin-top: 24px;">
+                                                                        <label style="display:block;">&nbsp;</label>
+                                                                        <label style="font-weight: 600;">
+                                                                            @if (!empty($isMarkedAsCustomer))
+                                                                                <input type="hidden" name="mark_as_customer" value="1">
+                                                                            @endif
+                                                                            <input type="checkbox" name="mark_as_customer" value="1"
+                                                                                @if (!empty($isMarkedAsCustomer)) checked disabled @endif>
+                                                                            Mark as Customer
+                                                                        </label>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -204,7 +215,7 @@ if ($accType == 'client') {
                                                                         <label>Email:</label>
                                                                         <input id="email" name="contact_person_email"
                                                                             type="email" class="form-control"
-                                                                            value="{{ $supplier->contact_person_email }}">
+                                                                            value="{{ $supplier->contact_person_email ?? '' }}">
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -238,7 +249,7 @@ if ($accType == 'client') {
                                                                         <input id="Accounts_Rep_Email_Address:"
                                                                             name="account_representative_email"
                                                                             type="email" class="form-control"
-                                                                            value="{{ $supplier->account_representative_email }}">
+                                                                            value="{{ $supplier->account_representative_email ?? '' }}">
                                                                     </div>
                                                                 </div>
                                                                 <div class="row">
@@ -400,6 +411,15 @@ if ($accType == 'client') {
                 }
             });
 
+            $('input[type="checkbox"][name="mark_as_customer"]').change(function () {
+                if ($(this).is(':checked') && !$(this).is(':disabled')) {
+                    var isConfirmed = confirm('Are you sure you want to mark this supplier as customer?');
+                    if (!isConfirmed) {
+                        $(this).prop('checked', false);
+                    }
+                }
+            });
+
             $("form").submit(function (e) {
                 var input = document.getElementsByClassName('requiredField');
                 var v = input.length;
@@ -435,6 +455,10 @@ if ($accType == 'client') {
                             $('#' + v).css('border-color', '#ccc');
                         }
                     }
+                }
+
+                if ($('input[type="checkbox"][name="mark_as_customer"]').is(':checked')) {
+                    return confirm('Are you sure you want to submit this supplier as marked customer?');
                 }
 
                 var max_fields = 10; //maximum input boxes allowed

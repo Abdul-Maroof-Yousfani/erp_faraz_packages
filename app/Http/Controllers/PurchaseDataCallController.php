@@ -92,7 +92,8 @@ class PurchaseDataCallController extends Controller
         
         if(!empty($search)) {
             $searchTerm = '%' . $search . '%';
-            $suppliers = DB::Connection('mysql2')->select('select s.*,s.id s_id from supplier s
+            $suppliers = DB::Connection('mysql2')->select('select s.*,s.id s_id, c.id as customer_id from supplier s
+                left join customers c on c.acc_id = s.acc_id and c.status = 1
                 where s.status=1 and (
                     LOWER(COALESCE(s.name, "")) like LOWER(?) or
                     LOWER(COALESCE(s.contact_person, "")) like LOWER(?) or
@@ -101,7 +102,8 @@ class PurchaseDataCallController extends Controller
                 group by s.id
                 order by id desc', [$searchTerm, $searchTerm, $searchTerm]);
         } else {
-            $suppliers = DB::Connection('mysql2')->select('select s.*,s.id s_id from supplier s
+            $suppliers = DB::Connection('mysql2')->select('select s.*,s.id s_id, c.id as customer_id from supplier s
+                left join customers c on c.acc_id = s.acc_id and c.status = 1
                 where s.status=1
                 group by s.id
                 order by id desc');
@@ -121,6 +123,7 @@ class PurchaseDataCallController extends Controller
                 <td class="text-center"><?php echo $row->address ?: 'N/A' ?></td>
                 <td class="text-center"><?php echo  $row->contact_person ?: 'N/A' ?></td>
                 <td class="text-center"><?php echo  $row->mobile_no ?: 'N/A' ?></td>
+                <td class="text-center"><?php echo !empty($row->customer_id) ? 'Yes' : 'No'; ?></td>
                 <td class="text-center">
                     <div class="dropdown">
                         <button class="drop-bt dropdown-toggle"type="button" data-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-ellipsis-vertical"></i></button>

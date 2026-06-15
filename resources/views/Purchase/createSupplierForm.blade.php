@@ -653,6 +653,15 @@ if ($accType == 'client') {
                 }
             });
 
+            $('input[type="checkbox"][name="mark_as_customer"]').change(function () {
+                if ($(this).is(':checked')) {
+                    var isConfirmed = confirm('Are you sure you want to mark this supplier as customer?');
+                    if (!isConfirmed) {
+                        $(this).prop('checked', false);
+                    }
+                }
+            });
+
             $(document).ready(function () {
                 $("#supplierForm").submit(function () {
                     var input = document.getElementsByClassName('requiredField');
@@ -697,6 +706,10 @@ if ($accType == 'client') {
                                 $('#' + v).css('border-color', '#ccc');
                             }
                         }
+                    }
+
+                    if ($('input[type="checkbox"][name="mark_as_customer"]').is(':checked')) {
+                        return confirm('Are you sure you want to submit this supplier as marked customer?');
                     }
 
 

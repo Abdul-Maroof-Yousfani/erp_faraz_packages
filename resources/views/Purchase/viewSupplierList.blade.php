@@ -59,6 +59,7 @@ if ($accType == 'client') {
                                                                 Address</th>
                                                             <th class="text-center">Contact Person</th>
                                                             <th class="text-center">Contact No</th>
+                                                            <th class="text-center">Mark As Customer</th>
                                                             <th class="text-center hidden-print">Action</th>
                                                         </thead>
                                                         <tbody id="viewSupplierList">
