@@ -321,13 +321,6 @@ $m=Input::get('m');
 
                 <?php
 
-                if ($level==2 || $level==3 || $level==4):
-                if ($balance<0):
-                $balance=$balance*-1;
-                    else:
-                $balance=$balance*-1;
-                endif;
-                endif;
                 ?>
                 <?php echo number_format(abs($balance),2) . ($balance < 0 ? ' Cr' : ($balance > 0 ? ' Dr' : '')); ?>
             </td>
@@ -555,12 +548,7 @@ $m=Input::get('m');
             ?>
             <td class="text-right"> <?php
 
-                  if ($level==2 || $level==3 || $level==5 || $level ==6):
-                //   if ($level==2 || $level==3 || $level==4):
-                    $balance=$credit-$debit+$balance;
-                    else:
-                $balance=$debit-$credit+$balance;
-                    endif;
+                    $balance = $balance + $debit - $credit;
                 echo number_format(abs($balance),2) . ($balance < 0 ? ' Cr' : ($balance > 0 ? ' Dr' : ''));
                 ?></td>
 
