@@ -623,6 +623,15 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
             }
         });
 
+        $('input[type="checkbox"][name="mark_as_supplier"]').change(function () {
+            if ($(this).is(':checked')) {
+                var isConfirmed = confirm('Are you sure you want to mark this customer as supplier?');
+                if (!isConfirmed) {
+                    $(this).prop('checked', false);
+                }
+            }
+        });
+
         $(document).ready(function(){
             $("#customerForm").submit(function(){
                 if ($('#Customer_name').val() == '') {
@@ -632,6 +641,10 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
                 }
 
                 $('#Customer_name').css('border-color', '#ccc');
+
+                if ($('input[type="checkbox"][name="mark_as_supplier"]').is(':checked')) {
+                    return confirm('Are you sure you want to submit this customer as marked supplier?');
+                }
             });
         });
 

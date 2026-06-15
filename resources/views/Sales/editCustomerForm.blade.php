@@ -61,6 +61,19 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
                                                                     <span class="rflabelsteric"><strong>*</strong></span>
                                                                     <input id="Customer_name" name="customer_name" type="text" class="form-control requiredField" value="{{ $Cusomter->name }}">
                                                                 </div>
+                                                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                                                                    <label>&nbsp;</label>
+                                                                    <div class="checkbox" style="margin-top: 6px;">
+                                                                        <label>
+                                                                            @if (!empty($isMarkedAsSupplier))
+                                                                                <input type="hidden" name="mark_as_supplier" value="1">
+                                                                            @endif
+                                                                            <input type="checkbox" name="mark_as_supplier" value="1"
+                                                                                @if (!empty($isMarkedAsSupplier)) checked disabled @endif>
+                                                                            Mark as supplier also
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
         
                                                                 <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                                                                     <label>Tel</label>
@@ -397,6 +410,15 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
             }
         });
 
+        $('input[type="checkbox"][name="mark_as_supplier"]').change(function () {
+            if ($(this).is(':checked')) {
+                var isConfirmed = confirm('Are you sure you want to mark this customer as supplier?');
+                if (!isConfirmed) {
+                    $(this).prop('checked', false);
+                }
+            }
+        });
+
         $(document).ready(function(){
             $("form").submit(function(){
                 var input = document.getElementsByClassName('requiredField');
@@ -449,6 +471,10 @@ input[type=radio]{background-color:transparent;border:0.0625em solid rgba(255,25
                             $('#'+v).css('border-color', '#ccc');
                         }
                     }
+                }
+
+                if ($('input[type="checkbox"][name="mark_as_supplier"]').is(':checked')) {
+                    return confirm('Are you sure you want to submit this customer as marked supplier?');
                 }
 
 

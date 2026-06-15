@@ -711,6 +711,7 @@ class SalesAddDetailControler extends Controller
         $ntn = Input::get('ntn');
         $strn = Input::get('strn');
         $regd_in_sales_tax = Input::get('regd_in_sales_tax');
+        $mark_as_supplier = (int) Input::get('mark_as_supplier', 0);
         //$sent_code = $account_head;
 
         $data2['name'] = $customer_name;
@@ -750,6 +751,70 @@ class SalesAddDetailControler extends Controller
         $AccUpdate['action'] = 'update';
         $AccUpdate['status'] = 1;
         DB::table('accounts')->where('id', $AccId)->update($AccUpdate);
+
+        $existingSupplier = DB::Connection('mysql2')->table('supplier')
+            ->where('acc_id', $AccId)
+            ->where('status', 1)
+            ->first();
+
+        if ($existingSupplier || $mark_as_supplier === 1) {
+            $supplierData['acc_id'] = $AccId;
+            $supplierData['resgister_income_tax'] = 0;
+            $supplierData['business_type'] = 0;
+            $supplierData['cnic'] = $ntn ?? '';
+            $supplierData['ntn'] = $ntn ?? '';
+            $supplierData['register_sales_tax'] = $regd_in_sales_tax ?? 0;
+            $supplierData['strn'] = $strn ?? '';
+            $supplierData['register_srb'] = 0;
+            $supplierData['srb'] = '';
+            $supplierData['register_pra'] = 0;
+            $supplierData['pra'] = '';
+            $supplierData['name'] = $customer_name;
+            $supplierData['company_name'] = $customer_name;
+            $supplierData['country'] = $country ?? 0;
+            $supplierData['province'] = $state ?? 0;
+            $supplierData['city'] = $city ?? 0;
+            $supplierData['email'] = $email ?? '';
+            $supplierData['username'] = Auth::user()->name;
+            $supplierData['date'] = date("Y-m-d");
+            $supplierData['time'] = date("H:i:s");
+            $supplierData['action'] = 'update';
+            $supplierData['company_id'] = $_GET['m'];
+            $supplierData['company_status'] = '';
+            $supplierData['print_check_as'] = '';
+            $supplierData['website'] = '';
+            $supplierData['credit_limit'] = $creditLimit ?? '';
+            $supplierData['acc_no'] = '';
+            $supplierData['bank_name'] = '';
+            $supplierData['bank_address'] = '';
+            $supplierData['swift_code'] = '';
+            $supplierData['branch_name'] = '';
+            $supplierData['terms_of_payment'] = Input::get('term') ?? 0;
+            $supplierData['opening_bal_date'] = date('Y-m-d');
+            $supplierData['contact_person'] = $contact_person ?? '';
+            $supplierData['mobile_no'] = $contact_no ?? '';
+            $supplierData['address'] = $address ?? '';
+            $supplierData['registration_no'] = '';
+            $supplierData['product_services_provided'] = '';
+            $supplierData['contact_person_no'] = $contact_person_no ?? '';
+            $supplierData['contact_person_email'] = $contact_person_email ?? '';
+            $supplierData['account_representative_name'] = '';
+            $supplierData['account_representative_no'] = '';
+            $supplierData['account_representative_email'] = '';
+            $supplierData['no_of_days'] = $no_of_days ?? '';
+            $supplierData['account_title'] = '';
+            $supplierData['account_no'] = '';
+            $supplierData['ibn'] = '';
+            $supplierData['status'] = 1;
+
+            if ($existingSupplier) {
+                DB::Connection('mysql2')->table('supplier')->where('id', $existingSupplier->id)->update($supplierData);
+            } else {
+                $supplierData['vendor_code'] = Supplier::UniqueNo();
+                $supplierData['vendor_type'] = $supplierData['vendor_code'];
+                DB::Connection('mysql2')->table('supplier')->insert($supplierData);
+            }
+        }
 
 
         DB::table('customer_info')->where('cust_id', $EditId)->delete();

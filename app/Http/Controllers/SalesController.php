@@ -302,8 +302,16 @@ class SalesController extends Controller
             ->orderBy('level7', 'ASC')
 
             ->get();
+        $customer = DB::Connection('mysql2')->table('customers')->where('id', $id)->first();
+        $isMarkedAsSupplier = false;
+        if ($customer) {
+            $isMarkedAsSupplier = DB::Connection('mysql2')->table('supplier')
+                ->where('acc_id', $customer->acc_id)
+                ->where('status', 1)
+                ->exists();
+        }
         CommonHelper::reconnectMasterDatabase();
-        return view('Sales.editCustomerForm', compact('accounts', 'countries', 'id'));
+        return view('Sales.editCustomerForm', compact('accounts', 'countries', 'id', 'isMarkedAsSupplier'));
     }
 
 

@@ -78,6 +78,7 @@ use App\Helpers\CommonHelper;
                                                    <th style="width: 150px;" class="wsale2 text-center">Address</th>
                                                    <th class="text-center">Point of Contact</th>
                                                    <th class="text-center">POC Contact No</th>
+                                                   <th class="text-center">Mark As Supplier</th>
                                                    <th class="text-center hidden-print">Action</th>
                                                 </tr>
                                              </thead>
