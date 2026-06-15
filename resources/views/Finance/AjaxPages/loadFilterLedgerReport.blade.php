@@ -546,7 +546,7 @@ $m=Input::get('m');
 
 
             ?>
-            <td class="text-right"> <?php
+             <td class="text-right"> <?php
 
                     $balance = $balance + $debit - $credit;
                 echo number_format(abs($balance),2) . ($balance < 0 ? ' Cr' : ($balance > 0 ? ' Dr' : ''));
