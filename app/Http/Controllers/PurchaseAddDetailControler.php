@@ -201,14 +201,6 @@ class PurchaseAddDetailControler extends Controller
 
             $requiredColumns = array(
                 0 => 'Name',
-                1 => 'Registration No',
-                2 => 'Address',
-                3 => 'Telephone',
-                4 => 'Email',
-                5 => 'Products/ Services Provided',
-                6 => 'NTN/CNIC',
-                7 => 'Sales Tax Status',
-                8 => 'VAT/ Sales Tax Registration No',
             );
 
             $expectedColumnCount = 22;
@@ -246,7 +238,7 @@ class PurchaseAddDetailControler extends Controller
                     continue;
                 }
 
-                if (!filter_var($getData[4], FILTER_VALIDATE_EMAIL)) {
+                if ($getData[4] !== '' && !filter_var($getData[4], FILTER_VALIDATE_EMAIL)) {
                     $skippedRows[] = 'Row ' . $rowNumber . ': invalid email address "' . e($getData[4]) . '".';
                     continue;
                 }

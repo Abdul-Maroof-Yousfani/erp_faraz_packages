@@ -300,47 +300,47 @@ if ($accType == 'client') {
                                     </tr>
                                     <tr>
                                         <td>Registration No</td>
-                                        <th><span class="badge badge-outline-success">This Field is required</span>
+                                        <th><span class="badge badge-outline-success">Field is optional</span>
                                         </th>
                                     </tr>
                                     <tr>
                                         <td>Address</td>
-                                        <th><span class="badge badge-outline-info">This Field is required</span></th>
+                                        <th><span class="badge badge-outline-info">Field is optional</span></th>
                                     </tr>
                                     <tr>
                                         <td>Telephone</td>
-                                        <th><span class="badge badge-outline-info">This Field is required</span></th>
+                                        <th><span class="badge badge-outline-info">Field is optional</span></th>
                                     </tr>
 
                                     <tr>
                                         <td>Email</td>
-                                        <th><span class="badge badge-outline-success">This Field is required</span>
+                                        <th><span class="badge badge-outline-success">Field is optional</span>
                                         </th>
                                     </tr>
                                     <tr>
                                         <td>Product/Services Provided</td>
-                                        <th><span class="badge badge-outline-success">This Field is required</span>
+                                        <th><span class="badge badge-outline-success">Field is optional</span>
                                         </th>
 
 
                                     </tr>
                                     <tr>
                                         <td>NTN/CNIC</td>
-                                        <th><span class="badge badge-outline-success">This Field is required</span>
+                                        <th><span class="badge badge-outline-success">Field is optional</span>
                                         </th>
 
 
                                     </tr>
                                     <tr>
                                         <td>Sales Tax Status</td>
-                                        <th><span class="badge badge-outline-success">This Field is required</span>
+                                        <th><span class="badge badge-outline-success">Field is optional</span>
                                         </th>
 
 
                                     </tr>
                                     <tr>
                                         <td>VAT/ Sales Tax Registration No</td>
-                                        <th><span class="badge badge-outline-success">This Field is required</span>
+                                        <th><span class="badge badge-outline-success">Field is optional</span>
                                         </th>
 
 
