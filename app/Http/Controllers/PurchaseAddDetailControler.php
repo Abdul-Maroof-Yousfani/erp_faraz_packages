@@ -405,7 +405,7 @@ class PurchaseAddDetailControler extends Controller
                     $data2['email'] = strip_tags($email);
                     $data2['username'] = Auth::user()->name;
                     $data2['date'] = date("Y-m-d");
-                    $data2['time'] = date("H:i:s");
+                     $data2['time'] = date("H:i:s");
                     $data2['action'] = 'create';
                     $data2['company_id'] = Session::get('run_company');
                     $data2['company_status'] = strip_tags($company_status);
