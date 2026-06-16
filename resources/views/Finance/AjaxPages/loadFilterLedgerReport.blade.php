@@ -309,7 +309,8 @@ $m=Input::get('m');
         ?>
         <tr>
             <td></td>
-            <td class="text-left" colspan="2">Opening Balance</td>
+            <td class="text-center">-</td>
+            <td class="text-left">Opening Balance</td>
             <?php if($showChequeColumns): ?>
             <td class="text-center">-</td>
             <td class="text-center">-</td>
