@@ -141,287 +141,421 @@ class PurchaseAddDetailControler extends Controller
 
     public function uploadSupplier(request $request)
     {
-        DB::Connection('mysql2')->beginTransaction();
-        try {
+        $redirectUrl = $this->buildSupplierUploadRedirectUrl($request);
 
+        DB::Connection('mysql2')->beginTransaction();
+        $csvFile = false;
+
+        try {
             $fileMimes = array(
-                // 'text/x-comma-separated-values',
-                // 'text/comma-separated-values',
-                // 'application/octet-stream',
-                // 'application/vnd.ms-excel',
                 'application/x-csv',
                 'text/x-csv',
                 'text/csv',
                 'application/csv',
+                'application/vnd.ms-excel',
+                'text/plain',
             );
 
-            if (!empty($_FILES['file']['name']) && in_array($_FILES['file']['type'], $fileMimes)) {
+            if (!$request->hasFile('file')) {
+                Session::flash('dataDelete', 'Please choose a CSV file to upload.');
+                DB::Connection('mysql2')->rollBack();
+                return Redirect::to($redirectUrl);
+            }
 
-                $row = 0;
+            $file = $request->file('file');
+            if (!$file->isValid()) {
+                Session::flash('dataDelete', 'The selected file could not be uploaded. Please try again.');
+                DB::Connection('mysql2')->rollBack();
+                return Redirect::to($redirectUrl);
+            }
 
-                $skip_row_number = array("1");
+            $fileExtension = strtolower($file->getClientOriginalExtension());
+            $fileMimeType = $file->getMimeType();
 
-                $csvFile = fopen($_FILES['file']['tmp_name'], 'r');
+            if ($fileExtension !== 'csv' && !in_array($fileMimeType, $fileMimes)) {
+                Session::flash('dataDelete', 'Invalid file format. Please upload a valid CSV file.');
+                DB::Connection('mysql2')->rollBack();
+                return Redirect::to($redirectUrl);
+            }
 
-                fgetcsv($csvFile);
-                while (($getData = fgetcsv($csvFile, 10000, ",")) !== false) {
+            $csvPath = $file->getRealPath();
+            if (empty($csvPath) || !is_readable($csvPath)) {
+                Session::flash('dataDelete', 'The uploaded CSV file could not be read.');
+                DB::Connection('mysql2')->rollBack();
+                return Redirect::to($redirectUrl);
+            }
 
-                    if (in_array($row, $skip_row_number)) {
-                        continue;
-                    } else {
+            $csvFile = fopen($csvPath, 'r');
+            if ($csvFile === false) {
+                Session::flash('dataDelete', 'Unable to open the uploaded CSV file.');
+                DB::Connection('mysql2')->rollBack();
+                return Redirect::to($redirectUrl);
+            }
 
-                        if ($getData[0]) {
+            $header = fgetcsv($csvFile, 10000, ",");
+            if ($header === false) {
+                Session::flash('dataDelete', 'The CSV file is empty or its header row could not be read.');
+                DB::Connection('mysql2')->rollBack();
+                return Redirect::to($redirectUrl);
+            }
 
-                            (!empty($getData[3])) ? $city = DB::connection('mysql')->table('cities')->whereRaw('LOWER(name) = ?', [strtolower($getData[3])])->value('id') : 0;
+            $requiredColumns = array(
+                0 => 'Name',
+                1 => 'Registration No',
+                2 => 'Address',
+                3 => 'Telephone',
+                4 => 'Email',
+                5 => 'Products/ Services Provided',
+                6 => 'NTN/CNIC',
+                7 => 'Sales Tax Status',
+                8 => 'VAT/ Sales Tax Registration No',
+            );
 
-                            if (DB::connection('mysql2')->table('supplier')->where('status', 1)->where('name', $getData[0])->count() > 0) {
-                                continue;
-                            }
+            $expectedColumnCount = 22;
+            $rowNumber = 1;
+            $insertedCount = 0;
+            $skippedRows = array();
+            $processedNames = array();
 
-                            $state = 0;
-                            $country = 0;
-                            //  if($city > 0){
-                            //     $state= DB::connection('mysql')->table('cities')->select('state_id')->where('id',$city)->value('state_id');
-                            //     $country = DB::connection('mysql')->table('states')->select('country_id')->where('id',$state)->value('country_id');
+            while (($getData = fgetcsv($csvFile, 10000, ",")) !== false) {
+                $rowNumber++;
 
-                            //  }
+                if ($this->isCsvRowEmpty($getData)) {
+                    continue;
+                }
 
-                            $vendor_code = PurchaseHelper::generateVendorCode();
-                            $name = $getData[0];
-                            $registration_no = $getData[1];
-                            $address = $getData[2];
-                            $contact = $getData[3];
-                            $email = $getData[4];
-                            $product_service = $getData[5];
-                            $ntn = $getData[6];
-                            $sales_tax_status = $getData[7];
-                            $regd_in_srb = $getData[8];
-                            $contact_person = $getData[9];
-                            $contact_person_no = $getData[10];
-                            $contact_person_email = $getData[11];
-                            $account_rep_name = $getData[12];
-                            $account_rep_no = $getData[13];
-                            $account_rep_email = $getData[14];
-                            $term = $getData[15];
-                            $no_of_days = $getData[16];
-                            $account_title = $getData[17];
-                            $account_no = $getData[18];
-                            $ibn = $getData[19];
-                            $bank_name = $getData[20];
-                            $swift_code = $getData[21];
+                if (count($getData) < $expectedColumnCount) {
+                    $skippedRows[] = 'Row ' . $rowNumber . ': expected ' . $expectedColumnCount . ' columns but found ' . count($getData) . '. Please use the sample CSV format.';
+                    continue;
+                }
 
+                $getData = array_pad($getData, $expectedColumnCount, '');
+                $getData = array_map(function ($value) {
+                    return trim((string) $value);
+                }, $getData);
 
-                            $o_blnc_trans = Input::get('o_blnc_trans');
-                            $register_income_tax = Input::get('regd_in_income_tax') ?? 0;
-                            $business_type = Input::get('optradio') ?? 0;
-
-
-
-
-                            $srb = Input::get('srb') ?? 0;
-                            $regd_in_pra = Input::get('regd_in_pra') ?? 0;
-                            $pra = Input::get('pra') ?? 0;
-                            $company_status = (Input::get('company_status')) ? Input::get('company_status') : [];
-
-
-                            $company_status = (count($company_status) > 0) ? implode(', ', $company_status) : '';
-
-                            $print_check_as = Input::get('print_check_as');
-                            // $term = Input::get('term') ?? 0;
-                            $v_code = Supplier::UniqueNo();
-                            $vendor_type = $v_code;
-                            $website = Input::get('website');
-                            // $credit_limit = Input::get('credit_limit') ?? 0;
-                            $acc_no = Input::get('acc_no');
-                            // $bank_name = Input::get('bank_name');
-                            $bank_address = Input::get('bank_address');
-                            $branch_name = Input::get('branch_name');
-                            // $swift_code = Input::get('swift_code');
-                            $open_date = Input::get('open_date');
-
-
-                            // $address = Input::get('address') ?? '-';
-                            // $o_blnc = $getData[11] ?? 0;
-                            $operational = '1';
-                            $sent_code = '1-3-3-6';
-                            $account_head = '1-3-3-6';
-
-                            if (Auth::user()->name != 'Talhaaa'):
-
-                                $max_id = DB::Connection('mysql2')->selectOne('SELECT max(`id`) as id  FROM `accounts` WHERE `parent_code` LIKE \'' . $account_head . '\'')->id;
-                                ;
-                                if ($max_id == '') {
-                                    $code = $sent_code . '-1';
-                                } else {
-                                    $max_code2 = DB::Connection('mysql2')->selectOne('SELECT `code`  FROM `accounts` WHERE `id` LIKE \'' . $max_id . '\'')->code;
-                                    $max_code2;
-                                    $max = explode('-', $max_code2);
-                                    $code = $sent_code . '-' . (end($max) + 1);
-                                }
-
-                                $level_array = explode('-', $code);
-                                $counter = 1;
-                                foreach ($level_array as $level):
-                                    $data1['level' . $counter] = strip_tags($level);
-                                    $counter++;
-                                endforeach;
-                                $data1['code'] = strip_tags($code);
-                                $data1['name'] = strip_tags($name);
-                                $data1['parent_code'] = strip_tags($account_head);
-                                $data1['username'] = Auth::user()->name;
-                                $data1['date'] = date("Y-m-d");
-                                $data1['time'] = date("H:i:s");
-                                $data1['action'] = 'create';
-                                $data1['type'] = 1;
-                                $data1['operational'] = strip_tags($operational);
-                                $acc_id = DB::Connection('mysql2')->table('accounts')->insertGetId($data1);
-
-
-
-                                $financial_year = ReuseableCode::get_account_year_from_to(Session::get('run_company'));
-                                $v_date = $financial_year[0];
-
-                                $data3['acc_id'] = $acc_id;
-                                $data3['acc_code'] = $code;
-                                // if(strtolower($getData[12]) == 'debit'){
-                                $data3['debit_credit'] = 1;
-                                // }elseif(strtolower($getData[12]) == 'credit'){
-                                //     $data3['debit_credit'] = 0;
-                                // }else{
-                                //     $data3['debit_credit'] = 1;
-                                // }
-
-                                $data3['amount'] = 0;
-                                $data3['opening_bal'] = 1;
-                                $data3['username'] = Auth::user()->name;
-                                $data3['date'] = date("Y-m-d");
-                                $data3['v_date'] = $v_date;
-
-                                $data3['action'] = 'create';
-                                DB::Connection('mysql2')->table('transactions')->insert($data3);
-
-                            else:
-                                $acc_id = 0;
-                            endif;
-
-                            $data2['acc_id'] = strip_tags($acc_id);
-
-                            $data2['resgister_income_tax'] = strip_tags($register_income_tax);
-                            $data2['business_type'] = strip_tags($business_type);
-
-                            $data2['cnic'] = strip_tags($ntn);
-                            $data2['ntn'] = strip_tags($ntn);
-                            $data2['address'] = $address;
-                            if (strpos(strtolower($sales_tax_status), 'unregistered') !== false) {
-                                $data2['register_sales_tax'] = 2;
-                            } elseif (strpos(strtolower($sales_tax_status), 'registered') !== false) {
-                                $data2['register_sales_tax'] = 1;
-                            }
-
-                            $data2['registration_no'] = $registration_no;
-                            $data2['mobile_no'] = $contact;
-                            $data2['product_services_provided'] = $product_service;
-                            $data2['contact_person'] = $contact_person;
-                            $data2['contact_person_no'] = $contact_person_no;
-                            $data2['contact_person_email'] = $contact_person_email;
-                            $data2['account_representative_name'] = $account_rep_name;
-                            $data2['account_representative_no'] = $account_rep_no;
-                            $data2['account_representative_email'] = $account_rep_email;
-
-                            if (strpos(strtolower($term), 'advance') !== false) {
-                                $data2['terms_of_payment'] = 1;
-                            } elseif (strpos(strtolower($term), 'against delivery') !== false) {
-                                $data2['terms_of_payment'] = 2;
-                            } elseif (strpos(strtolower($term), 'credit') !== false) {
-                                $data2['terms_of_payment'] = 3;
-                            }
-
-
-                            $data2['no_of_days'] = $no_of_days;
-                            $data2['account_title'] = $account_title;
-                            $data2['account_no'] = $account_no;
-
-                            $data2['ibn'] = $ibn;
-                            $data2['bank_name'] = $bank_name;
-                            $data2['swift_code'] = $swift_code;
-
-
-
-                            // $data2['strn'] = strip_tags($strn);
-                            $data2['register_srb'] = strip_tags($regd_in_srb);
-                            $data2['srb'] = strip_tags($srb);
-                            $data2['register_pra'] = strip_tags($regd_in_pra);
-                            $data2['pra'] = strip_tags($pra);
-                            $data2['vendor_code'] = strip_tags($vendor_code);
-                            $data2['name'] = strip_tags($name);
-                            // $data2['company_name'] = strip_tags($company_name);
-                            $data2['country'] = strip_tags($country);
-                            $data2['province'] = strip_tags($state);
-                            $data2['city'] = strip_tags($city);
-                            $data2['email'] = strip_tags($email);
-                            $data2['username'] = Auth::user()->name;
-                            $data2['date'] = date("Y-m-d");
-                            $data2['time'] = date("H:i:s");
-                            $data2['action'] = 'create';
-                            $data2['company_id'] = Session::get('run_company');
-                            $data2['company_status'] = strip_tags($company_status);
-                            $data2['print_check_as'] = $print_check_as;
-                            $data2['vendor_type'] = $vendor_type;
-                            $data2['website'] = $website;
-                            // $data2['credit_limit'] = $credit_limit;
-                            $data2['acc_no'] = $acc_no;
-                            $data2['bank_name'] = $bank_name;
-                            $data2['bank_address'] = $bank_address;
-                            $data2['swift_code'] = $swift_code;
-                            $data2['branch_name'] = $branch_name;
-
-                            // $data2['credit_days'] = $getData[10] ??0;
-                            // $data2['discount_percent'] = $getData[9] ??0;
-                            $data2['opening_bal_date'] = $open_date;
-
-
-                            $lastInsertedID = DB::Connection('mysql2')->table('supplier')->InsertGetId($data2);
-                            // $contact_person = $getData[2];
-                            // $contact_no  = $getData[4];
-                            // $fax  = Input::get('fax');
-                            // $address  = $getData[5];
-                            // $work_phone  = Input::get('work_phone') ?? '-';
-
-                            // foreach($contact_person as $key => $row)
-                            // {
-                            // if($contact_person != "" || $contact_no !="" || $address !="")
-                            // {
-                            //     $InfoData['supp_id'] = $lastInsertedID;
-                            //     $InfoData['contact_person'] = $contact_person ?? '-';
-                            //     $InfoData['contact_no'] = $contact_no ?? '-';
-                            //     $InfoData['fax'] = $fax ?? '';
-                            //     $InfoData['address'] = $address ?? '-';
-                            //     $InfoData['work_phone'] = $work_phone ?? '-';
-                            //     DB::Connection('mysql2')->table('supplier_info')->insert($InfoData);
-                            // }
-                            // }
-                        }
+                $missingColumns = array();
+                foreach ($requiredColumns as $index => $label) {
+                    if ($getData[$index] === '') {
+                        $missingColumns[] = $label;
                     }
                 }
 
-                // Close opened CSV file
-                fclose($csvFile);
+                if (count($missingColumns) > 0) {
+                    $skippedRows[] = 'Row ' . $rowNumber . ': required field(s) missing - ' . e(implode(', ', $missingColumns)) . '.';
+                    continue;
+                }
 
-                CommonHelper::reconnectMasterDatabase();
-                Session::flash('dataInsert', 'Successfully Saved.');
+                if (!filter_var($getData[4], FILTER_VALIDATE_EMAIL)) {
+                    $skippedRows[] = 'Row ' . $rowNumber . ': invalid email address "' . e($getData[4]) . '".';
+                    continue;
+                }
 
-            } else {
-                Session::flash('dataDelete', 'Please upload csv file');
+                $normalizedSupplierName = strtolower($getData[0]);
+                if (isset($processedNames[$normalizedSupplierName])) {
+                    $skippedRows[] = 'Row ' . $rowNumber . ': supplier "' . e($getData[0]) . '" is duplicated in the same CSV.';
+                    continue;
+                }
+
+                if (DB::connection('mysql2')->table('supplier')->where('status', 1)->where('name', $getData[0])->count() > 0) {
+                    $skippedRows[] = 'Row ' . $rowNumber . ': supplier "' . e($getData[0]) . '" already exists.';
+                    continue;
+                }
+
+                try {
+                    $city = 0;
+                    $state = 0;
+                    $country = 0;
+
+                    $vendor_code = PurchaseHelper::generateVendorCode();
+                    $name = $getData[0];
+                    $registration_no = $getData[1];
+                    $address = $getData[2];
+                    $contact = $getData[3];
+                    $email = $getData[4];
+                    $product_service = $getData[5];
+                    $ntn = $getData[6];
+                    $sales_tax_status = $getData[7];
+                    $regd_in_srb = $getData[8];
+                    $contact_person = $getData[9];
+                    $contact_person_no = $getData[10];
+                    $contact_person_email = $getData[11];
+                    $account_rep_name = $getData[12];
+                    $account_rep_no = $getData[13];
+                    $account_rep_email = $getData[14];
+                    $term = $getData[15];
+                    $no_of_days = $getData[16];
+                    $account_title = $getData[17];
+                    $account_no = $getData[18];
+                    $ibn = $getData[19];
+                    $bank_name = $getData[20];
+                    $swift_code = $getData[21];
+
+                    $register_income_tax = Input::get('regd_in_income_tax') ?? 0;
+                    $business_type = Input::get('optradio') ?? 0;
+                    $srb = Input::get('srb') ?? 0;
+                    $regd_in_pra = Input::get('regd_in_pra') ?? 0;
+                    $pra = Input::get('pra') ?? 0;
+                    $company_status = (Input::get('company_status')) ? Input::get('company_status') : [];
+                    $company_status = (count($company_status) > 0) ? implode(', ', $company_status) : '';
+                    $print_check_as = Input::get('print_check_as');
+                    $v_code = Supplier::UniqueNo();
+                    $vendor_type = $v_code;
+                    $website = Input::get('website');
+                    $acc_no = Input::get('acc_no');
+                    $bank_address = Input::get('bank_address');
+                    $branch_name = Input::get('branch_name');
+                    $open_date = Input::get('open_date');
+                    $operational = '1';
+                    $sent_code = $request->input('account_head', '2-2-4');
+                    $account_head = $request->input('account_head', '2-2-4');
+
+                    if (Auth::user()->name != 'Talhaaa'):
+                        $max_id = DB::Connection('mysql2')->selectOne('SELECT max(`id`) as id  FROM `accounts` WHERE `parent_code` LIKE \'' . $account_head . '\'')->id;
+                        if ($max_id == '') {
+                            $code = $sent_code . '-1';
+                        } else {
+                            $max_code2 = DB::Connection('mysql2')->selectOne('SELECT `code`  FROM `accounts` WHERE `id` LIKE \'' . $max_id . '\'')->code;
+                            $max = explode('-', $max_code2);
+                            $code = $sent_code . '-' . (end($max) + 1);
+                        }
+
+                        $level_array = explode('-', $code);
+                        $counter = 1;
+                        $data1 = array();
+                        foreach ($level_array as $level):
+                            $data1['level' . $counter] = strip_tags($level);
+                            $counter++;
+                        endforeach;
+                        $data1['code'] = strip_tags($code);
+                        $data1['name'] = strip_tags($name);
+                        $data1['parent_code'] = strip_tags($account_head);
+                        $data1['username'] = Auth::user()->name;
+                        $data1['date'] = date("Y-m-d");
+                        $data1['time'] = date("H:i:s");
+                        $data1['action'] = 'create';
+                        $data1['type'] = 1;
+                        $data1['operational'] = strip_tags($operational);
+                        $acc_id = DB::Connection('mysql2')->table('accounts')->insertGetId($data1);
+
+                        $financial_year = ReuseableCode::get_account_year_from_to(Session::get('run_company'));
+                        $v_date = $financial_year[0];
+
+                        $data3 = array();
+                        $data3['acc_id'] = $acc_id;
+                        $data3['acc_code'] = $code;
+                        $data3['debit_credit'] = 1;
+                        $data3['amount'] = 0;
+                        $data3['opening_bal'] = 1;
+                        $data3['username'] = Auth::user()->name;
+                        $data3['date'] = date("Y-m-d");
+                        $data3['v_date'] = $v_date;
+                        $data3['action'] = 'create';
+                        DB::Connection('mysql2')->table('transactions')->insert($data3);
+                    else:
+                        $acc_id = 0;
+                    endif;
+
+                    $data2 = array();
+                    $data2['acc_id'] = strip_tags($acc_id);
+                    $data2['resgister_income_tax'] = strip_tags($register_income_tax);
+                    $data2['business_type'] = strip_tags($business_type);
+                    $data2['cnic'] = strip_tags($ntn);
+                    $data2['ntn'] = strip_tags($ntn);
+                    $data2['address'] = $address;
+                    if (strpos(strtolower($sales_tax_status), 'unregistered') !== false) {
+                        $data2['register_sales_tax'] = 2;
+                    } elseif (strpos(strtolower($sales_tax_status), 'registered') !== false) {
+                        $data2['register_sales_tax'] = 1;
+                    }
+
+                    $data2['registration_no'] = $registration_no;
+                    $data2['mobile_no'] = $contact;
+                    $data2['product_services_provided'] = $product_service;
+                    $data2['contact_person'] = $contact_person;
+                    $data2['contact_person_no'] = $contact_person_no;
+                    $data2['contact_person_email'] = $contact_person_email;
+                    $data2['account_representative_name'] = $account_rep_name;
+                    $data2['account_representative_no'] = $account_rep_no;
+                    $data2['account_representative_email'] = $account_rep_email;
+
+                    if (strpos(strtolower($term), 'advance') !== false) {
+                        $data2['terms_of_payment'] = 1;
+                    } elseif (strpos(strtolower($term), 'against delivery') !== false) {
+                        $data2['terms_of_payment'] = 2;
+                    } elseif (strpos(strtolower($term), 'credit') !== false) {
+                        $data2['terms_of_payment'] = 3;
+                    }
+
+                    $data2['no_of_days'] = $no_of_days;
+                    $data2['account_title'] = $account_title;
+                    $data2['account_no'] = $account_no;
+                    $data2['ibn'] = $ibn;
+                    $data2['bank_name'] = $bank_name;
+                    $data2['swift_code'] = $swift_code;
+                    $data2['register_srb'] = strip_tags($regd_in_srb);
+                    $data2['srb'] = strip_tags($srb);
+                    $data2['register_pra'] = strip_tags($regd_in_pra);
+                    $data2['pra'] = strip_tags($pra);
+                    $data2['vendor_code'] = strip_tags($vendor_code);
+                    $data2['name'] = strip_tags($name);
+                    $data2['country'] = strip_tags($country);
+                    $data2['province'] = strip_tags($state);
+                    $data2['city'] = strip_tags($city);
+                    $data2['email'] = strip_tags($email);
+                    $data2['username'] = Auth::user()->name;
+                    $data2['date'] = date("Y-m-d");
+                    $data2['time'] = date("H:i:s");
+                    $data2['action'] = 'create';
+                    $data2['company_id'] = Session::get('run_company');
+                    $data2['company_status'] = strip_tags($company_status);
+                    $data2['print_check_as'] = $print_check_as;
+                    $data2['vendor_type'] = $vendor_type;
+                    $data2['website'] = $website;
+                    $data2['credit_limit'] = Input::get('credit_limit') ?? 0;
+                    $data2['acc_no'] = $acc_no;
+                    $data2['bank_name'] = $bank_name;
+                    $data2['bank_address'] = $bank_address;
+                    $data2['swift_code'] = $swift_code;
+                    $data2['branch_name'] = $branch_name;
+                    $data2['opening_bal_date'] = $open_date;
+                    $data2['company_name'] = strip_tags($name);
+                    $data2['status'] = 1;
+                    $data2['terms_of_payment'] = $data2['terms_of_payment'] ?? 0;
+
+                    DB::Connection('mysql2')->table('supplier')->InsertGetId($data2);
+                    $processedNames[$normalizedSupplierName] = true;
+                    $insertedCount++;
+                } catch (\Throwable $rowException) {
+                    $skippedRows[] = 'Row ' . $rowNumber . ' ("' . e($getData[0]) . '"): ' . e($rowException->getMessage());
+                    continue;
+                }
             }
 
+            if (is_resource($csvFile)) {
+                fclose($csvFile);
+            }
+
+            CommonHelper::reconnectMasterDatabase();
             DB::Connection('mysql2')->commit();
 
-        } catch (Exception $ex) {
-            DB::rollBack();
-            dd($ex->getMessage());
+            if ($insertedCount > 0) {
+                $successMessage = $insertedCount . ' supplier(s) imported successfully.';
+                if (count($skippedRows) > 0) {
+                    $successMessage .= '<br><br>Some rows were skipped:<br>' . $this->buildSupplierUploadSummary($skippedRows);
+                }
+                Session::flash('dataInsert', $successMessage);
+            } else {
+                $errorMessage = 'No supplier was imported.';
+                if (count($skippedRows) > 0) {
+                    $errorMessage .= '<br><br>Issues found:<br>' . $this->buildSupplierUploadSummary($skippedRows);
+                }
+                Session::flash('dataDelete', $errorMessage);
+            }
+        } catch (\Throwable $ex) {
+            if (is_resource($csvFile)) {
+                fclose($csvFile);
+            }
+            DB::Connection('mysql2')->rollBack();
+            Session::flash('dataDelete', 'Supplier import failed. Please verify the CSV format and try again.<br><br>Issue: ' . e($ex->getMessage()));
         }
 
-        return Redirect::to('/purchase/createSupplierForm?pageType=' . Input::get('pageType') . '&&parentCode=' . Input::get('parentCode') . '&&m=' . Input::get('m'));
+        return Redirect::to($redirectUrl);
+    }
+
+    protected function buildSupplierUploadRedirectUrl($request)
+    {
+        $pageType = $request->input('pageType');
+        $parentCode = $request->input('parentCode');
+        $m = $request->input('m', $request->input('company_id'));
+
+        return '/purchase/createSupplierForm?pageType=' . urlencode($pageType) . '&&parentCode=' . urlencode($parentCode) . '&&m=' . urlencode($m);
+    }
+
+    protected function isCsvRowEmpty($row)
+    {
+        foreach ((array) $row as $value) {
+            if (trim((string) $value) !== '') {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    protected function buildSupplierUploadSummary($messages, $limit = 10)
+    {
+        $messages = array_values($messages);
+        $visibleMessages = array_slice($messages, 0, $limit);
+        $html = implode('<br>', array_map(function ($message) {
+            return '- ' . $message;
+        }, $visibleMessages));
+
+        if (count($messages) > $limit) {
+            $html .= '<br>- And ' . (count($messages) - $limit) . ' more issue(s).';
+        }
+
+        return $html;
+    }
+
+    protected function upsertCustomerFromSupplierData(array $supplierData, $action = 'create')
+    {
+        $accId = (int) ($supplierData['acc_id'] ?? 0);
+        $name = strip_tags((string) ($supplierData['name'] ?? ''));
+        $contact = strip_tags((string) ($supplierData['contact'] ?? ''));
+
+        $existingCustomer = null;
+        if ($accId > 0) {
+            $existingCustomer = DB::Connection('mysql2')->table('customers')
+                ->where('acc_id', $accId)
+                ->where('status', 1)
+                ->first();
+        }
+
+        if (!$existingCustomer && $name !== '') {
+            $query = DB::Connection('mysql2')->table('customers')
+                ->whereRaw('LOWER(name) = ?', [strtolower($name)])
+                ->where('status', 1);
+
+            if ($contact !== '') {
+                $query->where('contact', $contact);
+            }
+
+            $existingCustomer = $query->first();
+        }
+
+        $customerData = array(
+            'acc_id' => $accId,
+            'name' => $name,
+            'address' => strip_tags((string) ($supplierData['address'] ?? '')),
+            'country' => strip_tags((string) ($supplierData['country'] ?? '')),
+            'province' => strip_tags((string) ($supplierData['province'] ?? '')),
+            'city' => strip_tags((string) ($supplierData['city'] ?? '')),
+            'contact' => $contact,
+            'email' => strip_tags((string) ($supplierData['email'] ?? '')),
+            'cnic_ntn' => strip_tags((string) ($supplierData['ntn'] ?? '')),
+            'strn' => strip_tags((string) ($supplierData['strn'] ?? '')),
+            'customer_type' => 3,
+            'terms_of_payment' => (int) ($supplierData['terms_of_payment'] ?? 0),
+            'no_of_days' => strip_tags((string) ($supplierData['no_of_days'] ?? '')),
+            'contact_person' => strip_tags((string) ($supplierData['contact_person'] ?? '')),
+            'contact_person_no' => strip_tags((string) ($supplierData['contact_person_no'] ?? '')),
+            'contact_person_email' => strip_tags((string) ($supplierData['contact_person_email'] ?? '')),
+            'creditLimit' => strip_tags((string) ($supplierData['credit_limit'] ?? '')),
+            'regd_in_sales_tax' => (int) ($supplierData['register_sales_tax'] ?? 0),
+            'username' => Auth::user()->name,
+            'date' => date("Y-m-d"),
+            'time' => date("H:i:s"),
+            'action' => $existingCustomer ? 'update' : $action,
+            'status' => 1,
+        );
+
+        if ($existingCustomer) {
+            DB::Connection('mysql2')->table('customers')->where('id', $existingCustomer->id)->update($customerData);
+            return $existingCustomer->id;
+        }
+
+        return DB::Connection('mysql2')->table('customers')->insertGetId($customerData);
     }
 
 
@@ -601,39 +735,25 @@ class PurchaseAddDetailControler extends Controller
         $lastInsertedID = DB::Connection('mysql2')->table('supplier')->InsertGetId($data2);
 
         if ((int) Input::get('mark_as_customer', 0) === 1) {
-            $customerExists = DB::Connection('mysql2')->table('customers')
-                ->whereRaw('LOWER(name) = ?', [strtolower(trim((string) $name))])
-                ->where('contact', (string) ($contact_no ?? ''))
-                ->where('status', 1)
-                ->exists();
-
-            if (!$customerExists) {
-                $customerData = [
-                    'acc_id' => (int) $acc_id,
-                    'name' => strip_tags((string) $name),
-                    'address' => strip_tags((string) ($address ?? '')),
-                    'country' => strip_tags((string) ($country ?? '')),
-                    'province' => strip_tags((string) ($state ?? '')),
-                    'city' => strip_tags((string) ($city ?? '')),
-                    'contact' => strip_tags((string) ($contact_no ?? '')),
-                    'email' => strip_tags((string) ($email ?? '')),
-                    'cnic_ntn' => strip_tags((string) ($ntn ?? '')),
-                    'strn' => strip_tags((string) ($regd_in_srb ?? '')),
-                    'customer_type' => 3,
-                    'terms_of_payment' => (int) ($term ?? 0),
-                    'no_of_days' => strip_tags((string) ($no_of_days ?? '')),
-                    'contact_person' => strip_tags((string) ($contact_person ?? '')),
-                    'contact_person_no' => strip_tags((string) ($contact_person_no ?? '')),
-                    'contact_person_email' => strip_tags((string) ($contact_person_email ?? '')),
-                    'username' => Auth::user()->name,
-                    'date' => date("Y-m-d"),
-                    'time' => date("H:i:s"),
-                    'action' => 'create',
-                    'status' => 1,
-                ];
-
-                DB::Connection('mysql2')->table('customers')->insert($customerData);
-            }
+            $this->upsertCustomerFromSupplierData(array(
+                'acc_id' => $acc_id,
+                'name' => $name,
+                'address' => $address,
+                'country' => $country,
+                'province' => $state,
+                'city' => $city,
+                'contact' => $contact_no,
+                'email' => $email,
+                'ntn' => $ntn,
+                'strn' => $regd_in_srb,
+                'terms_of_payment' => $term,
+                'no_of_days' => $no_of_days,
+                'contact_person' => $contact_person,
+                'contact_person_no' => $contact_person_no,
+                'contact_person_email' => $contact_person_email,
+                'credit_limit' => $credit_limit,
+                'register_sales_tax' => $regd_in_sales_tax,
+            ), 'create');
         }
 
 

@@ -272,6 +272,10 @@ if ($accType == 'client') {
                                                 <input type="hidden" name="_token" value="{{ csrf_token() }}">
                                                 <input type="hidden" name="company_id" id="company_id"
                                                        value="{{ $m }}" />
+                                                <input type="hidden" name="m" value="{{ $m }}">
+                                                <input type="hidden" name="pageType" value="{{ $_GET['pageType'] ?? '' }}">
+                                                <input type="hidden" name="parentCode" value="{{ $_GET['parentCode'] ?? '' }}">
+                                                <input type="hidden" name="account_head" id="upload_account_head" value="2-2-4">
                                                 <input type="file" name='file' label="Choose File" required>
                                                 <div id="File-feedback" class="d-block invalid-feedback">Field must be in csvformat</div>
                                             </div>
@@ -280,7 +284,7 @@ if ($accType == 'client') {
                                     <div class="col-sm-6 col-md-6">
                                         <button type="submit" class="btn btn-primary btn-sm btn-block">Submit</button>
                                     </div>
-                                    <div class="col-sm-6 col-md-6"><button onclick="download_csv_file()" target="_self"
+                                    <div class="col-sm-6 col-md-6"><button type="button" onclick="download_csv_file()" target="_self"
                                                                     class="btn btn-info btn-sm btn-block">Download example</button></div>
 
                                 </div>
@@ -436,8 +440,6 @@ if ($accType == 'client') {
                                         <td>Swift Code</td>
                                         <th><span class="badge badge-outline-success">Field is optional</span>
                                         </th>
-
-
                                     </tr>
 
 
@@ -526,6 +528,10 @@ if ($accType == 'client') {
             }
 
             $(document).ready(function () {
+                $('form[action$="pad/uploadSupplier"]').on('submit', function () {
+                    var selectedAccountHead = $('#account_id').val() || '2-2-4';
+                    $('#upload_account_head').val(selectedAccountHead);
+                });
 
                 $('select[name="country"]').on('change', function () {
                     var countryID = $(this).val();
