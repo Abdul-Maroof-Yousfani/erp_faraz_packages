@@ -59,4 +59,4 @@ echo CommonHelper::headerPrintSectionInPrintView($m);?>
         </div>
     </div>
 </div>
-<?php Form::close(); ?>
+<?php echo Form::close(); ?>

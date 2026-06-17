@@ -2760,174 +2760,175 @@ class PurchaseAddDetailControler extends Controller
 
     function addPurchaseVoucherThorughGrn(Request $request)
     {
-        //        echo "<pre>";
-//        print_r($_POST); die;
-
         DB::Connection('mysql2')->beginTransaction();
         try {
-            $demandsSection = $request->demandsSection;
-            $SalesTaxAccId = 0;
-            $SalesTaxAmount = 0;
+            $section = 1;
+            $grnIds = array_values(array_filter((array) $request->input('grn_ids', [])));
+            if (empty($grnIds) && $request->input('grn_id1')) {
+                $grnIds[] = $request->input('grn_id1');
+            }
 
-            foreach ($demandsSection as $i):
+            $grns = GoodsReceiptNote::on('mysql2')
+                ->whereIn('id', $grnIds)
+                ->where('status', 1)
+                ->get();
 
+            if ($grns->isEmpty()) {
+                throw new \Exception('No valid GRN found for purchase invoice.');
+            }
 
-                $dept_id = $request->input('dept_id' . $i);
-                $p_type = $request->input('p_type_id' . $i);
-                $good_recipt_not = new GoodsReceiptNote();
-                $good_recipt_not = $good_recipt_not->SetConnection('mysql2');
-                $good_recipt_not = $good_recipt_not->find($request->input('grn_id' . $i));
-                if (!$good_recipt_not) {
-                    DB::Connection('mysql2')->rollBack();
-                    return redirect()->back()->with('error', 'GRN record not found for one of the selected rows.');
-                }
-                $po_no = $good_recipt_not->po_no;
+            $supplierIds = $grns->pluck('supplier_id')->unique()->values();
+            if ($supplierIds->count() > 1) {
+                throw new \Exception('Please select GRNs of the same supplier.');
+            }
+
+            $purchase_date = $request->input('purchase_date' . $section, date('Y-m-d'));
+            $pv_no = CommonHelper::uniqe_no_for_purcahseVoucher(date('y'), date('m'));
+            $firstGrn = $grns->first();
+            $grnNos = $grns->pluck('grn_no')->implode(',');
+
+            foreach ($grns as $good_recipt_not) {
                 $good_recipt_not->grn_status = 3;
                 $good_recipt_not->save();
+            }
 
-                $supp_acc_id = CommonHelper::get_supplier_acc_id($request->input('supplier_id' . $i));
+            $SalesTaxAccId = $request->input('SalesTaxesAccId' . $section) ?: 0;
+            $SalesTaxAmount = CommonHelper::check_str_replace($request->input('SalesTaxAmount' . $section, 0));
 
-                $purchase_date = $request->input('purchase_date' . $i);
-                $pv_no = CommonHelper::uniqe_no_for_purcahseVoucher(date('y'), date('m'));
+            $NewPurchaseVoucher = new NewPurchaseVoucher();
+            $NewPurchaseVoucher = $NewPurchaseVoucher->SetConnection('mysql2');
+            $NewPurchaseVoucher->pv_no = $pv_no;
+            $NewPurchaseVoucher->pv_date = $purchase_date;
+            $NewPurchaseVoucher->grn_no = $grnNos;
+            $NewPurchaseVoucher->grn_id = $firstGrn->id;
+            $NewPurchaseVoucher->slip_no = $request->input('slip_no' . $section);
+            $NewPurchaseVoucher->bill_date = $request->input('bill_date' . $section);
+            $NewPurchaseVoucher->due_date = $request->input('due_date' . $section);
+            $NewPurchaseVoucher->purchase_type = $request->input('p_type' . $section, $firstGrn->p_type);
+            $NewPurchaseVoucher->supplier = $supplierIds->first();
+            $NewPurchaseVoucher->sales_tax_acc_id = $SalesTaxAccId;
+            $NewPurchaseVoucher->sales_tax_amount = $SalesTaxAmount;
+            $NewPurchaseVoucher->description = $request->input('description' . $section);
+            $NewPurchaseVoucher->username = Auth::user()->name;
+            $NewPurchaseVoucher->status = 1;
+            $NewPurchaseVoucher->pv_status = 1;
+            $NewPurchaseVoucher->date = date('Y-m-d');
+            $NewPurchaseVoucher->save();
+            $master_id = $NewPurchaseVoucher->id;
 
-                $NewPurchaseVoucher = new NewPurchaseVoucher();
-                $NewPurchaseVoucher = $NewPurchaseVoucher->SetConnection('mysql2');
-                $NewPurchaseVoucher->pv_no = $pv_no;
-                $NewPurchaseVoucher->pv_date = $purchase_date;
-                $NewPurchaseVoucher->grn_no = $request->input('grn_no' . $i);
-                $NewPurchaseVoucher->grn_id = $request->input('grn_id' . $i);
-                $NewPurchaseVoucher->slip_no = $request->input('slip_no' . $i);
-                $NewPurchaseVoucher->bill_date = $request->input('bill_date' . $i);
-                $NewPurchaseVoucher->due_date = $request->input('due_date' . $i);
-                $NewPurchaseVoucher->purchase_type = $request->input('p_type' . $i);
-                $NewPurchaseVoucher->supplier = $request->input('supplier_id' . $i);
-                $bolen = false;
+            $purchase_voucher_data = (array) $request->input('demandDataSection_' . $section, []);
+            if (empty($purchase_voucher_data)) {
+                throw new \Exception('No GRN item found for purchase invoice.');
+            }
 
-                if ($request->input('SalesTaxesAccId' . $i) != "") {
-                    $SalesTaxAccId = $request->input('SalesTaxesAccId' . $i);
-                    $SalesTaxAmount = $request->input('SalesTaxAmount' . $i);
-                    $bolen = true;
-                } else {
-                    $SalesTaxAccId = 0;
-                    $SalesTaxAmount = 0;
-                }
-                $NewPurchaseVoucher->sales_tax_acc_id = $SalesTaxAccId;
-                $NewPurchaseVoucher->sales_tax_amount = $SalesTaxAmount;
-
-                $NewPurchaseVoucher->description = $request->input('description' . $i);
-                $NewPurchaseVoucher->username = Auth::user()->name;
-                $NewPurchaseVoucher->status = 1;
-                $NewPurchaseVoucher->pv_status = 1;
-                $NewPurchaseVoucher->date = date('Y-m-d');
-                $NewPurchaseVoucher->save();
-                $master_id = $NewPurchaseVoucher->id;
-
-                $purchase_voucher_data = $request->input('demandDataSection_' . $i);
-                $TotAmount = 0;
-                foreach ($purchase_voucher_data as $row):
-                    $grnLine = DB::Connection('mysql2')->table('grn_data')->where('id', $request->input('grn_data_id_1_' . $row))->first();
-                    $poLine = !empty($grnLine) && !empty($grnLine->po_data_id)
-                        ? DB::Connection('mysql2')->table('purchase_request_data')->where('id', $grnLine->po_data_id)->first()
-                        : null;
-                    $purchaseRequest = !empty($good_recipt_not->po_no)
-                        ? DB::Connection('mysql2')->table('purchase_request')->where('purchase_request_no', $good_recipt_not->po_no)->first()
-                        : null;
-                    $currencyRate = (float) ($purchaseRequest->currency_rate ?? 1);
-                    $rateCalBy = (int) ($poLine->rate_cal_by ?? 2);
-                    $packSize = 0;
-                    if (!empty($poLine) && !empty($poLine->bags_qty) && (float) $poLine->bags_qty > 0) {
-                        $packSize = (float) $poLine->purchase_approve_qty / (float) $poLine->bags_qty;
-                    }
-                    if ($packSize <= 0 && !empty($grnLine->sub_item_id)) {
-                        $subItemDetail = CommonHelper::get_subitem_detail2($grnLine->sub_item_id);
-                        $packSize = (float) ($subItemDetail->pack_size ?? 0);
-                    }
-                    $receivedQty = max((float) ($grnLine->purchase_recived_qty ?? 0) - (float) ($grnLine->qc_qty ?? 0), 0);
-                    $returnQty = (float) ReuseableCode::purchase_return_qty_from_grn_line($request->input('grn_data_id_1_' . $row));
-                    $actualQty = max($receivedQty - $returnQty, 0);
-                    $rateBasisQty = $actualQty;
-                    if ($rateCalBy === 1) {
-                        $rateBasisQty = $packSize > 0 ? ($actualQty / $packSize) : $actualQty;
-                    } elseif ($rateCalBy === 3) {
-                        $rateBasisQty = $actualQty * 2.2;
-                    }
-                    $lineRate = (float) CommonHelper::check_str_replace($request->input('rate_1_' . $row));
-                    $lineAmount = round($rateBasisQty * $lineRate * $currencyRate, 2);
-                    $discountPercent = (float) CommonHelper::check_str_replace($request->input('discount_percent' . $row));
-                    $discountAmount = (float) CommonHelper::check_str_replace($request->input('discount_amount' . $row));
-                    if ($discountAmount <= 0 && $discountPercent > 0) {
-                        $discountAmount = round(($lineAmount / 100) * $discountPercent, 2);
-                    }
-                    $netAmount = round($lineAmount - $discountAmount, 2);
-
-                    $NewPurchaseVoucherData = new NewPurchaseVoucherData();
-                    $NewPurchaseVoucherData = $NewPurchaseVoucherData->SetConnection('mysql2');
-                    $NewPurchaseVoucherData->master_id = $master_id;
-                    $NewPurchaseVoucherData->pv_no = $pv_no;
-                    $NewPurchaseVoucherData->grn_data_id = $request->input('grn_data_id_1_' . $row);
-                    $NewPurchaseVoucherData->category_id = $request->input('category_id_1_' . $row);
-                    $NewPurchaseVoucherData->sub_item = $request->input('sub_item_id_1_' . $row);
-                    $NewPurchaseVoucherData->uom = $request->input('uom_id_1_' . $row);
-                    $NewPurchaseVoucherData->qty = $actualQty;
-                    $NewPurchaseVoucherData->bag_qty = $rateCalBy === 1 ? $rateBasisQty : (float) ($poLine->bags_qty ?? 0);
-                    $NewPurchaseVoucherData->lbs_qty = $rateCalBy === 3 ? $rateBasisQty : ($actualQty * 2.2);
-                    $NewPurchaseVoucherData->rate_cal_by = $rateCalBy;
-                    $NewPurchaseVoucherData->rate = $lineRate;
-                    $NewPurchaseVoucherData->amount = $lineAmount;
-                    $NewPurchaseVoucherData->discount_amount = $discountAmount;
-                    $NewPurchaseVoucherData->net_amount = $netAmount;
-                    $NewPurchaseVoucherData->do_no = $request->input('do_no_pv_' . $row);
-                    $NewPurchaseVoucherData->godown_no = $request->input('godown_no_pv_' . $row);
-                    $TotAmount += $netAmount;
-                    $NewPurchaseVoucherData->staus = 1;
-                    $NewPurchaseVoucherData->pv_status = 2;
-                    $NewPurchaseVoucherData->username = Auth::user()->name;
-                    $NewPurchaseVoucherData->date = date('Y-m-d');
-                    $NewPurchaseVoucherData->save();
-                endforeach;
-                $PvInsertedData = DB::Connection('mysql2')->table('new_purchase_voucher_data')->where('master_id', $master_id)->get();
-                foreach ($PvInsertedData as $PvFil) {
-                    if ($PvFil->sub_item != 0):
-                        $InsertData['main_id'] = $PvFil->master_id;
-                        $InsertData['master_id'] = $PvFil->id;
-                        $InsertData['voucher_no'] = $PvFil->pv_no;
-                        $InsertData['item_id'] = $PvFil->sub_item;
-                        $InsertData['qty'] = $PvFil->qty;
-                        $InsertData['amount'] = $PvFil->net_amount;
-                        $InsertData['opening'] = 0;
-                        $InsertData['status'] = 1;
-                        $InsertData['username'] = $PvFil->username;
-                        $InsertData['voucher_type'] = 1;
-                        DB::Connection('mysql2')->table('transaction_supply_chain')->insert($InsertData);
-                    endif;
+            $TotAmount = 0;
+            foreach ($purchase_voucher_data as $row):
+                $grnDataId = $request->input('grn_data_id_1_' . $row);
+                $grnLine = DB::Connection('mysql2')->table('grn_data')->where('id', $grnDataId)->first();
+                if (empty($grnLine)) {
+                    continue;
                 }
 
-                $additional_data = $request->input('expense_amount_' . $i);
-                if (isset($additional_data)):
+                $lineGrn = $grns->where('grn_no', $grnLine->grn_no)->first();
+                $poLine = !empty($grnLine->po_data_id)
+                    ? DB::Connection('mysql2')->table('purchase_request_data')->where('id', $grnLine->po_data_id)->first()
+                    : null;
+                $purchaseRequest = !empty($lineGrn->po_no)
+                    ? DB::Connection('mysql2')->table('purchase_request')->where('purchase_request_no', $lineGrn->po_no)->first()
+                    : null;
+                $currencyRate = (float) ($purchaseRequest->currency_rate ?? 1);
+                $rateCalBy = (int) ($poLine->rate_cal_by ?? 2);
+                $packSize = 0;
+                if (!empty($poLine) && !empty($poLine->bags_qty) && (float) $poLine->bags_qty > 0) {
+                    $packSize = (float) $poLine->purchase_approve_qty / (float) $poLine->bags_qty;
+                }
+                if ($packSize <= 0 && !empty($grnLine->sub_item_id)) {
+                    $subItemDetail = CommonHelper::get_subitem_detail2($grnLine->sub_item_id);
+                    $packSize = (float) ($subItemDetail->pack_size ?? 0);
+                }
 
-                    foreach ($additional_data as $key => $row):
+                $receivedQty = max((float) ($grnLine->purchase_recived_qty ?? 0) - (float) ($grnLine->qc_qty ?? 0), 0);
+                $returnQty = (float) ReuseableCode::purchase_return_qty_from_grn_line($grnDataId);
+                $actualQty = max($receivedQty - $returnQty, 0);
+                $rateBasisQty = $actualQty;
+                if ($rateCalBy === 1) {
+                    $rateBasisQty = $packSize > 0 ? ($actualQty / $packSize) : $actualQty;
+                } elseif ($rateCalBy === 3) {
+                    $rateBasisQty = $actualQty * 2.2;
+                }
 
+                $lineRate = (float) CommonHelper::check_str_replace($request->input('rate_1_' . $row));
+                $lineAmount = round($rateBasisQty * $lineRate * $currencyRate, 2);
+                $discountPercent = (float) CommonHelper::check_str_replace($request->input('discount_percent' . $row));
+                $discountAmount = (float) CommonHelper::check_str_replace($request->input('discount_amount' . $row));
+                if ($discountAmount <= 0 && $discountPercent > 0) {
+                    $discountAmount = round(($lineAmount / 100) * $discountPercent, 2);
+                }
+                $netAmount = round($lineAmount - $discountAmount, 2);
 
-                        $purchase_voucher_data = new NewPurchaseVoucherData();
-                        $purchase_voucher_data = $purchase_voucher_data->SetConnection('mysql2');
-                        $purchase_voucher_data->master_id = $master_id;
-                        $purchase_voucher_data->category_id = $request->input('acc_id_' . $i)[$key];
-                        $purchase_voucher_data->net_amount = $row;
-                        $TotAmount += $row;
-                        $purchase_voucher_data->additional_exp = 1;
-                        $purchase_voucher_data->staus = 1;
-                        $purchase_voucher_data->pv_status = 2;
-                        $purchase_voucher_data->username = Auth::user()->name;
-                        $purchase_voucher_data->save();
-                    endforeach;
-                endif;
-
-
-                $pr_no = DB::Connection('mysql2')->table('purchase_request_data')->where('status', 1)->where('purchase_request_no', $po_no)->value('demand_no');
-                $voucher_no = $pv_no;
-                $subject = 'Purchase Invoice Created For ' . $pr_no;
-                NotificationHelper::send_email('Purchase Invoice', 'Create', $dept_id, $voucher_no, $subject, $p_type);
+                $NewPurchaseVoucherData = new NewPurchaseVoucherData();
+                $NewPurchaseVoucherData = $NewPurchaseVoucherData->SetConnection('mysql2');
+                $NewPurchaseVoucherData->master_id = $master_id;
+                $NewPurchaseVoucherData->pv_no = $pv_no;
+                $NewPurchaseVoucherData->grn_data_id = $grnDataId;
+                $NewPurchaseVoucherData->category_id = $request->input('category_id_1_' . $row);
+                $NewPurchaseVoucherData->sub_item = $request->input('sub_item_id_1_' . $row);
+                $NewPurchaseVoucherData->uom = $request->input('uom_id_1_' . $row);
+                $NewPurchaseVoucherData->qty = $actualQty;
+                $NewPurchaseVoucherData->bag_qty = $rateCalBy === 1 ? $rateBasisQty : (float) ($poLine->bags_qty ?? 0);
+                $NewPurchaseVoucherData->lbs_qty = $rateCalBy === 3 ? $rateBasisQty : ($actualQty * 2.2);
+                $NewPurchaseVoucherData->rate_cal_by = $rateCalBy;
+                $NewPurchaseVoucherData->rate = $lineRate;
+                $NewPurchaseVoucherData->amount = $lineAmount;
+                $NewPurchaseVoucherData->discount_amount = $discountAmount;
+                $NewPurchaseVoucherData->net_amount = $netAmount;
+                $NewPurchaseVoucherData->do_no = $request->input('do_no_pv_' . $row);
+                $NewPurchaseVoucherData->godown_no = $request->input('godown_no_pv_' . $row);
+                $TotAmount += $netAmount;
+                $NewPurchaseVoucherData->staus = 1;
+                $NewPurchaseVoucherData->pv_status = 2;
+                $NewPurchaseVoucherData->username = Auth::user()->name;
+                $NewPurchaseVoucherData->date = date('Y-m-d');
+                $NewPurchaseVoucherData->save();
             endforeach;
+
+            $PvInsertedData = DB::Connection('mysql2')->table('new_purchase_voucher_data')->where('master_id', $master_id)->get();
+            foreach ($PvInsertedData as $PvFil) {
+                if ($PvFil->sub_item != 0):
+                    $InsertData['main_id'] = $PvFil->master_id;
+                    $InsertData['master_id'] = $PvFil->id;
+                    $InsertData['voucher_no'] = $PvFil->pv_no;
+                    $InsertData['item_id'] = $PvFil->sub_item;
+                    $InsertData['qty'] = $PvFil->qty;
+                    $InsertData['amount'] = $PvFil->net_amount;
+                    $InsertData['opening'] = 0;
+                    $InsertData['status'] = 1;
+                    $InsertData['username'] = $PvFil->username;
+                    $InsertData['voucher_type'] = 1;
+                    DB::Connection('mysql2')->table('transaction_supply_chain')->insert($InsertData);
+                endif;
+            }
+
+            $additional_data = $request->input('expense_amount_' . $section);
+            if (isset($additional_data)):
+                foreach ($additional_data as $key => $row):
+                    $purchase_voucher_data = new NewPurchaseVoucherData();
+                    $purchase_voucher_data = $purchase_voucher_data->SetConnection('mysql2');
+                    $purchase_voucher_data->master_id = $master_id;
+                    $purchase_voucher_data->category_id = $request->input('acc_id_' . $section)[$key];
+                    $purchase_voucher_data->net_amount = $row;
+                    $TotAmount += $row;
+                    $purchase_voucher_data->additional_exp = 1;
+                    $purchase_voucher_data->staus = 1;
+                    $purchase_voucher_data->pv_status = 2;
+                    $purchase_voucher_data->username = Auth::user()->name;
+                    $purchase_voucher_data->save();
+                endforeach;
+            endif;
+
+            $pr_no = DB::Connection('mysql2')->table('purchase_request_data')->where('status', 1)->where('purchase_request_no', $firstGrn->po_no)->value('demand_no');
+            $subject = 'Purchase Invoice Created For ' . $pr_no;
+            NotificationHelper::send_email('Purchase Invoice', 'Create', $firstGrn->sub_department_id, $pv_no, $subject, $firstGrn->p_type);
             CommonHelper::inventory_activity($pv_no, $purchase_date, $TotAmount, 5, 'Insert');
 
 

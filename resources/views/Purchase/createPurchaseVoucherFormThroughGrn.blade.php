@@ -6,10 +6,117 @@ if($accType == 'client'){
 }else{
     $m = Auth::user()->company_id;
 }
-use App\Helpers\PurchaseHelper;
 use App\Helpers\FinanceHelper;
 use App\Helpers\CommonHelper;
 use App\Helpers\ReuseableCode;
+
+$ids = array_values(array_filter((array) $ids));
+$grnMasters = collect();
+$allItems = collect();
+$totalAmount = 0;
+$salesTaxAmount = 0;
+$salesTaxAccId = 0;
+$termsOfPayment = '';
+$dueDate = $currentDate;
+$billDate = $currentDate;
+$poDescription = [];
+
+foreach ($ids as $id) {
+    $grn = CommonHelper::get_goodreciptnotedata($id, 0);
+    if (empty($grn)) {
+        continue;
+    }
+
+    $grnTotal = 0;
+    $purchaseRequest = CommonHelper::get_goodreciptnotedata($id, 1);
+    $currencyRate = $purchaseRequest->currency_rate ?? 1;
+    $supplier = CommonHelper::getSupplierDetail($grn->supplier_id);
+    $noDays = $supplier->no_of_days ?? 0;
+    $dueDate = date('Y-m-d', strtotime($grn->grn_date . ' + ' . $noDays . ' days'));
+    $billDate = $grn->bill_date ?: $billDate;
+
+    $rawTerms = $purchaseRequest->terms_of_paym ?? '';
+    if($rawTerms == 1 || $rawTerms == 'Advance') {
+        $termsOfPayment = 'Advance';
+    } elseif($rawTerms == 2 || $rawTerms == 'Against Delivery') {
+        $termsOfPayment = 'Against Delivery';
+    } elseif($rawTerms == 3 || $rawTerms == 'Credit') {
+        $termsOfPayment = 'Credit';
+    } elseif($termsOfPayment == '') {
+        $termsOfPayment = $rawTerms;
+    }
+
+    $poDate = '';
+    if($grn->type == 0 && !empty($purchaseRequest->purchase_request_date)) {
+        $poDate = CommonHelper::changeDateFormat($purchaseRequest->purchase_request_date);
+    }
+    $poDescription[] = trim($grn->po_no . '--' . $poDate, '-');
+
+    $rawSalesTax = (string) ($purchaseRequest->sales_tax ?? '0');
+    $rawSalesTaxParts = explode('@', $rawSalesTax);
+    $salesTaxId = (float) ($rawSalesTaxParts[0] ?? 0);
+    if ($salesTaxAccId == 0) {
+        $salesTaxAccId = (int) ($purchaseRequest->sales_tax_acc_id ?? 0);
+        if ($salesTaxAccId === 0 && !empty($rawSalesTaxParts[1])) {
+            $salesTaxAccId = (int) $rawSalesTaxParts[1];
+        }
+    }
+
+    $grnItems = CommonHelper::get_grndata($id);
+    foreach ($grnItems as $item) {
+        $poLine = $item->po_data_id ? DB::Connection('mysql2')->table('purchase_request_data')->where('id', $item->po_data_id)->first() : null;
+        $rateCalBy = (int)($poLine->rate_cal_by ?? 2);
+        $packSize = 0;
+        if (!empty($poLine) && !empty($poLine->bags_qty) && (float) $poLine->bags_qty > 0) {
+            $packSize = (float) $poLine->purchase_approve_qty / (float) $poLine->bags_qty;
+        }
+        if ($packSize <= 0) {
+            $subItemDetail = CommonHelper::get_subitem_detail2($item->sub_item_id);
+            $packSize = (float) ($subItemDetail->pack_size ?? 0);
+        }
+
+        $returnQty = ReuseableCode::purchase_return_qty_from_grn_line($item->id);
+        $qty = $item->purchase_recived_qty - $item->qc_qty;
+        $actualQty = $qty - $returnQty;
+        $rateBasisQty = $actualQty;
+        if ($rateCalBy === 1) {
+            $rateBasisQty = $packSize > 0 ? ($actualQty / $packSize) : $actualQty;
+        } elseif ($rateCalBy === 3) {
+            $rateBasisQty = $actualQty * 2.2;
+        }
+
+        $amount = $rateBasisQty * $item->rate * $currencyRate;
+        $discountPercent = $item->discount_percent;
+        $discountAmount = $discountPercent > 0 ? (($amount / 100) * $discountPercent) : 0;
+        $netAmount = $amount - $discountAmount;
+        $totalAmount += $netAmount;
+        $grnTotal += $netAmount;
+
+        $item->display_qty = $qty;
+        $item->return_qty = $returnQty;
+        $item->actual_qty = $actualQty;
+        $item->rate_cal_by = $rateCalBy;
+        $item->rate_cal_by_label = $rateCalBy === 1 ? 'By BAGS' : ($rateCalBy === 3 ? 'By LBS' : 'By KGS');
+        $item->line_amount = $amount;
+        $item->line_discount_amount = $discountAmount;
+        $item->line_net_amount = $netAmount;
+        $item->master_grn_no = $grn->grn_no;
+        $allItems->push($item);
+    }
+
+    $configuredSalesTaxAmount = (float) ($purchaseRequest->sales_tax_amount ?? 0);
+    if ($configuredSalesTaxAmount > 0) {
+        $salesTaxAmount += $configuredSalesTaxAmount;
+    } elseif ($salesTaxId > 0) {
+        $salesTaxAmount += ($grnTotal / 100) * $salesTaxId;
+    }
+
+    $grnMasters->push($grn);
+}
+
+$firstGrn = $grnMasters->first();
+$pvNo = CommonHelper::uniqe_no_for_purcahseVoucher(date('y'), date('m'));
+$netTotal = $totalAmount + $salesTaxAmount;
 ?>
 
 @extends('layouts.default')
@@ -18,655 +125,294 @@ use App\Helpers\ReuseableCode;
     @include('select2')
 
     <style>
-        .select2-container {
-            font-size: 11px;
-        }
+        .select2-container { font-size: 11px; }
     </style>
 
-    <?php
-     $main_count=1;
-    $count=1;
-    $sales_tax_count=1;
-    ?>
-    <?php echo Form::open(array('url' => 'pad/addPurchaseVoucherThorughGrn','id'=>'cashPaymentVoucherForm'));
-    $val= count($ids);
-    ?>
-    <input type="hidden" name="_token" value="{{ csrf_token() }}">
-
-    @foreach($ids as $row)
-
-        <?php
-        $rate = 0;
-        $amt = 0;
-        $TotAmt = 0;
-        $total_amount=0;
-        $sales_tax_amount=0;
-        $id=$row;
-        $good_recipt_note=CommonHelper::get_goodreciptnotedata($row,0);
-        $purchase_reqiest=CommonHelper::get_goodreciptnotedata($row,1);
-        $currency = $purchase_reqiest->currency_rate ?? 1;
-        $po_no = $good_recipt_note->po_no;
-        if($good_recipt_note->type==0):
-            $po_date=CommonHelper::changeDateFormat($purchase_reqiest->purchase_request_date);
-        else:
-            $po_date='';
-        endif;
-        $terms_of_paym = '';
-        $no_days = '';
-        $bill_date=$good_recipt_note->bill_date;
-        $raw_terms = $purchase_reqiest->terms_of_paym ?? '';
-        if($raw_terms == 1 || $raw_terms == 'Advance') {
-            $terms_of_paym = 'Advance';
-        } elseif($raw_terms == 2 || $raw_terms == 'Against Delivery') {
-            $terms_of_paym = 'Against Delivery';
-        } elseif($raw_terms == 3 || $raw_terms == 'Credit') {
-            $terms_of_paym = 'Credit';
-        } else {
-            $terms_of_paym = $raw_terms;
-        }
-        $supplier = CommonHelper::getSupplierDetail($good_recipt_note->supplier_id);
-        $no_days = $supplier->no_of_days;
-        $Date = $good_recipt_note->grn_date;
-        $due_date =date('Y-m-d', strtotime($Date. ' + '.$no_days.' days'));
-        ?>
-        <input type="hidden" name="grn_no{{$sales_tax_count}}" value="{{$good_recipt_note->grn_no}}">
-        <input type="hidden" name="grn_id{{$sales_tax_count}}" value="{{$good_recipt_note->id}}">
-        <input type="hidden" name="demandsSection[]" class="form-control requiredField" id="demandsSection" value="{{$sales_tax_count}}" />
-        <input type="hidden" name="dept_id{{ $sales_tax_count }}" value="{{ $good_recipt_note->sub_department_id }}"/>
-        <input type="hidden" name="p_type_id{{ $sales_tax_count }}" value="{{ $good_recipt_note->p_type }}"/>
+    @if($grnMasters->isEmpty())
+        <div class="alert alert-danger">No valid GRN selected.</div>
+    @elseif($grnMasters->pluck('supplier_id')->unique()->count() > 1)
+        <div class="alert alert-danger">Please select GRNs of the same supplier and then create purchase invoice.</div>
+    @else
+        <?php echo Form::open(array('url' => 'pad/addPurchaseVoucherThorughGrn','id'=>'cashPaymentVoucherForm')); ?>
+        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="demandsSection[]" value="1">
+        <input type="hidden" name="grn_no1" value="{{ $grnMasters->pluck('grn_no')->implode(',') }}">
+        <input type="hidden" name="grn_id1" value="{{ $firstGrn->id }}">
+        <input type="hidden" name="dept_id1" value="{{ $firstGrn->sub_department_id }}">
+        <input type="hidden" name="p_type_id1" value="{{ $firstGrn->p_type }}">
+        <input type="hidden" name="p_type1" value="{{ $firstGrn->p_type }}">
+        @foreach($grnMasters as $grn)
+            <input type="hidden" name="grn_ids[]" value="{{ $grn->id }}">
+        @endforeach
 
         <div class="row well_N">
             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                 <div class="well">
                     <div class="row">
                         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                            <span class="subHeadingLabelClass">Create Purchase Voucher Forms</span>
+                            <span class="subHeadingLabelClass">Create Purchase Voucher Form</span>
                         </div>
                     </div>
-                    <h3 style="text-align: center">{{strtoupper($good_recipt_note->grn_no)}}</h3>
+                    <h3 style="text-align: center">{{ strtoupper($grnMasters->pluck('grn_no')->implode(', ')) }}</h3>
                     <div class="lineHeight">&nbsp;</div>
-                    <div class="row">
-                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                            <div class="panel">
-                                <div class="panel-body">
-                                    <div class="row">
-                                        <?php $pv_no=CommonHelper::uniqe_no_for_purcahseVoucher(date('y'),date('m')); ?>
-                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                            <label class="sf-label">PV No. <span class="rflabelsteric"><strong>*</strong></span></label>
-                                            <input readonly  type="text" class="form-control requiredField"  placeholder="" name="pv_no<?php echo $sales_tax_count ?>" id="pv_no<?php echo $sales_tax_count ?>" value="{{$pv_no}}" />
-                                        </div>
-
-                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                            <label class="sf-label">PV Date.</label>
-                                            <span class="rflabelsteric"><strong>*</strong></span>
-                                            <input onblur="" onchange="calculate_due_date('<?php echo $sales_tax_count?>')" type="date" class="form-control requiredField" max="<?php echo date('Y-m-d') ?>" name="purchase_date<?php echo $sales_tax_count ?>" id="purchase_date<?php echo $sales_tax_count ?>" value="<?php echo date('Y-m-d') ?>" />
-                                        </div>
-                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                            <label class="sf-label">PV Day.</label>
-                                            <input readonly  type="text" class="form-control"  name="pv_day<?php echo $sales_tax_count ?>" id="pv_day<?php echo $sales_tax_count ?>"  />
-                                        </div>
-                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                            <label class="sf-label">Ref / Bill No. <span class="rflabelsteric"><strong>*</strong></span></label>
-                                            <input readonly  type="text" class="form-control" placeholder="Ref / Bill No" name="slip_no<?php echo $sales_tax_count ?>" id="slip_no<?php echo $sales_tax_count ?>" value="{{$good_recipt_note->supplier_invoice_no}}" />
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                            <label class="sf-label">Bill Date.</label>
-                                            <span class="rflabelsteric"><strong>*</strong></span>
-                                            <input     readonly   type="date" class="form-control"  name="bill_date<?php echo $sales_tax_count ?>" id="bill_date<?php echo $sales_tax_count ?>" value="{{$bill_date}}" />
-                                        </div>
-                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                            <label class="sf-label">Due Date</label>
-                                            <span class="rflabelsteric"><strong>*</strong></span>
-                                            <input readonly  autofocus  value="{{$due_date}}" type="date" name="due_date<?php echo $sales_tax_count ?>" id="due_date<?php echo $sales_tax_count ?>" class="form-control requiredField"/>
-                                        </div>
-                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                            <label class="sf-label"> <a href="#" onclick="showDetailModelOneParamerter('pdc/createSupplierFormAjax');" class="">Supplier</a></label>
-                                            <span class="rflabelsteric"><strong>*</strong></span>
-                                            <input readonly class="form-control" name="supp_id<?php echo $sales_tax_count ?>" id="supp_id<?php echo $sales_tax_count ?>" value="{{ucwords(CommonHelper::get_supplier_name($good_recipt_note->supplier_id))}}">
-                                            <input type="hidden" id="supplier_id<?php echo $sales_tax_count ?>" name="supplier_id<?php echo $sales_tax_count ?>" value="{{$good_recipt_note->supplier_id}}"/>
-                                        </div>
-                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                            <label class="sf-label">Mode/ Terms Of Payment<span class="rflabelsteric"><strong>*</strong></span></label>
-                                            <input readonly onkeyup="calculate_due_date('<?php echo $sales_tax_count?>')"  type="text" class="form-control"  name="model_terms_of_payment<?php echo $sales_tax_count?>" id="model_terms_of_payment<?php echo $sales_tax_count?>" value="<?php echo $terms_of_paym?>" />
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                            <label class="sf-label">Supplier Current Amount   <span class="rflabelsteric"><strong>*</strong></span></label>
-                                            <input readonly  type="number" class="form-control"  name="current_amount<?php echo $sales_tax_count ?>" id="current_amount<?php echo $count ?>" value="" />
-                                        </div>
-                                        @if ($good_recipt_note->grn_no!='')
-                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                                <label class="sf-label">GRN No<span class="rflabelsteric"><strong>*</strong></span></label>
-                                                <input readonly  type="text" class="form-control requiredField"  name="grn_no" id="grn_no" value="{{$good_recipt_note->grn_no}}" />
-                                            </div>
-                                        @endif
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                            <label class="sf-label">Description</label>
-                                            <span class="rflabelsteric"><strong>*</strong></span>
-                                            <textarea name="description<?php echo $sales_tax_count ?>" id="description<?php echo $sales_tax_count ?>" rows="4" cols="50" style="resize:none;" class="form-control requiredField">{{$po_no.'--'.$po_date}}</textarea>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                            <div class="table-responsive">
-                                                <div class="addMoreDemandsDetailRows_1" id="addMoreDemandsDetailRows_1">
-                                                    <table  id="" class="table table-bordered">
-                                                        <thead>
-                                                        <tr>
-                                                            <th style="width: 150px;" class="text-center hidden-print"><a tabindex="-1"  href="#" onclick="showDetailModelOneParamerter('pdc/createSubItemFormAjax')" class="">Sub Item</a></th>
-                                                            <th style="width: 100px" class="text-center">UOM <span class="rflabelsteric"><strong>*</strong></span></th>
-                                                            <th style="width: 100px;" class="text-center">DO No.</th>
-                                                            <th style="width: 100px;" class="text-center">Godown No.</th>
-                                                            <th style="width: 200px;" class="text-center">Qty. <span class="rflabelsteric"><strong>*</strong></span></th>
-                                                            <th style="width: 200px;" class="text-center">Return Qty. <span class="rflabelsteric"><strong>*</strong></span></th>
-                                                            <th style="width: 140px;" class="text-center">Rate Cal. By</th>
-                                                            <th style="width: 200px;" class="text-center">Rate. <span class="rflabelsteric"><strong>*</strong></span></th>
-                                                            <th style="width: 200px;" class="text-center hide">Amount. <span class="rflabelsteric"><strong>*</strong></span></th>
-                                                            <th style="width: 200px;" class="text-center hide">Discount Amount <span class="rflabelsteric"><strong>*</strong></span></th>
-                                                            <th style="width: 200px;" class="text-center">Net Amount <span class="rflabelsteric"><strong>*</strong></span></th>
-                                                        </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                        <?php $counter=1; ?>
-                                                        @foreach(CommonHelper::get_grndata($id,$good_recipt_note->type) as $row1)
-
-                                                            <?php
-                                                            $poLine = $row1->po_data_id ? DB::Connection('mysql2')->table('purchase_request_data')->where('id', $row1->po_data_id)->first() : null;
-                                                            $rate_cal_by = (int)($poLine->rate_cal_by ?? 2);
-                                                            $rate_cal_by_label = $rate_cal_by === 1 ? 'By BAGS' : ($rate_cal_by === 3 ? 'By LBS' : 'By KGS');
-                                                            $pack_size = 0;
-                                                            if (!empty($poLine) && !empty($poLine->bags_qty) && (float) $poLine->bags_qty > 0) {
-                                                                $pack_size = (float) $poLine->purchase_approve_qty / (float) $poLine->bags_qty;
-                                                            }
-                                                            if ($pack_size <= 0) {
-                                                                $subItemDetail = CommonHelper::get_subitem_detail2($row1->sub_item_id);
-                                                                $pack_size = (float) ($subItemDetail->pack_size ?? 0);
-                                                            }
-                                                            $return_qty = ReuseableCode::purchase_return_qty_from_grn_line($row1->id);
-                                                            $qty = $row1->purchase_recived_qty - $row1->qc_qty;
-                                                            $actual_qty = $qty-$return_qty;
-
-                                                            $rate_basis_qty = $actual_qty;
-                                                            if ($rate_cal_by === 1) {
-                                                                $rate_basis_qty = $pack_size > 0 ? ($actual_qty / $pack_size) : $actual_qty;
-                                                            } elseif ($rate_cal_by === 3) {
-                                                                $rate_basis_qty = $actual_qty * 2.2;
-                                                            }
-
-                                                            $rate = $row1->rate;
-
-                                                            $amount = $rate_basis_qty * $rate * $currency;
-                                                            $discount_percent = $row1->discount_percent;
-
-                                                            if ($discount_percent > 0):
-                                                                $discount_amount = ($amount / 100) * $discount_percent;
-                                                            else:
-                                                                $discount_amount = 0;
-                                                            endif;
-
-                                                            $net_amount = $amount - $discount_amount;
-                                                            $TotAmt += $net_amount;
-                                                            ?>
-
-
-                                                            <input type="hidden" name="demandDataSection_{{$sales_tax_count}}[]" class="form-control requiredField" id="demandDataSection_1" value="{{$count}}" />
-                                                            <input type="hidden" name="grn_data_id_1_<?php echo $count ?>" id="grn_data_id_1_<?php echo $count ?>" value="{{$row1->id}}"/>
-                                                            <tr>
-                                                                <td title="{{CommonHelper::get_item_name($row1->sub_item_id)}}" class="text-center" style="width: 30%;">
-                                                                    <input type="hidden" name="sub_item_id_1_<?php echo $count; ?>" value="{{$row1->sub_item_id}}"/>
-                                                                    <?php
-                                                                    $sub_ic_detail=CommonHelper::get_subitem_detail($row1->sub_item_id);
-                                                                   echo CommonHelper::get_item_name($row1->sub_item_id);
-                                                                    ?>
-                                                                </td>
-                                                                <td>
-                                                                    <input readonly type="text" value="{{CommonHelper::get_uom_name($sub_ic_detail[0])}}" name="uom_1_1" id="uom_1_1" class="form-control" />
-                                                                    <input type="hidden" name="uom_id_1_<?php echo $count ?>" id="uom_id_1_<?php echo $count ?>" value="{{$sub_ic_detail[0]}}" />
-                                                                </td>
-                                                                <td>
-                                                                    <input type="text" class="form-control" readonly name="do_no_pv_<?php echo $count ?>" id="do_no_pv_<?php echo $count ?>" value="{{ $row1->do_no ?? '' }}" placeholder="DO No." />
-                                                                </td>
-                                                                <td>
-                                                                    <input type="text" class="form-control" readonly name="godown_no_pv_<?php echo $count ?>" id="godown_no_pv_<?php echo $count ?>" value="{{ $row1->godown_no ?? '' }}" placeholder="Godown No." />
-                                                                </td>
-
-                                                                <td>
-                                                                    <input readonly value="{{$qty}}"  type="number" step="0.01" name="qty_1_<?php echo $count ?>" id="qty_1_<?php echo $count ?>" class="form-control qty" />
-                                                                </td>
-
-                                                                <td>
-                                                                    <input readonly value="{{$return_qty}}"  type="number" step="0.01" name="return_qty_1_<?php echo $count ?>" id="qty_1_<?php echo $count ?>" class="form-control qty" />
-                                                                </td>
-
-                                                                <td class="text-center">
-                                                                    <span class="label label-info" style="display:inline-block;padding:4px 8px;">
-                                                                        {{ $rate_cal_by_label }}
-                                                                    </span>
-                                                                </td>
-
-                                                                <td>
-                                                                    <?php
-
-                                                                    if($row1->po_data_id !="")
-                                                                    {
-                                                                        $Rate = CommonHelper::get_rate($row1->po_data_id);
-                                                                        $rate = explode('.',$Rate->rate);
-                                                                        $amt = $rate[0]*$row1->purchase_recived_qty;
-                                                                     //   $TotAmt += $amt;
-                                                                    }
-                                                                    else{$rate = 0; $amt=0; $TotAmt = 0;}
-                                                                    ?>
-                                                                    <input readonly onkeyup="calculation_amount(this.id,'<?php echo $count ?>','<?php echo $row1->grn_no?>')" value="<?php echo $row1->rate?>" type="text" step="0.01" name="rate_1_<?php echo $count ?>" id="rate_1_<?php echo $count ?>" class="form-control requiredField rate" />
-                                                                </td>
-                                                                <td class="hide">
-                                                                    <input type="text" name="amount<?php echo $count ?>" id="amount<?php echo $count ?>" class="form-control requiredField amount<?php echo $row1->grn_no?>" value="<?php echo $amount;?>" readonly />
-                                                                </td>
-                                                                <td class="hide"><input readonly class="form-control" type="text" id="discount_amount{{$count}}" name="discount_amount{{$count}}" value="{{$discount_amount}}"></td>
-
-                                                                <td><input readonly class="form-control" type="text" id="net_amount{{ $count }}" name="net_amount{{$count}}" value="{{$amount-$discount_amount}}"></td>
-                                                            </tr>
-                                                            <?php  $count++; ?>
-                                                        @endforeach
-                                                        <tr class="text-center">
-                                                            <td class="text-center" colspan="6"></td>
-                                                            <td class="text-center" colspan="1">Total</td>
-                                                            <td ><input type="text" maxlength="15" class="form-control text-right" name="Totalamount" value="<?php echo $TotAmt?>" id="Totalamount<?php echo $row1->grn_no?>" readonly="" ></td>
-                                                        </tr>
-                                                        <tr class="text-center" style="background: gainsboro">
-                                                            <td class="text-center" colspan="3"></td>
-                                                            <?php
-                                                            $SalesTaxId = 0;
-                                                            $SalesTaxAmount = 0;
-                                                            $NetTot = 0;
-                                                            $SalesTaxAccId = 0;
-                                                            $rawSalesTax = (string) ($purchase_reqiest->sales_tax ?? '0');
-                                                            $rawSalesTaxParts = explode('@', $rawSalesTax);
-                                                            $SalesTaxId = (float) ($rawSalesTaxParts[0] ?? 0);
-                                                            $SalesTaxAccId = (int) ($purchase_reqiest->sales_tax_acc_id ?? 0);
-                                                            if ($SalesTaxAccId === 0 && !empty($rawSalesTaxParts[1])) {
-                                                                $SalesTaxAccId = (int) $rawSalesTaxParts[1];
-                                                            }
-                                                            $SalesTaxAmount = (float) ($purchase_reqiest->sales_tax_amount ?? 0);
-                                                            if ($SalesTaxAmount <= 0 && $SalesTaxId > 0) {
-                                                                $SalesTaxAmount = ($TotAmt / 100) * $SalesTaxId;
-                                                            }
-                                                            $sales_tax_amount = $SalesTaxAmount;
-                                                            $NetTot = $TotAmt + $sales_tax_amount;
-                                                            ?>
-                                                            <td colspan="1">Sales Taxes</td>
-                                                            <td colspan="3"><select name="SalesTaxesAccId<?php echo $sales_tax_count?>" class="form-control <?php echo $SalesTaxAccId;?>" id="SalesTaxesAccId<?php echo $good_recipt_note->grn_no?>" onchange="sales_tax_calc('<?php echo $good_recipt_note->grn_no?>')">
-                                                                    <option value="">Select Head</option>
-                                                                    @foreach(FinanceHelper::get_accounts() as $row)
-                                                                        <option @if($row->id == $SalesTaxAccId) selected @endif value="{{ $row->id}}">{{ ucwords($row->name)}}</option>
-                                                                    @endforeach
-                                                                </select>
-                                                            </td>
-                                                            <td><input type="text" name="SalesTaxAmount<?php echo $sales_tax_count?>" id="SalesTaxAmount<?php echo $good_recipt_note->grn_no?>" class="form-control text-right" value="<?php echo $sales_tax_amount?>" onkeyup="sales_tax_calc('<?php echo $good_recipt_note->grn_no?>')" readonly></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td id="rupees{{$main_count}}" class="text-center" colspan="6"></td>
-                                                            <td class="text-center" colspan="1">Net Total</td>
-                                                            <td colspan="2"><input type="text" name="NetTotal" id="NetTotal<?php echo $main_count?>" class="form-control number_form" readonly value="<?php echo $NetTot?>"></td>
-                                                        </tr>
-                                                        </tbody>
-                                                    </table>
-                                                    <?php $data=ReuseableCode::get_grn_additional_exp($id); ?>
-
-                                                    @if(!empty($data))
-                                                        <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
-                                                            <div class="table-responsive">
-                                                                <table class="table table-bordered sf-table-list">
-                                                                    <thead>
-                                                                    <th class="text-center">Account Head</th>
-                                                                    <th class="text-center">Expense Amount</th>
-                                                                    <th class="text-center"> </th>
-                                                                    </thead>
-                                                                    <tbody id="AppendExpense">
-                                                                    <?php
-                                                                    $exp_count = 0;
-                                                                    foreach($data as $row):
-
-                                                                    ?>
-                                                                    <tr id='RemoveExpenseRow<?php echo $exp_count++?>'>
-                                                                        <td class="text-center">
-                                                                            <input class="form-control" type="text" name="account_{{$sales_tax_count}}[]" value="{{CommonHelper::get_account_name($row->acc_id)}}">
-                                                                            <input type="hidden" name="acc_id_{{$sales_tax_count}}[]" value="{{$row->acc_id}}"/>
-                                                                        </td>
-                                                                        <td>
-                                                                            <input readonly type='number' name='expense_amount_{{$sales_tax_count}}[]' id='' class='form-control requiredField' value="<?php echo $row->amount?>">
-                                                                        </td>
-
-                                                                    </tr>
-                                                                    <?php endforeach;?>
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <table class="table table-bordered" style="width: 40%"> </table>
-                                    <table>
-                                        <tr>
-
-                                            <td id="rupees<?php echo $sales_tax_count ?>"></td>
-                                            <input type="hidden" name="rupeess<?php echo $sales_tax_count ?>" id="rupeess<?php echo $sales_tax_count ?>"/>
-                                        </tr>
-                                    </table>
+                    <div class="panel">
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                    <label class="sf-label">PV No. <span class="rflabelsteric"><strong>*</strong></span></label>
+                                    <input readonly type="text" class="form-control requiredField" name="pv_no1" id="pv_no1" value="{{ $pvNo }}" />
+                                </div>
+                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                    <label class="sf-label">PV Date.</label>
+                                    <span class="rflabelsteric"><strong>*</strong></span>
+                                    <input type="date" class="form-control requiredField" max="{{ date('Y-m-d') }}" name="purchase_date1" id="purchase_date1" value="{{ date('Y-m-d') }}" />
+                                </div>
+                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                    <label class="sf-label">PV Day.</label>
+                                    <input readonly type="text" class="form-control" name="pv_day1" id="pv_day1" />
+                                </div>
+                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                    <label class="sf-label">Ref / Bill No. <span class="rflabelsteric"><strong>*</strong></span></label>
+                                    <input readonly type="text" class="form-control" name="slip_no1" id="slip_no1" value="{{ $firstGrn->supplier_invoice_no }}" />
                                 </div>
                             </div>
-                            <div class="demandsSection"></div>
+                            <div class="row">
+                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                    <label class="sf-label">Bill Date.</label>
+                                    <span class="rflabelsteric"><strong>*</strong></span>
+                                    <input readonly type="date" class="form-control" name="bill_date1" id="bill_date1" value="{{ $billDate }}" />
+                                </div>
+                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                    <label class="sf-label">Due Date</label>
+                                    <span class="rflabelsteric"><strong>*</strong></span>
+                                    <input readonly value="{{ $dueDate }}" type="date" name="due_date1" id="due_date1" class="form-control requiredField"/>
+                                </div>
+                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                    <label class="sf-label"><a href="#" onclick="showDetailModelOneParamerter('pdc/createSupplierFormAjax');" class="">Supplier</a></label>
+                                    <span class="rflabelsteric"><strong>*</strong></span>
+                                    <input readonly class="form-control" name="supp_id1" id="supp_id1" value="{{ ucwords(CommonHelper::get_supplier_name($firstGrn->supplier_id)) }}">
+                                    <input type="hidden" id="supplier_id1" name="supplier_id1" value="{{ $firstGrn->supplier_id }}"/>
+                                </div>
+                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                    <label class="sf-label">Mode/ Terms Of Payment<span class="rflabelsteric"><strong>*</strong></span></label>
+                                    <input readonly type="text" class="form-control" name="model_terms_of_payment1" id="model_terms_of_payment1" value="{{ $termsOfPayment }}" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                    <label class="sf-label">Supplier Current Amount <span class="rflabelsteric"><strong>*</strong></span></label>
+                                    <input readonly type="number" class="form-control" name="current_amount1" id="current_amount1" value="" />
+                                </div>
+                                <div class="col-lg-9 col-md-9 col-sm-9 col-xs-12">
+                                    <label class="sf-label">GRN No<span class="rflabelsteric"><strong>*</strong></span></label>
+                                    <input readonly type="text" class="form-control requiredField" value="{{ $grnMasters->pluck('grn_no')->implode(', ') }}" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                    <label class="sf-label">Description</label>
+                                    <span class="rflabelsteric"><strong>*</strong></span>
+                                    <textarea name="description1" id="description1" rows="4" cols="50" style="resize:none;" class="form-control requiredField">{{ implode(', ', array_unique($poDescription)) }}</textarea>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                            <tr>
+                                                <th style="width: 100px;" class="text-center">GRN No</th>
+                                                <th style="width: 150px;" class="text-center hidden-print"><a tabindex="-1" href="#" onclick="showDetailModelOneParamerter('pdc/createSubItemFormAjax')" class="">Sub Item</a></th>
+                                                <th style="width: 100px" class="text-center">UOM <span class="rflabelsteric"><strong>*</strong></span></th>
+                                                <th style="width: 100px;" class="text-center">DO No.</th>
+                                                <th style="width: 100px;" class="text-center">Godown No.</th>
+                                                <th style="width: 120px;" class="text-center">Qty. <span class="rflabelsteric"><strong>*</strong></span></th>
+                                                <th style="width: 120px;" class="text-center">Return Qty. <span class="rflabelsteric"><strong>*</strong></span></th>
+                                                <th style="width: 120px;" class="text-center">Rate Cal. By</th>
+                                                <th style="width: 120px;" class="text-center">Rate. <span class="rflabelsteric"><strong>*</strong></span></th>
+                                                <th style="width: 120px;" class="text-center hide">Amount. <span class="rflabelsteric"><strong>*</strong></span></th>
+                                                <th style="width: 120px;" class="text-center hide">Discount Amount <span class="rflabelsteric"><strong>*</strong></span></th>
+                                                <th style="width: 140px;" class="text-center">Net Amount <span class="rflabelsteric"><strong>*</strong></span></th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <?php $count = 1; ?>
+                                            @foreach($allItems as $row1)
+                                                <?php
+                                                $subIcDetail = CommonHelper::get_subitem_detail($row1->sub_item_id);
+                                                ?>
+                                                <input type="hidden" name="demandDataSection_1[]" class="form-control requiredField" value="{{ $count }}" />
+                                                <input type="hidden" name="grn_data_id_1_{{ $count }}" id="grn_data_id_1_{{ $count }}" value="{{ $row1->id }}"/>
+                                                <input type="hidden" name="discount_percent{{ $count }}" value="{{ $row1->discount_percent }}"/>
+                                                <tr>
+                                                    <td class="text-center">{{ strtoupper($row1->master_grn_no) }}</td>
+                                                    <td title="{{ CommonHelper::get_item_name($row1->sub_item_id) }}" class="text-center">
+                                                        <input type="hidden" name="sub_item_id_1_{{ $count }}" value="{{ $row1->sub_item_id }}"/>
+                                                        {{ CommonHelper::get_item_name($row1->sub_item_id) }}
+                                                    </td>
+                                                    <td>
+                                                        <input readonly type="text" value="{{ CommonHelper::get_uom_name($subIcDetail[0]) }}" class="form-control" />
+                                                        <input type="hidden" name="uom_id_1_{{ $count }}" id="uom_id_1_{{ $count }}" value="{{ $subIcDetail[0] }}" />
+                                                    </td>
+                                                    <td><input type="text" class="form-control" readonly name="do_no_pv_{{ $count }}" id="do_no_pv_{{ $count }}" value="{{ $row1->do_no ?? '' }}" /></td>
+                                                    <td><input type="text" class="form-control" readonly name="godown_no_pv_{{ $count }}" id="godown_no_pv_{{ $count }}" value="{{ $row1->godown_no ?? '' }}" /></td>
+                                                    <td><input readonly value="{{ $row1->display_qty }}" type="number" step="0.01" name="qty_1_{{ $count }}" id="qty_1_{{ $count }}" class="form-control qty" /></td>
+                                                    <td><input readonly value="{{ $row1->return_qty }}" type="number" step="0.01" name="return_qty_1_{{ $count }}" class="form-control qty" /></td>
+                                                    <td class="text-center"><span class="label label-info" style="display:inline-block;padding:4px 8px;">{{ $row1->rate_cal_by_label }}</span></td>
+                                                    <td><input readonly value="{{ $row1->rate }}" type="text" step="0.01" name="rate_1_{{ $count }}" id="rate_1_{{ $count }}" class="form-control requiredField rate" /></td>
+                                                    <td class="hide"><input type="text" name="amount{{ $count }}" id="amount{{ $count }}" class="form-control requiredField amount" value="{{ $row1->line_amount }}" readonly /></td>
+                                                    <td class="hide"><input readonly class="form-control" type="text" id="discount_amount{{ $count }}" name="discount_amount{{ $count }}" value="{{ $row1->line_discount_amount }}"></td>
+                                                    <td><input readonly class="form-control" type="text" id="net_amount{{ $count }}" name="net_amount{{ $count }}" value="{{ $row1->line_net_amount }}"></td>
+                                                </tr>
+                                                <?php $count++; ?>
+                                            @endforeach
+                                            <tr class="text-center">
+                                                <td class="text-center" colspan="8"></td>
+                                                <td class="text-center">Total</td>
+                                                <td colspan="2"><input type="text" maxlength="15" class="form-control text-right" name="Totalamount" value="{{ $totalAmount }}" id="Totalamount1" readonly></td>
+                                            </tr>
+                                            <tr class="text-center" style="background: gainsboro">
+                                                <td class="text-center" colspan="4"></td>
+                                                <td colspan="2">Sales Taxes</td>
+                                                <td colspan="3">
+                                                    <select name="SalesTaxesAccId1" class="form-control" id="SalesTaxesAccId1">
+                                                        <option value="">Select Head</option>
+                                                        @foreach(FinanceHelper::get_accounts() as $row)
+                                                            <option @if($row->id == $salesTaxAccId) selected @endif value="{{ $row->id }}">{{ ucwords($row->name) }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </td>
+                                                <td colspan="2"><input type="text" name="SalesTaxAmount1" id="SalesTaxAmount1" class="form-control text-right" value="{{ $salesTaxAmount }}" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td id="rupees1" class="text-center" colspan="8"></td>
+                                                <td class="text-center">Net Total</td>
+                                                <td colspan="2"><input type="text" name="NetTotal" id="NetTotal1" class="form-control number_form" readonly value="{{ $netTotal }}"></td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <?php
+                            $expenseRows = [];
+                            foreach ($grnMasters as $grn) {
+                                $expenses = ReuseableCode::get_grn_additional_exp($grn->id);
+                                if (!empty($expenses)) {
+                                    foreach ($expenses as $row) {
+                                        $expenseRows[] = [
+                                            'grn_no' => $grn->grn_no,
+                                            'acc_id' => $row->acc_id,
+                                            'amount' => $row->amount,
+                                        ];
+                                    }
+                                }
+                            }
+                            ?>
+                            @if(count($expenseRows) > 0)
+                                <div class="row">
+                                    <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered sf-table-list">
+                                                <thead>
+                                                <tr>
+                                                    <th class="text-center">GRN No</th>
+                                                    <th class="text-center">Account Head</th>
+                                                    <th class="text-center">Expense Amount</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                @foreach($expenseRows as $expenseCount => $row)
+                                                    <tr id="RemoveExpenseRow{{ $expenseCount }}">
+                                                        <td class="text-center">{{ strtoupper($row['grn_no']) }}</td>
+                                                        <td class="text-center">
+                                                            <input class="form-control" type="text" name="account_1[]" value="{{ CommonHelper::get_account_name($row['acc_id']) }}">
+                                                            <input type="hidden" name="acc_id_1[]" value="{{ $row['acc_id'] }}"/>
+                                                        </td>
+                                                        <td><input readonly type="number" name="expense_amount_1[]" class="form-control requiredField" value="{{ $row['amount'] }}"></td>
+                                                    </tr>
+                                                @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <?php echo $sales_tax_count++;  $main_count++;?>     @endforeach
-        <input type="hidden" id="main_count" value="{{$main_count}}"/>
-    <div class="row">
-        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center">
-            {{ Form::submit('Submit', ['class' => 'btn btn-success']) }}
-                    <!--
-                                <button type="reset" id="reset" class="btn btn-primary">Clear Form</button>
-                                <input type="button" class="btn btn-sm btn-primary addMoreDemands" value="Add More Demand's Section" />
-                                <!-->
+
+        <input type="hidden" id="main_count" value="2"/>
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center">
+                {{ Form::submit('Submit', ['class' => 'btn btn-success']) }}
+            </div>
         </div>
-    </div>
-    <?php echo Form::close();?>
+        <?php echo Form::close(); ?>
+    @endif
 
     <script>
-        function calculate_due_date(Row)
-        {
-
-            var date = new Date($("#purchase_date"+Row).val());
-            var days=parseFloat($('#model_terms_of_payment'+Row).val());
-            days = days;
-
-            if(!isNaN(date.getTime()))
-            {
-                date.setDate(date.getDate() + days);
-
-
-                var yyyy = date.getFullYear().toString();
-                var mm = (date.getMonth()+1).toString(); // getMonth() is zero-based
-                var dd  = date.getDate().toString();
-                var new_d= yyyy + "-" + (mm[1]?mm:"0"+mm[0]) + "-" + (dd[1]?dd:"0"+dd[0]);
-
-
-                $("#due_date"+Row).val(new_d);
-            } else
-            {
-                alert("Invalid Date");
-            }
-
-
-        }
-
-        $( document ).ready(function() {
-
-            $('.number_form').number(true,2);
-            var main_count=  $('#main_count').val();
-            for (i=1; i<main_count; i++)
-            {
-                toWordss(i);
-            }
-        })
-
-
-
-        $(".btn-success").click(function(e){
-            var rvs = new Array();
-            var val;
-            $("input[name='demandsSection[]']").each(function(){
-                rvs.push($(this).val());
-            });
-            var _token = $("input[name='_token']").val();
-            for (val of rvs) {
-                jqueryValidationCustom();
-                if(validate == 0)
-                {
-                    //alert(response);
-                }else{
-                    return false;
-                }
-            }
-
+        $(document).ready(function() {
+            $('.number_form').number(true, 2);
+            toWordss(1);
         });
 
-
-        var x = 1;
-        function addMoreDemandsDetailRows(id){
-
-            var auth=dept_amount_validation();
-            var auth1= sales_tax_amount_validation();
-            var auth2=cost_center_amount_validation();
-
-            if (auth == 1 && auth1 == 1 && auth2 == 1) {
-
-                x++;
-                //alert(id+' ---- '+x);
-                var m = '<?php echo $_GET['m'];?>';
-                $.ajax({
-                    url: '<?php echo url('/')?>/pmfal/addMorPurchaseVoucherRow',
-                    type: "GET",
-                    data: {counter: x, id: id, m: m},
-                    success: function (data) {
-
-                        data = data.split('+');
-
-
-                        $('.addMoreDemandsDetailRows_' + id + '').append(data[0]);
-                        //    $('.dept_part').append(data[1]);
-                        //   $('.sales_tax_dept_part').append(data[2]);
-                        //   $('.cost_center').append(data[3]);
-                        $('#category_id_1_' + x + '').select2();
-                        $('#sub_item_id_1_' + x + '').select2();
-
-                        $('#department_1_' + x + '').select2();
-                        $('#accounts_1_' + x + '').select2();
-                        $('#category_id_1_' + x + '').focus();
-                        $('#department_' + x + '_' + 1).select2();
-                        $('#cost_center_department_' + x + '_' + 1).select2();
-                        $('#sales_tax_department_' + x + '_' + 1).select2();
-
-                        $('#amounttd_'+id+'_'+x+'').number(true,2);
-                        $('#sales_tax_amounttd_'+id+'_'+x+'').number(true,2);
-                        $('#net_amounttd_'+id+'_'+x+'').number(true,2);
-
-                        $('#department_amount_'+x+'_1').number(true,2);
-                        $('#total_dept'+x+'').number(true,2);
-
-
-                        $('#cost_center_department_amount_'+x+'_1').number(true,2);
-                        $('#cost_center_total_dept'+x+'').number(true,2);
-
-                        $('#sales_tax_department_amount_'+x+'_1').number(true,2);
-                        $('#sales_tax_total_dept'+x+'').number(true,2);
-
-                        var idd=1;
-                        //   window.scrollBy(0,180);
-                    }
-                });
+        $(".btn-success").click(function(e){
+            jqueryValidationCustom();
+            if(validate != 0) {
+                return false;
             }
-        }
-
-        function removeDemandsRows(){
-
-            var id=1;
-
-            if (x > 1)
-            {
-                //  var elem = document.getElementById('removeDemandsRows_'+id+'_'+x+'');
-                //   elem.parentNode.removeChild(elem);
-
-                $('#removeDemandsRows_'+id+'_'+x+'').remove();
-
-                $('.removeDemandsRows_dept_'+id+'_'+x+'').remove();
-
-                x--;
-                net_amount_func();
-
-            }
-
-
-        }
-        function removeDemandsSection(id){
-            var elem = document.getElementById('Demands_'+id+'');
-            elem.parentNode.removeChild(elem);
-        }
-
-        function subItemListLoadDepandentCategoryId(id,value) {
-
-            //alert(id+' --- '+value);
-            var arr = id.split('_');
-            var m = '<?php echo $_GET['m'];?>';
-            $.ajax({
-                url: '<?php echo url('/')?>/pmfal/subItemListLoadDepandentCategoryId',
-                type: "GET",
-                data: { id:id,m:m,value:value},
-                success:function(data) {
-
-                    $('#sub_item_id_'+arr[2]+'_'+arr[3]+'').html(data);
-                }
-            });
-        }
-
-        function calculation_amount(id,count,GrnNo)
-        {
-            var quantity = $("#qty_1_"+count).val();
-            var rate = $("#"+id).val();
-            var amount = quantity*rate;
-            $("#amount"+count).val(amount);
-            var discount_amount = $('#discount_amount'+count).val();
-
-            var net_amount = amount - discount_amount;
-
-            $('#net_amoun'+count).val(net_amount);
-            var net_amount=0;
-            $('.amount'+GrnNo).each(function (i, obj) {
-                var id=(obj.id);
-                net_amount += +$('#'+id).val();
-            });
-            $('#Totalamount'+GrnNo).val(net_amount);
-            var net_amount = parseFloat(net_amount);
-            sales_tax_calc(GrnNo)
-
-        }
-
-        function sales_tax_calc(GrnNo)
-        {
-            var SalesTaxAmount = parseFloat($('#SalesTaxAmount'+GrnNo).val());
-            var NetAmount = parseFloat($('#Totalamount'+GrnNo).val());
-            var AccId = $('#SalesTaxesAccId'+GrnNo).val();
-            if(AccId !='')
-            {$('#SalesTaxAmount'+GrnNo).prop('disabled',false);}
-            else{$('#SalesTaxAmount'+GrnNo).prop('disabled',true);
-                SalesTaxAmount =0;
-                $('#SalesTaxAmount'+GrnNo).val(0)}
-
-
-            $('#NetTotal'+GrnNo).val(parseFloat(NetAmount+SalesTaxAmount).toFixed(2));
-        }
-
+        });
 
         var th = ['', 'Thousand', 'Million', 'Billion', 'Trillion'];
         var dg = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
         var tn = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
         var tw = ['Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
 
-        function toWordss(id) {
-
-            s = $('#NetTotal'+id+'').val();
-
-
+        function toWords(s) {
             s = s.toString();
-            s = s.replace(/[\, ]/g,'');
+            s = s.replace(/[\, ]/g, '');
             if (s != parseFloat(s)) return 'not a number';
             var x = s.indexOf('.');
-            if (x == -1)
-                x = s.length;
-            if (x > 15)
-                return 'too big';
+            if (x == -1) x = s.length;
+            if (x > 15) return 'too big';
             var n = s.split('');
             var str = '';
             var sk = 0;
-            for (var i=0;   i < x;  i++) {
-                if ((x-i)%3==2) {
+            for (var i = 0; i < x; i++) {
+                if ((x - i) % 3 == 2) {
                     if (n[i] == '1') {
-                        str += tn[Number(n[i+1])] + ' ';
+                        str += tn[Number(n[i + 1])] + ' ';
                         i++;
-                        sk=1;
-                    } else if (n[i]!=0) {
-                        str += tw[n[i]-2] + ' ';
-                        sk=1;
+                        sk = 1;
+                    } else if (n[i] != 0) {
+                        str += tw[n[i] - 2] + ' ';
+                        sk = 1;
                     }
-                } else if (n[i]!=0) { // 0235
-                    str += dg[n[i]] +' ';
-                    if ((x-i)%3==0) str += 'hundred ';
-                    sk=1;
+                } else if (n[i] != 0) {
+                    str += dg[n[i]] + ' ';
+                    if ((x - i) % 3 == 0) str += 'Hundred ';
+                    sk = 1;
                 }
-                if ((x-i)%3==1) {
-                    if (sk)
-                        str += th[(x-i-1)/3] + ' ';
-                    sk=0;
+                if ((x - i) % 3 == 1) {
+                    if (sk) str += th[(x - i - 1) / 3] + ' ';
+                    sk = 0;
                 }
             }
+            if (x != s.length) {
+                str += 'point ';
+                for (var i = x + 1; i < s.length; i++) str += dg[n[i]] + ' ';
+            }
+            return str.replace(/\s+/g, ' ');
+        }
 
-            var currency = $('#curren :selected').text().split('-');
-			var currencyText = currency[0] == 'PKR' ? 'Rupees ' : currency[0] == 'USD' ? 'Dollars ' : '';
-			var currencyText2 = currency[0] == 'PKR' ? 'Paisa ' : currency[0] == 'USD' ? 'Cents ' : '';
-
-            var decimalWords = '';
-			if (x != s.length) {
-				str += 'and ';
-				var decimalPart = s.slice(x + 1);
-
-				// Ensure decimal part has 2 digits
-				while (decimalPart.length < 2) {
-					decimalPart += '0';
-				}
-
-				// Handle decimal part
-				if (decimalPart[0] == '1') {
-					decimalWords = tn[Number(decimalPart)];
-				} else {
-					if (decimalPart[0] != '0') {
-						decimalWords += tw[decimalPart[0] - 2] + ' ';
-					}
-					if (decimalPart[1] != '0') {
-						decimalWords += dg[decimalPart[1]];
-					}
-				}
-
-				decimalWords = decimalWords ? decimalWords.trim() : 'Zero';
-				str += decimalWords + ' ' + currencyText2;
-			} else {
-				str += 'and Zero Paisa Only';
-			}
-
-            var result = currencyText + str.trim() + '';
-			$('#rupees').text('Amount In Words: ' + result);
-			$('#rupees' + id).text('Amount In Words: ' + result);
-			$('#rupees').val(result);
-			$('#rupeess' + id).val(result);
-
-        };
+        function toWordss(id) {
+            var s = $('#NetTotal' + id).val();
+            $('#rupees' + id).html('In Words: <strong> ' + toWords(s) + '</strong>');
+            $('#rupeess' + id).val(toWords(s));
+        }
     </script>
-
-
-    <script type="text/javascript">
-        $('.select2').select2();
-    </script>
-
-    <script src="{{ URL::asset('assets/js/select2/js_tabindex.js') }}"></script>
-
-
-
 @endsection
