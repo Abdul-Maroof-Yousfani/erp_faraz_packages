@@ -117,8 +117,7 @@ $delivery_detail=$good_receipt_note->delivery_detail;
                                                         </div>
                                                         <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                             <label class="sf-label">Delivery Challan No</label>
-                                                            <span class="rflabelsteric"><strong>*</strong></span>
-                                                            <input type="text" class="form-control requiredField" placeholder="Delivery Challan No" name="del_chal_no" id="del_chal_no" value="{{$delivery_challan_no}}" />
+                                                            <input type="text" class="form-control" placeholder="Delivery Challan No" name="del_chal_no" id="del_chal_no" value="{{$delivery_challan_no}}" />
                                                         </div>
                                                         <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                             <label class="sf-label">Delivery Detail/ Vehicle # </label>
@@ -222,7 +221,7 @@ $delivery_detail=$good_receipt_note->delivery_detail;
                                                             {
                                                                 $purchase_recived_qty = 0;
                                                             }
-                                                            $qty_cond = $row->purchase_approve_qty-$purchase_recived_qty;
+                                                            $qty_cond = (float) ($row->source_approve_qty ?? $row->purchase_approved_qty ?? 0) - $purchase_recived_qty;
                                                          //   if($qty_cond !=0 ){
 
 
@@ -252,7 +251,7 @@ $delivery_detail=$good_receipt_note->delivery_detail;
 
 
                                                                 <?php  $purchaseRequestLine = DB::Connection('mysql2')->table('purchase_request_data')->where('id',$row->po_data_id)->first(); ?>
-                                                                <?php  $purchase_approve_qty = $purchaseRequestLine->purchase_approve_qty; ?>
+                                                                <?php  $purchase_approve_qty = (float) ($purchaseRequestLine->purchase_approve_qty ?? $row->source_approve_qty ?? $row->purchase_approved_qty ?? 0); ?>
                                                                 <?php  $rateCalBy = (int) ($row->rate_cal_by ?? $purchaseRequestLine->rate_cal_by ?? 2); ?>
                                                                 <?php  $sourceBagQty = (float) ($row->source_bag_qty ?? $purchaseRequestLine->bags_qty ?? 0); ?>
                                                                 <?php  $sourceLbsQty = (float) ($row->source_lbs_qty ?? $purchaseRequestLine->qty_lbs ?? 0); ?>

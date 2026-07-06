@@ -763,7 +763,7 @@ class StoreAddDetailControler extends Controller
             $purchase_request->trn =$request->trn;
             $purchase_request->builty_no =$request->builty_no;
             $purchase_request->remarks =$request->Remarks;
-            $purchase_request->description =$request->main_description;
+            $purchase_request->description =$request->main_description ?? '-';
             $purchase_request->purchase_request_status =1;
             $purchase_request->status =1;
             $purchase_request->date =date('Y-m-d');

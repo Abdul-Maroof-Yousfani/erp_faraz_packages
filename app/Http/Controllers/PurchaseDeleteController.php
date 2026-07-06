@@ -441,6 +441,14 @@ class PurchaseDeleteController extends Controller
             $m = $request->m ?? 1;
             $PvNo = $request->pvno;
             $purchase_voucher = NewPurchaseVoucher::where('pv_no', $PvNo)->first();
+            if (!$purchase_voucher) {
+                DB::Connection('mysql2')->rollBack();
+                $response = [
+                    'msg' => 'Purchase Invoice not found.',
+                    'status' => false
+                ];
+                return response($response);
+            }
             $id = $purchase_voucher->id;
             $new_purchase_voucher_payment=DB::connection('mysql2')->table('new_purchase_voucher_payment')->where('new_purchase_voucher_id',$id)->get();
             foreach($new_purchase_voucher_payment as $val){
@@ -477,6 +485,21 @@ class PurchaseDeleteController extends Controller
             $tran->where('voucher_no', $PvNo)->update($UpdateData);
             //CommonHelper::inventory_activity($pv_no,$purchase_date,$TotAmount,5,'Insert');
             DB::Connection('mysql2')->table('transaction_supply_chain')->where('main_id',$id)->update($UpdateData);
+
+            if (!empty($purchase_voucher->grn_id) && !empty($purchase_voucher->grn_no) && $purchase_voucher->grn_no != '0') {
+                DB::connection('mysql2')->table('goods_receipt_note')
+                    ->where('id', $purchase_voucher->grn_id)
+                    ->update([
+                        'grn_status' => 2
+                    ]);
+
+                DB::connection('mysql2')->table('grn_data')
+                    ->where('master_id', $purchase_voucher->grn_id)
+                    ->update([
+                        'grn_status' => 2
+                    ]);
+            }
+
             $purchase_voucher->pv_status = 1;
             $purchase_voucher->save();
             DB::Connection('mysql2')->commit();
@@ -492,7 +515,7 @@ class PurchaseDeleteController extends Controller
             // dd($e->getMessage());
             $response = [
                 'msg' => 'Oops! There might be a issue '. $e->getMessage(),
-                'status' => true
+                'status' => false
             ];
             return response($response);
         }

@@ -12,9 +12,42 @@ $current_date = date('Y-m-d');
 $currentMonthStartDate = date('Y-m-01');
 $currentMonthEndDate = date('Y-m-t');
 
-$startDate = Carbon::parse($NewPurchaseVoucher->bill_date);
-$endDate = Carbon::parse($NewPurchaseVoucher->due_date);
-$model_terms_of_payment = $endDate->diffInDays($startDate);
+$NewPurchaseVoucher = $NewPurchaseVoucher ?: (object) [
+    'pv_no' => '',
+    'pv_date' => '',
+    'bill_date' => '',
+    'due_date' => '',
+    'term_of_del' => '',
+    'purchase_type' => 1,
+    'slip_no' => '',
+    'destination' => '',
+    'supplier' => 0,
+    'currency' => 0,
+    'warehouse' => 0,
+    'sub_department_id' => 0,
+    'description' => '',
+    'sales_tax_amount' => 0,
+];
+
+$NewPurchaseVoucherData = $NewPurchaseVoucherData ?? collect();
+
+$billDate = $NewPurchaseVoucher->bill_date ?? null;
+$dueDate = $NewPurchaseVoucher->due_date ?? null;
+$model_terms_of_payment = 0;
+$salesTaxBaseAmount = (float) $NewPurchaseVoucherData->filter(function ($row) {
+    return (int) ($row->additional_exp ?? 0) !== 1;
+})->sum('net_amount');
+$savedSalesTaxAmount = (float) ($NewPurchaseVoucher->sales_tax_amount ?? 0);
+$savedSalesTaxAccId = (int) ($NewPurchaseVoucher->sales_tax_acc_id ?? 0);
+$selectedSalesTaxPercent = $salesTaxBaseAmount > 0 && $savedSalesTaxAmount > 0
+    ? round(($savedSalesTaxAmount / $salesTaxBaseAmount) * 100, 3)
+    : 0;
+
+if (!empty($billDate) && !empty($dueDate)) {
+    $startDate = Carbon::parse($billDate);
+    $endDate = Carbon::parse($dueDate);
+    $model_terms_of_payment = $endDate->diffInDays($startDate);
+}
 
 
 $totalItemRows = count($NewPurchaseVoucherData);
@@ -150,7 +183,10 @@ endif;
                                                 <input type="text" class="form-control" placeholder="Ref / Bill No" name="slip_no" id="slip_no"
                                                        value="{{ $NewPurchaseVoucher->slip_no ?? '' }}"/>
                                             </div>
-                                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+                                           
+                                        </div>
+                                        <div class="row">
+                                             <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
                                                 <label class="sf-label">Bill Date.</label>
                                                 <span class="rflabelsteric"><strong>*</strong></span>
                                                 <input type="date" class="form-control"  name="bill_date" id="bill_date" value="{{ $NewPurchaseVoucher->bill_date ?? '' }}" />
@@ -159,11 +195,7 @@ endif;
                                                 <label class="sf-label">Due Date <span class="rflabelsteric"><strong>*</strong></span></label>
                                                 <input  type="date" class="form-control" placeholder="" name="due_date" id="due_date" value="{{ $NewPurchaseVoucher->due_date ?? '' }}" readonly />
                                             </div>
-                                        </div>
-
-
-                                        <div class="row">
-                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                                 <label class="sf-label">Destination</label>
                                                 <input style="text-transform: capitalize;" type="text" class="form-control"
                                                     placeholder="" name="destination" id="destination" value="{{ $NewPurchaseVoucher->destination ?? '' }}" />
@@ -184,7 +216,12 @@ endif;
                                                     @endforeach
                                                 </select>
                                             </div>
-                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                        </div>
+
+
+                                        <div class="row">
+                                           
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 hide">
                                                 <label class="sf-label"> <a href="#"
                                                         onclick="showDetailModelOneParamerter('pdc/createCurrencyTypeForm')"
                                                         class="">Currency</a></label>
@@ -199,7 +236,7 @@ endif;
                                                     @endforeach
                                                 </select>
                                             </div>
-                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
+                                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 hide">
                                                 <label class="sf-label">Currency Rate</label>
                                                 <span class="rflabelsteric"></span>
                                                 <input class="form-control" type="text" name="currency_rate" id="currency_rate" value="1" />
@@ -407,7 +444,13 @@ endif;
                                                             name="sales_taxx">
                                                             <option value="0">Select</option>
                                                             @foreach (ReuseableCode::get_all_sales_tax() as $row)
-                                                                <option  value="{{ $row->percent.'@'.$row->acc_id }}" {{($row->percent == "17.000")? 'selected' : ''}}>
+                                                                @php
+                                                                    $rowPercent = round((float) ($row->percent ?? 0), 3);
+                                                                    $isSelectedTax = $savedSalesTaxAmount > 0
+                                                                        && $savedSalesTaxAccId === (int) ($row->acc_id ?? 0)
+                                                                        && abs($rowPercent - $selectedSalesTaxPercent) < 0.001;
+                                                                @endphp
+                                                                <option  value="{{ $row->percent.'@'.$row->acc_id }}" {{ $isSelectedTax ? 'selected' : '' }}>
                                                                     {{ $row->percent }}</option>
                                                             @endforeach
                                                         </select>

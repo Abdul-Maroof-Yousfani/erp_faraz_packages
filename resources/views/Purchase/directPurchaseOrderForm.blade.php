@@ -307,16 +307,17 @@ endif;
                                         <div class="row">
                                             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                                 <label class="sf-label">Terms & Condition</label>
-                                                <span class="rflabelsteric"><strong>*</strong></span>
                                                 <textarea name="main_description" id="main_description" rows="4" cols="50"
-                                                    style="resize:none;font-size: 11px;" class="form-control requiredField">YOUR NTN NUMBER AND VALID INCOME TAX EXEMPTION WILL BE REQUIRED FOR PAYMENT, OTHER WISE INCOME TAX WILL BE DEDUCTED AS PER FOLLOWINGS:
-                INCOME TAX:
-                FOR COMPANIES SUPPLIES 4% & SERVICES 8% (FILER) / 12% (NON FILER)
-                FOR INDIVIUALS OR AOP SUPPLIES 4.5% & SERVICES 10% (FILER) / 15% (NON FILER)
-                SALES TAX ON SUPPLIES:
-                A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRO 897 /2013
-                SALES TAX ON SERVICES:
-                A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRB WITHHOLDING RULES-2014</textarea>
+                                                    style="resize:none;font-size: 11px;" class="form-control">
+                                                    {{--YOUR NTN NUMBER AND VALID INCOME TAX EXEMPTION WILL BE REQUIRED FOR PAYMENT, OTHER WISE INCOME TAX WILL BE DEDUCTED AS PER FOLLOWINGS:
+                                                        INCOME TAX:
+                                                        FOR COMPANIES SUPPLIES 4% & SERVICES 8% (FILER) / 12% (NON FILER)
+                                                        FOR INDIVIUALS OR AOP SUPPLIES 4.5% & SERVICES 10% (FILER) / 15% (NON FILER)
+                                                        SALES TAX ON SUPPLIES:
+                                                        A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRO 897 /2013
+                                                        SALES TAX ON SERVICES:
+                                                        A WITHOLDING AGENT SHALL DEDUCT AN AMOUNT AS PER SRB WITHHOLDING RULES-2014
+                                                   --}}  </textarea>
                                             </div>
                                         </div>
                                     </div>

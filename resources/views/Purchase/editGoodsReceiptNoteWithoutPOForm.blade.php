@@ -84,8 +84,7 @@ $warehouse=$good_receipt_note->warehouse;
 
                                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                         <label class="sf-label">Delivery Challan No</label>
-                                        <span class="rflabelsteric"><strong>*</strong></span>
-                                        <input type="text" class="form-control requiredField" name="del_chal_no" id="del_chal_no" value="{{$delivery_challan_no}}" />
+                                        <input type="text" class="form-control" name="del_chal_no" id="del_chal_no" value="{{$delivery_challan_no}}" />
                                     </div>
 
                                 </div>

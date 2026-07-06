@@ -101,8 +101,7 @@ $grn_no = 'grn' . ($str + 1) . date('my');
 
             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                 <label class="sf-label">Delivery Challan No</label>
-                <span class="rflabelsteric"><strong>*</strong></span>
-                <input required type="text" class="form-control requiredField" placeholder="Delivery Challan No"
+                <input type="text" class="form-control" placeholder="Delivery Challan No"
                     name="del_chal_no" id="del_chal_no" value="" />
             </div>
             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
