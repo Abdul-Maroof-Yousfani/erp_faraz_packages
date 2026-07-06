@@ -290,7 +290,7 @@ if ($accType == 'client') {
             }
         });
 
-        var Counter = {{ isset($copied_recipe_data) && $copied_recipe_data->count() > 0 ? $copied_recipe_data->count() + 1 : 2 }};
+        var Counter = $("#tableData tr").length;
 
         function AddMoreDetails() {
             Counter++;

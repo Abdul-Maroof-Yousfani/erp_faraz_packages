@@ -1372,8 +1372,9 @@ class PurchaseAddDetailControler extends Controller
             $m = $_GET['m'];
             CommonHelper::companyDatabaseConnection($_GET['m']);
 
-            $str = DB::selectOne("select max(convert(substr(`grn_no`,4,length(substr(`grn_no`,4))-4),signed integer)) reg from `goods_receipt_note` where substr(`grn_no`,-4,2) = " . date('m') . " and substr(`grn_no`,-2,2) = " . date('y') . "")->reg;
-            $grn_no = 'grn' . ($str + 1) . date('my');
+            $grnPrefix = date('my');
+            $str = DB::selectOne("select max(convert(substr(`grn_no`,8), signed integer)) reg from `goods_receipt_note` where substr(`grn_no`,4,4) = '" . $grnPrefix . "'")->reg;
+            $grn_no = 'grn' . $grnPrefix . (((int) $str) + 1);
 
 
             $prNo = strip_tags(Input::get('prNo'));
@@ -2591,8 +2592,9 @@ class PurchaseAddDetailControler extends Controller
         $m = $_GET['m'];
         CommonHelper::companyDatabaseConnection($_GET['m']);
 
-        $str = DB::selectOne("select max(convert(substr(`grn_no`,4,length(substr(`grn_no`,4))-4),signed integer)) reg from `goods_receipt_note` where substr(`grn_no`,-4,2) = " . date('m') . " and substr(`grn_no`,-2,2) = " . date('y') . "")->reg;
-        $grn_no = 'grn' . ($str + 1) . date('my');
+        $grnPrefix = date('my');
+        $str = DB::selectOne("select max(convert(substr(`grn_no`,8), signed integer)) reg from `goods_receipt_note` where substr(`grn_no`,4,4) = '" . $grnPrefix . "'")->reg;
+        $grn_no = 'grn' . $grnPrefix . (((int) $str) + 1);
 
         $subDepartmentId = strip_tags(Input::get('subDepartmentId'));
         $supplierId = strip_tags(Input::get('supplier_id'));
