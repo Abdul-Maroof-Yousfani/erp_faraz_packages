@@ -1,435 +1,575 @@
 @extends('layouts.default')
+
 @section('content')
     <?php
     use App\Helpers\CommonHelper;
     use App\Helpers\StoreHelper;
     use App\Helpers\ReuseableCode;
 
-    // $id = $_GET['id'];
-
     $m = Session::get('run_company');
-    $approve=ReuseableCode::check_rights(16);
+    $approve = ReuseableCode::check_rights(16);
 
-    $currentDate = date('Y-m-d');
     CommonHelper::companyDatabaseConnection($m);
-    $purchaseRequestDetail = DB::table('purchase_request')->where('id','=',$id)->get();
-    $purchaseRequestDataDetail = DB::table('purchase_request_data')->where('master_id','=',$id)->get();
-    $quotation_ref = DB::table('purchase_request_data AS prd')->join('demand AS d','d.demand_no','=', 'prd.demand_no')
-->leftJoin('quotation AS q','d.id','=','q.pr_id')->where('prd.master_id','=',$id)->select(['q.ref_no'])->first();
+    $purchaseRequestDetail = DB::table('purchase_request')->where('id', '=', $id)->get();
+    $purchaseRequestDataDetail = DB::table('purchase_request_data')->where('master_id', '=', $id)->get();
+    $quotation_ref = DB::table('purchase_request_data as prd')
+        ->join('demand as d', 'd.demand_no', '=', 'prd.demand_no')
+        ->leftJoin('quotation as q', 'd.id', '=', 'q.pr_id')
+        ->where('prd.master_id', '=', $id)
+        ->select(['q.ref_no'])
+        ->first();
     CommonHelper::reconnectMasterDatabase();
 
+    $companyName = 'FARAZ PACKAGES';
+    $companyAddress = 'F-98 S.I.T.E KARACHI.';
+    $companyPhone = '0321 - 2254444';
+    $companyEmail = 'farazpackages@gmail.com';
     ?>
-    <style>
-        textarea {
-            border-style: none;
-            border-color: Transparent;
 
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 8mm;
+        }
+
+        body {
+            background: #f3f4f6;
+        }
+
+        .print-window-body {
+            margin: 0;
+            background: #fff;
+        }
+
+        .po-print-page {
+            width: 190mm;
+            max-width: 190mm;
+            margin: 0 auto 18px;
+        }
+
+        .po-print-card {
+            background: #fff;
+            border: 1px solid #2d2d2d;
+            padding: 12px 12px 8px;
+            color: #111;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        .po-title {
+            text-align: center;
+            font-weight: 700;
+            font-size: 15px;
+            margin: 0 0 10px;
+            letter-spacing: 0.3px;
+        }
+
+        .po-topbar {
+            display: table;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .po-topbar > div {
+            display: table-cell;
+            vertical-align: top;
+        }
+
+        .po-company {
+            width: 46%;
+            font-size: 11px;
+            line-height: 1.45;
+        }
+
+        .po-company-name {
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+
+        .po-main-heading {
+            width: 54%;
+            text-align: center;
+        }
+
+        .po-main-heading h1 {
+            margin: 0 0 8px;
+            font-size: 20px;
+            font-weight: 700;
+            font-family: "Times New Roman", serif;
+        }
+
+        .po-meta {
+            width: 68%;
+            margin-left: auto;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+
+        .po-meta td {
+            border: 1px solid #4f4f4f;
+            padding: 2px 5px;
+        }
+
+        .po-meta td:first-child {
+            width: 34%;
+            font-weight: 700;
+            text-align: left;
+            border-left: none;
+            border-top: none;
+            border-bottom: none;
+        }
+
+        .po-meta tr:last-child td:first-child {
+            border-bottom: none;
+        }
+
+        .po-section-grid {
+            display: table;
+            width: 100%;
+            margin-bottom: 10px;
+            border-spacing: 0 8px;
+        }
+
+        .po-section {
+            display: table-cell;
+            width: 48.5%;
+            vertical-align: top;
+        }
+
+        .po-section-gap {
+            display: table-cell;
+            width: 3%;
+        }
+
+        .po-section-header {
+            background: #4d87cf;
+            color: #111;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 8px;
+            text-transform: uppercase;
+        }
+
+        .po-section-body {
+            border: 1px solid #8f8f8f;
+            border-top: none;
+            min-height: 86px;
+            padding: 6px 8px;
+            font-size: 10px;
+            line-height: 1.45;
+        }
+
+        .po-section-body strong {
+            display: inline-block;
+            min-width: 66px;
+        }
+
+        .po-line-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+
+        .po-line-table th,
+        .po-line-table td {
+            border: 1px solid #707070;
+            padding: 3px 4px;
+            vertical-align: top;
+        }
+
+        .po-line-table th {
+            background: #4d87cf;
+            text-align: center;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .po-line-table .text-right {
+            text-align: right;
+        }
+
+        .po-line-table .text-center {
+            text-align: center;
+        }
+
+        .po-description-cell {
+            min-width: 180px;
+            line-height: 1.35;
+        }
+
+        .po-description-sub {
+            display: block;
+            font-size: 9px;
+            margin-top: 1px;
+        }
+
+        .po-total-row td {
+            font-weight: 700;
+        }
+
+        .po-note {
+            margin-top: 8px;
+            font-size: 10px;
+            line-height: 1.4;
+        }
+
+        .po-note-label {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .po-signatures {
+            width: 100%;
+            margin-top: 14px;
+            border-collapse: separate;
+            border-spacing: 10px 0;
+            font-size: 10px;
+        }
+
+        .po-signatures td {
+            width: 25%;
+            text-align: center;
+            vertical-align: bottom;
+        }
+
+        .po-sign-box {
+            border-top: 1px solid #9a9a9a;
+            padding-top: 5px;
+            min-height: 40px;
+        }
+
+        .po-sign-name {
+            margin-top: 10px;
+            color: #444;
+        }
+
+        .hidden-print-actions {
+            margin-bottom: 10px;
+            text-align: right;
+        }
+
+        @media print {
+            .hidden-print-actions,
+            .LinkHide,
+            .printHide,
+            .btn,
+            .dropdown,
+            .navbar,
+            .main-menu,
+            .header-navbar,
+            .footer,
+            .scroll-top {
+                display: none !important;
+            }
+
+            .well_N,
+            .dp_sdw,
+            .po-print-card {
+                box-shadow: none !important;
+            }
+
+            .po-print-page {
+                width: 100%;
+                max-width: 100%;
+                margin: 0;
+            }
+
+            body {
+                background: #fff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
         }
     </style>
-    
-    <div class="row" >
+
+    <div class="row">
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <div class="well_N">
-                <div class="dp_sdw" id="printReport">
+                <div class="dp_sdw">
                     @foreach ($purchaseRequestDetail as $row)
                         <?php
-                        if($row->currency_id == 3):
-                            $cur = 'PKR';
-                        elseif($row->currency_id == 4):
-                            $cur = 'USD';
-                        endif;
+                        $supplier = CommonHelper::getSupplierDetail($row->supplier_id);
+                        $supplier = is_object($supplier) ? $supplier : (object) [
+                            'name' => '',
+                            'address' => '',
+                            'mobile_no' => '',
+                            'contact_person' => '',
+                            'ntn' => '',
+                        ];
+
+                        $currencyName = CommonHelper::get_curreny_name($row->currency_id);
+                        $currencyCode = 'PKR';
+                        if ($row->currency_id == 4) {
+                            $currencyCode = 'USD';
+                        } elseif ($row->currency_id == 3) {
+                            $currencyCode = 'PKR';
+                        } elseif (!empty($currencyName)) {
+                            $currencyCode = strtoupper(substr(strip_tags($currencyName), 0, 3));
+                        }
+
+                        $termsLabel = '';
+                        if ((int) $row->terms_of_paym === 1) {
+                            $termsLabel = 'Advance';
+                        } elseif ((int) $row->terms_of_paym === 2) {
+                            $termsLabel = 'Against Delivery';
+                        } elseif ((int) $row->terms_of_paym === 3) {
+                            $termsLabel = ($row->no_of_days ?? ($supplier->no_of_days ?? '')) . ' Days';
+                        }
+
+                        $preparedBy = strtoupper($row->username ?? '');
+                        $approvedBy = strtoupper($row->approve_username ?? '');
+                        $enteredBy = strtoupper($row->username ?? '');
+                        $checkedBy = '';
+
+                        $total = 0;
+                        foreach ($purchaseRequestDataDetail as $line) {
+                            $total += (float) ($line->net_amount ?? 0);
+                        }
+                        $salesTaxAmount = (float) ($row->sales_tax_amount ?? 0);
+                        $grandTotal = $total + $salesTaxAmount;
+                        $amountInWords = trim((string) ($row->amount_in_words ?? ''));
+                        if ($amountInWords === '' && $grandTotal > 0) {
+                            $amountInWords = ucwords(trim(CommonHelper::numberToWords((int) round($grandTotal)))) . ' Only';
+                        }
                         ?>
-                        <div class="row" >
-                            
-                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-right">
-                                <?php
-                                if ($approve==true):
-                                echo StoreHelper::displayApproveDeleteRepostButtonPurchaseRequest($m,$row->purchase_request_status,$row->status,$row->id,'purchase_request_no','purchase_request_status','status','purchase_request','purchase_request_data');
-                                endif;
-                                ?>
-                                <?php CommonHelper::displayPrintButtonInView('po_detail','LinkHide','1');?>
-                            </div>
-                            <div style="line-height:5px;">&nbsp;</div>
-                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" id="po_detail">
-                                <div class="well">
-                                    <div class="row align-items-center">
-                                        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-3">
-                                            <?php echo CommonHelper::get_company_logo(Session::get('run_company'));?>
-                                        </div>
-                                        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-6">
-                                            <div class="head-text">
-                                                <h3 class="subHeadingLabelClass" style="text-align: center;">Purchase Order</h3>
-                                                <h4>
-                                                    <span style="font-size: 16px">Zahabiya Chemical Industries (Pvt.) Ltd.</span> <br>
-                                                    Plot #: 186, Sector 24, Korangi Industrial Area, Karachi, <br>
-                                                    Tel: +92-21-35051890-91, Email: info@zahabiya.com, <br> Web: https://zahabiya.com
-                                                    NTN: 5356581-6, <br> STRN: 3277876169232
-                                                </h4>
-                                            </div>
-                                        </div>
-                                    
-                                        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-3">
-                                            <div class="table-responsive">
-                                                <table class="table sale_older_tab3 table table-bordered sf-table-list" style="width: 100%" >
-                                                    <tbody>
-                                                        <tr>
-                                                            <td style="text-align:center; border:none !important;" colspan="2">ZCI-PM.05</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td style="border:none !important;">Rev. #:</td>
-                                                            <td style="border:none !important;">01</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td style="border:none !important;">Rev. Date:</td>
-                                                            <td style="border:none !important;">{{ date('M Y') }}</td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
+
+                        <div class="hidden-print-actions">
+                            @if ($approve == true)
+                                {!! StoreHelper::displayApproveDeleteRepostButtonPurchaseRequest($m, $row->purchase_request_status, $row->status, $row->id, 'purchase_request_no', 'purchase_request_status', 'status', 'purchase_request', 'purchase_request_data') !!}
+                            @endif
+                            <button type="button" class="btn btn-primary" onclick="printPurchaseOrder('po_detail')">
+                                <span class="glyphicon glyphicon-print"></span> Print
+                            </button>
+                        </div>
+
+                        <div class="po-print-page" id="po_detail">
+                            <div class="po-title">Purchase Order Format:</div>
+
+                            <div class="po-print-card">
+                                <div class="po-topbar">
+                                    <div class="po-company">
+                                        <div class="po-company-name">{{ $companyName }}</div>
+                                        <div>{{ $companyAddress }}</div>
+                                        <div style="height: 10px;"></div>
+                                        <div><strong>Phone:</strong>{{ $companyPhone }}</div>
+                                        <div><strong>Email :</strong> {{ $companyEmail }}</div>
+                                    </div>
+
+                                    <div class="po-main-heading">
+                                        <h1>PURCHASE ORDER</h1>
+                                        <table class="po-meta">
+                                            <tr>
+                                                <td>DATE</td>
+                                                <td>{{ CommonHelper::changeDateFormat($row->purchase_request_date) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>PO #</td>
+                                                <td>{{ strtoupper($row->purchase_request_no) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Purchase Invoice #</td>
+                                                <td>{{ strtoupper($quotation_ref->ref_no ?? '') }}</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="po-section-grid">
+                                    <div class="po-section">
+                                        <div class="po-section-header">Vendor</div>
+                                        <div class="po-section-body">
+                                            <div><strong>{{ $supplier->name }}</strong></div>
+                                            <div>{{ $supplier->address }}</div>
+                                            @if (!empty($supplier->mobile_no))
+                                                <div style="margin-top: 6px;"><strong>Phone:</strong> {{ $supplier->mobile_no }}</div>
+                                            @endif
+                                            @if (!empty($supplier->ntn))
+                                                <div><strong>NTN:</strong> {{ $supplier->ntn }}</div>
+                                            @endif
                                         </div>
                                     </div>
-                                    <?php  $supplier = CommonHelper::getSupplierDetail($row->supplier_id); ?>
-                                    <div style="line-height:5px;">&nbsp;</div>
-                                    <div class="row">
-                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                            <div style="width:45%; float:left;">
-                                                <div class="table-responsive">
-                                                    <table  class="table sale_older_tab3 table table-bordered sf-table-list">
-                                                        <tbody>
-                                                        <tr>
-                                                            <td>Supplier Name</td>
-                                                            <td>{{ $supplier->name }}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>Address</td>
-                                                            <td>{{ $supplier->address }}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>Phone</td>
-                                                            <td>{{ $supplier->mobile_no }}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>Supplier Representative</td>
-                                                            <td>{{ $supplier->contact_person }}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>NTN / STRN</td>
-                                                            <td>{{ $supplier->ntn }}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>Quotation Ref</td>
-                                                            <td>{{ $quotation_ref->ref_no ?? '' }}</td>
-                                                        </tr>
-                                                    
-                                                        <!-- <tr>
-                                                            <td>PR No.</td>
-                                                            <td><?php echo CommonHelper::get_po_type($row->po_type);?></td>
-                                                        </tr> -->
-                                                        
-                                                        <!-- <tr>
-                                                            <td>Builty No</td>
-                                                            <td><?php echo $row->builty_no;?></td>
-                                                        </tr> -->
-                                                        <!-- <tr>
-                                                            <td  class="showw" style="width:60%;">Agent </td>
-                                                            <td class="showw" style="width:40%;">{{CommonHelper::get_sub_dept_name($row->agent) ?? ''}}</td>
-                                                        </tr> -->
-                                                        <!-- <tr>
-                                                            <td  class="showw" style="width:60%;">Remarks </td>
-                                                            <td class="showw" style="width:40%;">{{$row->remarks ?? ''}}</td>
-                                                        </tr> -->
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                            <div style="width:45%; float:right;">
-                                                <div class="table-responsive">
-                                                    <table  class="table sale_older_tab3 table table-bordered sf-table-list">
-                                                        <tbody>
-                                                        <tr>
-                                                            <td style="width:60%;">PR No.</td>
-                                                            <td style="width:40%;">{{ strtoupper($purchaseRequestDataDetail[0]->demand_no ?? '') }}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td style="width:50%;">PO NO.</td>
-                                                            <td style="width:50%;">{{ strtoupper($row->purchase_request_no) }}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>PO Date</td>
-                                                            <td>{{ CommonHelper::changeDateFormat($row->purchase_request_date) }}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td style="width:60%;">Destination</td>
-                                                            <td style="width:40%;">{{ $row->destination }}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td style="width:60%;">Due Date</td>
-                                                            <td style="width:40%;">{{ CommonHelper::changeDateFormat($row->due_date) }}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td style="width:60%;">Payment Terms</td>
-                                                            <td style="width:40%;">
-                                                                @if($row->terms_of_paym == 1) Advance 
-                                                                @elseif($row->terms_of_paym == 2) Against Delivery
-                                                                @elseif($row->terms_of_paym == 3) Credit
-                                                                @endif
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td style="width:60%;">No. of Days</td>
-                                                            <td style="width:40%;">{{ $row->no_of_days ?? $supplier->no_of_days ?? '' }}</td>
-                                                        </tr>
 
-                                                        <!-- <tr>
-                                                            <td style="width:60%;">Supplier Reference No.</td>
-                                                            <td style="width:40%;"><?php echo $row->trn;?></td>
-                                                        </tr>
-                                                        <tr class="hide">
-                                                            <td>Department / Sub Department</td>
-                                                            <td><?php echo CommonHelper::getMasterTableValueById($m,'sub_department','sub_department_name',$row->sub_department_id);?></td>
-                                                        </tr> -->
-                                                        <!-- <tr>
-                                                            <td style="width:60%;">Terms Of Delivery</td>
-                                                            <td style="width:40%;"><?php echo $row->term_of_del;?></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td style="width:60%;">Terms Of Payment</td>
-                                                            <td style="width:40%;"><?php echo $row->terms_of_paym;?></td>
-                                                        </tr> -->
+                                    <div class="po-section-gap"></div>
 
-                                                        
-                                                        <!-- <?php $currency= CommonHelper::get_curreny_name($row->currency_id);?>
-
-                                                        <tr>
-                                                            <td  class="showw" style="width:60%;">Currency  </td>
-                                                            <td class="showw" style="width:40%;">{{$currency}}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td  class="showw" style="width:60%;">Currency Rate </td>
-                                                            <td class="showw" style="width:40%;">{{$row->currency_rate}}</td>
-                                                        </tr> -->
-                                                        <!-- <tr>
-                                                            <td  class="showw" style="width:60%;">Commission </td>
-                                                            <td class="showw" style="width:40%;">{{$row->commission}}</td>
-                                                        </tr> -->
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                            <div class="table-responsive">
-                                                <div class="table-responsive">
-                                                    <table  class="table sale_older_tab3 table table-bordered sf-table-list">
-                                                        <thead>
-                                                            <tr>
-                                                                <th style="text-align: center">S.NO</th>
-                                                                <!-- <th class="text-center">PR NO</th>
-                                                                <th style="font-size: 13px;" class="text-center">PR  Date </th> -->
-
-                                                                <th style="text-align: center">Item Name</th>
-                                                                <th style="text-align: center">UOM</th>
-                                                                <th style="text-align: center" >Qty</th>
-                                                                <!-- <th class="text-center hide" >No Of Carton <span class="rflabelsteric"><strong>*</strong></span></th> -->
-                                                                <th style="text-align: center">Rate</th>
-                                                                <!-- <th class="text-center">Amount(PKR)</th> -->
-                                                                <!-- <th class="text-center">Amount</th> -->
-
-                                                                <!-- <th class="text-center">Discount%</th>
-                                                                <th class="text-center">Discount Amount</th> -->
-                                                                <th style="text-align: center">Net Amount</th>
-                                                                <!-- <th class="text-center showw" style="display: none">Amount In PKR</th> -->
-                                                                <th style="text-align: center" class="printHide">View</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <?php
-                                                            $counter = 1;
-                                                                    $total=0;
-                                                            $total_exchange=0;
-                                                            $actual_amount =0;
-                                                            foreach ($purchaseRequestDataDetail as $row1){
-                                                            ?>
-                                                            <tr>
-                                                                <td style="text-align: center">{{ $counter++ }}</td>
-                                                                {{--<td class="text-center">< ?php echo strtoupper($row1->demand_no);?></td>--}}
-                                                                {{--<td class="text-center">< ?php echo  CommonHelper::changeDateFormat($row1->demand_date);?></td>--}}
-
-                                                                <td title="item_name={{CommonHelper::get_item_name($row1->sub_item_id)}}">
-                                                                    <?php $accType = Auth::user()->acc_type;
-                                                                    if($accType == 'client'):
-                                                                    ?>
-                                                                    <a class="LinkHide" href="<?php echo url('/') ?>/store/stockReportView?item_id=<?php echo $row1->sub_item_id?>&&pageType=&&parentCode=126&&m=1" target="_blank">
-                                                                        <?php echo CommonHelper::get_item_name($row1->sub_item_id);//echo CommonHelper::get_item_name($row1->sub_item_id);?>
-                                                                    </a>
-                                                                    <?php else:?>
-                                                                    <?php echo CommonHelper::get_item_name($row1->sub_item_id);?>
-                                                                    <?php endif;?>
-                                                                </td>
-
-
-                                                                <?php $sub_ic_detail=CommonHelper::get_subitem_detail($row1->sub_item_id);
-                                                                $sub_ic_detail= explode(',',$sub_ic_detail)
-                                                                ?>
-
-                                                                <td> <?php echo CommonHelper::get_uom_name($sub_ic_detail[0]);?>
-                                                                    <input type="hidden" value="<?php echo $row1->sub_item_id?>" id="sub_<?php echo $counter?>">
-                                                                </td>
-                                                                <td style="text-align: center"><?php echo $row1->purchase_approve_qty;?></td>
-                                                                <td class="text-center hide"><?php echo $row1->no_of_carton;?></td>
-                                                                <td style="text-align: center">{{ $cur }} {{ number_format($row1->rate, 3) }}</td>
-                                                                <!-- <td class="text-right"><?php echo number_format($row1->rate * $row1->purchase_approve_qty * $row->currency_rate,3);?></td> -->
-                                                                <!-- <td class="text-right"><?php echo number_format($row1->rate * $row1->purchase_approve_qty,3);?></td> -->
-
-                                                                <td style="text-align: center">{{ $cur }} {{ number_format($row1->net_amount,3) }}</td>
-                                                                <td style="display: none"  class="text-right showw"><?php echo number_format($row1->net_amount*$row->currency_rate,3);?></td>
-                                                                <td style="text-align: center" class="printHide">
-                                                                    <input onclick="view_history(<?php echo $counter?>)" type="checkbox" id="view_history<?php echo $counter?>">
-                                                                </td>
-                                                            </tr>
-                                                            <?php
-                                                                    $actual_amount +=  $row1->rate * $row1->purchase_approve_qty;
-                                                                    $total+=$row1->net_amount;
-                                                            $total_exchange+=$row1->net_amount*$row->currency_rate;
-                                                            }
-                                                            ?>
-
-                                                            <tr>
-
-                                                                <td colspan="5">Total</td>
-                                                                <!-- <td style="background-color: darkgray" class="text-right"  >{{number_format($actual_amount,2)}} ({{$currency}})</td> -->
-                                                                <td style="text-align: center" >{{ $cur }} {{number_format($total,3)}}</td>
-                                                                <!-- <td style="background-color: darkgray;display: none" class="text-right showw">{{number_format($total_exchange,2)}}</td> -->
-                                                                <td class="printHide"></td>
-                                                            </tr>
-
-                                                            <tr>
-                                                                @php
-                                                                    $pkr_sale_tax_amount = ($total_exchange*$row->sales_tax)/100;
-                                                                @endphp
-                                                                <td colspan="5">{{ 'Sales Tax :'. $row->sales_tax.' %' }}</td>
-                                                                <td style="text-align: center">{{ $cur }} {{ number_format($row->sales_tax_amount,3)}}</td>
-                                                                <!-- <td class="text-right showw" style="display: none" >{{   number_format($pkr_sale_tax_amount,2)}}</td> -->
-                                                                <td class="printHide"></td>
-                                                            </tr>
-
-                                                            <tr>
-
-                                                                <td class="text-center" colspan="5">Grand Total</td>
-                                                                <td style="text-align: center" >{{ $cur }} {{number_format($total+$row->sales_tax_amount,3)}}</td>
-                                                                <!-- <td style="background-color: darkgray;display: none"  class="text-right showw" colspan="6">{{number_format($total_exchange+$pkr_sale_tax_amount,2)}}
-
-                                                                </td> -->
-                                                                <td class="printHide"></td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td colspan="6" style="text-transform: capitalize;">Amount In Words : {{ $row->amount_in_words }} </td>
-                                                                <td class="printHide"></td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div style="line-height:8px;">&nbsp;</div>
-                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                            <div class="row">
-                                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                                    <span>
-                                                        <b>Note:</b> <br>
-                                                        <textarea style="font-size: 11px; resize: none; font-weight:600; border:none !important;line-height: 19px!important;" cols="100" rows="10">{{ $row->description }}</textarea>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <style>
-                                                .signature_bor {
-                                                    border-top:solid 1px #CCC;
-                                                    padding-top:7px;
-                                                }
-                                            </style>
-                                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="margin-top:40px;">
-                                                <div class="container-fluid">
-                                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                                        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center">
-                                                            <h6 class="signature_bor">Prepared By: </h6>
-                                                            <b>   <p><?php echo strtoupper($row->username);  ?></p></b>
-                                                        </div>
-                                                        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center">
-                                                            <h6 class="signature_bor">Checked By:</h6>
-                                                            <b>   <p><?php  ?></p></b>
-                                                        </div>
-                                                        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center">
-                                                            <h6 class="signature_bor">Approved By:</h6>
-                                                            <b>  <p><?php echo $row->approve_username?></p></b>
-                                                        </div>
-
-                                                    </div>
-                                                </div>
-                                            </div>
+                                    <div class="po-section">
+                                        <div class="po-section-header">Ship To</div>
+                                        <div class="po-section-body">
+                                            <div><strong>Company Name</strong> {{ $companyName }}.</div>
+                                            <div>{{ $companyAddress }}</div>
+                                            <div style="margin-top: 6px;"><strong>Phone:</strong> {{ $companyPhone }}</div>
+                                            <div><strong>Email :</strong> {{ $companyEmail }}</div>
                                         </div>
                                     </div>
                                 </div>
+
+                                <table class="po-line-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 34%;">REQUISITIONER<br>DESCRIPTION</th>
+                                            <th style="width: 11%;">PER POUND</th>
+                                            <th style="width: 8%;">BAGS</th>
+                                            <th style="width: 9%;">U.PRICE</th>
+                                            <th style="width: 13%;">PAYMENT TERMS</th>
+                                            <th style="width: 13%;">AMOUNT</th>
+                                            <th style="width: 12%;">Due Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($purchaseRequestDataDetail as $line)
+                                            <?php
+                                            $subItemName = CommonHelper::get_item_name($line->sub_item_id);
+                                            $bagsQty = (float) ($line->bags_qty ?? 0);
+                                            $doNo = trim((string) ($line->do_no ?? ''));
+                                            $godownNo = trim((string) ($line->godown_no ?? ''));
+                                            $lineDescription = trim((string) ($line->description ?? ''));
+                                            $displayRate = (float) ($line->rate ?? 0);
+                                            $displayQty = (float) ($line->purchase_approve_qty ?? 0);
+                                            $displayAmount = (float) ($line->net_amount ?? 0);
+                                            ?>
+                                            <tr>
+                                                <td class="po-description-cell">
+                                                    <strong>{{ $subItemName }}</strong>
+                                                    @if ($doNo !== '')
+                                                        <span class="po-description-sub">DO No. {{ $doNo }}</span>
+                                                    @endif
+                                                    @if ($godownNo !== '')
+                                                        <span class="po-description-sub">Godown. {{ $godownNo }}</span>
+                                                    @endif
+                                                    @if ($lineDescription !== '')
+                                                        <span class="po-description-sub">{{ $lineDescription }}</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-center">{{ number_format($displayQty, 2) }}</td>
+                                                <td class="text-center">{{ $bagsQty > 0 ? number_format($bagsQty, 0) : '' }}</td>
+                                                <td class="text-center">{{ number_format($displayRate, 2) }}</td>
+                                                <td class="text-center">{{ $termsLabel }}</td>
+                                                <td class="text-right">{{ number_format($displayAmount, 2) }}</td>
+                                                <td class="text-center">{{ CommonHelper::changeDateFormat($row->due_date) }}</td>
+                                            </tr>
+                                        @endforeach
+
+                                        @for ($i = $purchaseRequestDataDetail->count(); $i < 3; $i++)
+                                            <tr>
+                                                <td>&nbsp;</td>
+                                                <td>&nbsp;</td>
+                                                <td>&nbsp;</td>
+                                                <td>&nbsp;</td>
+                                                <td>&nbsp;</td>
+                                                <td>&nbsp;</td>
+                                                <td>&nbsp;</td>
+                                            </tr>
+                                        @endfor
+
+                                        @if ($salesTaxAmount > 0)
+                                            <tr>
+                                                <td colspan="5" class="text-right"><strong>Sales Tax</strong></td>
+                                                <td class="text-right">{{ number_format($salesTaxAmount, 2) }}</td>
+                                                <td></td>
+                                            </tr>
+                                        @endif
+
+                                        <tr class="po-total-row">
+                                            <td colspan="5" class="text-right">TOTAL:</td>
+                                            <td class="text-right">{{ number_format($grandTotal, 2) }}</td>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                @if ($amountInWords !== '' || trim((string) $row->description) !== '')
+                                    <div class="po-note">
+                                        @if ($amountInWords !== '')
+                                            <div><span class="po-note-label">Amount In Words:</span> {{ $amountInWords }}</div>
+                                        @endif
+                                        @if (trim((string) $row->description) !== '')
+                                            <div style="margin-top: 6px;"><span class="po-note-label">Note:</span> {{ $row->description }}</div>
+                                        @endif
+                                    </div>
+                                @endif
+
+                                <table class="po-signatures">
+                                    <tr>
+                                        <td>
+                                            <div class="po-sign-box">
+                                                <strong>Prepared by</strong>
+                                                <div class="po-sign-name">{{ $preparedBy ?: '--------------------' }}</div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="po-sign-box">
+                                                <strong>Checked by</strong>
+                                                <div class="po-sign-name">{{ $checkedBy ?: '--------------------' }}</div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="po-sign-box">
+                                                <strong>Entry by</strong>
+                                                <div class="po-sign-name">{{ $enteredBy ?: '--------------------' }}</div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="po-sign-box">
+                                                <strong>Approved by</strong>
+                                                <div class="po-sign-name">{{ $approvedBy ?: '--------------------' }}</div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
                             </div>
-                        @endforeach
-                    </div>
+                        </div>
+                    @endforeach
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-
-        function view_history(id) {
-
-            var v = $('#sub_' + id).val();
-            if ($('#view_history' + id).is(":checked")) {
-                if (v != null) {
-                    showDetailModelTwoParamerter('pdc/viewHistoryOfItem_directPo?id=' + v);
-                }
-                else {
-                    alert('Select Item');
-                }
-
+        function printPurchaseOrder(elementId) {
+            var printElement = document.getElementById(elementId);
+            if (!printElement) {
+                return;
             }
+
+            var printWindow = window.open('', '_blank', 'width=1000,height=900');
+            if (!printWindow) {
+                alert('Please allow popups for printing.');
+                return;
+            }
+
+            var styles = '';
+            document.querySelectorAll('style, link[rel="stylesheet"]').forEach(function(node) {
+                styles += node.outerHTML;
+            });
+
+            printWindow.document.open();
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Purchase Order Print</title>
+                    <base href="${window.location.origin}">
+                    ${styles}
+                </head>
+                <body class="print-window-body">
+                    ${printElement.outerHTML}
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+
+            printWindow.onload = function() {
+                printWindow.focus();
+                printWindow.print();
+            };
         }
 
-        function change()
-        {
-            if(!$('.showw').is(':visible'))
-            {
-                $(".showw").fadeIn();
-
-            }
-            else
-            {
-                $(".showw").fadeOut();
-            }
-        }
-
-        // function EmailSent()
-        // {
-        //     if (confirm('Are you sure you want to Sent Email to this request'))
-        //     {
-        //         pageType="pageType1";
-        //         EmailPrintSetting = "2";
-        //         id = "<?php echo $id; ?>";
-        //         m = "<?php echo $m; ?>";
-        //         email = $("#email").val();
-        //         $.ajax({
-        //             url: '<?php echo url('/') ?>/stad/Email_Sent',
-        //             type: 'get',
-        //             data: {email:email, id:id, m:m,pageType:pageType, EmailPrintSetting:EmailPrintSetting},
-        //             success: function (response)
-        //             {
-        //                 alert(response);
-        //             }
-        //         });
-        //     } else
-        //     {
-        //         alert("Email Not Sended");
-        //     }
-        // }
-
+        @if (request()->query('autoPrint') == '1')
+            window.addEventListener('load', function() {
+                setTimeout(function() {
+                    printPurchaseOrder('po_detail');
+                }, 250);
+            });
+        @endif
     </script>
-
 @endsection

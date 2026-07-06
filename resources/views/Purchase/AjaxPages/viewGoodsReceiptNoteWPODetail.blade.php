@@ -7,6 +7,7 @@ $m = $_GET['m'];
 $currentDate = date('Y-m-d');
 CommonHelper::companyDatabaseConnection($m);
 $goodsReceiptNoteDetail = DB::table('goods_receipt_note')->where('grn_no','=',$id)->get();
+$grnDataDetailSimple = DB::table('grn_data')->where('grn_no', '=', $id)->get();
 CommonHelper::reconnectMasterDatabase();
 foreach ($goodsReceiptNoteDetail as $row) {
 $demandType = $row->demand_type;
@@ -38,7 +39,161 @@ $type = $row->type;
         <input type="hidden" name="supplier_id" value="<?php echo $row->supplier_id; ?>">
         <input type="hidden" name="sub_deparment_id" value="<?php echo $row->sub_department_id; ?>">
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" id="printGoodsReceiptNoteVoucherDetail">
-            <div class="well">
+            <style>
+                .grn-stock-sheet {
+                    background: #fff;
+                    border: 1px solid #444;
+                    padding: 16px 18px 22px;
+                    font-family: "Times New Roman", serif;
+                    color: #111;
+                }
+
+                .grn-stock-sheet-title {
+                    text-align: center;
+                    margin-bottom: 12px;
+                }
+
+                .grn-stock-sheet-title h2,
+                .grn-stock-sheet-title h3 {
+                    margin: 0;
+                    font-weight: 700;
+                    text-decoration: underline;
+                }
+
+                .grn-stock-sheet-title h2 {
+                    font-size: 18px;
+                }
+
+                .grn-stock-sheet-title h3 {
+                    font-size: 16px;
+                    margin-top: 2px;
+                }
+
+                .grn-stock-serial {
+                    font-size: 14px;
+                    font-weight: 700;
+                    margin: 8px 0 8px 105px;
+                }
+
+                .grn-stock-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 12px;
+                }
+
+                .grn-stock-table th,
+                .grn-stock-table td {
+                    border: 1px solid #555;
+                    padding: 6px 5px;
+                    vertical-align: top;
+                }
+
+                .grn-stock-table th {
+                    text-align: center;
+                    font-size: 13px;
+                    font-weight: 700;
+                }
+
+                .grn-stock-table td {
+                    height: 46px;
+                }
+
+                .grn-stock-signatures {
+                    width: 100%;
+                    margin-top: 48px;
+                    border-collapse: separate;
+                    border-spacing: 30px 0;
+                }
+
+                .grn-stock-signatures td {
+                    width: 25%;
+                    text-align: center;
+                    font-size: 11px;
+                }
+
+                .grn-stock-signatures .line {
+                    border-top: 1px solid #666;
+                    margin-bottom: 8px;
+                }
+
+                .legacy-grn-layout {
+                    display: none;
+                }
+            </style>
+
+            <div class="grn-stock-sheet">
+                <div class="grn-stock-sheet-title">
+                    <h2>FARAZ PACKAGES</h2>
+                    <h3>STOCK IN</h3>
+                </div>
+
+                <div class="grn-stock-serial">Serial No. {{ $row->id }}</div>
+
+                <table class="grn-stock-table">
+                    <thead>
+                        <tr>
+                            <th style="width:4%;">S#</th>
+                            <th style="width:16%;">Date</th>
+                            <th style="width:23%;">Description of Goods</th>
+                            <th style="width:14%;">QTY (KGS)</th>
+                            <th style="width:16%;">Supplier Name</th>
+                            <th style="width:13%;">Purpose</th>
+                            <th style="width:14%;">Reciver Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $simpleSupplier = CommonHelper::getSupplierDetail($row->supplier_id);
+                            $purpose = $row->po_no ?: ($row->main_description ?: '');
+                            $receiver = strtoupper($row->username ?? '');
+                        @endphp
+                        @forelse ($grnDataDetailSimple as $index => $line)
+                            <tr>
+                                <td style="text-align:center;">{{ $index + 1 }}</td>
+                                <td>{{ CommonHelper::changeDateFormat($row->grn_date) }}</td>
+                                <td>{{ CommonHelper::get_item_name($line->sub_item_id) }}</td>
+                                <td style="text-align:center;">{{ number_format((float) ($line->purchase_recived_qty ?? 0), 2) }}</td>
+                                <td>{{ $simpleSupplier->name ?? '' }}</td>
+                                <td>{{ $purpose }}</td>
+                                <td>{{ $receiver }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td style="text-align:center;">1</td>
+                                <td>{{ CommonHelper::changeDateFormat($row->grn_date) }}</td>
+                                <td></td>
+                                <td style="text-align:center;"></td>
+                                <td>{{ $simpleSupplier->name ?? '' }}</td>
+                                <td>{{ $purpose }}</td>
+                                <td>{{ $receiver }}</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+
+                <table class="grn-stock-signatures">
+                    <tr>
+                        <td>
+                            <div class="line"></div>
+                            Prod. Manager
+                        </td>
+                        <td>
+                            <div class="line"></div>
+                            Account Officer
+                        </td>
+                        <td>
+                            <div class="line"></div>
+                            Asst. Manager
+                        </td>
+                        <td>
+                            <div class="line"></div>
+                            Manager
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="well legacy-grn-layout">
                 <div class="row">
                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-4">
                         <label style="border-bottom:2px solid #000 !important;">Printed On Date&nbsp;:&nbsp;</label><label style="border-bottom:2px solid #000 !important;"><?php echo CommonHelper::changeDateFormat(date('Y-m-d'));$x = date('Y-m-d');

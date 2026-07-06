@@ -65,7 +65,9 @@ if($_GET['pageType']=='viewlist'){
                 </button>
             @endif
         @endif
-        <?php CommonHelper::displayPrintButtonInView('po_detail','LinkHide','1');?>
+        <button type="button" class="btn btn-primary" onclick="openPurchaseOrderPrint('{{ $row->id }}', '{{ $m }}')">
+            <span class="glyphicon glyphicon-print"></span> Print
+        </button>
     </div>
     <div style="line-height:5px;">&nbsp;</div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" id="po_detail">
@@ -374,6 +376,13 @@ if($_GET['pageType']=='viewlist'){
         }
     ?>
 </div>
+
+<script>
+    function openPurchaseOrderPrint(id, companyId) {
+        var printUrl = '{{ url('/pdc/purchase_order') }}/' + id + '?m=' + companyId + '&autoPrint=1';
+        window.open(printUrl, '_blank', 'width=1000,height=900');
+    }
+</script>
 
     <script>
 
