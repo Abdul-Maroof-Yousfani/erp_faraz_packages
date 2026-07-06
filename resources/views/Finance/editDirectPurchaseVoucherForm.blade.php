@@ -300,9 +300,8 @@ endif;
                                     </div>
                                     <div class="col-lg-12  col-md-12 col-sm-12 col-xs-12">
                                         <label class="sf-label">Remarks</label>
-                                        <span class="rflabelsteric"><strong>*</strong></span>
                                         <textarea name="main_description" id="main_description" rows="4" cols="50"
-                                            style="resize:none;font-size: 11px;" class="form-control requiredField">{{ $NewPurchaseVoucher->description }}</textarea>
+                                            style="resize:none;font-size: 11px;" class="form-control">{{ $NewPurchaseVoucher->description }}</textarea>
                                     </div>
                                 </div>
                                 <div class="lineHeight">&nbsp;</div>

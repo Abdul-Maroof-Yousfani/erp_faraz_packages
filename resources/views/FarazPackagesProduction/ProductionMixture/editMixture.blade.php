@@ -190,6 +190,12 @@ $rowCount = max($mixtureData->count(), 1);
                                                                     id="required_qty{{ $counter }}"
                                                                     value="{{ $md->qty }}"
                                                                     onkeyup="validateRowQuantity({{ $counter }}); calculateTotalQuantity()">
+                                                                <input type="hidden"
+                                                                    id="original_item_id{{ $counter }}"
+                                                                    value="{{ $md->item_id }}">
+                                                                <input type="hidden"
+                                                                    id="original_qty{{ $counter }}"
+                                                                    value="{{ $md->qty }}">
                                                             </td>
                                                             <td class="text-center">
                                                                 <a href="javascript:;" class="btn btn-sm btn-danger"
@@ -229,6 +235,10 @@ $rowCount = max($mixtureData->count(), 1);
                                                                     class="form-control requiredField required_qty"
                                                                     name="required_qty[]" id="required_qty1"
                                                                     onkeyup="validateRowQuantity(1); calculateTotalQuantity()">
+                                                                <input type="hidden" id="original_item_id1"
+                                                                    value="">
+                                                                <input type="hidden" id="original_qty1"
+                                                                    value="0">
                                                             </td>
                                                             <td class="text-center">
                                                                 <a href="javascript:;" class="btn btn-sm btn-danger"
@@ -317,6 +327,8 @@ $rowCount = max($mixtureData->count(), 1);
                                         </td>
                                         <td class="text-center">
                                           <input type="text" class="form-control requiredField required_qty" name="required_qty[]" id="required_qty${Counter}" onkeyup="validateRowQuantity(${Counter}); calculateTotalQuantity()">
+                                          <input type="hidden" id="original_item_id${Counter}" value="">
+                                          <input type="hidden" id="original_qty${Counter}" value="0">
                                         </td>
                                         <td class="text-center">
                                           <a href="javascript:;" class="btn btn-sm btn-danger" onclick="RemoveSection(${Counter})"><span class="glyphicon glyphicon-trash"></span> </a>
@@ -339,6 +351,10 @@ $rowCount = max($mixtureData->count(), 1);
         function get_stock_qty(warehouse, number) {
             var warehouse = null;
             var myArray = $('#item_id' + number).find(":selected").val();
+            if (!myArray) {
+                $('#instock' + number).val('');
+                return;
+            }
             var item = myArray.split(",");
             $.ajax({
                 url: '<?php echo url('/') ?>/far_production/getProductionMixtureRawStock',
@@ -349,7 +365,7 @@ $rowCount = max($mixtureData->count(), 1);
                 },
                 success: function(data) {
                     data = data.split('/');
-                    var stock = parseFloat(data[0]) || 0;
+                    var stock = getEditableStock(number, parseFloat(data[0]) || 0);
                     $('#instock' + number).val(stock);
                     if (stock <= 0) {
                         $("#" + item).css("background-color", "red");
@@ -369,6 +385,18 @@ $rowCount = max($mixtureData->count(), 1);
                     validateRowQuantity(number);
                 }
             });
+        }
+
+        function getEditableStock(number, currentStock) {
+            var selectedItemId = $('#item_id' + number).val();
+            var originalItemId = $('#original_item_id' + number).val();
+            var originalQty = parseFloat($('#original_qty' + number).val()) || 0;
+
+            if (selectedItemId && originalItemId && selectedItemId == originalItemId) {
+                return currentStock + originalQty;
+            }
+
+            return currentStock;
         }
 
         function validateRowQuantity(number) {

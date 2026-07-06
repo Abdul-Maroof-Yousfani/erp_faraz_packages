@@ -67,8 +67,9 @@ foreach ($goodsReceiptNoteDetail as $row)
     $addAmount = DB::Connection('mysql2')->table('addional_expense')->where('main_id',$row->id)->select('amount')->sum('amount');
     $ntAmount = DB::Connection('mysql2')->table('grn_data')->where('master_id',$row->id)->select('net_amount')->sum('net_amount');
     // $currency = DB::Connection('mysql2')->table('purchase_request')->where('purchase_request_no',$row->po_no)->select('currency_id')->first();
-    $pi_no=DB::Connection('mysql2')->table('new_purchase_voucher')->where('status',1)->where('grn_id',$row->id)->select('pv_no')->value('pv_no');
-    $pi_date=DB::Connection('mysql2')->table('new_purchase_voucher')->where('status',1)->where('grn_id',$row->id)->select('pv_date')->value('pv_date');
+    $purchaseInvoice = ReuseableCode::purchase_invoice_against_grn($row->id, $row->grn_no);
+    $pi_no = $purchaseInvoice->pv_no ?? '';
+    $pi_date = $purchaseInvoice->pv_date ?? '';
     $net_amount = $ntAmount + $addAmount;
     //  $pi_amount= ReuseableCode::pi_get_net_amount($row->id);
     // $pi_date=$pi_amount->pv_date;

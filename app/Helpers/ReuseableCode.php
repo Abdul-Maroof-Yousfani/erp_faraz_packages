@@ -886,9 +886,47 @@ class ReuseableCode
 
     public static function invoice_created($id)
     {
-        return DB::Connection('mysql2')->table('new_purchase_voucher')->where('grn_id', $id)->count();
+        $grn = DB::Connection('mysql2')->table('goods_receipt_note')
+            ->where('id', $id)
+            ->select('grn_no')
+            ->first();
+
+        if (!$grn) {
+            return 0;
+        }
+
+        $normalizedGrnNo = str_replace(' ', '', (string) $grn->grn_no);
+
+        return DB::Connection('mysql2')->table('new_purchase_voucher')
+            ->where(function ($query) use ($id, $normalizedGrnNo) {
+                $query->where('grn_id', $id);
+
+                if ($normalizedGrnNo !== '') {
+                    $query->orWhereRaw('FIND_IN_SET(?, REPLACE(grn_no, " ", "")) > 0', [$normalizedGrnNo]);
+                }
+            })
+            ->where('status', 1)
+            ->count();
 
 
+    }
+
+    public static function purchase_invoice_against_grn($grnId, $grnNo)
+    {
+        $normalizedGrnNo = str_replace(' ', '', (string) $grnNo);
+
+        return DB::Connection('mysql2')->table('new_purchase_voucher')
+            ->where('status', 1)
+            ->where(function ($query) use ($grnId, $normalizedGrnNo) {
+                $query->where('grn_id', $grnId);
+
+                if ($normalizedGrnNo !== '') {
+                    $query->orWhereRaw('FIND_IN_SET(?, REPLACE(grn_no, " ", "")) > 0', [$normalizedGrnNo]);
+                }
+            })
+            ->select('pv_no', 'pv_date')
+            ->orderByDesc('id')
+            ->first();
     }
 
 

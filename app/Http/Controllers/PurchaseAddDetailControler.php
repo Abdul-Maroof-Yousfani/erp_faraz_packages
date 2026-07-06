@@ -4609,6 +4609,9 @@ public function updatePurchaseReturnDetail(Request $request)
         try {
             $pv_no = $request->pv_no;
             $sub_department_id = empty($request->sub_department_id) ? 0 : $request->sub_department_id;
+            $currencyInput = (string) $request->input('curren', '');
+            $currencyParts = $currencyInput !== '' ? explode(',', $currencyInput) : [];
+            $currencyId = $currencyParts[0] ?? null;
             NewPurchaseVoucherData::where('pv_no', $pv_no)->delete();
             NewPurchaseVoucher::where('pv_no', $pv_no)->delete();
             $SalesTaxAccId = 0;
@@ -4645,13 +4648,13 @@ public function updatePurchaseReturnDetail(Request $request)
             $NewPurchaseVoucher->sales_tax_acc_id = $SalesTaxAccId;
             $NewPurchaseVoucher->sales_tax_amount = $SalesTaxAmount;
 
-            $NewPurchaseVoucher->description = $request->input('main_description');
+            $NewPurchaseVoucher->description = $request->input('main_description', '');
             $NewPurchaseVoucher->username = Auth::user()->name;
             $NewPurchaseVoucher->approved_user = Auth::user()->name;
             $NewPurchaseVoucher->status = 1;
             $NewPurchaseVoucher->pv_status = 1;
             $NewPurchaseVoucher->date = date('Y-m-d');
-            $NewPurchaseVoucher->currency = explode(',', $request->input('curren'))[0] ?? null;
+            $NewPurchaseVoucher->currency = $currencyId;
             $NewPurchaseVoucher->save();
             $master_id = $NewPurchaseVoucher->id;
 
