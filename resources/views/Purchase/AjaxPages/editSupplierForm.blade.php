@@ -350,7 +350,8 @@ if ($accType == 'client') {
             // name=1, number=2
             const field = document.getElementById(id);
             if (flag == 1) {
-                field.value = field.value.replace(/[^a-zA-Z\s]/g, '');
+                const pattern = id === 'vendor_name' ? /[^a-zA-Z\s(){}]/g : /[^a-zA-Z\s]/g;
+                field.value = field.value.replace(pattern, '');
             } else if (flag == 2) {
                 field.value = field.value.replace(/(?!^\+)\D/g, '');
 

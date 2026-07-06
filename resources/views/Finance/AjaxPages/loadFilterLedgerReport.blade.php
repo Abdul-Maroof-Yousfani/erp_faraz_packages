@@ -162,6 +162,41 @@ $m=Input::get('m');
                 }
             }
 
+            $purchaseVoucherLedgerItems = DB::Connection('mysql2')->table('new_purchase_voucher_data as npvd')
+                ->join('new_purchase_voucher as npv', 'npv.id', '=', 'npvd.master_id')
+                ->join('subitem as si', 'si.id', '=', 'npvd.sub_item')
+                ->where('npvd.staus', 1)
+                ->where('npv.status', 1)
+                ->whereIn('npv.pv_no', $quarterVoucherNos)
+                ->select(
+                    'npv.pv_no as voucher_no',
+                    'si.sub_ic',
+                    'npvd.rate',
+                    DB::raw('SUM(npvd.qty) as qty'),
+                    DB::raw('SUM(npvd.amount) as amount')
+                )
+                ->groupBy('npv.pv_no', 'si.sub_ic', 'npvd.rate')
+                ->orderBy('si.sub_ic')
+                ->orderBy('npvd.rate')
+                ->get();
+
+            foreach ($purchaseVoucherLedgerItems as $purchaseVoucherLedgerItem) {
+                if (empty($ledgerItemDetails[$purchaseVoucherLedgerItem->voucher_no])) {
+                    $ledgerItemDetails[$purchaseVoucherLedgerItem->voucher_no] = [];
+                }
+
+                $alreadyExists = collect($ledgerItemDetails[$purchaseVoucherLedgerItem->voucher_no])->contains(function ($existingItem) use ($purchaseVoucherLedgerItem) {
+                    return (string) ($existingItem->sub_ic ?? '') === (string) ($purchaseVoucherLedgerItem->sub_ic ?? '')
+                        && (float) ($existingItem->rate ?? 0) === (float) ($purchaseVoucherLedgerItem->rate ?? 0)
+                        && (float) ($existingItem->qty ?? 0) === (float) ($purchaseVoucherLedgerItem->qty ?? 0)
+                        && (float) ($existingItem->amount ?? 0) === (float) ($purchaseVoucherLedgerItem->amount ?? 0);
+                });
+
+                if (!$alreadyExists) {
+                    $ledgerItemDetails[$purchaseVoucherLedgerItem->voucher_no][] = $purchaseVoucherLedgerItem;
+                }
+            }
+
             $purchaseVoucherRows = DB::Connection('mysql2')->table('new_purchase_voucher as npv')
                 ->whereIn('npv.pv_no', $quarterVoucherNos)
                 ->select('npv.pv_no', 'npv.supplier')
@@ -450,14 +485,7 @@ $m=Input::get('m');
         endif;
 
         if ($trow->voucher_type==2):
-        $PayType= DB::Connection('mysql2')->table('new_pv')->where('pv_no',$trow->voucher_no)->select('payment_type')->first();
-                if($PayType->payment_type == 1)
-                {
-                    $detail='fdc/viewBankPaymentVoucherDetailInDetail';
-                }
-                else{$detail='fdc/viewBankPaymentVoucherDetail';}
-
-        //$detail='fdc/viewBankPaymentVoucherDetailInDetail';
+        $detail='fdc/viewBankPaymentVoucherDetail';
         $PageTitle = 'View Payement Voucher Detail';
         CommonHelper::companyDatabaseConnection($_GET['m']);
 
