@@ -486,25 +486,14 @@ class PurchaseDeleteController extends Controller
             //CommonHelper::inventory_activity($pv_no,$purchase_date,$TotAmount,5,'Insert');
             DB::Connection('mysql2')->table('transaction_supply_chain')->where('main_id',$id)->update($UpdateData);
 
-            if (!empty($purchase_voucher->grn_id) && !empty($purchase_voucher->grn_no) && $purchase_voucher->grn_no != '0') {
-                DB::connection('mysql2')->table('goods_receipt_note')
-                    ->where('id', $purchase_voucher->grn_id)
-                    ->update([
-                        'grn_status' => 2
-                    ]);
-
-                DB::connection('mysql2')->table('grn_data')
-                    ->where('master_id', $purchase_voucher->grn_id)
-                    ->update([
-                        'grn_status' => 2
-                    ]);
-            }
+            // Keep linked GRN reserved for the same invoice record so reverse acts as reopen-for-edit,
+            // not as release-for-recreation in the GRN selection screen.
 
             $purchase_voucher->pv_status = 1;
             $purchase_voucher->save();
             DB::Connection('mysql2')->commit();
             $response = [
-                'msg' => 'The Purchase Invoice is reverse successfully',
+                'msg' => 'The Purchase Invoice is reopened successfully for edit',
                 'status' => true
             ];
             return response($response);

@@ -30,6 +30,29 @@ $m=Input::get('m');
         background-color: yellow;
     }
 
+    .ledger-report-table .ledger-entry-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 108px;
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: 1px solid #18a85b;
+        background: #eaf8f0;
+        color: #137a43 !important;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.2;
+        text-decoration: none !important;
+        white-space: nowrap;
+    }
+
+    .ledger-report-table .ledger-entry-link:hover,
+    .ledger-report-table .ledger-entry-link:focus {
+        background: #d7f1e2;
+        color: #0f6235 !important;
+    }
+
 </style>
 
 
@@ -48,7 +71,7 @@ $m=Input::get('m');
         </div>
     </div>
     <div style="line-height:5px;">&nbsp;</div>
-    <table class="table table-bordered sf-table-th sf-table-list" id="table_export1" >
+    <table class="table table-bordered sf-table-th sf-table-list ledger-report-table" id="table_export1" >
         <?php
         CommonHelper::companyDatabaseConnection($_GET['m']);
         $gstTaxAccountIds = DB::Connection('mysql2')->table('gst')
@@ -501,7 +524,7 @@ $m=Input::get('m');
         <tr  title="<?php echo $trow->voucher_type ?>"  class="hov" >
             <td><?php echo strtoupper($trow->voucher_no) ?></td>
             
-                <td class="text-center"> <a onclick="showDetailModelOneParamerter('<?php echo $detail?>','<?php echo 'other'.','.$trow->voucher_no;?>','<?php echo $PageTitle?>','<?php echo $_GET['m']?>','')" class="btn btn-xs btn-success"><?php echo  date_format(date_create($trow->v_date), 'd-M-Y'); ?></a></td>
+                <td class="text-center"> <a onclick="showDetailModelOneParamerter('<?php echo $detail?>','<?php echo 'other'.','.$trow->voucher_no;?>','<?php echo $PageTitle?>','<?php echo $_GET['m']?>','')" class="ledger-entry-link"><?php echo  date_format(date_create($trow->v_date), 'd-M-Y'); ?></a></td>
                 <td class="text-left" style="white-space: nowrap !important;font-size: 11px;">
                 <?php
                     $itemDetails = [];

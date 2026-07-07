@@ -89,6 +89,33 @@ $All = session()->all();
             margin-top: 24px;
         }
 
+        .ledger-toolbar .btn {
+            margin-left: 6px;
+        }
+
+        .ledger-report-table .ledger-entry-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 108px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #18a85b;
+            background: #eaf8f0;
+            color: #137a43 !important;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1.2;
+            text-decoration: none !important;
+            white-space: nowrap;
+        }
+
+        .ledger-report-table .ledger-entry-link:hover,
+        .ledger-report-table .ledger-entry-link:focus {
+            background: #d7f1e2;
+            color: #0f6235 !important;
+        }
+
         @media (max-width: 991px) {
             .ledger-submit-btn {
                 margin-top: 0;
@@ -109,7 +136,7 @@ $All = session()->all();
                                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                                     <span class="subHeadingLabelClass">Filter Ledger Report</span>
                                 </div>
-                                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 text-right">
+                                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 text-right ledger-toolbar">
                                     <?php echo CommonHelper::displayPrintButtonInView('loadFilterLedgerReport','','1');?>
                                     <?php if($export == true):?>
                                         <a id="dlink" style="display:none;"></a>
