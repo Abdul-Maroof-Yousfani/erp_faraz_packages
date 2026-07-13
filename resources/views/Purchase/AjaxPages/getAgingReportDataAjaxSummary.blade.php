@@ -28,19 +28,9 @@ $MainCount =  count($Supp);
 $VendorCounter=1;
 $main_count=1;
 ?>
-<table class="table table-bordered ApnaBorder " id="export_table_to_excel_1">
+<?php echo CommonHelper::headerPrintSectionInPrintView(Session::get('run_company'), 'Vendor Ageing Summary Report', 'AS ON '.date_format(date_create($to),'F d, Y'));?>
+<table class="table table-bordered ApnaBorder sf-report-print-table" id="export_table_to_excel_1">
     <thead>
-        <th colspan="15" class="text-center"><h3 style="text-align: center;"><?php echo CommonHelper::get_company_name(Session::get('run_company'));?></h3></th>
-    </thead>
-    <thead>
-        <th colspan="15" class="text-center">Vendor Ageing Summary Report</th>
-    </thead>
-
-    <thead>
-    <th colspan="15" class="text-center">AS ON {{date_format(date_create($to),'F d, Y')}}</th>
-    </thead>
-    <thead>
-        <th colspan="15" class="text-right"><p style="float: right;">Printed On: <?php echo date_format(date_create(date('Y-m-d')),'F d, Y')?></p></th>
     </thead>
     <thead>
     <tr title="" class="text-center ApnaBorder ">

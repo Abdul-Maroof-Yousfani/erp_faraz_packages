@@ -66,7 +66,6 @@ $data=ReuseableCode::get_account_year_from_to(Session::get('run_company'));
                     <div class="lineHeight">&nbsp;</div>
                     <div class="panel">
                         <div class="panel-body" id="PrintEmpExitInterviewList">
-                            <?php echo CommonHelper::headerPrintSectionInPrintView(Session::get('run_company'));?>
                             <div class="row">
                                 <div class="col-lg-12 col-md-12 col-sm-12col-xs-12">
                                     <div class="table-responsive" id="data">

@@ -22,6 +22,7 @@ $view=ReuseableCode::check_rights(37);
                         <div class="table-responsive">
                             <span id="MultiExport">
                             <h5 style="text-align: center" id="h3"></h5>
+                            <?php echo CommonHelper::headerPrintSectionInPrintView(Session::get('run_company'), 'Vendor Balance Report', 'From '.CommonHelper::changeDateFormat($from).' To '.CommonHelper::changeDateFormat($to)); ?>
                                 <?php
                                 $clause='';
                                 if ($vendor!=0):
@@ -47,15 +48,8 @@ $view=ReuseableCode::check_rights(37);
 
 
 
-                                    <table style="width: 100%" class="table-bordered sf-table-list AutoCounter table{{$main_count}}" id="export_table_to_excel_<?php echo $main_count; ?>">
+                                    <table style="width: 100%" class="table-bordered sf-table-list AutoCounter table{{$main_count}} sf-report-print-table" id="export_table_to_excel_<?php echo $main_count; ?>">
                                         <thead>
-                                            <th colspan="8" class="text-center"><h3 style="text-align: center;"><?php echo CommonHelper::get_company_name(Session::get('run_company'));?></h3></th>
-                                        </thead>
-                                        <thead>
-                                            <th colspan="8" class="text-center">Debtor Payment Detail Report</th>
-                                        </thead>
-                                        <thead>
-                                            <th colspan="8" class="text-right"><p style="float: right;">Printed On: <?php echo date_format(date_create(date('Y-m-d')),'F d, Y')?></p></th>
                                         </thead>
                                         <thead>
                                         <th colspan="8" class="text-center"><h3 class="table{{$main_count}}">{{$row->name}}</h3></th>

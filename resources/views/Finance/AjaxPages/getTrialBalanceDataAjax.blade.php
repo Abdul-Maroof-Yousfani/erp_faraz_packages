@@ -10,24 +10,10 @@ $end_credit = 0;
 
 
 <div class="">
+    <?php echo CommonHelper::headerPrintSectionInPrintView(Session::get('run_company'), 'Trial Balance 5th Column', date_format(date_create($from),'d-m-Y').' To '.date_format(date_create($to),'d-m-Y')); ?>
     <div class="table-responsive" id="trial_bal">
 
-        <table class="table table-bordered" id="table_export1">
-            <thead>
-                <th colspan="8" class="text-center"><h3 style="text-align: center;"><?php echo CommonHelper::get_company_name(Session::get('run_company'));?></h3></th>
-            </thead>
-            <thead>
-            <th colspan="8" class="text-center">
-                <h3 style="text-align: center;">Trial Balance 5th Column</h3>
-            </th>
-            </thead>
-            <thead>
-                <th colspan="8"><h3 style="text-align: center">    <?php  echo date_format(date_create($from),'d-m-Y').' '.'To'.' '.date_format(date_create($to),'d-m-Y');?></h3></th>
-            </thead>
-            <thead>
-                <th colspan="8" class="text-center"><p style="float: right;">Printed On: <?php echo date_format(date_create(date('Y-m-d')),'F d, Y')?></p></th>
-            </thead>
-
+        <table class="table table-bordered sf-report-print-table" id="table_export1">
             <thead>
                 <th colspan="3" class="text-center"></th>
                 <th colspan="1" class="text-center">Opening Balance</th>

@@ -462,28 +462,117 @@ class CommonHelper
         echo $companyName = DB::selectOne('select `name` from `company` where `id` = ' . $param1 . '')->name;
     }
 
-    public static function headerPrintSectionInPrintView($param1)
+    public static function getCompanyPrintMeta($companyId = null)
+    {
+        $companyId = $companyId ?: Session::get('run_company');
+        $company = DB::table('company')->where('id', $companyId)->select('name')->first();
+
+        $meta = [
+            'name' => $company->name ?? 'FARAZ PACKAGES',
+            'address' => '',
+            'phone' => '',
+            'email' => '',
+        ];
+
+        if ((int) $companyId === 1) {
+            $meta['name'] = 'FARAZ PACKAGES';
+            $meta['address'] = 'F-98 S.I.T.E KARACHI.';
+            $meta['phone'] = '0321 - 2254444';
+            $meta['email'] = 'farazpackages@gmail.com';
+        }
+
+        return $meta;
+    }
+
+    public static function headerPrintSectionInPrintView($param1, $reportTitle = '', $reportSubtitle = '')
     {
         $current_date = date('Y-m-d');
+        $companyId = $param1 ?: Session::get('run_company');
+        $meta = static::getCompanyPrintMeta($companyId);
         ?>
-        <div class="row">
-            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-4">
-                <label style="border-bottom:2px solid #000 !important;">Printed On Date&nbsp;:&nbsp;</label><label
-                    style="border-bottom:2px solid #000 !important;"><?php echo static::changeDateFormat($current_date); ?></label>
-            </div>
-            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-5 text-center">
-                <div>
-                    <h2 class="subHeadingLabelClass"><?php echo static::getCompanyName(Session::get('run_company')); ?></h2>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 text-right">
-                <?php $nameOfDay = date('l', strtotime($current_date)); ?>
-                <label style="border-bottom:2px solid #000 !important;">Printed On Day&nbsp;:&nbsp;</label><label
-                    style="border-bottom:2px solid #000 !important;"><?php echo '&nbsp;' . $nameOfDay; ?></label>
+        <style>
+            .sf-report-print-header {
+                margin-bottom: 12px;
+                text-align: center;
+                page-break-inside: avoid;
+            }
 
+            .sf-report-print-company {
+                margin: 0 0 4px;
+                font-size: 24px;
+                font-weight: 700;
+                line-height: 1.2;
+                white-space: nowrap;
+            }
+
+            .sf-report-print-meta {
+                margin: 0;
+                font-size: 12px;
+                line-height: 1.5;
+                white-space: nowrap;
+            }
+
+            .sf-report-print-title {
+                margin: 8px 0 0;
+                font-size: 18px;
+                font-weight: 700;
+                white-space: nowrap;
+            }
+
+            .sf-report-print-subtitle {
+                margin: 4px 0 0;
+                font-size: 12px;
+                white-space: nowrap;
+            }
+
+            .sf-report-print-audit {
+                display: flex;
+                justify-content: space-between;
+                gap: 12px;
+                margin-top: 8px;
+                font-size: 12px;
+                flex-wrap: wrap;
+            }
+
+            .sf-report-print-table th,
+            .sf-report-print-table td {
+                white-space: nowrap;
+            }
+
+            @media print {
+                .sf-report-print-header {
+                    margin-bottom: 10px;
+                }
+
+                .sf-report-print-table {
+                    width: 100%;
+                    font-size: 11px;
+                }
+            }
+        </style>
+        <div class="sf-report-print-header">
+            <h2 class="sf-report-print-company"><?php echo e($meta['name']); ?></h2>
+            <?php if (!empty($meta['address'])): ?>
+                <p class="sf-report-print-meta"><?php echo e($meta['address']); ?></p>
+            <?php endif; ?>
+            <?php if (!empty($meta['phone']) || !empty($meta['email'])): ?>
+                <p class="sf-report-print-meta">
+                    <?php if (!empty($meta['phone'])): ?>Phone: <?php echo e($meta['phone']); ?><?php endif; ?>
+                    <?php if (!empty($meta['phone']) && !empty($meta['email'])): ?> | <?php endif; ?>
+                    <?php if (!empty($meta['email'])): ?>Email: <?php echo e($meta['email']); ?><?php endif; ?>
+                </p>
+            <?php endif; ?>
+            <?php if ($reportTitle != ''): ?>
+                <h3 class="sf-report-print-title"><?php echo e($reportTitle); ?></h3>
+            <?php endif; ?>
+            <?php if ($reportSubtitle != ''): ?>
+                <p class="sf-report-print-subtitle"><?php echo e($reportSubtitle); ?></p>
+            <?php endif; ?>
+            <div class="sf-report-print-audit">
+                <span>Printed On Date: <?php echo static::changeDateFormat($current_date); ?></span>
+                <span>Printed On Day: <?php echo date('l', strtotime($current_date)); ?></span>
             </div>
         </div>
-        <div style="line-height:5px;">&nbsp;</div>
         <?php
     }
 

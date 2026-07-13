@@ -58,20 +58,8 @@ $m=Input::get('m');
 
 
 <div id="">
-    <div class="row">
-        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
-            <?php echo CommonHelper::get_company_logo(Session::get('run_company'));?>
-        </div>
-        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
-            <h3 class="hide" style="text-align: center;">Ledger Report</h3>
-        </div>
-        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-right">
-            <label style="border-bottom:2px solid #000 !important;">Printed On Date&nbsp;:&nbsp;</label><label style="border-bottom:2px solid #000 !important;"><?php echo CommonHelper::changeDateFormat(date('Y-m-d'));$x = date('Y-m-d');
-                echo ' '.'('.date('D', strtotime($x)).')';?></label>
-        </div>
-    </div>
-    <div style="line-height:5px;">&nbsp;</div>
-    <table class="table table-bordered sf-table-th sf-table-list ledger-report-table" id="table_export1" >
+    <?php echo CommonHelper::headerPrintSectionInPrintView(Session::get('run_company'), 'Ledger Report', 'From '.CommonHelper::changeDateFormat($from).' To '.CommonHelper::changeDateFormat($to)); ?>
+    <table class="table table-bordered sf-table-th sf-table-list ledger-report-table sf-report-print-table" id="table_export1" >
         <?php
         CommonHelper::companyDatabaseConnection($_GET['m']);
         $gstTaxAccountIds = DB::Connection('mysql2')->table('gst')

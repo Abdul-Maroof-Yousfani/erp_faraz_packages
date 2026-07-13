@@ -48,6 +48,7 @@ $Supp = DB::Connection('mysql2')->select('select a.id,a.name,a.acc_id from suppl
 $MainCount =  count($Supp);
 $VendorCounter=1;
 $main_count=1;
+echo CommonHelper::headerPrintSectionInPrintView(Session::get('run_company'), 'Vendor Ageing Detail Report', 'AS ON '.date_format(date_create($to),'F d, Y'));
 foreach($Supp as $Sfil):
 
 $vendor_data=DB::Connection('mysql2')->select('select a.id,a.due_date,a.pv_no,a.pv_date,a.slip_no,(sum(b.net_amount)+a.sales_tax_amount)total,a.grn_id
@@ -64,16 +65,9 @@ $vendor_data=DB::Connection('mysql2')->select('select a.id,a.due_date,a.pv_no,a.
                 and a.supplier="'.$Sfil->id.'"
                 group by a.id');
 ?>
-<table class="table table-bordered ApnaBorder AutoCounter table{{$main_count}} " id="export_table_to_excel_<?php echo $VendorCounter; ?>">
+<table class="table table-bordered ApnaBorder AutoCounter table{{$main_count}} sf-report-print-table" id="export_table_to_excel_<?php echo $VendorCounter; ?>">
 
     <thead>
-        <th colspan="15" class="text-center"><h3 style="text-align: center;"><?php echo CommonHelper::get_company_name(Session::get('run_company'));?></h3></th>
-    </thead>
-    <thead>
-        <th colspan="15" class="text-center">Vendor Ageing Detail Report</th>
-    </thead>
-    <thead>
-        <th colspan="15" class="text-right"><p style="float: right;">Printed On: <?php echo date_format(date_create(date('Y-m-d')),'F d, Y')?></p></th>
     </thead>
     <thead class="ApnaBorder">
     <tr class="ApnaBorder text-center">

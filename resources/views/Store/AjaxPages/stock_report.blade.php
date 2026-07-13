@@ -1,30 +1,12 @@
 <?php
 use App\Helpers\CommonHelper;
 use App\Helpers\ReuseableCode;
-$companyName = 'FARAZ PACKAGES';
-$companyAddress = 'F-98 S.I.T.E KARACHI.';
-$companyPhone = '0321 - 2254444';
-$companyEmail = 'farazpackages@gmail.com';
 // echo "<pre>";
 // print_r($category);
 // exit();
 ?>
 
 <style>
-    .stock-report-header {
-        margin-bottom: 14px;
-        text-align: center;
-    }
-
-    .stock-report-header h2 {
-        margin: 0 0 4px;
-    }
-
-    .stock-report-header p {
-        margin: 0;
-        line-height: 1.5;
-    }
-
     @media print {
         a.HrefHide:after {
             content: "" !important;
@@ -32,16 +14,11 @@ $companyEmail = 'farazpackages@gmail.com';
     }
 </style>
 
-    <div class="stock-report-header">
-        <h2>{{ $companyName }}</h2>
-        <p>{{ $companyAddress }}</p>
-        <p>Phone: {{ $companyPhone }} | Email: {{ $companyEmail }}</p>
-        <h3 style="margin: 8px 0 0;">Stock Summary Report</h3>
-    </div>
+    <?php echo CommonHelper::headerPrintSectionInPrintView(Session::get('run_company'), 'Stock Summary Report'); ?>
 
 
 <div class="table-responsive">
-    <table id="data" class="table table-bordered">
+    <table id="data" class="table table-bordered sf-report-print-table">
         <h4>{{$category_heading}}</h4>
         <h4>{{$item_heading}}</h4>
         <h4>{{$location_heading}}</h4>
