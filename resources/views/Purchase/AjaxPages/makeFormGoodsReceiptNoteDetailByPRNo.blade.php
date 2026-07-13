@@ -10,6 +10,7 @@ $m = $_GET['m'];
 $grnPrefix = date('my');
 $str = DB::connection('mysql2')->selectOne("select max(convert(substr(`grn_no`,8), signed integer)) reg from `goods_receipt_note` where substr(`grn_no`,4,4) = '" . $grnPrefix . "'")->reg;
 $grn_no = 'grn' . $grnPrefix . (((int) $str) + 1);
+$grnMinDate = !empty($prDate) ? $prDate : date('Y-m-d');
 ?>
 <style>
     .success {
@@ -69,7 +70,7 @@ $grn_no = 'grn' . $grnPrefix . (((int) $str) + 1);
             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                 <label class="sf-label">GRN Date.</label>
                 <span class="rflabelsteric"><strong>*</strong></span>
-                <input type="date" class="form-control requiredField" max="<?php echo date('Y-m-d') ?>" name="grn_date"
+                <input type="date" class="form-control requiredField" min="<?php echo $grnMinDate ?>" max="<?php echo date('Y-m-d') ?>" name="grn_date"
                     id="grn_date" value="<?php echo date('Y-m-d') ?>" />
             </div>
 

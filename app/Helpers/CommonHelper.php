@@ -154,18 +154,11 @@ class CommonHelper
     public static function get_company_name($CompanyId)
     {
         $Cdata = DB::table('company')->where('status', 1)->where('id', $CompanyId)->first();
-        $HtmlData = '';
-        if ($CompanyId == 1) {
-            $HtmlData = '<strong>Zahabiya Chemicals </strong>';
-        } elseif ($CompanyId == 2) {
-            $HtmlData = '<strong>Zahabiya Chemicals</strong>';
-        } elseif ($CompanyId == 3) {
-            $HtmlData = '<strong>Zahabiya Chemicals</strong>';
-        } elseif ($CompanyId == 5) {
-            $HtmlData = '<strong>Zahabiya Chemicals</strong>';
+        if (!$Cdata || empty($Cdata->name)) {
+            return '';
         }
 
-        return $HtmlData;
+        return '<strong>' . e($Cdata->name) . '</strong>';
     }
 
     public static function get_company_logo_front($CompanyId)

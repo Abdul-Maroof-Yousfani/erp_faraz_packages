@@ -20,11 +20,9 @@ else{$Clause = 'and b.supplier="'.$_GET['SupplierId'].'"';}
 
 $Supp = DB::Connection('mysql2')->select('select a.id,a.name,a.acc_id from supplier a
                                           INNER JOIN new_purchase_voucher b ON b.supplier = a.id
-                                          inner join accounts c on a.acc_id=c.id
                                           WHERE b.status = 1
-                                          and c.parent_code="2-2-1"
                                           '.$Clause.'
-                                          and(b.pv_date between "'.$from.'" and "'.$to.'" or grn_id=0)
+                                          and (b.pv_date between "'.$from.'" and "'.$to.'" or (b.grn_id=0 and b.work_order_id=0))
                                           GROUP BY b.supplier');
 $MainCount =  count($Supp);
 $VendorCounter=1;

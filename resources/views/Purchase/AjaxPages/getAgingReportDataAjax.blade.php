@@ -147,7 +147,7 @@ $vendor_data=DB::Connection('mysql2')->select('select a.id,a.due_date,a.pv_no,a.
 
 
     $date1_ts = strtotime($fil->pv_date.'+'.$diffss.'day');
-    $date2_ts = strtotime(date('Y-m-d'));
+    $date2_ts = strtotime($to);
     $diff = $date2_ts - $date1_ts;
     $NoOfDays = round($diff / 86400);
       if($BalanceAmount > 0):

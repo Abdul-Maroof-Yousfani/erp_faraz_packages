@@ -1,9 +1,40 @@
 <?php
 use App\Helpers\CommonHelper;
 use App\Helpers\ReuseableCode;
+$companyName = 'FARAZ PACKAGES';
+$companyAddress = 'F-98 S.I.T.E KARACHI.';
+$companyPhone = '0321 - 2254444';
+$companyEmail = 'farazpackages@gmail.com';
 ?>
 
-<h2 style="text-align: center">Stock Summary Report</h2>
+<style>
+    .stock-report-header {
+        margin-bottom: 14px;
+        text-align: center;
+    }
+
+    .stock-report-header h2 {
+        margin: 0 0 4px;
+    }
+
+    .stock-report-header p {
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    @media print {
+        a.HrefHide:after {
+            content: "" !important;
+        }
+    }
+</style>
+
+<div class="stock-report-header">
+    <h2>{{ $companyName }}</h2>
+    <p>{{ $companyAddress }}</p>
+    <p>Phone: {{ $companyPhone }} | Email: {{ $companyEmail }}</p>
+    <h3 style="margin: 8px 0 0;">Stock Summary Report</h3>
+</div>
 
 
 
@@ -77,7 +108,7 @@ use App\Helpers\ReuseableCode;
         <tr>
             <td class="text-center">{{$counter++}}</td>
             <td class="text-center">
-                <a class="" href="<?php echo url('/') ?>/store/fullstockReportView?pageType=&&parentCode=97&&m=<?php echo $_GET['m'] ?>&&sub_item_id=<?php echo $data->sub_item_id ?>&&warehouse_id=<?php echo $data->warehouse_id ?>#SFR" target="_blank">
+                <a class="HrefHide" href="<?php echo url('/') ?>/store/fullstockReportView?pageType=&&parentCode=97&&m=<?php echo $_GET['m'] ?>&&sub_item_id=<?php echo $data->sub_item_id ?>&&warehouse_id=<?php echo $data->warehouse_id ?>#SFR" target="_blank">
                     {{CommonHelper::get_item_name($data->sub_item_id)}}</a>
             </td>
             <td class="text-center">{{CommonHelper::get_uom_name($uom)}}</td>

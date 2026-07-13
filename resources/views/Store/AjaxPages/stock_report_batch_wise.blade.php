@@ -1,10 +1,41 @@
 <?php
 use App\Helpers\CommonHelper;
 use App\Helpers\ReuseableCode;
+$companyName = 'FARAZ PACKAGES';
+$companyAddress = 'F-98 S.I.T.E KARACHI.';
+$companyPhone = '0321 - 2254444';
+$companyEmail = 'farazpackages@gmail.com';
 $show_detail=ReuseableCode::check_rights(283);
 ?>
 
-<h2 style="text-align: center;font-family: cursive">Stock Summary Report (Batch Wise )</h2>
+<style>
+    .stock-report-header {
+        margin-bottom: 14px;
+        text-align: center;
+    }
+
+    .stock-report-header h2 {
+        margin: 0 0 4px;
+    }
+
+    .stock-report-header p {
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    @media print {
+        a.HrefHide:after {
+            content: "" !important;
+        }
+    }
+</style>
+
+<div class="stock-report-header">
+    <h2>{{ $companyName }}</h2>
+    <p>{{ $companyAddress }}</p>
+    <p>Phone: {{ $companyPhone }} | Email: {{ $companyEmail }}</p>
+    <h3 style="margin: 8px 0 0; font-family: cursive;">Stock Summary Report (Batch Wise)</h3>
+</div>
 
 
 
