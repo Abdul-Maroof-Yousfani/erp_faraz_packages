@@ -113,9 +113,12 @@ if((!empty($Invoice))):
         $BuyersUnit = '';
         $BuyerOrderNo = '';
         if($row->so_id != 0 ):
-            $SoData = DB::Connection('mysql2')->table('sales_order')->where('id',$row->so_id)->select('order_no','buyers_unit')->first();
-            $BuyersUnit = $SoData->buyers_unit;
-            $BuyerOrderNo = $SoData->order_no;
+            $SoData = DB::Connection('mysql2')->table('sales_order')
+                ->where('id',$row->so_id)
+                ->select('purchase_order_no','buyers_unit')
+                ->first();
+            $BuyersUnit = $SoData->buyers_unit ?? '';
+            $BuyerOrderNo = $SoData->purchase_order_no ?? '';
         endif;
 
         $rema=$data->total+$get_freight-$return_amount-$rece;

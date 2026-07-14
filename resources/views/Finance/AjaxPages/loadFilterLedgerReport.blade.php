@@ -249,21 +249,7 @@ $m=Input::get('m');
         <thead>
 
 
-<div class="container" style="border:1px solid #e0c9c9; padding:10px; font-family:Arial;width:100%;">
-
-    <!-- Header -->
-    <div class="text-center">
-        <h2 style="margin:0; font-weight:bold;">Faraz Packages</h2>
-        <p style="margin:0;">F-98, S.I.T.E., Karachi</p>
-        <p style="margin:0; font-size:13px;">
-            Tel No. 0213-2584444, 0321-2254444, Fax No. 0213-2584444,
-            email: farazpackages@gmail.com
-        </p>
-    </div>
-
-    <hr style="border-top:1px solid #000; margin:5px 0;">
-
-    <!-- Ledger + Date Row -->
+<div style="margin-bottom: 10px;">
     <div class="row" style="font-size:13px;">
         <div class="col-xs-6">
             <b>Ledger Report of:</b>
@@ -275,55 +261,12 @@ $m=Input::get('m');
         </div>
     </div>
 
-    <hr style="border-top:1px solid #000; margin:5px 0;">
-
-    <!-- Company Name -->
-    <div class="text-center hide" style="font-size:18px;">
-        <b>Company Name: (<?php echo FinanceHelper::getCompanyName(Session::get('run_company')); ?>)</b>
-    </div>
-
-    <!-- Account Name -->
-    <div class="text-left" style="font-size:18px;">
+    <div class="text-left" style="font-size:18px; margin-top:6px;">
         <b>
             Account Name:
             (<?php echo CommonHelper::get_account_code($acc_id).' --- '.CommonHelper::get_account_name($acc_id); ?>)
         </b>
     </div>
-
-    <!-- Tax Filter -->
-    <div class="text-center hide" style="font-size:15px; margin-top:5px;">
-        <b>Tax Filter:</b>
-        <?php
-            if ($tax_mode === 'with_tax') {
-                $taxName = DB::connection('mysql2')->table('gst')
-                    ->where('status', 1)
-                    ->where('acc_id', $tax_filter)
-                    ->select('percent', 'rate')->first();
-
-                if (!empty($tax_filter) && $tax_filter != '0') {
-                    echo $taxName ? $taxName->percent . ' (' . $taxName->rate . '%)' : 'Selected Tax';
-                } else {
-                    echo 'All Taxes';
-                }
-            } elseif ($tax_mode === 'non_tax') {
-                echo 'Non Tax';
-            } else {
-                echo 'All Taxes';
-            }
-        ?>
-    </div>
-
-    <!-- Date Range -->
-    <div class="text-center hide" style="font-size:16px; margin-top:5px;">
-        <b>
-            From Date:
-            (<?php echo date('d-m-Y', strtotime($from)); ?>)
-            &nbsp;&nbsp;==========
-            &nbsp;&nbsp;To Date:
-            (<?php echo date('d-m-Y', strtotime($to)); ?>)
-        </b>
-    </div>
-
 </div>
 
         <tr>
