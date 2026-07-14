@@ -62,9 +62,6 @@ if((!empty($Invoice))):
 ?>
 <table class="table table-bordered sf-table-list AutoCounter table{{$main_count}}" id="export_table_to_excel_<?php echo $main_count?>">
     <thead>
-        <th colspan="13" class="text-center"><h3 style="text-align: center;"><?php echo CommonHelper::get_company_name(Session::get('run_company'));?></h3></th>
-    </thead>
-    <thead>
         <th colspan="13" class="text-center">Debtor Outstanding Report</th>
     </thead>
     <thead>
