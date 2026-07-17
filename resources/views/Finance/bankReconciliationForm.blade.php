@@ -100,6 +100,7 @@ $All = session()->all();
                                                         </div>
                                                         <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" style="padding: 36px 30px;">
                                                             <a class="btn btn-sm btn-primary" disabled id="search" onclick="viewRangeWiseDataFilter();" style="margin-top: 32px;" >Search</a>
+                                                            
                                                         </div>
                                                     </div>
                                                 </div>

@@ -102,13 +102,27 @@ $AccYearTo = $AccYearDate->accyearto;
                                         </div>
                                         <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12 normalFilter">
                                             <label>Month</label>
-                                            <select class="multiselect-ui profit_Select form-control" name="filterMonth[]" multiple="multiple" id="dates-field3">
-                                            <?php 
-                                                for ($mm=1; $mm <= 12; $mm++) {
-                                                    $month = date('F', mktime(0,0,0,$mm, 1, date('Y')));
-                                                    echo '<option value="'.$mm.'" selected>'.$month.'</option>';
-                                                }
-                                            ?>
+                                            <div class="monthPickerWrap">
+                                                <button type="button" class="monthPickerBtn" id="monthPickerBtn">
+                                                    <span id="monthPickerLabel">All Months</span>
+                                                    <i class="fa fa-chevron-down"></i>
+                                                </button>
+                                                <div class="monthPickerPanel" id="monthPickerPanel">
+                                                    <?php 
+                                                        for ($mm=1; $mm <= 12; $mm++) {
+                                                            $month = date('F', mktime(0,0,0,$mm, 1, date('Y')));
+                                                            echo '<label class="monthCheckItem"><input type="checkbox" class="monthCheckbox" value="'.$mm.'" checked> '.$month.'</label>';
+                                                        }
+                                                    ?>
+                                                </div>
+                                            </div>
+                                            <select class="hide" name="filterMonth[]" multiple="multiple" id="dates-field3" style="display:none;">
+                                                <?php 
+                                                    for ($mm=1; $mm <= 12; $mm++) {
+                                                        $month = date('F', mktime(0,0,0,$mm, 1, date('Y')));
+                                                        echo '<option value="'.$mm.'" selected>'.$month.'</option>';
+                                                    }
+                                                ?>
                                             </select>
                                         </div>
 

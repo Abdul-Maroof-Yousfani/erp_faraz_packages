@@ -185,7 +185,7 @@ ul.sale-l{padding:0;}
 .calender a i{font-size:22px;color:#8b8c8d;}
 .notifction_text a{display:flex;align-items:center;justify-content:center;gap:3px;}
 .notifction_text a p{margin:0;color:#8b8c8d;font-weight:600;font-size:13px;}
-.searchBox{background:#f4f5fb;border:1px solid #f4f5fb;border-radius:60px;padding:15px 15px;position:relative;width:66px;transition:width 0.5s ease;}
+.searchBox{background:#f4f5fb;border:1px solid #f4f5fb;border-radius:60px;padding:8px 10px;position:relative;width:66px;transition:width 0.5s ease;}
 .searchButton{background:white;color:#2f3640;width:56px;height:56px;border-radius:50%;border:none;transition:0.4s;position:absolute;top:2px;right:4px;}
 .searchInput{background-color:transparent;border:transparent;font-size:16px;transition:0.4s;font-weight:700;width:0;transition:width 0.5s ease;}
 .searchBox:hover .searchInput{width:100%;transition:all 0.5s;}
@@ -488,7 +488,7 @@ p.outset{text-decoration-line:underline;}
  @font-face{font-family:erp-semiBold;src:url('erp-fonts/Montserrat-SemiBold.ttf');}
 @font-face{font-family:erp-Medium;src:url('erp-fonts/Montserrat-Medium.ttf');}
 @font-face{font-family:erp-regular;src:url('erp-fonts/Montserrat-Regular.ttf');}
-body{font-family:erp-regular;}
+/* body{font-family:erp-regular;} */
 .nav>li>a:focus,.nav>li>a:hover{text-decoration:none;background-color:#f5f5f5;}
 .navbar-login .navbar-nav>li>a{font-family:erp-semiBold;letter-spacing:1px;color:#333;}
 .navbar-login{background-color:#ffffff;border-color:#ffffff;padding:23px 0px 7px 0px;}
@@ -789,7 +789,7 @@ div#showDetailModelOneParamerter .modalWidth{width:95% !important;}
 .bg-blck td{background-color:#000;color:#f00 !important;}
 .mm-tabb tbody > tr > td{border:solid 1px #000 !important;}
 .mm-tabb thead > tr > th{border:solid 1px #000 !important;}
-.table-responsive{scrollbar-width:thin;scrollbar-color:#333 #ccc;overflow:auto;height:300px;}
+.table-responsive{scrollbar-width:thin;scrollbar-color:#333 #ccc;overflow:auto;height:600px;}
 .max-ww{min-width:349px;}
 .max-ww1{min-width:147px;}
 .max-ww2{min-width:177px;}

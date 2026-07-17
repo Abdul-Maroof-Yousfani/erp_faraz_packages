@@ -23,6 +23,76 @@
 {{--< ?php --}}
 {{--//$Companies = DB::table('company')->where('status',1)->get();?>--}}
 {{--
+
+<style>
+ /* ===================================================================== HOME PAGE — MODERN POLISH (cards,sidebar submenu,tables) ===================================================================== */
+/* ---------- Content wrapper spacing ---------- */
+.content-wrapper{padding:24px 26px !important;}
+/* ---------- Generic content cards (Sales Flow Chart / Sales Orders / Total Receipts & Payments / Receivables & Payables) ---------- */
+.dp_sdw,.dp_sdw2,.ibox,.cus-tab,.cus-tab2{border-radius:16px !important;border:1px solid #EDF0F8 !important;box-shadow:0 6px 22px rgba(20,38,92,0.07) !important;padding:22px 24px !important;}
+.dp_sdw h4,.ibox h4,.dp_sdw h6,.ibox-title h5,.dashTableHeading h6{font-size:17px !important;font-weight:800 !important;color:var(--erp-navy-dark) !important;margin-bottom:16px !important;}
+/* card header row (title + right-side control like year dropdown / date input) */
+.dp_sdw > .d-flex,.ibox-title{display:flex !important;align-items:center !important;justify-content:space-between !important;margin-bottom:14px !important;}
+/* dropdowns/date inputs sitting inside card headers (2023 selector,mm/dd/yyyy,July 2026) */
+.dp_sdw select,.dp_sdw input[type="date"],.dp_sdw input[type="month"]{height:38px !important;border-radius:9px !important;border:1px solid var(--erp-navy-tint) !important;background:#F7F9FD !important;font-weight:700 !important;font-size:12.5px !important;color:var(--erp-navy-dark) !important;}
+/* "View All Sales Orders" primary button already covered by earlier .dashTableHeading .btn-primary rule */
+/* empty-state helper text (e.g. "Cash Coming in and going out of your business") */
+.dp_sdw p.text-muted,.dp_sdw > p{color:#8892b0 !important;font-size:13px !important;font-weight:600 !important;}
+/* ---------- Sales Orders table polish ---------- */
+.home_table thead tr th:first-child{border-top-left-radius:10px !important;}
+.home_table thead tr th:last-child{border-top-right-radius:10px !important;}
+.home_table td .label,.home_table td span.badge{border-radius:20px !important;padding:5px 14px !important;font-size:11px !important;font-weight:800 !important;letter-spacing:.3px !important;}
+/* "Pending" status pill */
+.home_table td span:contains("Pending"){}
+.home_table td .badge-warning,.home_table td span.pending,span.pendings_approvalss{background:#FFF4E5 !important;color:#B5651D !important;border:none !important;box-shadow:none !important;}
+/* ---------- Sidebar:expanded submenu ("Roles / Main Menu Title / ...") ---------- */
+.smastermnu .list-unstyled{padding-left:6px !important;}
+.smastermnu .list-unstyled > li > a{font-size:13.5px !important;font-weight:600 !important;padding:9px 12px !important;border-radius:9px !important;color:var(--erp-sidebar-text) !important;margin-bottom:2px !important;}
+.smastermnu .list-unstyled > li:hover a{background:rgba(255,255,255,0.08) !important;color:#ffffff !important;}
+.smastermnu .list-unstyled li.active a{background:linear-gradient(90deg,var(--erp-navy) 0%,var(--erp-navy-dark) 100%) !important;color:#ffffff !important;}
+/* top-level active item ("Users") — clean pill instead of the odd orange strip */
+.sm-bx button.settingListSb.active,button.btn.settingListSb.theme-bg.active{background:linear-gradient(90deg,var(--erp-navy) 0%,var(--erp-navy-dark) 100%) !important;border-left:none !important;border-radius:10px !important;box-shadow:0 4px 14px rgba(30,58,138,0.35) !important;}
+/* remove any stray orange left-border/indicator coming from old theme rules on active menu rows */
+ul.m_list > li{border-left:none !important;}
+.sidenavnr ul li{border-bottom:none !important;}
+/* sidebar section spacing so groups don't feel cramped */
+ul.m_list{margin-bottom:6px !important;}
+.sm-bx button > p{font-size:14px !important;font-weight:600 !important;}
+/* scroll thumb inside sidebar,subtle not harsh */
+.sidenavnr::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.18) !important;border-radius:10px !important;}
+/* ===================================================================== HOME PAGE — CORRECTED SELECTORS (matches actual blade markup) ===================================================================== */
+/* remove ugly default focus outline on stat-card anchors */
+.priorMainBox2 a,.priorMainBox2 a:focus,.priorMainBox2 a:active,.priorMainBox2 a:hover{outline:none !important;box-shadow:none !important;text-decoration:none !important;}
+.mainDashBox{outline:none !important;}
+/* ---------- Generic card wrapper:Sales Flow Chart / Receipts / Receivables ---------- */
+.barChartHead,.pieChartHead,.card{background:#ffffff !important;border:1px solid #EDF0F8 !important;border-radius:16px !important;box-shadow:0 6px 22px rgba(20,38,92,0.07) !important;padding:22px 24px !important;margin-bottom:24px !important;}
+/* remove Bootstrap's default .card border/shadow so ours doesn't double up */
+.card{border:1px solid #EDF0F8 !important;}
+/* card header row (title + right control like year dropdown / date input) */
+.barChartHead > div:first-child,.card-header{display:flex !important;align-items:center !important;justify-content:space-between !important;margin-bottom:16px !important;padding:0 !important;border:none !important;background:transparent !important;}
+.barChartHead h6,.card-subtitle,.card-title,.dashTableHeading h6{font-size:17px !important;font-weight:800 !important;color:var(--erp-navy-dark) !important;margin:0 !important;}
+/* select / date inputs sitting in card headers */
+.selectOption select,input#monthyear,input#ReceivablesAndPayables,#year{height:38px !important;border-radius:9px !important;border:1px solid var(--erp-navy-tint) !important;background:#F7F9FD !important;font-weight:700 !important;font-size:12.5px !important;color:var(--erp-navy-dark) !important;padding:6px 12px !important;}
+/* chart canvas area needs real height/visible bounds */
+.barChartHead .card-body{padding:0 !important;min-height:280px !important;}
+canvas.Business_Flow_Chart{max-height:280px !important;}
+/* radio filter list (Sales / Purchase) above chart */
+.barChartHead ul.hidden{display:flex !important;gap:16px !important;list-style:none !important;padding:0 !important;margin:10px 0 0 !important;}
+.barChartHead ul.hidden li{font-size:12.5px !important;font-weight:600 !important;color:var(--erp-label) !important;display:flex !important;align-items:center !important;gap:6px !important;}
+/* Sales Orders table card (dashTableHeading + table) */
+.table-responsive.dashTable{background:#ffffff !important;border:1px solid #EDF0F8 !important;border-radius:16px !important;box-shadow:0 6px 22px rgba(20,38,92,0.07) !important;padding:22px 24px !important;}
+.dashTableHeading{display:flex !important;align-items:center !important;justify-content:space-between !important;margin-bottom:16px !important;}
+/* cash-flow helper text */
+.cashSection .card-title{color:#8892b0 !important;font-size:13px !important;font-weight:600 !important;}
+/* Receivables & Payables list */
+.payable.pieChartHead ul#ReceivablesAndPayablesDiv{list-style:none !important;padding:0 !important;margin-top:10px !important;}
+.payable.pieChartHead ul#ReceivablesAndPayablesDiv > li{margin-bottom:14px !important;}
+.payable.pieChartHead ul#ReceivablesAndPayablesDiv > li > h6{font-size:13.5px !important;font-weight:700 !important;color:var(--erp-navy-dark) !important;margin-bottom:8px !important;}
+.empty-state{display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;padding:50px 20px !important;color:#a7abc3 !important;text-align:center !important;min-height:200px !important;}
+.empty-state i{font-size:34px !important;margin-bottom:12px !important;color:#c9cfe6 !important;}
+.empty-state p{font-size:13.5px !important;font-weight:600 !important;margin:0 !important;color:#8892b0 !important;}
+</style>
+
 <div class="row">
    --}}
    {{--
@@ -542,91 +612,69 @@ $currentMonthYear = $currentDate->year;
 
 
 
-            function Business_Flow_Chart(data) {
+        function Business_Flow_Chart(data) {
 
-                let labels = [];
-                let datas = [];
+            let labels = [];
+            let datas = [];
 
-                // Loop through the array and extract month_name and total_amount
-                data.forEach(item => {
-                    labels.push(item.month_name);
-                    datas.push(item.total_amount);
-                });
-
-                let barChartEx = $('.Business_Flow_Chart');
-
-                var barChartExample = new Chart(barChartEx, {
-                    type: 'bar',
-                    options: {
-                        legend: {
-                            display: false
-                        },
-                    },
-                    data: {
-                        labels: labels,
-                        datasets: [
-                            {
-                                data: datas,
-                                barThickness: 15,
-                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                                borderColor: 'rgba(75, 192, 192, 1)'
-                            }
-                        ]
-                    }
-                });
+            if(!data || data.length === 0){
+                $('.Business_Flow_Chart').closest('.card-body').html('<div class="empty-state"><i class="fa fa-bar-chart"></i><p>No sales data available for this year</p></div>');
+                return;
             }
 
-            function tr_tp(data) {
-                var barChartEl = document.querySelector('#tr_tp');
+            data.forEach(item => {
+                labels.push(item.month_name);
+                datas.push(item.total_amount);
+            });
 
-                if (typeof barChartEl !== 'undefined' && barChartEl !== null) {
-                    console.log('innn');
-                    var barChartConfig = {
-                        chart: {
-                            height: 180,
-                            type: 'bar',
-                            parentHeightOffset: 0,
-                            toolbar: {
-                                show: false
-                            }
-                        },
-                        plotOptions: {
-                            bar: {
-                                horizontal: true,
-                                barHeight: '30%',
-                                endingShape: 'rounded'
-                            }
-                        },
-                        grid: {
-                            xaxis: {
-                                lines: {
-                                    show: false
-                                }
-                            },
-                            padding: {
-                                top: -15,
-                                bottom: -10
-                            }
-                        },
-                        colors: window.colors.solid.info,
-                        dataLabels: {
-                            enabled: false
-                        },
-                        series: [
-                            {
-                                data: data
-                            }
-                        ],
-                        xaxis: {
-                            categories: ['TR', 'TP']
+            let barChartEx = $('.Business_Flow_Chart');
+
+            var barChartExample = new Chart(barChartEx, {
+                type: 'bar',
+                options: {
+                    legend: { display: false },
+                },
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            data: datas,
+                            barThickness: 15,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)'
                         }
-                    };
-
-                    var barChart = new ApexCharts(barChartEl, barChartConfig);
-                    barChart.render();
+                    ]
                 }
-            }
+            });
+        }
 
+        function tr_tp(data) {
+            var barChartEl = document.querySelector('#tr_tp');
+
+            if (typeof barChartEl !== 'undefined' && barChartEl !== null) {
+
+                // agar dono values 0/empty hain to empty-state dikhao
+                let hasData = data && data.length > 0 && data.some(val => val && val > 0);
+
+                if(!hasData){
+                    $('#tr_tp').html('<div class="empty-state"><i class="fa fa-exchange"></i><p>No receipts or payments found for this month</p></div>');
+                    return;
+                }
+
+                var barChartConfig = {
+                    chart: { height: 180, type: 'bar', parentHeightOffset: 0, toolbar: { show: false } },
+                    plotOptions: { bar: { horizontal: true, barHeight: '30%', endingShape: 'rounded' } },
+                    grid: { xaxis: { lines: { show: false } }, padding: { top: -15, bottom: -10 } },
+                    colors: window.colors.solid.info,
+                    dataLabels: { enabled: false },
+                    series: [{ data: data }],
+                    xaxis: { categories: ['TR', 'TP'] }
+                };
+
+                var barChart = new ApexCharts(barChartEl, barChartConfig);
+                barChart.render();
+            }
+        }
             function BusinessFlowChartAjax(year)
             {
                     $.ajax({
@@ -672,8 +720,15 @@ $currentMonthYear = $currentDate->year;
 
                 salesAgingAjax(date);
                 vendorAgingAjax(date);
+
+                // thoda delay dekar check karo dono ajax complete hone ke baad kuch aaya ya nahi
+                setTimeout(() => {
+                    if($('#ReceivablesAndPayablesDiv').children().length === 0){
+                        $('#ReceivablesAndPayablesDiv').html('<div class="empty-state"><i class="fa fa-file-text-o"></i><p>No receivables or payables found for this date</p></div>');
+                    }
+                }, 1200);
             }
-            
+                        
             function salesAgingAjax(date)
             {
                     $.ajax({

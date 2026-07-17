@@ -41,7 +41,7 @@ use Carbon\Carbon;
 class FinanceDataCallController extends Controller
 {
     /**
-     * Create a new controller instance.
+     * Create a new controller instance. Create a new controller instance.
      *
      * @return void
      */
@@ -1867,21 +1867,14 @@ class FinanceDataCallController extends Controller
 
     }
 
-    public function trialBalanceData()
+public function trialBalanceData()
     {
-        ?>
-<style>
+        $m=$_GET['m'];
 
-
-</style>
-            <?php
-    $m=$_GET['m'];
-
-
-   $CompanyId=Input::get('m');
-    $from=Input::get('from');
-    $to=Input::get('to');
-    $nature=Input::get('nature').'%';
+        $CompanyId=Input::get('m');
+        $from=Input::get('from');
+        $to=Input::get('to');
+        $nature=Input::get('nature').'%';
         $total_opening_debit = 0;
         $total_opening_credit = 0;
         $end_debit_total = 0;
@@ -1889,120 +1882,84 @@ class FinanceDataCallController extends Controller
         $tx_trial_debit = 0;
         $tx_trial_credit = 0;
 
-if ($nature!='%'):
+        if ($nature!='%'):
+            $clause="and code like '".$nature."'";
+        else:
+            $clause="";
+        endif;
 
-    $clause="and code like '".$nature."'";
-else:
-
-    $clause="";
-endif;
-$newdate = strtotime('-1 day', strtotime($from));
-$newdate = date('Y-m-d', $newdate);
-//$acc_year_from = $this->session->userdata('accyearfrom');
+        $newdate = strtotime('-1 day', strtotime($from));
+        $newdate = date('Y-m-d', $newdate);
         $acc_year_from = '2019-07-01';
 ?>
 
+<div class="tb-report-wrap">
+    <div class="tb-report-header">
+        <h2 class="tb-company-name"><?php echo CommonHelper::get_company_name(Session::get('run_company'));?></h2>
+        <h3 class="tb-report-title">Trial Balance 6th Column</h3>
+        <p class="tb-date-range">FROM <b><?php echo date_format(date_create($from),'F d, Y'); ?></b> TO <b><?php echo date_format(date_create($to),'F d, Y'); ?></b></p>
+        <p class="tb-printed-on">Printed On: <?php echo date_format(date_create(date('Y-m-d')),'F d, Y'); ?></p>
+    </div>
 
-
- <h5 style="text-align: center">
-    <?php 	echo 'FROM <b>'.date_format(date_create($from),'F d, Y').'</b> TO <b>'.date_format(date_create($to),'F d, Y').'</b>'; ?>
- </h5>
-        <form action="<?php echo url('/'); ?>/fad/CustomiseTrialbal?m=<?php echo $_GET['m']; ?>" method="post" id='formsubmit'>
+    <form action="<?php echo url('/'); ?>/fad/CustomiseTrialbal?m=<?php echo $_GET['m']; ?>" method="post" id='formsubmit'>
         <input type="hidden" name="_token" value="<?php echo csrf_token() ?>">
-<table id="header-fixed1" class="table table-bordered sf-table-th sf-table-list" style="background:#FFF;">
-<thead class="">
-    <th colspan="9" class="text-center">
-    <h3 style="text-align: center;"><?php echo CommonHelper::get_company_name(Session::get('run_company'));?>
 
-    </h3>
-    </th>
-</thead>
-<thead class="">
-    <th colspan="9" class="text-center">
-        <h3 style="text-align: center;">Trial Balance 6th Column</h3>
-    </th>
-</thead>
-<thead class="">
-    <th colspan="9">
-        <h3 style="text-align: center">
-    <?php 	echo 'FROM <b>'.date_format(date_create($from),'F d, Y').'</b> TO <b>'.date_format(date_create($to),'F d, Y').'</b>'; ?>
-</h3>
-    </th>
-</thead>
-<thead>
-    <th colspan="9" class="text-center">
-        <p style="float: right;">Printed On: <?php echo date_format(date_create(date('Y-m-d')),'F d, Y')?></p>
-    </th>
-</thead>
-    <thead>
-        <th colspan="3" class="text-center"></th>
-        <th colspan="2" class="text-center">Opening Balance</th>
-        <th colspan="2" class="text-center">Transactions</th>
-        <th colspan="2" class="text-center">Closing Balance</th>
-    </thead>
-    <thead  class="fix" style="display: table-header-group">
-        <th  class="text-center">Sr.No</th>
-        <th  class="text-center col-sm-1">ACC.CODE</th>
-        <th  class="text-center col-sm-5">ACCOUNT</th>
-        <th  class="text-center col-sm-1">OPEN.DR</th>
-        <th  class="text-center col-sm-1">OPEN.CR</th>
-        <th  class="text-center col-sm-1">TX.DR</th>
-        <th  class="text-center col-sm-1">TX.CR</th>
-        <th  class="text-center col-sm-1">CL.DR</th>
-        <th  class="text-center col-sm-1">CL.CR</th>
-    </thead>
-    <tbody>
-    <?php
-    CommonHelper::companyDatabaseConnection($CompanyId);
-    $trial=  DB::select('select a.* from accounts a
-               inner join
-               transactions b
-               on
-               a.id=b.acc_id
-               where a.status=1
-               and b.amount>0
-			 '.$clause.' group by a.id order by a.level1,a.level2,a.level3,a.level4,a.level5,a.level6,a.level7');//->result_array();
-    //$trial=  DB::select('select * from accounts where status="1"
-	//		 '.$clause.' order by level1,level2,level3,level4,level5,level6,level7');//->result_array();
-    $Counter=1;
-      $paramOne = "fdc/getSummaryLedgerDetail?m=".$m;
-    foreach($trial as $row):
+        <div class="tb-table-scroll">
+        <table id="header-fixed1" class="tb-table">
+            <thead>
+                <tr class="tb-group-row">
+                    <th colspan="3"></th>
+                    <th colspan="2" class="tb-group-open">Opening Balance</th>
+                    <th colspan="2" class="tb-group-tx">Transactions</th>
+                    <th colspan="2" class="tb-group-close">Closing Balance</th>
+                </tr>
+                <tr class="tb-col-row">
+                    <th>Sr.No</th>
+                    <th>Acc.Code</th>
+                    <th>Account</th>
+                    <th class="text-right">Open.Dr</th>
+                    <th class="text-right">Open.Cr</th>
+                    <th class="text-right">Tx.Dr</th>
+                    <th class="text-right">Tx.Cr</th>
+                    <th class="text-right">Cl.Dr</th>
+                    <th class="text-right">Cl.Cr</th>
+                </tr>
+            </thead>
+            <tbody>
+<?php
+        CommonHelper::companyDatabaseConnection($CompanyId);
+        $trial=  DB::select('select a.* from accounts a
+                   inner join
+                   transactions b
+                   on
+                   a.id=b.acc_id
+                   where a.status=1
+                   and b.amount>0
+                 '.$clause.' group by a.id order by a.level1,a.level2,a.level3,a.level4,a.level5,a.level6,a.level7');
 
-    $array = explode('-',$row->code);
+        $Counter=1;
+        $paramOne = "fdc/getSummaryLedgerDetail?m=".$m;
 
-    $level = count($array);
+        foreach($trial as $row):
 
+            $array = explode('-',$row->code);
+            $level = count($array);
 
+            $tr_debit=0;
+            $tx_credit=0;
+            $tr_debit=DB::selectOne('select sum(amount)amount from transactions where acc_id="'.$row->id.'" and status=1 and opening_bal=0
+                          and debit_credit=1
+                          and v_date between "'.$from.'" and "'.$to.'" and status=1');
 
+            $tr_credit=DB::selectOne('select sum(amount)amount from transactions where acc_id="'.$row->id.'" and status=1 and opening_bal=0
+                    and debit_credit=0
+                    and v_date between "'.$from.'" and "'.$to.'" and status=1');
 
+            $total_check=0.1;
 
-
-
-		 $tr_debit=0;
-        $tx_credit=0;
-        $tr_debit=DB::selectOne('select sum(amount)amount from transactions where acc_id="'.$row->id.'" and status=1 and opening_bal=0
-					  and debit_credit=1
-	                  and v_date between "'.$from.'" and "'.$to.'" and status=1');
-
-        $tr_credit=DB::selectOne('select sum(amount)amount from transactions where acc_id="'.$row->id.'" and status=1 and opening_bal=0
-	            and debit_credit=0
-             	and v_date between "'.$from.'" and "'.$to.'" and status=1');
-
- $total_check=0.1;
-
- if ($total_check!=0):
-
-    ?>
-    <tr id="tr<?php echo $Counter ?>" class="<?php if($level == 1){echo 'smr-purple';}
-    elseif($level == 2){echo 'smr-pink';}
-    elseif($level == 3){echo 'smr-orange';}
-    elseif($level == 4){echo 'smr-yellow';}
-    elseif($level == 5){echo 'smr-lightgreen';}
-    elseif($level == 6){echo 'smr-green';}
-    elseif($level == 7){echo 'smr-lightblue';}
-
-    ?>">
-
+            if ($total_check!=0):
+?>
+    <tr id="tr<?php echo $Counter ?>" class="tb-row tb-level-<?php echo $level ?>">
 
         <td class="text-center">
         <?php echo $Counter;?>
@@ -2010,7 +1967,6 @@ $newdate = date('Y-m-d', $newdate);
         </td>
         <td class="text-left"><?php echo $row->code; ?></td>
         <td class="sf-uc-first text-left">
-
 
             <?php if($level ==1){ ?>	<div style="cursor: pointer" class="link_hide" onclick="newTabOpen('<?php echo $from?>','<?php echo $to?>','<?php echo $row->code?>')"    ><?php echo  $row->name;}
                 elseif($level ==2){?>	<div style="cursor: pointer"  class="link_hide"  onclick="newTabOpen('<?php echo $from?>','<?php echo $to?>','<?php echo $row->code?>')"  ><?php echo '<span class="SpacesCls">&emsp;</span>'.$row->name;}
@@ -2022,186 +1978,100 @@ $newdate = date('Y-m-d', $newdate);
                                         ?>
         </td>
 
+<?php
+            $open=0;
+            $open_data = DB::selectOne('select amount,debit_credit  from transactions where acc_code="'.$row->code.'" and status=1 and opening_bal=1
+                    and status=1');
+            if (!empty($open_data)):
+                if ($open_data->debit_credit==1):
+                    $open=$open_data->amount;
+                else:
+                    $open=$open_data->amount*-1;
+                endif;
+            endif;
 
-        <?php
+            $open_debit=DB::selectOne('select sum(amount)amount from transactions where acc_code="'.$row->code.'" and status=1 and opening_bal=0
+                    and status=1 and v_date between "'.$acc_year_from.'" and "'.$newdate.'" and debit_credit=1')->amount;
 
+            $open_credit=DB::selectOne('select sum(amount)amount from transactions where acc_code="'.$row->code.'" and status=1 and opening_bal=0
+                    and status=1 and v_date between "'.$acc_year_from.'" and "'.$newdate.'" and debit_credit=0')->amount;
 
-        $open=0;
-
-        $open_data = DB::selectOne('select amount,debit_credit  from transactions where acc_code="'.$row->code.'" and status=1 and opening_bal=1
-				and status=1');
-        if (!empty($open_data)):
-        if ($open_data->debit_credit==1):
-            $open=$open_data->amount;
-
-        else:
-            $open=$open_data->amount*-1;
-        endif;
-    endif;
-
-
-$open_debit=DB::selectOne('select sum(amount)amount from transactions where acc_code="'.$row->code.'" and status=1 and opening_bal=0
-				and status=1 and v_date between "'.$acc_year_from.'" and "'.$newdate.'" and debit_credit=1')->amount;
-
-
-        $open_credit=DB::selectOne('select sum(amount)amount from transactions where acc_code="'.$row->code.'" and status=1 and opening_bal=0
-				and status=1 and v_date between "'.$acc_year_from.'" and "'.$newdate.'" and debit_credit=0')->amount;
-
-
-
-
-        $total=$open_debit-$open_credit;
-
-
-        $open= $open+$total;
-
-
-
-        ?>
+            $total=$open_debit-$open_credit;
+            $open= $open+$total;
+?>
         <td class="text-right">
             <?php
-
-
             $credit=0;
             $debit=0;
 
-
             if ($open>0):
-
-                //	$open_debit_trial+=$open->amount;
-
-
                 $debit=$open;
                 $credit=0;
                 echo number_format($open,2);
                 $total_opening_debit += $open;
-                ?>
-
-
-                <?php
-
-
-
             endif; ?>
-
         </td>
         <td class="text-right"><?php if ($open<0):
-
-
                 $credit=$open*-1;
                 $debit=0;
-                //	$open_credit_trial+=$open->amount;
-
                 echo number_format($open*-1,2);
-
                 $total_opening_credit+=$open;
-                ?>
-
-
-            <?php endif; ?></td>
-
-
-        <?php
-
-
-
-        ?>
-
+            endif; ?></td>
 
         <td class="text-right">
-
             <?php
-
             $tx_trial_debit+=$tr_debit->amount;
             $tx_debit=$tr_debit->amount;
-
             echo number_format($tx_debit,2);
             ?>
-
-
-
         </td>
         <td class="text-right">
             <?php
-
             $tx_trial_credit+=$tr_credit->amount;
             $tx_credit=$tr_credit->amount;;
             echo number_format($tx_credit,2);
-
-
-
             ?>
-
-
         </td>
 
-
-        <?php 	 $end_result=$tr_debit->amount+$debit-$tr_credit->amount-$credit;
-
-
-        if ($tr_debit)
-
-        ?>
+<?php 	 $end_result=$tr_debit->amount+$debit-$tr_credit->amount-$credit; ?>
         <td class="text-right">
-
             <?php
-
             if ($end_result>0):
-
                 echo number_format($end_result,2);
                 $end_debit_total+=$end_result;
-                ?>
-
-
-                <?php
-
-
-
             endif; ?>
-
         </td>
         <td class="text-right">
-
             <?php
-
             if ($end_result<0):
-
-
-
                 echo number_format($end_result*-1,2);
                 $end_credit_total+=$end_result;
-                ?>
-
-
-                <?php
-
-
-
             endif; ?>
-
         </td>
 
        <?php if ($end_result==0): ?> <input value="<?php echo $end_result  ?>"  type="hidden" id="remove<?php echo  $Counter ?>" class="remove" /> <?php endif; ?>
     </tr>
-    <?php $Counter++; endif; endforeach; ?>
+<?php $Counter++; endif; endforeach; ?>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3">TOTAL</td>
+                    <td class="text-right"><?php echo number_format($total_opening_debit,2) ?></td>
+                    <td class="text-right"><?php echo number_format($total_opening_credit*-1,2) ?></td>
+                    <td class="text-right"><?php echo number_format($tx_trial_debit,2) ?></td>
+                    <td class="text-right"><?php echo number_format($tx_trial_credit,2) ?></td>
+                    <td class="text-right"><?php echo number_format($end_debit_total,2); ?></td>
+                    <td class="text-right"><?php echo number_format($end_credit_total*-1,2); ?></td>
+                </tr>
+            </tfoot>
+        </table>
+        </div>
 
-    </tbody>
-
-
-
-    <tr>
-        <td colspan="3">TOTAL</td>
-        <td class="text-right" colspan="1"><?php echo number_format($total_opening_debit,2) ?></td>
-        <td class="text-right" colspan="1"><?php echo number_format($total_opening_credit*-1,2) ?></td>
-        <td class="text-right" colspan="1"><?php echo number_format($tx_trial_debit,2) ?></td>
-        <td class="text-right" colspan="1"><?php echo number_format($tx_trial_credit,2) ?></td>
-        <td class="text-right" colspan="1"><?php echo number_format($end_debit_total,2); ?></td>
-        <td class="text-right" colspan="1"><?php echo number_format($end_credit_total*-1,2); ?></td>
-
-    </tr>
-</table>
+        <div class="tb-footer-action">
             <input type="submit" value="Customise Trial Balance" class="btn btn-success">
-        </form>
+        </div>
+    </form>
+</div>
 
 <script>
 $( document ).ready(function() {
@@ -2210,12 +2080,8 @@ $( document ).ready(function() {
            var id=  $(this).attr("id");
            var number=id.replace('remove','');
        //    $('#tr'+number).remove();
-
         });
-
-
-
-
+});
 </script>
 <?php
     }
@@ -5769,48 +5635,55 @@ $remianig_amount=0;
 
 	}
 
-	function flow_statement_ajax()
+function flow_statement_ajax()
 	{
 	    $from_date = Input::get('from_date');
         $to_date = Input::get('to_date');
         $CompanyId = Input::get('m');
         ?>
         <style>
-        .table > thead > tr > th, .table > tbody > tr > th, .table > tfoot > tr > th, .table > thead > tr > td, .table > tbody > tr > td, .table > tfoot > tr > td {padding: 0px !important;}
-        .popover {width: 100%}
-        .popover {
-    white-space: pre-wrap;
-}
-</style>
+        .table > thead > tr > th,.table > tbody > tr > th,.table > tfoot > tr > th,.table > thead > tr > td,.table > tbody > tr > td,.table > tfoot > tr > td{padding:0px !important;}
+        .popover{width:100%}
+        .popover{white-space:pre-wrap;}
+        .fs-card{border:1px solid #e6e8f5;border-radius:12px;overflow:hidden;margin-bottom:24px;box-shadow:0 1px 3px rgba(30,30,80,.08);background:#fff;}
+        .fs-banner{position:relative;background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;padding:18px 22px;}
+        .fs-banner .fs-banner-title{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700;}
+        .fs-banner .fs-icon{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;}
+        .fs-banner .fs-company-name{font-size:15px;font-weight:600;opacity:.95;margin-bottom:2px;}
+        .fs-banner .fs-date-range{font-size:12.5px;opacity:.9;margin-top:4px;}
+        .fs-banner .fs-printed-on{position:absolute;top:16px;right:20px;font-size:11.5px;opacity:.85;}
+        table.profit_Loss_Statement{width:100%;border-collapse:collapse;background:#fff;}
+        table.profit_Loss_Statement td,table.profit_Loss_Statement th{padding:8px 14px !important;font-size:13px;color:#2b2f4a;border:none !important;border-bottom:1px solid #edeef7 !important;}
+        table.profit_Loss_Statement tbody tr:hover td{background:#f5f6ff;}
+        tr.fs-section-header th{background:#eef0fb !important;color:#241e6b !important;font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #241e6b !important;}
+        .fs-strong{font-size:14.5px !important;font-weight:800 !important;color:#1f2440 !important;}
+        tr.fs-total-row td{background:#eef0ff !important;color:#241e6b !important;font-weight:700;font-size:14px !important;border-left:4px solid #6d63e0 !important;border-top:1px solid #d7dbf5 !important;}
+        tr.fs-highlight-row td{background:#fff7e6 !important;color:#92400e !important;font-weight:800;font-size:14.5px !important;border-left:4px solid #f59e0b !important;border-top:1px solid #f0c36d !important;}
+        table.profit_Loss_Statement a{color:#3452d1;text-decoration:none;}
+        table.profit_Loss_Statement a:hover{text-decoration:underline;}
+        .table-responsive{height:600px;}
+
+        </style>
         <div class="row">
             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                 <div class="">
-<!--                    <div class="">-->
-<!--                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center">-->
-<!--                            <p style="font-size:20px;">Profit & Loss Statement</p>-->
-<!--                        </div>-->
-<!--                    </div>-->
         <div class="row">
         <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12"></div>
             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class="fs-card">
+
+                <div class="fs-banner">
+                    <span class="fs-printed-on">Printed On: <?php echo date_format(date_create(date('Y-m-d')),'F d, Y')?></span>
+                    <div class="fs-company-name"><?php  echo CommonHelper::getCompanyName(Session::get('run_company'));?></div>
+                    <div class="fs-banner-title"><span class="fs-icon">&#128200;</span> Flow Statement</div>
+                    <div class="fs-date-range">From Date: <?php  echo CommonHelper::changeDateFormat($from_date);?> &nbsp;&nbsp;To Date: <?php  echo CommonHelper::changeDateFormat($to_date);?></div>
+                </div>
+
                 <div class="table-responsive" >
 
-                <table class="table table-bordered sf-table-th sf-table-list profit_Loss_Statement" style="pading:10px 8px !important;" id="exportIncomeStatement1" style="background:#FFF !important;">
+                <table class="table table-bordered sf-table-th sf-table-list profit_Loss_Statement" id="exportIncomeStatement1">
                             <tbody>
-                                <tr>
-                                    <td colspan="2" class="text-center"><h3 class="text-center"><?php  echo CommonHelper::getCompanyName(Session::get('run_company'));?></h3></td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2" class="text-center"><p style="font-size:20px;" class="text-center">Flow Statement</p></td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2" class="text-center"><h3 class="text-center">Form Date: (<?php  echo CommonHelper::changeDateFormat($from_date);?>) To Date: (<?php  echo CommonHelper::changeDateFormat($to_date);?>)</h3></td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2" class="text-right"><p style="float: right;">Printed On: <?php echo date_format(date_create(date('Y-m-d')),'F d, Y')?></p></td>
-                                </tr>
-                                <tr>
-                                    <!--  <th>Revenue</th>-->
+                                <tr class="fs-section-header">
                                     <th style="" class="text-center">Account</th>
                                     <th>Amount</th>
                                 </tr>
@@ -5827,9 +5700,9 @@ $remianig_amount=0;
                             ?>
                             <tr>
 
-                                <td <?php if($head==3){ ?> style="font-size: large;font-weight: bolder" <?php } ?> >
+                                <td <?php if($head==3){ ?> class="fs-strong" <?php } ?> >
                                 <?php if($level == 1):?>
-                                        <b style="font-size: large;font-weight: bolder"><a href="#" onclick="newTabOpen('<?php echo $from_date?>','<?php echo $to_date?>','<?php echo $row->code?>')"><?php echo strtoupper($row->name)?></a></b>
+                                        <b class="fs-strong"><a href="#" onclick="newTabOpen('<?php echo $from_date?>','<?php echo $to_date?>','<?php echo $row->code?>')"><?php echo strtoupper($row->name)?></a></b>
                                     <?php elseif($level == 2):?>
                                         <a href="#" onclick="newTabOpen('<?php echo $from_date?>','<?php echo $to_date?>','<?php echo $row->code?>')"><?php echo  '&emsp;&emsp;'. $row->name?></a>
                                     <?php elseif($level == 3):?>
@@ -5844,7 +5717,7 @@ $remianig_amount=0;
                                         <a href="#" onclick="newTabOpen('<?php echo $from_date?>','<?php echo $to_date?>','<?php echo $row->code?>')"><?php echo  '&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;'. $row->name?></a>
                                     <?php endif;?>
                                 </td>
-                                <td <?php if($head==3){ ?> style="font-size: large;font-weight: bolder" <?php } ?> class="text-right">
+                                <td <?php if($head==3){ ?> class="fs-strong" <?php } ?> class="text-right">
 
                                 <?php $amount= CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row->code,'1',0,1);
 
@@ -5877,12 +5750,12 @@ $remianig_amount=0;
 
                                     endif;
                             ?>
-                            <tr style="background-color: lightsteelblue">
-                                <td colspan="1" style="font-size: large;font-weight: bolder">Total Revenue</td>
-                                <td style="font-size: large;font-weight: bolder" class="text-right"><?php echo $revenue ?></td>
+                            <tr class="fs-total-row">
+                                <td colspan="1">Total Revenue</td>
+                                <td class="text-right"><?php echo $revenue ?></td>
                             </tr>
 
-                            <tr>
+                            <tr class="fs-section-header">
 
                                 <th style="" class="text-center">Account</th>
                                 <th>Amount</th>
@@ -5957,7 +5830,7 @@ $remianig_amount=0;
 
                     echo number_format($purchase_amount,2);
 
-?>
+                    ?>
                             </tr>
 
 
@@ -5966,7 +5839,7 @@ $remianig_amount=0;
                              <td class="text-right"><?php
 
 
-         $sales_dr=DB::Connection('mysql2')->table('transactions')
+                    $sales_dr=DB::Connection('mysql2')->table('transactions')
                     ->where('status',1)
                     ->where('debit_credit',1)
                     ->where('acc_id',768)
@@ -5994,7 +5867,7 @@ $remianig_amount=0;
                     ->where('opening_bal',0)
                     ->sum('amount');
 
-                $sales_cr=DB::Connection('mysql2')->table('transactions')
+                    $sales_cr=DB::Connection('mysql2')->table('transactions')
                     ->where('status',1)
                     ->where('debit_credit',0)
                     ->where('acc_id',768)
@@ -6003,37 +5876,37 @@ $remianig_amount=0;
                     ->sum('amount');
 
 
-        $sales=$sales_dr-$sales_cr;
+                    $sales=$sales_dr-$sales_cr;
 
                     $cogs=$open_amount+$purchase_amount-$sales;
                     echo number_format($cogs,2);
-$in_amount=0;
-$remianig_amount=0;
+                    $in_amount=0;
+                    $remianig_amount=0;
                              ?></td>
                             </tr>
 
 
-                            <tr style="background-color: lightsteelblue">
-                                <td colspan="1" style="font-size: large;font-weight: bolder">Cost Of Goods Sold</td>
+                            <tr class="fs-total-row">
+                                <td colspan="1">Cost Of Goods Sold</td>
                                 <?php ; ?>
-                                <td style="font-size: large;font-weight: bolder" class="text-right"><?php echo number_format($sales,2) ?></td>
+                                <td class="text-right"><?php echo number_format($sales,2) ?></td>
                             </tr>
 
 
 
 
-                            <tr data-toggle="Detailed" title="Detailed" data-content="Closing Inventory =Opening +Net Purchas+Sales Return-Sales
-                             <?php echo number_format($open_amount,2).'+'.number_format($purchase_amount,2).'+'.number_format($sales_return,2).'-'.$saless.'='.number_format($open_amount+$purchase_amount+$sales_return-$saless,2) ?>" style="background-color: lightyellow">
-                                <td colspan="1" style="font-size: large;font-weight: bolder">Gross Profit</td>
+                            <tr class="fs-highlight-row" data-toggle="Detailed" title="Detailed" data-content="Closing Inventory =Opening +Net Purchas+Sales Return-Sales
+                             <?php echo number_format($open_amount,2).'+'.number_format($purchase_amount,2).'+'.number_format($sales_return,2).'-'.$saless.'='.number_format($open_amount+$purchase_amount+$sales_return-$saless,2) ?>">
+                                <td colspan="1">Gross Profit</td>
                                 <?php
 
                                $gross_profit= $revenuee-$sales;
                                 ?>
 
-                                <td style="font-size: large;font-weight: bolder" class="text-right"><?php echo number_format($revenuee-$sales,2) ?></td>
+                                <td class="text-right"><?php echo number_format($revenuee-$sales,2) ?></td>
                             </tr>
 
-                            <tr>
+                            <tr class="fs-section-header">
 
                                 <th style="" class="text-center">Account</th>
                                 <th>Amount</th>
@@ -6055,10 +5928,9 @@ $remianig_amount=0;
                         if ($amount!=0):
                         ?>
                             <tr>
-<!--                                <td>< ?php echo $row->code.'=='.$level ?></td>-->
-                                <td <?php if($head==3){ ?> style="font-size: large;font-weight: bolder" <?php } ?> >
+                                <td <?php if($head==3){ ?> class="fs-strong" <?php } ?> >
                                     <?php if($level == 1):?>
-                                        <b style="font-size: large;font-weight: bolder"><a href="#" onclick="showDetailModelOneParamerter('<?= $paramOne ?>','<?= $from_date.','.$to_date.','.$row->code?>','Ledger Detail')"><?php echo strtoupper($row->name)?></a></b>
+                                        <b class="fs-strong"><a href="#" onclick="showDetailModelOneParamerter('<?= $paramOne ?>','<?= $from_date.','.$to_date.','.$row->code?>','Ledger Detail')"><?php echo strtoupper($row->name)?></a></b>
                                     <?php elseif($level == 2):?>
                                         <a href="#" onclick="showDetailModelOneParamerter('<?= $paramOne ?>','<?= $from_date.','.$to_date.','.$row->code?>','Ledger Detail')"><?php echo  '&emsp;&emsp;'. $row->name?></a>
                                     <?php elseif($level == 3):?>
@@ -6073,7 +5945,7 @@ $remianig_amount=0;
                                         <a href="#" onclick="showDetailModelOneParamerter('<?= $paramOne ?>','<?= $from_date.','.$to_date.','.$row->code?>','Ledger Detail')"><?php echo  '&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;'. $row->name?></a>
                                     <?php endif;?>
                                 </td>
-                                <td <?php if($head==3){ ?> style="font-size: large;font-weight: bolder" <?php } ?> class="text-right">
+                                <td <?php if($head==3){ ?> class="fs-strong" <?php } ?> class="text-right">
                                 <?php
                                     if ($amount<0):
                                     $amount=($amount*-1);
@@ -6104,9 +5976,9 @@ $remianig_amount=0;
                                     endif;
 
                             ?>
-                            <tr style="background-color: lightsteelblue">
-                                <td colspan="1" style="font-size: large;font-weight: bolder">Total Expenses</td>
-                                <td style="font-size: large;font-weight: bolder" class="text-right"><?php echo $expense ?></td>
+                            <tr class="fs-total-row">
+                                <td colspan="1">Total Expenses</td>
+                                <td class="text-right"><?php echo $expense ?></td>
                             </tr>
 
                             <?php
@@ -6123,8 +5995,8 @@ $remianig_amount=0;
 
                             endif;
                             ?>
-                            <tr style="background-color: lightyellow">
-                                <td colspan="1" style="font-size: large;font-weight: bolder">Net Income Before Taxes</td>
+                            <tr class="fs-highlight-row">
+                                <td colspan="1">Net Income Before Taxes</td>
                                 <td class="text-right" colspan="2"><?php echo  $net_income_before ?></td>
                             </tr>
 
@@ -6132,7 +6004,7 @@ $remianig_amount=0;
 
 
                             <?php //flow start ?>
- <tr>
+                        <tr class="fs-section-header">
 
                                 <th style="" class="text-center">Account</th>
                                 <th>Amount</th>
@@ -6154,16 +6026,15 @@ $remianig_amount=0;
                         if ($amount!=0):
                         ?>
                             <tr>
-<!--                                <td>< ?php echo $row->code.'=='.$level ?></td>-->
-                                <td <?php if($head==5){ ?> style="font-size: large;font-weight: bolder" <?php } ?> >
+                                <td <?php if($head==5){ ?> class="fs-strong" <?php } ?> >
                                     <?php if($level == 5):?>
-                                        <b style="font-size: large;font-weight: bolder"><a href="#" onclick="showDetailModelOneParamerter('<?= $paramOne ?>','<?= $from_date.','.$to_date.','.$row->code?>','Ledger Detail')"><?php echo strtoupper($row->name)?></a></b>
+                                        <b class="fs-strong"><a href="#" onclick="showDetailModelOneParamerter('<?= $paramOne ?>','<?= $from_date.','.$to_date.','.$row->code?>','Ledger Detail')"><?php echo strtoupper($row->name)?></a></b>
                                     <?php elseif($level == 6):?>
                                         <a href="#" onclick="showDetailModelOneParamerter('<?= $paramOne ?>','<?= $from_date.','.$to_date.','.$row->code?>','Ledger Detail')"><?php echo  '&emsp;&emsp;'. $row->name?></a>
 
                                     <?php endif;?>
                                 </td>
-                                <td <?php if($head==3){ ?> style="font-size: large;font-weight: bolder" <?php } ?> class="text-right">
+                                <td <?php if($head==3){ ?> class="fs-strong" <?php } ?> class="text-right">
                                 <?php
                                     if ($amount<0):
                                     $amount=($amount*-1);
@@ -6187,9 +6058,9 @@ $remianig_amount=0;
                                 endif;
 
                             ?>
-                            <tr style="background-color: lightsteelblue">
-                                <td colspan="1" style="font-size: large;font-weight: bolder">Total WITHHOLDING TAX RECEIVABLE</td>
-                                <td style="font-size: large;font-weight: bolder" class="text-right"><?php echo number_format($withhold,2) ?></td>
+                            <tr class="fs-total-row">
+                                <td colspan="1">Total WITHHOLDING TAX RECEIVABLE</td>
+                                <td class="text-right"><?php echo number_format($withhold,2) ?></td>
                             </tr>
 
 
@@ -6200,7 +6071,7 @@ $remianig_amount=0;
 
 
                              <?php //flow start third  phase ?>
-                                     <tr>
+                                     <tr class="fs-section-header">
 
                                 <th style="" class="text-center">Account</th>
                                 <th>Amount</th>
@@ -6222,16 +6093,15 @@ $remianig_amount=0;
                         if ($amount!=0):
                         ?>
                             <tr>
-<!--                                <td>< ?php echo $row->code.'=='.$level ?></td>-->
-                                <td <?php if($head==3){ ?> style="font-size: large;font-weight: bolder" <?php } ?> >
+                                <td <?php if($head==3){ ?> class="fs-strong" <?php } ?> >
                                     <?php if($level == 3):?>
-                                        <b style="font-size: large;font-weight: bolder"><a href="#" onclick="showDetailModelOneParamerter('<?= $paramOne ?>','<?= $from_date.','.$to_date.','.$row->code?>','Ledger Detail')"><?php echo strtoupper($row->name)?></a></b>
+                                        <b class="fs-strong"><a href="#" onclick="showDetailModelOneParamerter('<?= $paramOne ?>','<?= $from_date.','.$to_date.','.$row->code?>','Ledger Detail')"><?php echo strtoupper($row->name)?></a></b>
                                     <?php elseif($level == 4):?>
                                         <a href="#" onclick="showDetailModelOneParamerter('<?= $paramOne ?>','<?= $from_date.','.$to_date.','.$row->code?>','Ledger Detail')"><?php echo  '&emsp;&emsp;'. $row->name?></a>
 
                                     <?php endif;?>
                                 </td>
-                                <td <?php if($head==3){ ?> style="font-size: large;font-weight: bolder" <?php } ?> class="text-right">
+                                <td <?php if($head==3){ ?> class="fs-strong" <?php } ?> class="text-right">
                                 <?php
                                     if ($amount<0):
                                     $amount=($amount*-1);
@@ -6253,16 +6123,16 @@ $remianig_amount=0;
                             $withhold_pa=$withhold_pa*-1;
                             endif;
                             ?>
-                            <tr style="background-color: lightsteelblue">
-                                <td colspan="1" style="font-size: large;font-weight: bolder">Total WITHHOLDING TAX PAYABLE</td>
-                                <td style="font-size: large;font-weight: bolder" class="text-right"><?php echo number_format($withhold_pa,2) ?></td>
+                            <tr class="fs-total-row">
+                                <td colspan="1">Total WITHHOLDING TAX PAYABLE</td>
+                                <td class="text-right"><?php echo number_format($withhold_pa,2) ?></td>
                             </tr>
 
 
 
 
                                      <?php //flow start second phase ?>
-                                     <tr>
+                                     <tr class="fs-section-header">
 
                                 <th style="" class="text-center">Account</th>
                                 <th>Amount</th>
@@ -6284,15 +6154,14 @@ $remianig_amount=0;
                         if ($amount!=0):
                         ?>
                             <tr>
-<!--                                <td>< ?php echo $row->code.'=='.$level ?></td>-->
-                                <td <?php if($head==4){ ?> style="font-size: large;font-weight: bolder" <?php } ?> >
+                                <td <?php if($head==4){ ?> class="fs-strong" <?php } ?> >
                                     <?php if($level == 4):?>
-                                        <b style="font-size: large;font-weight: bolder"><a href="#" onclick="showDetailModelOneParamerter('<?= $paramOne ?>','<?= $from_date.','.$to_date.','.$row->code?>','Ledger Detail')"><?php echo strtoupper($row->name)?></a></b>
+                                        <b class="fs-strong"><a href="#" onclick="showDetailModelOneParamerter('<?= $paramOne ?>','<?= $from_date.','.$to_date.','.$row->code?>','Ledger Detail')"><?php echo strtoupper($row->name)?></a></b>
 
 
                                     <?php endif;?>
                                 </td>
-                                <td <?php if($head==4){ ?> style="font-size: large;font-weight: bolder" <?php } ?> class="text-right">
+                                <td <?php if($head==4){ ?> class="fs-strong" <?php } ?> class="text-right">
                                 <?php
                                     if ($amount<0):
                                     $amount=($amount*-1);
@@ -6314,14 +6183,14 @@ $remianig_amount=0;
                                 $bip=$bip*-1;
                                 endif;
                             ?>
-                            <tr style="background-color: lightsteelblue">
-                                <td colspan="1" style="font-size: large;font-weight: bolder">Total BIP CONSTRUCTION  ADVANCE</td>
-                                <td style="font-size: large;font-weight: bolder" class="text-right"><?php echo number_format($bip,2) ?></td>
+                            <tr class="fs-total-row">
+                                <td colspan="1">Total BIP CONSTRUCTION  ADVANCE</td>
+                                <td class="text-right"><?php echo number_format($bip,2) ?></td>
                             </tr>
 
 
                              <?php //flow start fourth  phase ?>
-                                     <tr>
+                                     <tr class="fs-section-header">
 
                                 <th style="" class="text-center">Account</th>
                                 <th>Amount</th>
@@ -6343,16 +6212,15 @@ $remianig_amount=0;
                         if ($amount!=0):
                         ?>
                             <tr>
-<!--                                <td>< ?php echo $row->code.'=='.$level ?></td>-->
-                                <td <?php if($head==2){ ?> style="font-size: large;font-weight: bolder" <?php } ?> >
+                                <td <?php if($head==2){ ?> class="fs-strong" <?php } ?> >
                                     <?php if($level == 2):?>
-                                        <b style="font-size: large;font-weight: bolder"><a href="#" onclick="showDetailModelOneParamerter('<?= $paramOne ?>','<?= $from_date.','.$to_date.','.$row->code?>','Ledger Detail')"><?php echo strtoupper($row->name)?></a></b>
+                                        <b class="fs-strong"><a href="#" onclick="showDetailModelOneParamerter('<?= $paramOne ?>','<?= $from_date.','.$to_date.','.$row->code?>','Ledger Detail')"><?php echo strtoupper($row->name)?></a></b>
                                     <?php elseif($level == 3):?>
                                         <a href="#" onclick="showDetailModelOneParamerter('<?= $paramOne ?>','<?= $from_date.','.$to_date.','.$row->code?>','Ledger Detail')"><?php echo  '&emsp;&emsp;'. $row->name?></a>
 
                                     <?php endif;?>
                                 </td>
-                                <td <?php if($head==2){ ?> style="font-size: large;font-weight: bolder" <?php } ?> class="text-right">
+                                <td <?php if($head==2){ ?> class="fs-strong" <?php } ?> class="text-right">
                                 <?php
                                     if ($amount<0):
                                     $amount=($amount*-1);
@@ -6374,17 +6242,19 @@ $remianig_amount=0;
                         endif;
 
                             ?>
-                            <tr style="background-color: lightsteelblue">
-                                <td colspan="1" style="font-size: large;font-weight: bolder">Total BURHANI AQMS INDUSTRIES RPAYMENT	</td>
-                                <td style="font-size: large;font-weight: bolder" class="text-right"><?php echo number_format($burhani,2) ?></td>
+                            <tr class="fs-total-row">
+                                <td colspan="1">Total BURHANI AQMS INDUSTRIES RPAYMENT	</td>
+                                <td class="text-right"><?php echo number_format($burhani,2) ?></td>
                             </tr>
 
-                            <tr style="background-color: lightyellow">
-                                <td colspan="1" style="font-size: large;font-weight: bolder">NET INCOME AFTER TAXES AND CAPITAL EXPENDITURE</td>
+                            <tr class="fs-highlight-row">
+                                <td colspan="1">NET INCOME AFTER TAXES AND CAPITAL EXPENDITURE</td>
                                 <td class="text-right" colspan="2"><?php echo number_format($net_income_beforee-$withhold-$withhold_pa-$bip-$burhani,2) ?></td>
                             </tr>
 
+                            </tbody>
                             </table>
+                        </div>
                         </div>
 
                     </div>

@@ -38,6 +38,7 @@
 				updateTime();
 			}, 60000);
 		});
+
 	</script>
 
 	<!--[if IE]>
@@ -82,7 +83,8 @@
 	<link href="{{ URL::asset('assets/charts/apexcharts.css') }}" rel="stylesheet" />
 	<link href="{{ URL::asset('assets/charts/chart-apex.css') }}" rel="stylesheet" />
 	<link href="{{ URL::asset('app-assets/css/components.css') }}" rel="stylesheet" />
-
+   <link href="http://localhost/erp_faraz_packages/assets/js/select2/css_ajax.css" rel="stylesheet">
+    <script src="http://localhost/erp_faraz_packages/assets/js/select2/js_ajax.js"></script>
 	<script src="{{ URL::asset('assets/MegaMenu/webslidemenu.js') }}"></script>
 	<!-- <script src="{{ URL::asset('assets/custom/js/customFunctions.js') }}"></script> -->
 	<script src="{{ URL::asset('assets/custom/js/customMainFunction.js') }}"></script>
@@ -2269,6 +2271,7 @@ if (!empty($_GET['pageType'])) {
 			}
 		}
 
+
 	</script>
 
 
@@ -2294,4 +2297,101 @@ if (!empty($_GET['pageType'])) {
 
 
 	<!-- END: Page JS-->
+
+
+	<script>
+		  $(document).ready(function(){
+    // quick select-all / clear-all row upar add karo
+    $('#monthPickerPanel').prepend('<div class="monthPickerActions"><a id="monthSelectAll">Select All</a><a id="monthClearAll">Clear All</a></div>');
+
+    function syncHiddenSelect(){
+        let checkedVals = [];
+        $('.monthCheckbox:checked').each(function(){ checkedVals.push($(this).val()); });
+        $('#dates-field3 option').prop('selected', false);
+        checkedVals.forEach(function(v){
+            $('#dates-field3 option[value="'+v+'"]').prop('selected', true);
+        });
+        updateMonthLabel(checkedVals.length);
+    }
+
+    function updateMonthLabel(count){
+        if(count === 12){ $('#monthPickerLabel').text('All Months'); }
+        else if(count === 0){ $('#monthPickerLabel').text('Select Months'); }
+        else{ $('#monthPickerLabel').text(count + ' Months Selected'); }
+    }
+
+    $('#monthPickerBtn').on('click', function(e){
+        e.stopPropagation();
+        $('#monthPickerPanel').toggleClass('open');
+        $(this).toggleClass('active');
+    });
+
+    $(document).on('click', function(e){
+        if(!$(e.target).closest('.monthPickerWrap').length){
+            $('#monthPickerPanel').removeClass('open');
+            $('#monthPickerBtn').removeClass('active');
+        }
+    });
+
+    $('.monthCheckbox').on('change', syncHiddenSelect);
+
+    $('#monthSelectAll').on('click', function(){
+        $('.monthCheckbox').prop('checked', true);
+        syncHiddenSelect();
+    });
+    $('#monthClearAll').on('click', function(){
+        $('.monthCheckbox').prop('checked', false);
+        syncHiddenSelect();
+    });
+
+    syncHiddenSelect(); // initial label set
+});
+
+
+		</script>
+<script type="text/javascript">
+$(document).ready(function(){
+    // Purana explicit .select2 wala init (already jahan class lagi hui hai)
+    $('.select2').select2();
+
+    // Naya - dashboard/page ke sab select.form-control per bhi Select2 chalao
+    // (jo pehle se .select2 nahi hain, aur jo multiple attribute wale nahi hain - unke liye alag treat karna behtar hai)
+    $('select.form-control').not('.select2').not('.no-select2').each(function(){
+        $(this).select2({
+            width: '100%',
+            placeholder: $(this).data('placeholder') || 'Select an option',
+            allowClear: $(this).data('allow-clear') ? true : false
+        });
+    });
+});
+
+function DeletePvActivity(pv_id,pv_no,pv_date,pv_amount)
+{
+    //alert(pv_id+pv_no+pv_date+pv_amount); return false;
+    if (confirm('Are you sure you want to delete this Voucher...?'))
+    {
+        var m = '1';
+        $.ajax({
+            url: 'http://localhost/erp_faraz_packages/DeletePVoucherActivity',
+            type: "GET",
+            data: {
+                pv_id:pv_id,
+                pv_no:pv_no,
+                pv_date:pv_date,
+                pv_amount:pv_amount
+            },
+            success:function(data) {
+                //alert(data); return false;
+                alert('Successfully Deleted');
+                $(".tr"+pv_id).remove();
+                //return false;
+                //    filterVoucherList();
+            }
+        });
+    }
+
+
+}
+</script>
+
 </body>

@@ -109,12 +109,12 @@ $AccYearTo = $AccYearDate->accyearto;
                                 </div>
                             </div>
                             <div class="lineHeight">&nbsp;</div>
-                            <div class="row">
+                            <div class="row  align-items-center">
                                 <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                     <?php echo Form::open(array('url' => 'fad/addAccountDetail?m='.$m.'','id'=>'chartofaccountForm'));?>
-                                    <div class="row">
+                                    <div class="row align-items-center">
                                         <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-
+                                            <label>From Date</label>
                                             <div class="wrapper1" style="margin-top:5px;">
                                                 <input
 
@@ -134,6 +134,7 @@ $AccYearTo = $AccYearDate->accyearto;
 
                                         </div>
                                         <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+                                               <label>To Date</label>
                                             <date-util format="dd-mm-yyyy"></date-util>
                                             <input name="to"
                                                    class="form-control"

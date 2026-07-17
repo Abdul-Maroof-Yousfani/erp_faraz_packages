@@ -41,6 +41,13 @@ $icons = [
     ?>
     <style>
     img.logo_m{width:216px;}
+.searchBox{position:relative;}
+.search-results-dropdown{position:absolute;top:100%;left:0;right:0;background:#fff;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);margin-top:6px;list-style:none;padding:6px 0;max-height:300px;overflow-y:auto;z-index:999;}
+.search-results-dropdown li a{display:block;padding:8px 15px;color:#333;text-decoration:none;font-size:14px;}
+.search-results-dropdown li a:hover{background:#f0f2f5;}
+.search-results-dropdown .no-result{padding:8px 15px;color:#999;font-size:14px;}
+
+
     </style>
     <div id="mySidenav" class="sidenavnr">
         <div class="logo_flex">
@@ -217,13 +224,15 @@ $icons = [
              <div class="col-md-4 col-lg-4">
                 <div class="searchBox">
                     <div class="serch_input">
-                        <input class="searchInput"type="text" name="" placeholder="Search">
+                        <input class="searchInput" type="text" name="" id="dashboardSearchInput" placeholder="Search" autocomplete="off">
                         <div class="but_search">
-                            <button class="searchButton" href="#">
+                            <button class="searchButton" type="button">
                                 <i class="fa fa-search"></i>
                             </button>
                         </div>
                     </div>
+                    <!-- yeh naya div add karein -->
+                    <ul id="searchResultsList" class="search-results-dropdown" style="display:none;"></ul>
                 </div>
             </div>  
         
@@ -568,8 +577,8 @@ $icons = [
 .sliding_form_inner{padding:10px;height:300px;display:inline-block;}
 .sliding_form_inner .form-group .fields_box{margin-bottom:10px;}
 .sliding_form_inner .form-group{padding:0px;}
+}
 
-   }
 </style>
 <div style="display:none;" class="sliding_form slide_out">
    <a href="#" id="form_trigger" style="background: #121111 !important;" onclick="getOnlineUsersAjax()">Online User's</a>
@@ -614,6 +623,82 @@ $icons = [
 
 
    });
+
+
+
+$(document).ready(function() {
+
+    // ---- Dashboard Menu Search ----
+    var menuIndex = [];
+
+    // Sidenav ke links collect karo
+    $('#mySidenav .smastermnu ul li a').each(function() {
+        var name = $(this).text().trim();
+        var url = $(this).attr('href');
+        if (name && url) {
+            menuIndex.push({ name: name, url: url });
+        }
+    });
+
+    // Top mega-dropdown ke links bhi collect karo
+    $('.mega-dropdown-menu li a').each(function() {
+        var name = $(this).text().trim();
+        var url = $(this).attr('href');
+        if (name && url && url !== '#') {
+            menuIndex.push({ name: name, url: url });
+        }
+    });
+
+    // duplicate hata do (name+url dono match ho to)
+    var seen = {};
+    menuIndex = menuIndex.filter(function(item) {
+        var key = item.name + '|' + item.url;
+        if (seen[key]) return false;
+        seen[key] = true;
+        return true;
+    });
+
+    function runSearch() {
+        var q = $('#dashboardSearchInput').val().trim().toLowerCase();
+        var $results = $('#searchResultsList');
+        $results.empty();
+
+        if (q.length === 0) {
+            $results.hide();
+            return;
+        }
+
+        var matches = menuIndex.filter(function(item) {
+            return item.name.toLowerCase().indexOf(q) !== -1;
+        }).slice(0, 15); // top 15 results
+
+        if (matches.length === 0) {
+            $results.append('<li class="no-result">No results found</li>');
+        } else {
+            matches.forEach(function(item) {
+                $results.append(
+                    '<li><a href="' + item.url + '">' + item.name + '</a></li>'
+                );
+            });
+        }
+        $results.show();
+    }
+
+    $('#dashboardSearchInput').on('keyup', runSearch);
+
+    $('.searchButton').on('click', function() {
+        runSearch();
+    });
+
+    // bahar click karne pe dropdown band ho jaye
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('.searchBox').length) {
+            $('#searchResultsList').hide();
+        }
+    });
+
+});
+
 </script>
 
 <input type="hidden" id="baseUrl" value="<?php echo url("/"); ?>">
