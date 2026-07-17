@@ -83,8 +83,8 @@
 	<link href="{{ URL::asset('assets/charts/apexcharts.css') }}" rel="stylesheet" />
 	<link href="{{ URL::asset('assets/charts/chart-apex.css') }}" rel="stylesheet" />
 	<link href="{{ URL::asset('app-assets/css/components.css') }}" rel="stylesheet" />
-   <link href="http://localhost/erp_faraz_packages/assets/js/select2/css_ajax.css" rel="stylesheet">
-    <script src="http://localhost/erp_faraz_packages/assets/js/select2/js_ajax.js"></script>
+    <link href="{{ URL::asset('assets/js/select2/css_ajax.css') }}" rel="stylesheet">
+    <script src="{{ URL::asset('assets/js/select2/js_ajax.js') }}"></script>
 	<script src="{{ URL::asset('assets/MegaMenu/webslidemenu.js') }}"></script>
 	<!-- <script src="{{ URL::asset('assets/custom/js/customFunctions.js') }}"></script> -->
 	<script src="{{ URL::asset('assets/custom/js/customMainFunction.js') }}"></script>
