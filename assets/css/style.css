@@ -1208,4 +1208,3 @@ table.sf-table-list{width:100% !important;border-collapse:separate !important;bo
 .col-lg-4.col-md-4.col-sm-4.col-xs-12[style*="padding:36px 30px"]{padding:24px 10px 0 !important;display:flex !important;align-items:center !important;}
 /* paid_to select2 - agar empty ho to hide taake do dropdown ka look na aaye */
 #paid_to:empty,#paid_to .select2-container:has(option:only-child[value=""]){display:none !important;}
-.select2-container{width:100% !important;}
