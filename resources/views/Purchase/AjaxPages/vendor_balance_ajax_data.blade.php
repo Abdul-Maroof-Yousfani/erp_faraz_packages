@@ -11,6 +11,108 @@ $view=ReuseableCode::check_rights(37);
 <script !src="">
     var n = 0;
 </script>
+
+<style>
+    /* ===== Header box (matches Trial Balance sample) ===== */
+    .report-header-box {
+        background: linear-gradient(135deg, #eef2ff 0%, #e3e8ff 100%);
+        border-radius: 10px;
+        padding: 22px 30px;
+        margin-bottom: 22px;
+        text-align: center;
+    }
+    .report-header-box h1,
+    .report-header-box h2,
+    .report-header-box h3,
+    .report-header-box h4,
+    .report-header-box p {
+        margin: 4px 0;
+    }
+    /* company name */
+    .report-header-box h1,
+    .report-header-box h2 {
+        color: #1e293b;
+        font-weight: 700;
+        font-size: 24px;
+    }
+    /* address / phone / email line */
+    .report-header-box p {
+        color: #475569;
+        font-size: 13px;
+    }
+    /* report title e.g. "Vendor Balance Report" */
+    .report-header-box h3 {
+        color: #3730a3;
+        font-weight: 600;
+        font-size: 17px;
+    }
+    /* date range line */
+    .report-header-box h4,
+    .report-header-box .date-range {
+        color: #475569;
+        font-size: 13px;
+        font-weight: 400;
+    }
+    .report-meta-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 10px;
+        padding: 0 4px;
+    }
+
+    /* ===== Tables (matches Trial Balance sample) ===== */
+    .sf-report-print-table {
+        border-collapse: collapse;
+        margin-bottom: 18px;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+    .sf-report-print-table thead th {
+        background: #eef2ff;
+        color: #1e293b;
+        font-weight: 600;
+        font-size: 13px;
+        padding: 10px 8px;
+        border-bottom: 2px solid #c7d2fe;
+    }
+    /* vendor name banner row */
+    .sf-report-print-table thead th[colspan="8"] h3 {
+        background: #4338ca;
+        color: #ffffff;
+        padding: 8px 10px;
+        border-radius: 4px;
+        margin: 0;
+        font-size: 15px;
+    }
+    .sf-report-print-table tbody td {
+        padding: 8px;
+        font-size: 13px;
+        border-bottom: 1px solid #eef0f5;
+    }
+    .sf-report-print-table tbody tr:nth-child(even) {
+        background: #f8fafc;
+    }
+    .sf-report-print-table tbody tr:hover {
+        background: #eef2ff;
+    }
+    .sf-report-print-table tfoot tr,
+    .sf-report-print-table tbody tr:last-child {
+        background: #f1f5f9 !important;
+    }
+
+    .GrandTotal thead th {
+        background: #4338ca;
+        color: #ffffff;
+        padding: 10px 8px;
+        font-size: 13px;
+    }
+    .GrandTotal tr {
+        background: #eef2ff;
+    }
+</style>
+
 <div class="row" id="data">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <?php echo Form::open(array('url' => '/PaymentPurchaseVoucher','id'=>'bankPaymentVoucherForm'));?>
@@ -19,10 +121,12 @@ $view=ReuseableCode::check_rights(37);
                 <?php //echo CommonHelper::headerPrintSectionInPrintView($m);?>
                 <div class="row">
                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                        <div class="table-responsive">
+                        <div class="">
                             <span id="MultiExport">
                             <h5 style="text-align: center" id="h3"></h5>
-                            <?php echo CommonHelper::headerPrintSectionInPrintView(Session::get('run_company'), 'Vendor Balance Report', 'From '.CommonHelper::changeDateFormat($from).' To '.CommonHelper::changeDateFormat($to)); ?>
+                            <div class="report-header-box">
+                                <?php echo CommonHelper::headerPrintSectionInPrintView(Session::get('run_company'), 'Vendor Balance Report', 'From '.CommonHelper::changeDateFormat($from).' To '.CommonHelper::changeDateFormat($to)); ?>
+                            </div>
                                 <?php
                                 $clause='';
                                 if ($vendor!=0):
@@ -273,5 +377,3 @@ $view=ReuseableCode::check_rights(37);
         }
     })();
 </script>
-
-

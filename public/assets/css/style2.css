@@ -1,4 +1,5 @@
  @media print{@page{margin:1em;}
+ body{background-color:#fff !important;}
 table{page-break-after:auto !important;border-collapse:collapse !important;}
 tr{page-break-inside:avoid !important;page-break-after:auto !important}
 td{page-break-inside:avoid !important;page-break-after:auto !important}

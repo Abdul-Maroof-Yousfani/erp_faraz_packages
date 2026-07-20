@@ -29,8 +29,57 @@ foreach ($PurchaseVoucher as $row) {
 
 
 ?>
+<style>
+    /* ===== clearfix helper — fixes the blank-space bug caused by
+       unclosed floats around the info boxes / additional-expense table ===== */
+    #printPurchaseVoucherDetail .clearfix::after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+
+    /* ===== Info boxes (PV No / Bill Date etc.) ===== */
+    #printPurchaseVoucherDetail .pv-info-table td:first-child {
+        background: #eef2ff;
+        color: #3730a3;
+        font-weight: 600;
+    }
+
+    /* ===== Item / expense / transaction tables ===== */
+    #printPurchaseVoucherDetail .table thead th,
+    #printPurchaseVoucherDetail table.tra tr:first-child th {
+        background: #eef2ff;
+        color: #1e293b;
+        font-weight: 600;
+        border-bottom: 2px solid #c7d2fe;
+    }
+    #printPurchaseVoucherDetail .sf-table-total,
+    #printPurchaseVoucherDetail table.tra .sf-table-total {
+        background: #f1f5f9;
+    }
+
+    /* ===== Buttons ===== */
+    #printPurchaseVoucherDetail .btn,
+    .btn-print-actions .btn {
+        border-radius: 20px;
+        padding: 6px 18px;
+    }
+    .btn-print-actions {
+        margin-bottom: 10px;
+    }
+    .btn-print-actions .btn + .btn {
+        margin-left: 8px;
+    }
+
+    /* ===== Signature footer ===== */
+    #printPurchaseVoucherDetail .signature_bor {
+        border-top: 1px solid #c7d2fe;
+        padding-top: 6px;
+        color: #3730a3;
+    }
+</style>
 <div class="row">
-    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-right">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-right btn-print-actions">
         <?php    if ($row->pv_status == 1 || $row->pv_status == 3):?>
         <?php        if ($approved == true):?>
         <button type="button" class="btn btn-xs btn-success"
@@ -69,60 +118,58 @@ foreach ($PurchaseVoucher as $row) {
                     </div>
                     <div style="line-height:5px;">&nbsp;</div>
                     <div class="row">
-                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                            <div style="width:30%; float:left;">
-                                <table class="table table-bordered table-striped table-condensed tableMargin">
-                                    <tbody>
+                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                            <table class="table table-bordered table-striped table-condensed tableMargin pv-info-table">
+                                <tbody>
+                                    <tr>
+                                        <td style="width:40%;">PV No.</td>
+                                        <td style="width:60%;"><?php    echo $row->pv_no;?></td>
+                                    </tr>
+                                    <tr>
+                                        <td>PV Date</td>
+                                        <td><?php    echo FinanceHelper::changeDateFormat($row->pv_date);?></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width:40%;">Ref / Bill No.</td>
+                                        <td style="width:60%;"><?php    echo $row->slip_no;?></td>
+                                    </tr>
+                                    @if ($row->grn_no != 0)
                                         <tr>
-                                            <td style="width:40%;">PV No.</td>
-                                            <td style="width:60%;"><?php    echo $row->pv_no;?></td>
+                                            <td style="width:40%;">GRN No.</td>
+                                            <td style="width:60%;"><?php        echo $row->grn_no;?></td>
                                         </tr>
-                                        <tr>
-                                            <td>PV Date</td>
-                                            <td><?php    echo FinanceHelper::changeDateFormat($row->pv_date);?></td>
-                                        </tr>
-                                        <tr>
-                                            <td style="width:40%;">Ref / Bill No.</td>
-                                            <td style="width:60%;"><?php    echo $row->slip_no;?></td>
-                                        </tr>
-                                        @if ($row->grn_no != 0)
-                                            <tr>
-                                                <td style="width:40%;">GRN No.</td>
-                                                <td style="width:60%;"><?php        echo $row->grn_no;?></td>
-                                            </tr>
-                                        @endif
-                                    </tbody>
-                                </table>
-                            </div>
+                                    @endif
+                                </tbody>
+                            </table>
+                        </div>
 
-                            <div style="width:30%; float:right;">
-                                <table class="table table-bordered table-striped table-condensed tableMargin">
-                                    <tbody>
-                                        <tr>
-                                            <td style="width:40%;">Bill Date</td>
-                                            <td style="width:60%;">
-                                                <?php    echo FinanceHelper::changeDateFormat($row->bill_date);?></td>
-                                        </tr>
-                                        <tr>
-                                            <td style="width:40%;">Due Date</td>
-                                            <td style="width:60%;">
-                                                <?php echo FinanceHelper::changeDateFormat($row->due_date);?></td>
-                                        </tr>
-                                        <tr>
-                                            <td style="width:40%;">Supplier</td>
-                                            <td style="width:60%;">
-                                                <?php $Supplier = CommonHelper::get_single_row('supplier', 'id', $row->supplier);
+                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                            <table class="table table-bordered table-striped table-condensed tableMargin pv-info-table">
+                                <tbody>
+                                    <tr>
+                                        <td style="width:40%;">Bill Date</td>
+                                        <td style="width:60%;">
+                                            <?php    echo FinanceHelper::changeDateFormat($row->bill_date);?></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width:40%;">Due Date</td>
+                                        <td style="width:60%;">
+                                            <?php echo FinanceHelper::changeDateFormat($row->due_date);?></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width:40%;">Supplier</td>
+                                        <td style="width:60%;">
+                                            <?php $Supplier = CommonHelper::get_single_row('supplier', 'id', $row->supplier);
     echo $Supplier->name;
-                                                ?>
-                                            </td>
-                                        </tr>
-                                        <!-- <tr>
-                                            <td>Cost Center</td>
-                                            <td>{{ CommonHelper::get_sub_dept_name($row->sub_department_id) }} </td>
-                                        </tr> -->
-                                    </tbody>
-                                </table>
-                            </div>
+                                            ?>
+                                        </td>
+                                    </tr>
+                                    <!-- <tr>
+                                        <td>Cost Center</td>
+                                        <td>{{ CommonHelper::get_sub_dept_name($row->sub_department_id) }} </td>
+                                    </tr> -->
+                                </tbody>
+                            </table>
                         </div>
                         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                             <div class="table-responsive">
@@ -266,6 +313,7 @@ foreach ($PurchaseVoucher as $row) {
                                 </table>
                             </div>
                         </div>
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 clearfix"></div>
 
 
                         <?php
@@ -282,6 +330,7 @@ foreach ($PurchaseVoucher as $row) {
 
                         ?>
 
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                         <table style="display: none;" id="" class="table table-bordered tra">
                             <tr class="">
                                 <th class="text-center" style="width:50px;">S.No</th>
@@ -335,11 +384,14 @@ foreach ($PurchaseVoucher as $row) {
                                 </tr>
                             </tbody>
                         </table>
+                        </div>
 
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                         <label class="check printHide">
                             Show Voucher
                             <input id="check" type="checkbox" onclick="checkk()" class="check">
                         </label>
+                        </div>
 
                         {{--@include('Finance.AjaxPages.view_costing_for_vouchers')--}}
 

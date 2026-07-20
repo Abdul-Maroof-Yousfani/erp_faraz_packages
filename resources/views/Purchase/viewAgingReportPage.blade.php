@@ -14,44 +14,52 @@ if($accType == 'client'){
 @section('content')
     @include('select2')
     <style>
-        .ApnaBorder{
-            border-color: black !important;
-            border: double;
-        }
-        .Chnage-bg{
-            background-color: #ccc !important;
-        }
+       .ApnaBorder{border-color:black !important;border:double;}
+.Chnage-bg{background-color:#ccc !important;}
+.var-wrapper{padding:20px;}
+.var-card{background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,0.06);padding:26px 30px;margin-bottom:24px;}
+.var-top-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.var-page-title{font-weight:700;color:#1f2a5c;margin:0;font-size:22px;}
+.var-btn-row{display:flex;align-items:center;gap:10px;}
+.var-btn-row .btn{border-radius:6px;font-weight:600;}
+.var-divider{border:none;border-top:1px solid #edeef2;margin:0 0 22px 0;}
+.var-filter-row{display:flex;flex-wrap:wrap;align-items:flex-end;gap:24px;}
+.var-filter-group{display:flex;flex-direction:column;min-width:150px;}
+.var-filter-group.wide{min-width:220px;flex:1;}
+.var-filter-group label{font-size:13px;font-weight:500;color:#6b7080;margin-bottom:8px;}
+.var-filter-group .form-control{border-radius:8px;border:1px solid #e2e4ea;background:#fafbfc;height:42px;margin:0;}
+.var-submit-btn{border-radius:8px;background:#1f2a5c;border-color:#1f2a5c;font-weight:600;height:42px;padding:0 24px;justify-content: center;}
+#SupplierError{font-size:12px;}
+
     </style>
-<div class="row">
-    <div class="container">
-    <h3 style="font-weight: bold;text-decoration: underline;">Vendor Ageing Report</h3>
-    </div>
-    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-        <div class="well_N">
-        <div class="dp_sdw">    
-            <div class="row">
+<div class="well_N">
+    <div class="var-wrapper">
 
+        <div class="var-card">
 
-                <div class="col-lg-1 col-md-1 col-sm-1 col-xs-12 text-right">
-
-                    <label for="">As  On </label>
+            <div class="var-top-row">
+                <h3 class="var-page-title">Vendor Ageing Report</h3>
+                <div class="var-btn-row">
+                    <button class="btn btn-primary" onclick="printView('GetDataAjax','','1')">
+                        <span class="glyphicon glyphicon-print"></span> Print
+                    </button>
+                    <?php if($export == true):?>
+                    <a id="dlink" style="display:none;"></a>
+                    <button type="button" class="btn btn-warning" onclick="ExportToExcel('xlsx')">Export <b>(xlsx)</b></button>
+                    <?php endif;?>
                 </div>
-                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12 text-right">
+            </div>
 
-                        <input type="date" class="form-control" id="as_on" value="{{date('Y-m-d')}}"/>
+            <hr class="var-divider">
 
+            <div class="var-filter-row">
+                <div class="var-filter-group">
+                    <label for="as_on">As On</label>
+                    <input type="date" class="form-control" id="as_on" value="{{date('Y-m-d')}}"/>
                 </div>
 
-
-                <div class="col-lg-1 col-md-1 col-sm-1 col-xs-12 text-right">
-                    <label for="">Supplier
-
-                    </label>
-                </div>
-
-
-
-                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                <div class="var-filter-group wide">
+                    <label for="SupplierId">Supplier</label>
                     <select name="SupplierId" id="SupplierId" class="form-control">
                         <option value="all">All Supplier's</option>
                         <?php foreach($Supplier as $Fil):?>
@@ -60,51 +68,31 @@ if($accType == 'client'){
                     </select>
                     <span id="SupplierError"></span>
                 </div>
-                <div class="col-lg-1 col-md-1 col-sm-1 col-xs-12 text-right">
-                    <label for="">Report Type</label>
-                </div>
-                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+
+                <div class="var-filter-group">
+                    <label for="ReportType">Report Type</label>
                     <select name="ReportType" id="ReportType" class="form-control">
                         <option value="1">Summary</option>
                         <option value="2">Detail</option>
                     </select>
                 </div>
 
-                <div class="col-lg-1 col-md-1 col-sm-1 col-xs-12">
-                    <button type="button" class="btn btn-sm btn-primary" id="BtnShow" onclick="GetAgingReportData()">Submit</button>
-                </div>
-                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                    &nbsp;
-                    </div>
-                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                    <button class="btn btn-primary" onclick="printView('GetDataAjax','','1')" style="">
-                        <span class="glyphicon glyphicon-print"></span> Print
-                    </button>
-                    <?php if($export == true):?>
-                    <a id="dlink" style="display:none;"></a>
-                    <button type="button" class="btn btn-warning" onclick="ExportToExcel('xlsx')">Export <b>(xlsx)</b></button>
-
-                    <?php endif;?>
+                <div class="var-filter-group">
+                    <label>&nbsp;</label>
+                    <button type="button" class="btn btn-primary var-submit-btn" id="BtnShow" onclick="GetAgingReportData()">Submit</button>
                 </div>
             </div>
-            <div class="lineHeight">&nbsp;</div>
-            <div class="row">
-                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                    <div class="">
-                        <div class="">
-                            <div class="row">
-                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                    <div class="table-responsive" id="GetDataAjax">
 
-                                    </div>
+        </div>
 
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class="table-responsive" id="GetDataAjax">
+
                 </div>
             </div>
         </div>
+
     </div>
 </div>
     <script src="{{ URL::asset('assets/custom/js/exportToExcelXlsx.js') }}"></script>

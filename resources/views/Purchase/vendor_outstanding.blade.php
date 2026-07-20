@@ -21,15 +21,15 @@ $data=ReuseableCode::get_account_year_from_to(Session::get('run_company'));
 .vo-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;border-bottom:1px solid #eef0f4;padding-bottom:16px;margin-bottom:20px;}
 .vo-title{font-size:20px;font-weight:700;color:#1b2559;margin:0;}
 .vo-actions{display:flex;gap:10px;}
-.btn-vo-print{background:#1b2559;border:none;color:#fff;font-weight:600;padding:9px 18px;border-radius:8px;}
+.btn-vo-print{background: linear-gradient(90deg, var(--erp-navy-1) 0%, var(--erp-navy-2) 100%) !important;border:none;color:#fff;font-weight:600;padding:9px 18px;border-radius:8px;}
 .btn-vo-print:hover{background:#141b45;color:#fff;}
 .btn-vo-export{background:#f5a623;border:none;color:#fff;font-weight:600;padding:9px 18px;border-radius:8px;}
 .btn-vo-export:hover{background:#e0921a;color:#fff;}
 .vo-filters{display:flex;align-items:flex-end;gap:24px;flex-wrap:wrap;}
 .vo-field label{display:block;font-size:13px;color:#6b7280;margin-bottom:6px;font-weight:500;}
-.vo-field .form-control{border-radius:8px;border:1px solid #e2e5ec;background:#f8f9fc;min-width:220px;height:42px;}
+.vo-field .form-control{border-radius:8px;border:1px solid #e2e5ec;background:#f8f9fc;min-width:220px;height:42px;margin: 0 !important;}
 .vo-field.vo-vendor .form-control{min-width:320px;}
-.btn-vo-submit{background:#1b2559;border:none;color:#fff;font-weight:600;padding:10px 26px;border-radius:8px;height:42px;}
+.btn-vo-submit{background: linear-gradient(90deg, var(--erp-navy-1) 0%, var(--erp-navy-2) 100%) !important;border:none;color:#fff;font-weight:600;padding:10px 26px;border-radius:8px;}
 .btn-vo-submit:hover{background:#141b45;color:#fff;}
 .vo-table-wrap{margin-top:24px;}
 /* ---- Select2 fix + theme match ---- */
