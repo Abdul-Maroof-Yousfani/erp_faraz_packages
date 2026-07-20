@@ -411,7 +411,7 @@ rule was forcing every small voucher/COGS table on this page to reserve 600px of
 
                     </div>
                         </div>
-                <input type="hidden" id="total" value="{{$AmountInWordsMain}}">
+                    <input type="hidden" id="total" value="{{$AmountInWordsMain}}">
                     <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12 text-left printHide">
                         <label for="">Show Voucher <input type="checkbox" id="ShowVoucher" onclick="ViewVoucher()"></label>
                     </div>
