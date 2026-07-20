@@ -1159,7 +1159,7 @@ hr{border-top:1px solid #EDF0F8 !important;margin:14px 0 !important;}
 .tb-toolbar .btn-danger:hover{transform:translateY(-1px) !important;box-shadow:0 8px 18px rgba(217,83,79,0.28) !important;}
 /* ================================================================ MODAL POPUP (showDetailModelOneParamerter) — pic1 sample jaisa header/footer:bg #f7f7f7 + 5px solid purple border (#9170E4) ================================================================ */
 #showDetailModelOneParamerter .modal-content{border-radius:14px !important;overflow:hidden !important;border:none !important;box-shadow:0 20px 50px rgba(20,26,46,0.30) !important;}
-#showDetailModelOneParamerter .modal-header{background:#f7f7f7 !important;padding:15px !important;display:flex !important;align-items:center !important;justify-content:space-between !important;}
+#showDetailModelOneParamerter .modal-header{background:#f7f7f7 !important;padding:15px !important;display:block !important;align-items:center !important;justify-content:space-between !important;}
 #showDetailModelOneParamerter .modal-footer{background:#f7f7f7 !important;padding:15px !important;}
 #showDetailModelOneParamerter .modal-body{padding:20px !important;background:#fff !important;}
 /* ---------------------------------------------------------------- <a> wala action button (btn-success) jo table ke andar date/invoice pe click karke ye modal open karta hai — purple theme se match ---------------------------------------------------------------- */
