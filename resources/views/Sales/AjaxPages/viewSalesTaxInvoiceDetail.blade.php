@@ -27,39 +27,27 @@ if (empty($sales_tax_invoice)) {
 
 
 <style>
-
-    body{
-        font-size: 9px !important;
-    }
-    textarea {
-        border-style: none;
-        border-color: Transparent;
-
-    }
-    @media print{
-
-
-
-         @page{size:A4;margin:1mm 5mm 5mm 5mm !important;}
-        .printHide{
-            display:none !important;
-        }
-        .fa {
-            font-size: small;!important;
-        }
-        .gateprint{
-        margin-top: -95px !important;
-        }
-
-        .table-bordered{
-            border: 1px solid black;
-        }
-        table.table-bordered > thead > tr > th{
-            border:1px solid blue !important;
-        }
-
-
-    }
+ body{font-size:9px !important;}
+textarea{border-style:none;border-color:Transparent;}
+@media print{@page{size:A4;margin:1mm 5mm 5mm 5mm !important;}
+.printHide{display:none !important;}
+.fa{font-size:small;!important;}
+.gateprint{margin-top:-95px !important;}
+.table-bordered{border:1px solid black;}
+table.table-bordered > thead > tr > th{border:1px solid blue !important;}
+}
+/* ===== SCOPED FIX:neutralize global dashboard CSS bleeding into this printable invoice ===== */
+ .si-print-doc h2,.si-print-doc h3,.si-print-doc h4{font-family:inherit !important;color:#000 !important;font-weight:bold !important;margin-bottom:6px !important;}
+.si-print-doc h2{font-size:20px !important;}
+.si-print-doc h3{font-size:15px !important;}
+.si-print-doc h4{font-size:12px !important;}
+/* the global .table-responsive{height:600px}
+rule was forcing every small voucher/COGS table on this page to reserve 600px of empty space — override it back to the table's real content height */
+ .si-print-doc .table-responsive{height:auto !important;overflow:visible !important;}
+/* keep this invoice's own compact table styling in charge,not the global dashboard table theme */
+ .si-print-doc table th,.si-print-doc table td{font-size:9px !important;padding:4px 6px !important;background:inherit !important;text-transform:none !important;letter-spacing:normal !important;}
+.si-print-doc .sales_Tax_Invoice_data th{background:#f5f5f5 !important;font-weight:bold !important;}
+.table-responsive{height:auto !important;}
 </style>
 <?php
 
@@ -85,7 +73,7 @@ if (empty($sales_tax_invoice)) {
     </div> -->
 </div>
 <div style="line-height:5px;">&nbsp;</div>
-<div class="row" id="printPurchaseRequestVoucherDetail">
+<div class="row si-print-doc" id="printPurchaseRequestVoucherDetail">
     <div class="">
         <!--
         < ?php  StoreHelper::displayApproveDeleteRepostButtonPurchaseRequest($m,$sales_order->purchase_request_status,$sales_order->status,$row->id,'purchase_request_no','purchase_request_status','status','purchase_request','purchase_request_data');?>
