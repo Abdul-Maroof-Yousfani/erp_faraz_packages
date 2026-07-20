@@ -28,22 +28,20 @@ $AccYearTo = $AccYearDate->accyearto;
                 <div class="well_N">
                 <div class="dp_sdw">    
                     <div class="row">
-                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-                                <span class="subHeadingLabelClass">Debtor Outstanding</span>
-                            </div>
-                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 text-right">
-                                <button class="btn btn-primary" onclick="printView('PrintEmpExitInterviewList','','1')" style="">
-                                    <span class="glyphicon glyphicon-print"> </span> Print
-                                </button>
-                                <?php if($export ==  true):?>
-                                <a id="dlink" style="display:none;"></a>
-                                <button type="button" class="btn btn-warning" onclick="ExportToExcel('xlsx')">Export <b>(xlsx)</b></button>
-                                <?php endif;?>
-                            </div>
+                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                            <span class="subHeadingLabelClass">Debtor Outstanding</span>
+                        </div>
+                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 text-right">
+                            <button class="btn btn-primary" onclick="printView('PrintEmpExitInterviewList','','1')" style="">
+                                <span class="glyphicon glyphicon-print"> </span> Print
+                            </button>
+                            <?php if($export ==  true):?>
+                            <a id="dlink" style="display:none;"></a>
+                            <button type="button" class="btn btn-warning" onclick="ExportToExcel('xlsx')">Export <b>(xlsx)</b></button>
+                            <?php endif;?>
                         </div>
                     </div>
-
+                    <hr>
 
                     <div class="row">
                         <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
