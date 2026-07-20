@@ -31,50 +31,21 @@
 .dp_sdw p.text-muted,.dp_sdw > p{color:#8892b0 !important;font-size:13px !important;font-weight:600 !important;}
 /* ---------- Stat cards (Modern refresh) ---------- */
 .priorMainBox2{display:flex !important;gap:18px !important;flex-wrap:wrap !important;margin-bottom:26px !important;align-items:stretch !important;}
-.priorMainBox2 a{flex:1 1 220px !important;text-decoration:none !important;display:block !important;}
+.priorMainBox2 a{flex:1 1 220px !important;text-decoration:none !important;display:block !important;padding: 10px 10px !important;}
 .priorMainBox2 a,.priorMainBox2 a:focus,.priorMainBox2 a:active,.priorMainBox2 a:hover{outline:none !important;box-shadow:none !important;text-decoration:none !important;border:none !important;}
-.priorMainBox2>a:nth-child(2) {
-    background: #173ca7 !important;
-}
-.mainDashBox{
-    border-radius:18px !important;
-    padding:20px 22px !important;
-    min-height:132px !important;
-    position:relative !important;
-    overflow:hidden !important;
-    outline:none !important;
-    border:1px solid rgba(255,255,255,0.14) !important;
-    transition:transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .2s ease !important;
-    display:flex !important;
-    flex-direction:column !important;
-    justify-content:space-between !important;
-}
+.priorMainBox2>a:nth-child(2){background:#173ca7 !important;}
+.mainDashBox{border-radius:18px !important;padding:20px 22px !important;min-height:132px !important;position:relative !important;overflow:hidden !important;outline:none !important;border:1px solid rgba(255,255,255,0.14) !important;transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s ease !important;display:flex !important;flex-direction:column !important;justify-content:space-between !important;}
 .mainDashBox:hover{transform:translateY(-5px) !important;box-shadow:0 18px 34px rgba(11,25,60,0.28) !important;}
-
-.mainDashBox::before{
-    content:'';position:absolute;top:0;left:0;right:0;height:3px;
-    background:rgba(255,255,255,0.55);
-}
-.mainDashBox::after{
-    content:'';position:absolute;top:-40px;right:-40px;width:130px;height:130px;
-    border-radius:50%;background:rgba(255,255,255,0.10);pointer-events:none;
-}
-
+.mainDashBox::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,0.55);}
+.mainDashBox::after{content:'';position:absolute;top:-40px;right:-40px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,0.10);pointer-events:none;}
 .mainDashBox .title{position:relative;z-index:1;}
 .mainDashBox .title:first-of-type{display:flex;align-items:flex-start;justify-content:space-between;}
 .mainDashBox .title h6{font-size:13px !important;font-weight:700 !important;color:rgba(255,255,255,0.9) !important;margin-bottom:3px !important;letter-spacing:.2px;}
 .mainDashBox .title p{font-size:11px !important;color:rgba(255,255,255,0.55) !important;margin-bottom:0 !important;font-weight:600 !important;}
-
 .mainDashBox .title:last-of-type{display:flex !important;align-items:center !important;justify-content:space-between !important;margin-top:14px !important;}
-.mainDashBox .title img{
-    width:34px;height:34px;padding:7px;
-    background:rgba(255,255,255,0.14);
-    border-radius:10px;
-    object-fit:contain;
-}
+.mainDashBox .title img{width:34px;height:34px;padding:7px;background:rgba(255,255,255,0.14);border-radius:10px;object-fit:contain;}
 .mainDashBox h4{font-size:25px !important;font-weight:800 !important;color:#fff !important;margin:0 !important;letter-spacing:.2px !important;}
-
-/* ---------- Color set: navy / lavender / amber family ---------- */
+/* ---------- Color set:navy / lavender / amber family ---------- */
 .dashBoxOrange{background:linear-gradient(155deg,#B8843A 0%,#7A4E17 100%) !important;}
 .dashBoxPurple{background:linear-gradient(155deg,#6B4FCE 0%,#3D2A85 100%) !important;}
 .dashBoxDark{background:linear-gradient(155deg,#1F2B4A 0%,#0A1226 100%) !important;}
@@ -103,7 +74,9 @@ ul.m_list{margin-bottom:6px !important;}
 .barChartHead,.pieChartHead,.card{background:#ffffff !important;border:1px solid #EDF0F8 !important;border-radius:16px !important;box-shadow:0 6px 22px rgba(20,38,92,0.07) !important;padding:22px 24px !important;margin-bottom:24px !important;}
 .card{border:1px solid #EDF0F8 !important;}
 .barChartHead > div:first-child,.card-header{display:flex !important;align-items:center !important;justify-content:space-between !important;margin-bottom:16px !important;padding:0 !important;border:none !important;background:transparent !important;}
-.barChartHead h6,.card-subtitle,.card-title,.dashTableHeading h6{font-size:17px !important;font-weight:800 !important;color:var(--erp-navy-dark) !important;margin:0 !important;}
+.barChartHead h6,.card-subtitle,.card-title,.dashTableHeading h6{font-size:17px !important;font-weight:500 !important;color:var(--erp-navy-dark) !important;margin:0 !important;}
+.barChartHead .card-header h4,.barChartHead .card-header h6,.statistics.card-header h6{font-weight:500 !important;}
+
 .selectOption select,input#monthyear,input#ReceivablesAndPayables,#year{height:38px !important;border-radius:9px !important;border:1px solid var(--erp-navy-tint) !important;background:#F7F9FD !important;font-weight:700 !important;font-size:12.5px !important;color:var(--erp-navy-dark) !important;padding:6px 12px !important;}
 .barChartHead .card-body{padding:0 !important;min-height:280px !important;}
 canvas.Business_Flow_Chart{max-height:280px !important;}
@@ -143,10 +116,7 @@ canvas.Business_Flow_Chart{max-height:280px !important;}
 .mdel-bx .item-model-company{font-size:13.5px !important;font-weight:600 !important;color:#1B2333 !important;margin:0 !important;line-height:1.4;}
 .mdel-bx .btn-b{display:block !important;width:calc(100% - 72px);margin:10px 36px 32px;text-align:center;padding:13px;border-radius:12px;background:#F2F3F8 !important;color:#4A5268 !important;font-weight:700;font-size:13.5px;text-decoration:none !important;transition:background .15s ease;}
 .mdel-bx .btn-b:hover{background:#ea545545 !important;color:#353434 !important;transition:0.5s !important;}
-.priorMainBox2 > a:nth-child(1) .mainDashBox::after{display:none !important;}
-.priorMainBox2 > a:nth-child(2) .mainDashBox::after{display:none !important;}
-.priorMainBox2 > a:nth-child(3) .mainDashBox::after{display:none !important;}
-.priorMainBox2 > a:nth-child(4) .mainDashBox::after{display:none !important;}
+
 
 </style>
 

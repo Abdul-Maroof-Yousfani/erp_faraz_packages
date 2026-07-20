@@ -1050,13 +1050,13 @@ button.searchButton i{color:var(--erp-navy-dark) !important;}
 .mainDashBox .title h6{font-weight:700 !important;letter-spacing:.2px !important;line-height:1.4 !important;padding-top:2px !important;margin-top:0 !important;margin-bottom:8px !important;}
 .mainDashBox h4{font-weight:800 !important;line-height:1.3 !important;color:#fff !important;}
 .mainDashBox::after{font-family:"FontAwesome" !important;font-weight:normal !important;position:absolute !important;right:16px !important;top:14px !important;font-size:20px !important;color:rgba(255,255,255,0.55) !important;}
-.priorMainBox2 > a:nth-child(1) .mainDashBox::after{content:"\f155";}
+/* .priorMainBox2 > a:nth-child(1) .mainDashBox::after{content:"\f155";} */
 /* usd */
-.priorMainBox2 > a:nth-child(2) .mainDashBox::after{content:"\f201";}
+/* .priorMainBox2 > a:nth-child(2) .mainDashBox::after{content:"\f201";} */
 /* line-chart */
-.priorMainBox2 > a:nth-child(3) .mainDashBox::after{content:"\f0d6";}
+/* .priorMainBox2 > a:nth-child(3) .mainDashBox::after{content:"\f0d6";} */
 /* money-bill-alt */
-.priorMainBox2 > a:nth-child(4) .mainDashBox::after{content:"\f0d6";}
+/* .priorMainBox2 > a:nth-child(4) .mainDashBox::after{content:"\f0d6";} */
 /* --------------------------------------------------------------------- 6. DASHBOARD TABLE --------------------------------------------------------------------- */
 thead.bgBlueofTd tr th{background:linear-gradient(90deg,var(--erp-navy) 0%,var(--erp-navy-dark) 100%) !important;color:#ffffff !important;font-weight:700 !important;letter-spacing:.3px !important;text-transform:uppercase !important;font-size:11.5px !important;border:none !important;}
 .home_table,.userlittab.home_table{border-radius:14px !important;overflow:hidden !important;box-shadow:0 6px 20px rgba(20,38,92,0.08) !important;}
@@ -1139,7 +1139,7 @@ button.close_model_btn,.model-logo .btn-danger{background:#F1F3F9 !important;col
 .monthPickerActions a:hover{text-decoration:underline !important;}
 /* ===================================================================== TRIAL BALANCE 6TH COLUMN — CLEAN FILTER REDESIGN ===================================================================== */
 .dp_sdw{background:#fff !important;border:1px solid #EDF0F8 !important;border-radius:16px !important;box-shadow:0 6px 22px rgba(20,38,92,0.07) !important;padding:22px 24px !important;}
-.dp_sdw .subHeadingLabelClass{font-size:20px !important;font-weight:800 !important;color:var(--erp-navy-2,#0B1F59) !important;text-transform:none !important;letter-spacing:0 !important;}
+.dp_sdw .subHeadingLabelClass{font-size:20px !important;font-weight:500 !important;color:var(--erp-navy-2,#0B1F59) !important;text-transform:none !important;letter-spacing:0 !important;}
 .dp_sdw .row > .text-right{display:flex !important;align-items:center !important;justify-content:flex-end !important;gap:10px !important;}
 .lineHeight{display:block !important;height:16px !important;}
 /* ---------- Date filter inputs ---------- */
