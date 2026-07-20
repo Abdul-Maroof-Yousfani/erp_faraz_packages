@@ -28,7 +28,7 @@ $currentMonthEndDate   = date('Y-m-t');
                         </div>
 
                     </div>
-
+<hr>
 
                     <div class="row">
 
