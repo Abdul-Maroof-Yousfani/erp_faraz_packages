@@ -6,75 +6,25 @@ $accType = Auth::user()->acc_type;
 ?>
 <style>
 .sf-report-print-table{border-collapse:separate !important;border-spacing:0 !important;width:100%;font-size:13px;margin-bottom:22px !important;border:1px solid #e6e8f5 !important;border-radius:12px !important;overflow:hidden;box-shadow:0 1px 3px rgba(30,30,80,.06);}
-
 /* vendor-name banner row */
 .sf-report-print-table thead th h3{margin:0 !important;font-size:16px !important;font-weight:800 !important;color:#1f2440 !important;}
-.sf-report-print-table thead th[colspan="7"]{
-  background:#eef0fb !important;
-  padding:14px 16px !important;
-  border-bottom:1px solid #e6e8f5 !important;
-}
-
+.sf-report-print-table thead th[colspan="7"]{background:#eef0fb !important;padding:14px 16px !important;border-bottom:1px solid #e6e8f5 !important;}
 /* column header row (S.No / PI.No / PI Date / ...) */
-.sf-report-print-table thead tr:last-of-type th{
-  background:#f7f8fc !important;
-  color:#0B1F59 !important;
-  font-weight:800 !important;
-  font-size:11.5px !important;
-  text-transform:uppercase !important;
-  letter-spacing:.3px !important;
-  padding:10px 12px !important;
-  border:none !important;
-  border-bottom:2px solid #241e6b !important;
-  white-space:nowrap;
-}
-
+.sf-report-print-table thead tr:last-of-type th{background:#f7f8fc !important;color:#0B1F59 !important;font-weight:800 !important;font-size:11.5px !important;text-transform:uppercase !important;letter-spacing:.3px !important;padding:10px 12px !important;border:none !important;border-bottom:1px solid #ebebeb !important;white-space:nowrap;}
 /* body rows */
-.sf-report-print-table tbody td{
-  padding:9px 12px !important;
-  border:none !important;
-  border-bottom:1px solid #edeef7 !important;
-  color:#1f2440 !important;
-  font-weight:500 !important;
-}
+.sf-report-print-table tbody td{padding:9px 12px !important;border:none !important;border-bottom:1px solid #edeef7 !important;color:#1f2440 !important;font-weight:500 !important;}
 .sf-report-print-table tbody td:first-child{border-left:3px solid #ff8244 !important;}
 .sf-report-print-table tbody tr:nth-child(even) td{background:#fafbfe !important;}
 .sf-report-print-table tbody tr:hover td{background:#f5f7fd !important;}
 .sf-report-print-table tbody td a{color:#3452d1 !important;font-weight:600 !important;text-decoration:none;}
 .sf-report-print-table tbody td a:hover{text-decoration:underline;}
-
 /* per-vendor total row */
-.sf-report-print-table tbody tr[style*="font-weight: bold"] td{
-  background:linear-gradient(90deg,#eaf1ff 0%,#f1f9f4 100%) !important;
-  font-weight:800 !important;
-  color:#0B1F59 !important;
-  border-top:2px solid #241e6b !important;
-  font-size:14px !important;
-}
-.sf-report-print-table tbody tr[style*="font-weight: bold"] td:first-child{border-left:3px solid #241e6b !important;}
-
+.sf-report-print-table tbody tr[style*="font-weight:bold"] td{background:linear-gradient(90deg,#eaf1ff 0%,#f1f9f4 100%) !important;font-weight:800 !important;color:#0B1F59 !important;border-top:2px solid #241e6b !important;font-size:14px !important;}
+.sf-report-print-table tbody tr[style*="font-weight:bold"] td:first-child{border-left:3px solid #241e6b !important;}
 /* grand total table */
 .GrandTotal{width:100%;border-collapse:separate !important;border-spacing:0;margin-top:6px;border:1px solid #241e6b !important;border-radius:12px !important;overflow:hidden;box-shadow:0 2px 6px rgba(30,30,80,.1);}
-.GrandTotal thead th{
-  background:#241e6b !important;
-  color:#fff !important;
-  font-weight:800 !important;
-  font-size:12px !important;
-  text-transform:uppercase !important;
-  letter-spacing:.3px !important;
-  padding:12px 14px !important;
-  border:none !important;
-  white-space:nowrap;
-}
-.GrandTotal tbody tr td,
-.GrandTotal tr td{
-  padding:13px 14px !important;
-  font-size:16px !important;
-  font-weight:800 !important;
-  color:#0B1F59 !important;
-  background:linear-gradient(90deg,#eaf1ff 0%,#f1f9f4 100%) !important;
-  border:none !important;
-}
+.GrandTotal thead th{background:#241e6b !important;color:#fff !important;font-weight:800 !important;font-size:12px !important;text-transform:uppercase !important;letter-spacing:.3px !important;padding:12px 14px !important;border:none !important;white-space:nowrap;}
+.GrandTotal tbody tr td,.GrandTotal tr td{padding:13px 14px !important;font-size:16px !important;font-weight:800 !important;color:#0B1F59 !important;background:linear-gradient(90deg,#eaf1ff 0%,#f1f9f4 100%) !important;border:none !important;}
 </style>
 <script !src="">
     var n = 0;
@@ -87,11 +37,11 @@ $accType = Auth::user()->acc_type;
                 <?php //echo CommonHelper::headerPrintSectionInPrintView($m);?>
                 <div class="row">
                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                        <div class="table-responsive">
+                        <div class="">
                             <span id="MultiExport">
                             <h5 style="text-align: center" id="h3"></h5>
                             <?php echo CommonHelper::headerPrintSectionInPrintView(Session::get('run_company'), 'Vendor Outstanding Report', 'From '.CommonHelper::changeDateFormat($from).' To '.CommonHelper::changeDateFormat($to)); ?>
-<?php
+                            <?php
                               $clause='';
                             if ($vendor!=0):
                               $clause='and a.id='.$vendor.'';
