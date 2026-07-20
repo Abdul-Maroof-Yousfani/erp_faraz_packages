@@ -1,6 +1,6 @@
 /*============================================================= Authour URI:www.binarytheme.com License:Commons Attribution 3.0 http://creativecommons.org/licenses/by/3.0/ 100% Free To use For Personal And Commercial Use. IN EXCHANGE JUST GIVE US CREDITS AND TELL YOUR FRIENDS ABOUT US ======================================================== */
 /* ============================================================= GENERAL STYLES ============================================================ */
-@media print{.userlittab > thead > tr > td,.userlittab > tbody > tr > td,.userlittab > tfoot > tr > td{border-left:2px solid #000 !important;}
+@media print{ body{background-color:#fff !important;}.userlittab > thead > tr > td,.userlittab > tbody > tr > td,.userlittab > tfoot > tr > td{border-left:2px solid #000 !important;}
 ul.m-li{margin-bottom:0px;}
 ul.m-li li{display:inline-block !important;width:44% !important;vertical-align:top !important;}
 ul.m-li li h2{font-size:10px !important;line-height:13px !important;margin:0 !important;padding:0 !important;font-weight:900 !important;color:#000 !important;}

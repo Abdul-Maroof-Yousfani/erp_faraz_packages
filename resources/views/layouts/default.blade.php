@@ -96,160 +96,38 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
 	<script src="https://cdn.ckeditor.com/4.8.0/full-all/ckeditor.js"></script>
 	<style type="text/css" media="print">
-		@media print {
-			@page {
-				margin-top: 0;
-			}
-
-			body {
-				padding-top: 72px;
-			}
+			@media print{@page{margin-top:0;}
+		body{padding-top:72px;}
 		}
 	</style>
 	<style type="text/css">
 		/*Abdul Qadir*/
-		#rotate,
-		#rotate2 {
-			width: 100px;
-			height: 100px;
-			background: red;
-			border-top: 10px solid black;
-			transition: transform .2s ease;
-			margin: 20px auto;
-			color: #fff;
-		}
-
-		.rotated {
-			-webkit-transform: rotate(90deg);
-			-moz-transform: rotate(90deg);
-			-o-transform: rotate(90deg);
-			-ms-transform: rotate(90deg);
-			transform: rotate(90deg);
-		}
-
-
-
-		/*  bhoechie tab */
-		div.bhoechie-tab-container {
-			z-index: 10;
-			background-color: #ffffff;
-			padding: 0 !important;
-			border-radius: 4px;
-			-moz-border-radius: 4px;
-			background-clip: padding-box;
-			opacity: 0.97;
-			filter: alpha(opacity=97);
-		}
-
-		div.bhoechie-tab-menu {
-			padding-right: 0;
-			padding-left: 0;
-			padding-bottom: 0;
-		}
-
-		div.bhoechie-tab-menu div.list-group {
-			margin-bottom: 0;
-		}
-
-		div.bhoechie-tab-menu div.list-group>a {
-			margin-bottom: 7px;
-		}
-
-		div.bhoechie-tab-menu div.list-group>a .glyphicon,
-		div.bhoechie-tab-menu div.list-group>a .fa {
-			color: #31b0d5;
-		}
-
-		div.bhoechie-tab-menu div.list-group>a:first-child {
-			border-top-right-radius: 0;
-			-moz-border-top-right-radius: 0;
-		}
-
-		div.bhoechie-tab-menu div.list-group>a:last-child {
-			border-bottom-right-radius: 0;
-			-moz-border-bottom-right-radius: 0;
-		}
-
-		div.bhoechie-tab-menu div.list-group>a.active,
-		div.bhoechie-tab-menu div.list-group>a.active .glyphicon,
-		div.bhoechie-tab-menu div.list-group>a.active .fa,
-		.list-group-item.active,
-		.list-group-item.active:hover,
-		.list-group-item.active:focus {
-			background-color: #31b0d5;
-			background-image: #31b0d5;
-			color: #ffffff;
-			padding: 4px;
-		}
-
-		div.bhoechie-tab-menu div.list-group>a.active:after,
-		{
-		content: '';
-		position: absolute;
-		left: 100%;
-		top: 50%;
-		margin-top: -13px;
-		border-left: 0;
-		border-bottom: 13px solid transparent;
-		border-top: 13px solid transparent;
-		border-left: 10px solid #31b0d5;
-		}
-
-		div.bhoechie-tab-content {
-			background-color: #ffffff;
-			/* border: 1px solid #eeeeee; */
-			padding-left: 20px;
-			padding-top: 10px;
-		}
-
-		div.bhoechie-tab div.bhoechie-tab-content:not(.active) {
-			display: none;
-		}
-
-		.list-group-item-collaps {
-			margin-bottom: 0;
-			border-bottom-right-radius: 4px;
-			border-bottom-left-radius: 4px;
-			color: #9170E4;
-			font-size: 15px;
-			border-bottom: 5px double #f3961c;
-			padding: 5px;
-		}
-
-		.rflabelsteric {
-			font-size: 17px !important;
-			color: red !important;
-		}
-
-		a.list-group-item {
-			color: #555;
-			padding: 5px;
-		}
-
-		.triangle-isosceles.right:after {
-			top: 12px;
-		}
-
-		.modalWidth {
-			width: 80%
-		}
-
-		#content {
-			display: table;
-		}
-
-		#pageFooter {
-			display: table-footer-group;
-		}
-
-		#pageFooter:after {
-			counter-increment: page;
-			content: counter(page);
-		}
-
-		tr:hover {
-			background-color: yellow;
-		}
+#rotate,#rotate2{width:100px;height:100px;background:red;border-top:10px solid black;transition:transform .2s ease;margin:20px auto;color:#fff;}
+/* Double select2 init se jo pehla (blank) container banta hai usay chhupa do,sirf akhri (jis mein data/functionality hoti hai) wala dikhega */
+.select2-container + .select2-container{display:none !important;}
+.rotated{-webkit-transform:rotate(90deg);-moz-transform:rotate(90deg);-o-transform:rotate(90deg);-ms-transform:rotate(90deg);transform:rotate(90deg);}
+/* bhoechie tab */
+div.bhoechie-tab-container{z-index:10;background-color:#ffffff;padding:0 !important;border-radius:4px;-moz-border-radius:4px;background-clip:padding-box;opacity:0.97;filter:alpha(opacity=97);}
+div.bhoechie-tab-menu{padding-right:0;padding-left:0;padding-bottom:0;}
+div.bhoechie-tab-menu div.list-group{margin-bottom:0;}
+div.bhoechie-tab-menu div.list-group>a{margin-bottom:7px;}
+div.bhoechie-tab-menu div.list-group>a .glyphicon,div.bhoechie-tab-menu div.list-group>a .fa{color:#31b0d5;}
+div.bhoechie-tab-menu div.list-group>a:first-child{border-top-right-radius:0;-moz-border-top-right-radius:0;}
+div.bhoechie-tab-menu div.list-group>a:last-child{border-bottom-right-radius:0;-moz-border-bottom-right-radius:0;}
+div.bhoechie-tab-menu div.list-group>a.active,div.bhoechie-tab-menu div.list-group>a.active .glyphicon,div.bhoechie-tab-menu div.list-group>a.active .fa,.list-group-item.active,.list-group-item.active:hover,.list-group-item.active:focus{background-color:#31b0d5;background-image:#31b0d5;color:#ffffff;padding:4px;}
+div.bhoechie-tab-menu div.list-group>a.active:after,{content:'';position:absolute;left:100%;top:50%;margin-top:-13px;border-left:0;border-bottom:13px solid transparent;border-top:13px solid transparent;border-left:10px solid #31b0d5;}
+div.bhoechie-tab-content{background-color:#ffffff;/* border:1px solid #eeeeee;*/
+padding-left:20px;padding-top:10px;}
+div.bhoechie-tab div.bhoechie-tab-content:not(.active){display:none;}
+.list-group-item-collaps{margin-bottom:0;border-bottom-right-radius:4px;border-bottom-left-radius:4px;color:#9170E4;font-size:15px;border-bottom:5px double #f3961c;padding:5px;}
+.rflabelsteric{font-size:17px !important;color:red !important;}
+a.list-group-item{color:#555;padding:5px;}
+.triangle-isosceles.right:after{top:12px;}
+.modalWidth{width:80%}
+#content{display:table;}
+#pageFooter{display:table-footer-group;}
+#pageFooter:after{counter-increment:page;content:counter(page);}
+tr:hover{background-color:yellow;}
 	</style>
 
 </head>
@@ -2351,11 +2229,8 @@ if (!empty($_GET['pageType'])) {
 		</script>
 <script type="text/javascript">
 $(document).ready(function(){
-    // Purana explicit .select2 wala init (already jahan class lagi hui hai)
     $('.select2').select2();
 
-    // Naya - dashboard/page ke sab select.form-control per bhi Select2 chalao
-    // (jo pehle se .select2 nahi hain, aur jo multiple attribute wale nahi hain - unke liye alag treat karna behtar hai)
     $('select.form-control').not('.select2').not('.no-select2').each(function(){
         $(this).select2({
             width: '100%',
@@ -2364,7 +2239,6 @@ $(document).ready(function(){
         });
     });
 });
-
 function DeletePvActivity(pv_id,pv_no,pv_date,pv_amount)
 {
     //alert(pv_id+pv_no+pv_date+pv_amount); return false;

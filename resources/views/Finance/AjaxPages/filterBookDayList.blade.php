@@ -19,7 +19,7 @@ $edit_voucher=['editJournalVoucherForm','View Payment Voucher Detail','editBankR
         //print_r($edit_voucher); die();
 $toal=0;
 ?>
-
+<br>
         @foreach($finacne as $key => $value)
         <h3 style="text-align: center"><u>{{$key}}</u></h3>
 

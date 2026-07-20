@@ -4,11 +4,86 @@
 @section('content')
     @include('select2')
 
-    <style>
-        element.style {
-            width: 183px;
-        }
-    </style>
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@700;800&family=Inter:wght@400;500;600&display=swap');
+
+.stockRptWrap { font-family: 'Inter', sans-serif; }
+.stockRptWrap .dp_sdw {
+    background: #fff;
+    border: 1px solid #EEF0F7 !important;
+    border-radius: 18px !important;
+    box-shadow: 0 8px 26px rgba(20,38,92,0.06) !important;
+    padding: 26px 28px !important;
+    margin-bottom: 20px;
+}
+.stockRptWrap .form-group label {
+    font-size: 12.5px !important;
+    font-weight: 700 !important;
+    color: #4A5268 !important;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    margin-bottom: 6px !important;
+}
+.stockRptWrap select.form-control,
+.stockRptWrap .select2-container .select2-selection--single {
+    border-radius: 10px !important;
+    border: 1.5px solid #E7EAF3 !important;
+    background: #FBFCFE !important;
+    height: 40px !important;
+    font-size: 13.5px !important;
+}
+.stockRptWrap .select2-selection__rendered { line-height: 38px !important; color: #1B2333 !important; }
+.stockRptWrap .select2-selection__arrow { height: 38px !important; }
+.stockRptWrap select.form-control:focus,
+.stockRptWrap .select2-container--focus .select2-selection--single {
+    border-color: #7C5CFC !important;
+}
+.stockRptWrap .btn-primary {
+    background: linear-gradient(135deg, #FF7A45, #7C5CFC) !important;
+    border: none !important;
+    border-radius: 10px !important;
+    font-weight: 700 !important;
+    padding: 9px 22px !important;
+    box-shadow: 0 8px 18px rgba(124,92,252,0.25) !important;
+}
+.stockRptWrap .btn-warning {
+    background: #FFF4E5 !important;
+    color: #B5651D !important;
+    border: 1.5px solid #FCE0B8 !important;
+    border-radius: 10px !important;
+    font-weight: 700 !important;
+    box-shadow: none !important;
+}
+
+/* report/print card */
+#printBankReceiptVoucherList .panel {
+    border-radius: 18px !important;
+    border: 1px solid #EEF0F7 !important;
+    box-shadow: 0 8px 26px rgba(20,38,92,0.06) !important;
+    overflow: hidden;
+}
+#printBankReceiptVoucherList .panel-body { padding: 0 !important; }
+.stockRptWrap input.form-control,
+.stockRptWrap input[type="date"] {
+    border-radius: 10px !important;
+    border: 1.5px solid #E7EAF3 !important;
+    background: #FBFCFE !important;
+    height: 40px !important;
+    font-size: 13.5px !important;
+    color: #1B2333 !important;
+    box-shadow: none !important;
+}
+.stockRptWrap input.form-control:focus,
+.stockRptWrap input[type="date"]:focus {
+    border-color: #7C5CFC !important;
+    background: #fff !important;
+    outline: none !important;
+}
+.sfReportBox {
+    font-family: 'Inter', sans-serif;
+    padding: 6px 0 10px;   /* pehle 26px 28px 30px tha */
+}
+</style>
 
 
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
@@ -38,7 +113,15 @@
                             <?php //echo CommonHelper::headerPrintSectionInPrintView($m);?>
                             <?php echo CommonHelper::displayPrintButtonInBlade('filterBookDayList','HrefHide','1');?>
                             <?php //echo CommonHelper::displayExportButton('EmpExitInterviewList','','1')?>
-                            <div id="filterBookDayList"></div>
+
+
+                            <div class="container-fluid stockRptWrap">
+                                <div class="well_N">
+                                    <div class="dp_sdw">
+                                        <div id="filterBookDayList"></div>
+                                    </div>
+                                </div> 
+                            </div>
 
                         </div>
                     </div>

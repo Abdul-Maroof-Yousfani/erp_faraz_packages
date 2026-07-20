@@ -4,7 +4,10 @@
 <?php
 use App\Helpers\CommonHelper;
 ?>
+<style>
+ table.sf-table-list{;white-space:nowrap;}
 
+</style>
     <div class="row well_N align-items-center">
         <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
             <ul class="cus-ul">

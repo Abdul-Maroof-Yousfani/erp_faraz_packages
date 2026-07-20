@@ -31,7 +31,7 @@
 #remember{text-align:left;margin-top:18px;}
 #remember label{display:flex;align-items:center;gap:8px;font-weight:500;color:#C4CBE0;font-size:13px;margin:0;}
 #remember input{accent-color:#FF7A45;}
-.login-btn{width:100%;border:none;padding:13px;border-radius:12px;background:linear-gradient(135deg,#FF7A45,#7C5CFC);color:#fff !important;font-weight:700;letter-spacing:.3px;font-size:14.5px;margin-top:24px;box-shadow:0 10px 25px rgba(124,92,252,0.35);transition:transform .15s ease;}
+.login-btn{width:100%;border:none;padding:13px;border-radius:12px;color:#fff !important;font-weight:700;letter-spacing:.3px;font-size:14.5px;margin-top:24px;box-shadow:0 10px 25px rgba(124,92,252,0.35);transition:transform .15s ease;}
 .login-btn:hover{transform:translateY(-1px);}
 .btn-link{display:inline-block;margin-top:16px;color:#C4CBE0 !important;font-size:13px;text-decoration:none !important;}
 .btn-link:hover{color:#FF7A45 !important;}

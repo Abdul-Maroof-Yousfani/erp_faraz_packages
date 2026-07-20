@@ -30,7 +30,7 @@ if (isset($_GET['item_id'])) {
             <div class="well_N">
                 <div class="dp_sdw">
                     <div class="headquid">
-                        <div class="row">
+                        <div class="row" style="margin-bottom: 40px;">
 
                             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
                                 <h2 class="subHeadingLabelClass">Stock Report</h2>
@@ -80,6 +80,7 @@ if (isset($_GET['item_id'])) {
                             </div>
                         </div>
                     </div>
+                    <br>
                     <div id="filterBookDayList"></div>
                 </div>
             </div>

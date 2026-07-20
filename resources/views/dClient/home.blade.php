@@ -168,7 +168,7 @@ canvas.Business_Flow_Chart{max-height:280px !important;}
 .mdel-bx .banq-box{border:1.5px solid #EEF0F7;border-radius:16px;background:#FBFCFE;transition:all .18s ease;}
 .mdel-bx .banq-box:hover{border-color:#7C5CFC;background:#fff;transform:translateY(-3px);box-shadow:0 12px 26px rgba(124,92,252,0.16);}
 .mdel-bx .banq-box a{display:flex;flex-direction:column;align-items:center;text-align:center;padding:24px 14px;text-decoration:none !important;}
-.mdel-bx .companyLetr{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#FF7A45,#7C5CFC) !important;color:#fff !important;font-family:'Sora',sans-serif;font-weight:700;font-size:19px;margin-bottom:12px;}
+.mdel-bx .companyLetr{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;background: transparent linear-gradient(90deg, #173CA7 0%, #0B1F59 100%) 0% 0% no-repeat padding-box !important;color:#fff !important;font-family:'Sora',sans-serif;font-weight:700;font-size:19px;margin-bottom:12px;}
 .mdel-bx .item-model-company{font-size:13.5px !important;font-weight:600 !important;color:#1B2333 !important;margin:0 !important;line-height:1.4;}
 /* sign out */
 .mdel-bx .btn-b{display:block !important;width:calc(100% - 72px);margin:10px 36px 32px;text-align:center;padding:13px;border-radius:12px;background:#F2F3F8 !important;color:#4A5268 !important;font-weight:700;font-size:13.5px;text-decoration:none !important;transition:background .15s ease;}
