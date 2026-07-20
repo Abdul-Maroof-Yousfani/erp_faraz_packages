@@ -102,48 +102,59 @@ $data=ReuseableCode::get_account_year_from_to(Session::get('run_company'));
     <a id="dlink" style="display:none;"></a>
     <?php endif;?>
 
-    <div class="vo-card">
-        <div class="vo-header">
-            <h3 class="vo-title">Vendor Outstanding</h3>
-            <div class="vo-actions">
-                <button class="btn btn-vo-print" onclick="printView('PrintEmpExitInterviewList','','1')">
-                    <span class="glyphicon glyphicon-print"></span> Print
-                </button>
-                <?php if($export == true):?>
-                <button type="button" class="btn btn-vo-export" onclick="ExportToExcel('xlsx')">Export <b>(xlsx)</b></button>
-                <?php endif;?>
-            </div>
-        </div>
 
-        <div class="vo-filters">
-            <div class="vo-field" style="display:none">
-                <label>From Date</label>
-                <input type="Date" name="from" id="from" value="<?php echo $data[0];?>" class="form-control" />
-            </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class="well_N">
+                    <div class="dp_sdw">    
+                        <div class="vo-card">
+                            <div class="vo-header">
+                                <h3 class="vo-title">Vendor Outstanding</h3>
+                                <div class="vo-actions">
+                                    <button class="btn btn-vo-print" onclick="printView('PrintEmpExitInterviewList','','1')">
+                                        <span class="glyphicon glyphicon-print"></span> Print
+                                    </button>
+                                    <?php if($export == true):?>
+                                    <button type="button" class="btn btn-vo-export" onclick="ExportToExcel('xlsx')">Export <b>(xlsx)</b></button>
+                                    <?php endif;?>
+                                </div>
+                            </div>
 
-            <div class="vo-field">
-                <label>As On</label>
-                <input type="Date" name="to" id="to" value="<?php echo date('Y-m-d')?>" class="form-control" />
-            </div>
+                            <div class="vo-filters">
+                                <div class="vo-field" style="display:none">
+                                    <label>From Date</label>
+                                    <input type="Date" name="from" id="from" value="<?php echo $data[0];?>" class="form-control" />
+                                </div>
 
-            <div class="vo-field vo-vendor">
-                <label>Vendor Name</label>
-                <select onchange="" name="vendor" id="vendor" class="form-control select2">
-                    <option value="0">All</option>
-                    <?php foreach(CommonHelper::get_all_supplier() as $row):?>
-                    <option value="<?php echo $row->id?>"><?php echo $row->name?></option>
-                    <?php endforeach;?>
-                </select>
-            </div>
+                                <div class="vo-field">
+                                    <label>As On</label>
+                                    <input type="Date" name="to" id="to" value="<?php echo date('Y-m-d')?>" class="form-control" />
+                                </div>
 
-            <div class="vo-field">
-                <input type="button" value="Submit" class="btn btn-vo-submit" onclick="get_data()" />
-            </div>
-        </div>
+                                <div class="vo-field vo-vendor">
+                                    <label>Vendor Name</label>
+                                    <select onchange="" name="vendor" id="vendor" class="form-control select2">
+                                        <option value="0">All</option>
+                                        <?php foreach(CommonHelper::get_all_supplier() as $row):?>
+                                        <option value="<?php echo $row->id?>"><?php echo $row->name?></option>
+                                        <?php endforeach;?>
+                                    </select>
+                                </div>
 
-        <div class="vo-table-wrap">
-            <div class="panel-body" id="PrintEmpExitInterviewList" style="padding:0;">
-                <div class="table-responsive" id="data"></div>
+                                <div class="vo-field">
+                                    <input type="button" value="Submit" class="btn btn-vo-submit" onclick="get_data()" />
+                                </div>
+                            </div>
+
+                            <div class="vo-table-wrap">
+                                <div class="panel-body" id="PrintEmpExitInterviewList" style="padding:0;">
+                                    <div class="table-responsive" id="data"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
