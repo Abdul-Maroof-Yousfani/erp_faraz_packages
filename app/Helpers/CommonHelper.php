@@ -118,7 +118,7 @@ class CommonHelper
         $HtmlData = '';
         if ($CompanyId == 1) {
          
-            $HtmlData = '<img style="width: 150px;" src="' . url('logoo.png') . '">';
+            $HtmlData = '<img style="width: 200px;" src="' . url('logoo.png') . '">';
             // $HtmlData = '<img style=" width: 125px;margin:20px 0px;" src="'.url("public/logoo.png").'">
             // <p style="font-size: 20px;"><strong>Premier Industrial</strong></p>
 
