@@ -20,292 +20,111 @@
 @section('content')
 
 <style>
-/* =====================================================================
-   HOME PAGE — MODERN POLISH (cards, sidebar submenu, tables)
-   ===================================================================== */
-
+/* ===================================================================== HOME PAGE — MODERN POLISH (cards,sidebar submenu,tables) ===================================================================== */
 /* ---------- Content wrapper spacing ---------- */
 .content-wrapper{padding:24px 26px !important;}
-
 /* ---------- Generic content cards ---------- */
-.dp_sdw,.dp_sdw2,.ibox,.cus-tab,.cus-tab2{
-    border-radius:16px !important;
-    border:1px solid #EDF0F8 !important;
-    box-shadow:0 6px 22px rgba(20,38,92,0.07) !important;
-    padding:22px 24px !important;
-}
-.dp_sdw h4,.ibox h4,.dp_sdw h6,.ibox-title h5,.dashTableHeading h6{
-    font-size:17px !important;
-    font-weight:800 !important;
-    color:var(--erp-navy-dark) !important;
-    margin-bottom:16px !important;
-}
-.dp_sdw > .d-flex,.ibox-title{
-    display:flex !important;
-    align-items:center !important;
-    justify-content:space-between !important;
-    margin-bottom:14px !important;
-}
-.dp_sdw select,.dp_sdw input[type="date"],.dp_sdw input[type="month"]{
-    height:38px !important;
-    border-radius:9px !important;
-    border:1px solid var(--erp-navy-tint) !important;
-    background:#F7F9FD !important;
-    font-weight:700 !important;
-    font-size:12.5px !important;
-    color:var(--erp-navy-dark) !important;
-}
-.dp_sdw p.text-muted,.dp_sdw > p{
-    color:#8892b0 !important;
-    font-size:13px !important;
-    font-weight:600 !important;
-}
-
-/* ---------- Stat cards (Today's Sales / This Month Sales / Collection / Receivables / Payables) ---------- */
-.priorMainBox2{
-    display:flex !important;
-    gap:20px !important;
-    flex-wrap:wrap !important;
-    margin-bottom:24px !important;
-}
-.priorMainBox2 a{
-    flex:1 1 220px !important;
-    text-decoration:none !important;
-}
-.priorMainBox2 a,.priorMainBox2 a:focus,.priorMainBox2 a:active,.priorMainBox2 a:hover{
-    outline:none !important;
-    box-shadow:none !important;
-    text-decoration:none !important;
+.dp_sdw,.dp_sdw2,.ibox,.cus-tab,.cus-tab2{border-radius:16px !important;border:1px solid #EDF0F8 !important;box-shadow:0 6px 22px rgba(20,38,92,0.07) !important;padding:22px 24px !important;}
+.dp_sdw h4,.ibox h4,.dp_sdw h6,.ibox-title h5,.dashTableHeading h6{font-size:17px !important;font-weight:800 !important;color:var(--erp-navy-dark) !important;margin-bottom:16px !important;}
+.dp_sdw > .d-flex,.ibox-title{display:flex !important;align-items:center !important;justify-content:space-between !important;margin-bottom:14px !important;}
+.dp_sdw select,.dp_sdw input[type="date"],.dp_sdw input[type="month"]{height:38px !important;border-radius:9px !important;border:1px solid var(--erp-navy-tint) !important;background:#F7F9FD !important;font-weight:700 !important;font-size:12.5px !important;color:var(--erp-navy-dark) !important;}
+.dp_sdw p.text-muted,.dp_sdw > p{color:#8892b0 !important;font-size:13px !important;font-weight:600 !important;}
+/* ---------- Stat cards (Modern refresh) ---------- */
+.priorMainBox2{display:flex !important;gap:18px !important;flex-wrap:wrap !important;margin-bottom:26px !important;align-items:stretch !important;}
+.priorMainBox2 a{flex:1 1 220px !important;text-decoration:none !important;display:block !important;}
+.priorMainBox2 a,.priorMainBox2 a:focus,.priorMainBox2 a:active,.priorMainBox2 a:hover{outline:none !important;box-shadow:none !important;text-decoration:none !important;border:none !important;}
+.priorMainBox2>a:nth-child(2) {
+    background: #173ca7 !important;
 }
 .mainDashBox{
     border-radius:18px !important;
-    padding:22px 24px !important;
-    color:#fff !important;
-    min-height:130px !important;
+    padding:20px 22px !important;
+    min-height:132px !important;
     position:relative !important;
     overflow:hidden !important;
-    box-shadow:0 10px 26px rgba(20,38,92,0.14) !important;
     outline:none !important;
-    transition:transform .18s ease, box-shadow .18s ease !important;
+    border:1px solid rgba(255,255,255,0.14) !important;
+    transition:transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .2s ease !important;
+    display:flex !important;
+    flex-direction:column !important;
+    justify-content:space-between !important;
 }
-.mainDashBox:hover{
-    transform:translateY(-4px) !important;
-    box-shadow:0 16px 32px rgba(20,38,92,0.22) !important;
+.mainDashBox:hover{transform:translateY(-5px) !important;box-shadow:0 18px 34px rgba(11,25,60,0.28) !important;}
+
+.mainDashBox::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:3px;
+    background:rgba(255,255,255,0.55);
 }
-.priorMainBox2 a:nth-child(1) .mainDashBox{background:linear-gradient(135deg,#FF9A44 0%,#E8722A 100%) !important;}
-.priorMainBox2 a:nth-child(2) .mainDashBox{background:linear-gradient(135deg,#9B6BFF 0%,#7C3AED 100%) !important;}
-.priorMainBox2 a:nth-child(3) .mainDashBox{background:linear-gradient(135deg,#22304F 0%,#0B1730 100%) !important;}
-.priorMainBox2 a:nth-child(4) .mainDashBox{background:linear-gradient(135deg,#1E3A8A 0%,#0B1F59 100%) !important;}
-.priorMainBox2 a:nth-child(5) .mainDashBox{background:linear-gradient(135deg,#4C3A8F 0%,#2E1F5E 100%) !important;}
-.mainDashBox .title h6{
-    font-size:13.5px !important;
-    font-weight:700 !important;
-    color:rgba(255,255,255,0.92) !important;
-    margin-bottom:2px !important;
-}
-.mainDashBox .title p{
-    font-size:11.5px !important;
-    color:rgba(255,255,255,0.65) !important;
-    margin-bottom:10px !important;
-    font-weight:600 !important;
-}
-.mainDashBox img{
-    position:absolute !important;
-    right:16px !important;
-    top:16px !important;
-    width:40px !important;
-    opacity:.9 !important;
-}
-.mainDashBox h4{
-    font-size:24px !important;
-    font-weight:800 !important;
-    color:#fff !important;
-    margin:0 !important;
-    letter-spacing:.3px !important;
+.mainDashBox::after{
+    content:'';position:absolute;top:-40px;right:-40px;width:130px;height:130px;
+    border-radius:50%;background:rgba(255,255,255,0.10);pointer-events:none;
 }
 
+.mainDashBox .title{position:relative;z-index:1;}
+.mainDashBox .title:first-of-type{display:flex;align-items:flex-start;justify-content:space-between;}
+.mainDashBox .title h6{font-size:13px !important;font-weight:700 !important;color:rgba(255,255,255,0.9) !important;margin-bottom:3px !important;letter-spacing:.2px;}
+.mainDashBox .title p{font-size:11px !important;color:rgba(255,255,255,0.55) !important;margin-bottom:0 !important;font-weight:600 !important;}
+
+.mainDashBox .title:last-of-type{display:flex !important;align-items:center !important;justify-content:space-between !important;margin-top:14px !important;}
+.mainDashBox .title img{
+    width:34px;height:34px;padding:7px;
+    background:rgba(255,255,255,0.14);
+    border-radius:10px;
+    object-fit:contain;
+}
+.mainDashBox h4{font-size:25px !important;font-weight:800 !important;color:#fff !important;margin:0 !important;letter-spacing:.2px !important;}
+
+/* ---------- Color set: navy / lavender / amber family ---------- */
+.dashBoxOrange{background:linear-gradient(155deg,#B8843A 0%,#7A4E17 100%) !important;}
+.dashBoxPurple{background:linear-gradient(155deg,#6B4FCE 0%,#3D2A85 100%) !important;}
+.dashBoxDark{background:linear-gradient(155deg,#1F2B4A 0%,#0A1226 100%) !important;}
+.dashBoxNavy{background:linear-gradient(155deg,#1E3A8A 0%,#0B1F59 100%) !important;}
+.dashBoxViolet{background:linear-gradient(155deg,#4A3B7E 0%,#241947 100%) !important;}
 /* ---------- Sales Orders table polish ---------- */
 .home_table thead tr th:first-child{border-top-left-radius:10px !important;}
 .home_table thead tr th:last-child{border-top-right-radius:10px !important;}
-.home_table thead.bgBlueofTd th{
-    background:#F0F3FB !important;
-    color:#4A5268 !important;
-    font-size:11.5px !important;
-    font-weight:800 !important;
-    letter-spacing:.4px !important;
-    text-transform:uppercase !important;
-    border-bottom:none !important;
-    padding:12px 10px !important;
-}
-.home_table td{
-    font-size:13px !important;
-    font-weight:600 !important;
-    color:#1B2333 !important;
-    padding:12px 10px !important;
-    vertical-align:middle !important;
-}
-.home_table td .label,.home_table td span.badge,.home_table td span.pendings_approvalss{
-    border-radius:20px !important;
-    padding:5px 14px !important;
-    font-size:11px !important;
-    font-weight:800 !important;
-    letter-spacing:.3px !important;
-    display:inline-block !important;
-}
-.home_table td .badge-warning,.home_table td span.pending,span.pendings_approvalss{
-    background:#FFF4E5 !important;
-    color:#B5651D !important;
-    border:none !important;
-    box-shadow:none !important;
-}
-
-/* ---------- Sidebar: expanded submenu ---------- */
+.home_table thead.bgBlueofTd th{background:#F0F3FB !important;color:#4A5268 !important;font-size:11.5px !important;font-weight:800 !important;letter-spacing:.4px !important;text-transform:uppercase !important;border-bottom:none !important;padding:12px 10px !important;}
+.home_table td{font-size:13px !important;font-weight:600 !important;color:#1B2333 !important;padding:12px 10px !important;vertical-align:middle !important;}
+.home_table td .label,.home_table td span.badge,.home_table td span.pendings_approvalss{border-radius:20px !important;padding:5px 14px !important;font-size:11px !important;font-weight:800 !important;letter-spacing:.3px !important;display:inline-block !important;}
+.home_table td .badge-warning,.home_table td span.pending,span.pendings_approvalss{background:#FFF4E5 !important;color:#B5651D !important;border:2px solid #fff4e5 !important;box-shadow:none !important;}
+.home_table tbody tr:not(:last-child) td:last-child{background:#ffffff !important;border-radius:0px !important;padding:19px 10px !important;}
+/* ---------- Sidebar:expanded submenu ---------- */
 .smastermnu .list-unstyled{padding-left:6px !important;}
-.smastermnu .list-unstyled > li > a{
-    font-size:13.5px !important;
-    font-weight:600 !important;
-    padding:9px 12px !important;
-    border-radius:9px !important;
-    color:var(--erp-sidebar-text) !important;
-    margin-bottom:2px !important;
-}
-.smastermnu .list-unstyled > li:hover a{
-    background:rgba(255,255,255,0.08) !important;
-    color:#ffffff !important;
-}
-.smastermnu .list-unstyled li.active a{
-    background:linear-gradient(90deg,var(--erp-navy) 0%,var(--erp-navy-dark) 100%) !important;
-    color:#ffffff !important;
-}
-.sm-bx button.settingListSb.active,button.btn.settingListSb.theme-bg.active{
-    background:linear-gradient(90deg,var(--erp-navy) 0%,var(--erp-navy-dark) 100%) !important;
-    border-left:none !important;
-    border-radius:10px !important;
-    box-shadow:0 4px 14px rgba(30,58,138,0.35) !important;
-}
+.smastermnu .list-unstyled > li > a{font-size:13.5px !important;font-weight:600 !important;padding:9px 12px !important;border-radius:9px !important;color:var(--erp-sidebar-text) !important;margin-bottom:2px !important;}
+.smastermnu .list-unstyled > li:hover a{background:rgba(255,255,255,0.08) !important;color:#ffffff !important;}
+.smastermnu .list-unstyled li.active a{background:linear-gradient(90deg,var(--erp-navy) 0%,var(--erp-navy-dark) 100%) !important;color:#ffffff !important;}
+.sm-bx button.settingListSb.active,button.btn.settingListSb.theme-bg.active{background:linear-gradient(90deg,var(--erp-navy) 0%,var(--erp-navy-dark) 100%) !important;border-left:none !important;border-radius:10px !important;box-shadow:0 4px 14px rgba(30,58,138,0.35) !important;}
 ul.m_list > li{border-left:none !important;}
 .sidenavnr ul li{border-bottom:none !important;}
 ul.m_list{margin-bottom:6px !important;}
 .sm-bx button > p{font-size:14px !important;font-weight:600 !important;}
 .sidenavnr::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.18) !important;border-radius:10px !important;}
-
-/* ---------- Cards: Sales Flow Chart / Receipts / Receivables ---------- */
-.barChartHead,.pieChartHead,.card{
-    background:#ffffff !important;
-    border:1px solid #EDF0F8 !important;
-    border-radius:16px !important;
-    box-shadow:0 6px 22px rgba(20,38,92,0.07) !important;
-    padding:22px 24px !important;
-    margin-bottom:24px !important;
-}
+/* ---------- Cards:Sales Flow Chart / Receipts / Receivables ---------- */
+.barChartHead,.pieChartHead,.card{background:#ffffff !important;border:1px solid #EDF0F8 !important;border-radius:16px !important;box-shadow:0 6px 22px rgba(20,38,92,0.07) !important;padding:22px 24px !important;margin-bottom:24px !important;}
 .card{border:1px solid #EDF0F8 !important;}
-.barChartHead > div:first-child,.card-header{
-    display:flex !important;
-    align-items:center !important;
-    justify-content:space-between !important;
-    margin-bottom:16px !important;
-    padding:0 !important;
-    border:none !important;
-    background:transparent !important;
-}
-.barChartHead h6,.card-subtitle,.card-title,.dashTableHeading h6{
-    font-size:17px !important;
-    font-weight:800 !important;
-    color:var(--erp-navy-dark) !important;
-    margin:0 !important;
-}
-.selectOption select,input#monthyear,input#ReceivablesAndPayables,#year{
-    height:38px !important;
-    border-radius:9px !important;
-    border:1px solid var(--erp-navy-tint) !important;
-    background:#F7F9FD !important;
-    font-weight:700 !important;
-    font-size:12.5px !important;
-    color:var(--erp-navy-dark) !important;
-    padding:6px 12px !important;
-}
+.barChartHead > div:first-child,.card-header{display:flex !important;align-items:center !important;justify-content:space-between !important;margin-bottom:16px !important;padding:0 !important;border:none !important;background:transparent !important;}
+.barChartHead h6,.card-subtitle,.card-title,.dashTableHeading h6{font-size:17px !important;font-weight:800 !important;color:var(--erp-navy-dark) !important;margin:0 !important;}
+.selectOption select,input#monthyear,input#ReceivablesAndPayables,#year{height:38px !important;border-radius:9px !important;border:1px solid var(--erp-navy-tint) !important;background:#F7F9FD !important;font-weight:700 !important;font-size:12.5px !important;color:var(--erp-navy-dark) !important;padding:6px 12px !important;}
 .barChartHead .card-body{padding:0 !important;min-height:280px !important;}
 canvas.Business_Flow_Chart{max-height:280px !important;}
-.barChartHead ul.hidden{
-    display:flex !important;
-    gap:16px !important;
-    list-style:none !important;
-    padding:0 !important;
-    margin:10px 0 0 !important;
-}
-.barChartHead ul.hidden li{
-    font-size:12.5px !important;
-    font-weight:600 !important;
-    color:var(--erp-label) !important;
-    display:flex !important;
-    align-items:center !important;
-    gap:6px !important;
-}
-
+.barChartHead ul.hidden{display:flex !important;gap:16px !important;list-style:none !important;padding:0 !important;margin:10px 0 0 !important;}
+.barChartHead ul.hidden li{font-size:12.5px !important;font-weight:600 !important;color:var(--erp-label) !important;display:flex !important;align-items:center !important;gap:6px !important;}
 /* ---------- Sales Orders table card ---------- */
-.table-responsive.dashTable{
-    background:#ffffff !important;
-    border:1px solid #EDF0F8 !important;
-    border-radius:16px !important;
-    box-shadow:0 6px 22px rgba(20,38,92,0.07) !important;
-    padding:22px 24px !important;
-}
-.dashTableHeading{
-    display:flex !important;
-    align-items:center !important;
-    justify-content:space-between !important;
-    margin-bottom:16px !important;
-}
-.dashTableHeading .btn-primary{
-    border-radius:10px !important;
-    font-weight:700 !important;
-    font-size:12.5px !important;
-    padding:9px 18px !important;
-    border:none !important;
-    background:linear-gradient(90deg,#1E3A8A 0%,#0B1F59 100%) !important;
-    box-shadow:0 6px 16px rgba(30,58,138,0.28) !important;
-}
-
+.table-responsive.dashTable{background:#ffffff !important;border:1px solid #EDF0F8 !important;border-radius:16px !important;box-shadow:0 6px 22px rgba(20,38,92,0.07) !important;padding:22px 24px !important;}
+.dashTableHeading{display:flex !important;align-items:center !important;justify-content:space-between !important;margin-bottom:16px !important;}
+.dashTableHeading .btn-primary{border-radius:10px !important;font-weight:700 !important;font-size:12.5px !important;padding:9px 18px !important;border:none !important;background:linear-gradient(90deg,#1E3A8A 0%,#0B1F59 100%) !important;box-shadow:0 6px 16px rgba(30,58,138,0.28) !important;}
 /* ---------- Cash-flow helper text ---------- */
-.cashSection .card-title{
-    color:#8892b0 !important;
-    font-size:13px !important;
-    font-weight:600 !important;
-}
-
+.cashSection .card-title{color:#8892b0 !important;font-size:13px !important;font-weight:600 !important;}
 /* ---------- Receivables & Payables list ---------- */
-.payable.pieChartHead ul#ReceivablesAndPayablesDiv{
-    list-style:none !important;
-    padding:0 !important;
-    margin-top:10px !important;
-}
+.payable.pieChartHead ul#ReceivablesAndPayablesDiv{list-style:none !important;padding:0 !important;margin-top:10px !important;}
 .payable.pieChartHead ul#ReceivablesAndPayablesDiv > li{margin-bottom:14px !important;}
-.payable.pieChartHead ul#ReceivablesAndPayablesDiv > li > h6{
-    font-size:13.5px !important;
-    font-weight:700 !important;
-    color:var(--erp-navy-dark) !important;
-    margin-bottom:8px !important;
-}
-
+.payable.pieChartHead ul#ReceivablesAndPayablesDiv > li > h6{font-size:13.5px !important;font-weight:700 !important;color:var(--erp-navy-dark) !important;margin-bottom:8px !important;}
 /* ---------- Empty state ---------- */
-.empty-state{
-    display:flex !important;
-    flex-direction:column !important;
-    align-items:center !important;
-    justify-content:center !important;
-    padding:50px 20px !important;
-    color:#a7abc3 !important;
-    text-align:center !important;
-    min-height:200px !important;
-}
+.empty-state{display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;padding:50px 20px !important;color:#a7abc3 !important;text-align:center !important;min-height:200px !important;}
 .empty-state i{font-size:34px !important;margin-bottom:12px !important;color:#c9cfe6 !important;}
 .empty-state p{font-size:13.5px !important;font-weight:600 !important;margin:0 !important;color:#8892b0 !important;}
-
-/* =====================================================================
-   COMPANY SELECT MODAL
-   ===================================================================== */
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@700;800&family=Inter:wght@400;500;600&display=swap');
-#companyListModel{font-family:'Inter',sans-serif;}
+/* ===================================================================== COMPANY SELECT MODAL ===================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@700;800&family=Inter:wght@400;500;600&display=swap');#companyListModel{font-family:'Inter',sans-serif;}
 #companyListModel .modal-dialog.modalWidth{max-width:620px;margin:60px auto;}
 #companyListModel .model-n.modal-content{border-radius:22px !important;border:none !important;overflow:hidden;box-shadow:0 30px 70px rgba(19,27,46,0.35) !important;}
 #companyListModel .modal-body{padding:0 !important;}
@@ -320,14 +139,11 @@ canvas.Business_Flow_Chart{max-height:280px !important;}
 .mdel-bx .banq-box{border:1.5px solid #EEF0F7;border-radius:16px;background:#FBFCFE;transition:all .18s ease;}
 .mdel-bx .banq-box:hover{border-color:#7C5CFC;background:#fff;transform:translateY(-3px);box-shadow:0 12px 26px rgba(124,92,252,0.16);}
 .mdel-bx .banq-box a{display:flex;flex-direction:column;align-items:center;text-align:center;padding:24px 14px;text-decoration:none !important;}
-.mdel-bx .companyLetr{
-    width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;
-    background:linear-gradient(90deg,#173CA7 0%,#0B1F59 100%) !important;
-    color:#fff !important;font-family:'Sora',sans-serif;font-weight:700;font-size:19px;margin-bottom:12px;
-}
+.mdel-bx .companyLetr{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(90deg,#173CA7 0%,#0B1F59 100%) !important;color:#fff !important;font-family:'Sora',sans-serif;font-weight:700;font-size:19px;margin-bottom:12px;}
 .mdel-bx .item-model-company{font-size:13.5px !important;font-weight:600 !important;color:#1B2333 !important;margin:0 !important;line-height:1.4;}
 .mdel-bx .btn-b{display:block !important;width:calc(100% - 72px);margin:10px 36px 32px;text-align:center;padding:13px;border-radius:12px;background:#F2F3F8 !important;color:#4A5268 !important;font-weight:700;font-size:13.5px;text-decoration:none !important;transition:background .15s ease;}
 .mdel-bx .btn-b:hover{background:#ea545545 !important;color:#353434 !important;transition:0.5s !important;}
+
 </style>
 
 {{-- ==================== OLD/UNUSED COMPANY LOOP CODE (kept for reference only) ====================
@@ -432,8 +248,10 @@ canvas.Business_Flow_Chart{max-height:280px !important;}
                                     <h6>Today's Sales</h6>
                                     <p>{{ $currentMonthYear }}</p>
                                 </div>
-                                <img src="{{ asset('assets/img/miniBar.svg') }}" alt="">
-                                <h4>{{ number_format(CommonHelper::getSaleSummaryAmountF($monthStartDate, $monthEndDate), 0) }}</h4>
+                                  <div class="title">
+                                    <img src="{{ asset('assets/img/miniBar.svg') }}" alt="">
+                                    <h4>{{ number_format(CommonHelper::getSaleSummaryAmountF($monthStartDate, $monthEndDate), 0) }}</h4>
+                                 </div>
                             </div>
                         </a>
 
@@ -443,8 +261,10 @@ canvas.Business_Flow_Chart{max-height:280px !important;}
                                     <h6>This Month Sales</h6>
                                     <p>{{ $currentMonthYear }}</p>
                                 </div>
-                                <img src="{{ asset('assets/img/miniBar.svg') }}" alt="">
-                                <h4>{{ number_format(CommonHelper::getSaleSummaryAmountF($monthStartDate, $monthEndDate), 0) }}</h4>
+                                 <div class="title">
+                                    <img src="{{ asset('assets/img/miniBar.svg') }}" alt="">
+                                    <h4>{{ number_format(CommonHelper::getSaleSummaryAmountF($monthStartDate, $monthEndDate), 0) }}</h4>
+                                </div>
                             </div>
                         </a>
 
@@ -453,8 +273,10 @@ canvas.Business_Flow_Chart{max-height:280px !important;}
                                 <div class="title">
                                     <h6>This Month's Collection</h6>
                                 </div>
+                                <div class="title">
                                 <img src="{{ asset('assets/img/miniBar.svg') }}" alt="">
                                 <h4>{{ number_format($collection, 2) }}</h4>
+                                </div>
                             </div>
                         </a>
 
@@ -463,8 +285,10 @@ canvas.Business_Flow_Chart{max-height:280px !important;}
                                 <div class="title">
                                     <h6>Total Receivables</h6>
                                 </div>
+                                  <div class="title">
                                 <img src="{{ asset('assets/img/miniBar.svg') }}" alt="">
                                 <h4 class="salesagingtotal">{{ number_format($receiable, 2) }}</h4>
+                                </div>
                             </div>
                         </a>
 
@@ -473,8 +297,10 @@ canvas.Business_Flow_Chart{max-height:280px !important;}
                                 <div class="title">
                                     <h6>Total Payables</h6>
                                 </div>
+                                <div class="title">
                                 <img src="{{ asset('assets/img/miniBar.svg') }}" alt="">
                                 <h4 class="vendoragingtotal">{{ number_format($payable) }}</h4>
+                                </div>
                             </div>
                         </a>
                     </div>
