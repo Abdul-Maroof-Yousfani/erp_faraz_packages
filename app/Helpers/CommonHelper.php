@@ -117,9 +117,8 @@ class CommonHelper
         $Cdata = DB::table('company')->where('status', 1)->where('id', $CompanyId)->first();
         $HtmlData = '';
         if ($CompanyId == 1) {
-            $HtmlData = '<img style=" width: 150px;" src="' . url("public/logoo.png") . '">';
-            $HtmlData = '<img style="width: 150px;" src="' . asset("assets/logoo.png") . '">';
-
+            $HtmlData = '<img style="width: 150px;" src="' . url('public/logoo.png') . '">';
+            $HtmlData = '<img style="width: 200px;" src="' . asset('assets/logoo.png') . '">';
             // $HtmlData = '<img style=" width: 125px;margin:20px 0px;" src="'.url("public/logoo.png").'">
             // <p style="font-size: 20px;"><strong>Premier Industrial</strong></p>
 
