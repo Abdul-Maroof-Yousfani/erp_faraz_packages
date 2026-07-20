@@ -143,6 +143,10 @@ canvas.Business_Flow_Chart{max-height:280px !important;}
 .mdel-bx .item-model-company{font-size:13.5px !important;font-weight:600 !important;color:#1B2333 !important;margin:0 !important;line-height:1.4;}
 .mdel-bx .btn-b{display:block !important;width:calc(100% - 72px);margin:10px 36px 32px;text-align:center;padding:13px;border-radius:12px;background:#F2F3F8 !important;color:#4A5268 !important;font-weight:700;font-size:13.5px;text-decoration:none !important;transition:background .15s ease;}
 .mdel-bx .btn-b:hover{background:#ea545545 !important;color:#353434 !important;transition:0.5s !important;}
+.priorMainBox2 > a:nth-child(1) .mainDashBox::after{display:none !important;}
+.priorMainBox2 > a:nth-child(2) .mainDashBox::after{display:none !important;}
+.priorMainBox2 > a:nth-child(3) .mainDashBox::after{display:none !important;}
+.priorMainBox2 > a:nth-child(4) .mainDashBox::after{display:none !important;}
 
 </style>
 
