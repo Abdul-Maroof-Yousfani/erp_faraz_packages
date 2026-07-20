@@ -136,13 +136,13 @@ ul.tmenu-list.d{display:flex;gap:16px;align-items:center;justify-content:left;}
 .nav.navbar-nav ul.tmenu-list li.active a.primary_nav{border-bottom:2px solid #ff8546 !important;}
 /* D css */
 .rio ul{display:flex;align-items:center;gap:50px;justify-content:center;}
-.rio ul li label{font-weight:800;}
+.rio ul li label{font-weight:500;}
 .bo{text-align:right;}
 .bo .rio ul{justify-content:right !important;}
 .snaem p{padding-right:30px;margin-top:-11px;}
-.snaems p{padding-right:6px;margin-top:-4px;font-weight:800;}
+.snaems p{padding-right:6px;margin-top:-4px;font-weight:500;}
 .tect_Cc{display:flex;font-weight:600;gap:10px;}
-.tect_Cc2{font-weight:800;}
+.tect_Cc2{font-weight:500;}
 .cons p{font-weight:600;}
 .requirement > thead > tr > td,.requirement > tbody > tr > td,.requirement > tfoot > tr > td{border:1px solid #000 !important;}
 .test22{display:flex;font-weight:600;gap:50px;align-items:center;justify-content:space-between;width:60%;}
@@ -394,7 +394,7 @@ ul.list-unstyled > li{margin-bottom:0px;}
 section.login-sec{display:-ms-flexbox;display:flex;-ms-flex-preferred-size:100%;flex-basis:100%;min-height:100vh;align-items:center;justify-content:center;position:relative;z-index:1;background-repeat:no-repeat;background-size:cover;}
 .l-logo{text-align:center;padding:15px 0;}
 .login-fwrp h3{font-size:20px;font-weight:600;}
-.login-fwrp h3 > span{font-weight:800;color:#0af;}
+.login-fwrp h3 > span{font-weight:500;color:#0af;}
 .form-signin .singInput::placeholder{border-radius:0px;height:50px;font-size:12px;font-weight:500;}
 .inner-addon span{position:absolute;left:8px;bottom:0;top:0;margin:auto;height:fit-content;color:#0af;font-size:13px;border-right:1px solid #d9d9d9;padding-right:6px;}
 .login-fwrp label{color:#5e5873;font-size:11px;}
@@ -854,7 +854,7 @@ a.settingListSb-subItem:hover{background:rgba(255,255,255,0.15);color:#fff;}
 .slist h2.subHeadingLabelClass{font-size:15px !important;}
 ul.grand{display:flex;justify-content:flex-end;text-align:left;gap:46px;align-items:center;}
 .ganddiv{text-align:right;}
-.grndctn h6{font-size:16px;font-weight:800;}
+.grndctn h6{font-size:16px;font-weight:500;}
 .grndctn h5{font-size:20px;font-weight:600;}
 div#showDetailModelOneParamerter .modalWidth{width:80%;}
 /* .text-right{text-align:right;}
@@ -990,7 +990,7 @@ input[type="radio"]:hover,input[type="checkbox"]:hover{border-color:var(--erp-na
 /* right-align columns that already use Bootstrap's own .text-right (existing utility class,not a new one) */
 .table-bordered td.text-right,.userlittab td.text-right,.home_table td.text-right{text-align:right !important;font-variant-numeric:tabular-nums !important;}
 /* tfoot / total rows — colorful modern totals bar,works automatically wherever a <tfoot> is used,no class needed to mark a row as "total" */
-.table-bordered tfoot td,.userlittab tfoot td,.sale_older_tab tfoot td,.Balance_Sheet tfoot td,.Profit_Loss tfoot td,.home_table tfoot td{background:linear-gradient(90deg,#EAF1FF 0%,#F1F9F4 100%) !important;font-weight:800 !important;font-size:13.5px !important;color:var(--erp-navy-2) !important;border-top:2px solid var(--erp-navy-1) !important;padding-top:13px !important;padding-bottom:13px !important;}
+.table-bordered tfoot td,.userlittab tfoot td,.sale_older_tab tfoot td,.Balance_Sheet tfoot td,.Profit_Loss tfoot td,.home_table tfoot td{background:linear-gradient(90deg,#EAF1FF 0%,#F1F9F4 100%) !important;font-weight:500 !important;font-size:13.5px !important;color:var(--erp-navy-2) !important;border-top:2px solid var(--erp-navy-1) !important;padding-top:13px !important;padding-bottom:13px !important;}
 .table-bordered tfoot tr:first-child td,.userlittab tfoot tr:first-child td,.home_table tfoot tr:first-child td{position:relative !important;}
 .table-bordered tfoot tr:first-child td:first-child::before,.userlittab tfoot tr:first-child td:first-child::before,.home_table tfoot tr:first-child td:first-child::before{content:"" !important;position:absolute !important;left:0 !important;top:0 !important;bottom:0 !important;width:4px !important;background:linear-gradient(180deg,var(--erp-navy-1),var(--erp-green)) !important;}
 /* colorful "grouped" header row — reports jinke thead mein 2 rows hoti hain (jaise Opening Balance / Transactions / Closing Balance colspan row + neeche Sr.No/Acc.Code/Account labels). Sirf structural:first-child selector se pehli header-row ko target kiya hai,koi naya class nahi. Alternating soft tints se columns groups aasani se scan hote hain. */
@@ -1000,7 +1000,7 @@ input[type="radio"]:hover,input[type="checkbox"]:hover{border-color:var(--erp-na
 /* ===== Header grouping row - sirf background halka rahe,text color normal/dark ===== */
 .table-bordered thead tr:first-child th,.userlittab thead tr:first-child th,.home_table thead tr:first-child th{background:var(--erp-bg-head) !important;color:var(--erp-navy-2) !important;text-align:left !important;font-size:11.5px !important;}
 /* ===== Sirf TOTAL / tfoot rows par bold + accent color ===== */
-.table-bordered tfoot td,.userlittab tfoot td,.home_table tbody tr:last-child td{font-weight:800 !important;color:var(--erp-navy-2) !important;}
+.table-bordered tfoot td,.userlittab tfoot td,.home_table tbody tr:last-child td{font-weight:500 !important;color:var(--erp-navy-2) !important;}
 /* card-style wrapper already used around report tables */
 .clndrsdw.table-responsive,.bk_cldr{border:1px solid var(--erp-border) !important;box-shadow:var(--erp-shadow) !important;border-radius:var(--erp-radius-md) !important;}
 /* the gray "report banner" block already used on print/view pages (view_header / view_header2 — existing classes,restyled only) */
@@ -1048,7 +1048,7 @@ button.searchButton i{color:var(--erp-navy-dark) !important;}
  transition:transform .2s ease,box-shadow .2s ease !important;}
 .mainDashBox:hover{transform:translateY(-3px) !important;}
 .mainDashBox .title h6{font-weight:700 !important;letter-spacing:.2px !important;line-height:1.4 !important;padding-top:2px !important;margin-top:0 !important;margin-bottom:8px !important;}
-.mainDashBox h4{font-weight:800 !important;line-height:1.3 !important;color:#fff !important;}
+.mainDashBox h4{font-weight:500 !important;line-height:1.3 !important;color:#fff !important;}
 .mainDashBox::after{font-family:"FontAwesome" !important;font-weight:normal !important;position:absolute !important;right:16px !important;top:14px !important;font-size:20px !important;color:rgba(255,255,255,0.55) !important;}
 /* .priorMainBox2 > a:nth-child(1) .mainDashBox::after{content:"\f155";} */
 /* usd */
@@ -1064,7 +1064,7 @@ thead.bgBlueofTd tr th{background:linear-gradient(90deg,var(--erp-navy) 0%,var(-
 .home_table tbody tr:nth-child(even) td{background:#F7F9FD !important;}
 .home_table tbody tr:hover td{background:var(--erp-navy-tint) !important;}
 .home_table tbody tr:last-child td{border-bottom:none !important;}
-.home_table tbody tr:last-child td{font-weight:800 !important;color:var(--erp-navy-dark) !important;background:var(--erp-navy-tint) !important;border-top:2px solid var(--erp-navy) !important;}
+.home_table tbody tr:last-child td{font-weight:500 !important;color:var(--erp-navy-dark) !important;background:var(--erp-navy-tint) !important;border-top:2px solid var(--erp-navy) !important;}
 .home_table tbody tr td:last-child{text-align:center !important;}
 .home_table tbody tr:not(:last-child) td:last-child{font-size:11.5px !important;font-weight:700 !important;color:var(--erp-navy-dark) !important;background:var(--erp-navy-tint) !important;border-radius:20px !important;padding:6px 10px !important;display:inline-block !important;}
 .dashTableHeading .btn-primary{background:linear-gradient(90deg,var(--erp-navy) 0%,var(--erp-navy-dark) 100%) !important;display:inline-flex !important;align-items:center !important;gap:7px !important;}
@@ -1088,7 +1088,7 @@ thead.bgBlueofTd tr th{background:linear-gradient(90deg,var(--erp-navy) 0%,var(-
 #showDetailModelTwoParamerter .modal-content,.model-n{width:100% !important;max-height:88vh !important;margin:0 !important;border:none !important;border-radius:22px !important;box-shadow:0 25px 60px rgba(20,26,46,0.35) !important;display:flex !important;flex-direction:column !important;overflow:hidden !important;background:#fff !important;}
 /* Header — clean,no harsh gradient,soft border */
 .model-logo{position:sticky !important;top:0 !important;z-index:10 !important;background:#fff !important;border-bottom:1px solid #EEF1F8 !important;padding:24px 32px !important;margin:0 !important;display:flex !important;align-items:center !important;justify-content:space-between !important;}
-.model-logo h4{color:#0B1F59 !important;font-size:19px !important;font-weight:800 !important;letter-spacing:.3px !important;margin:0 !important;}
+.model-logo h4{color:#0B1F59 !important;font-size:19px !important;font-weight:500 !important;letter-spacing:.3px !important;margin:0 !important;}
 /* Action buttons — soft pill style,subtle shadow */
 .model-logo .btn-success,.model-logo .btn-danger,.model-logo .btn-primary,.model-logo button{border-radius:10px !important;padding:9px 20px !important;font-weight:700 !important;font-size:13px !important;border:none !important;box-shadow:0 4px 10px rgba(0,0,0,0.08) !important;transition:.2s ease !important;}
 .model-logo button:hover{transform:translateY(-1px) !important;box-shadow:0 6px 14px rgba(0,0,0,0.14) !important;}
@@ -1174,7 +1174,7 @@ input[type="button"].btn-sm.btn-primary:hover{transform:translateY(-1px) !import
 .tb-report-wrap{background:#fff !important;border-radius:16px !important;box-shadow:0 6px 22px rgba(20,38,92,0.07) !important;overflow:hidden !important;margin-top:20px !important;}
 /* ---------- Header block (was stacked <thead>s,now a real header) ---------- */
 .tb-report-header{background:linear-gradient(180deg,#F3F5FB 0%,#EAEEFA 100%) !important;padding:28px 32px 22px !important;text-align:center !important;border-bottom:1px solid #E4E7EC !important;position:relative !important;}
-.tb-company-name{font-size:22px !important;font-weight:800 !important;color:var(--erp-navy-2,#0B1F59) !important;margin:0 0 6px !important;}
+.tb-company-name{font-size:22px !important;font-weight:500 !important;color:var(--erp-navy-2,#0B1F59) !important;margin:0 0 6px !important;}
 .tb-report-title{font-size:16px !important;font-weight:700 !important;color:var(--erp-navy-1,#173CA7) !important;margin:0 0 10px !important;}
 .tb-date-range{font-size:14px !important;font-weight:600 !important;color:var(--erp-text,#3b3f5c) !important;margin:0 !important;}
 .tb-date-range b{color:var(--erp-navy-2,#0B1F59) !important;}
@@ -1187,15 +1187,15 @@ input[type="button"].btn-sm.btn-primary:hover{transform:translateY(-1px) !import
 .tb-table{width:100% !important;border-collapse:separate !important;border-spacing:0 !important;}
 /* Sticky header - single clean set,no duplication */
 .tb-table thead{background:#f0f2fa;position:sticky !important;top:0 !important;}
-.tb-table thead tr.tb-group-row th{background:#EEF1F8 !important;color:var(--erp-navy-1,#173CA7) !important;font-size:11px !important;font-weight:800 !important;text-transform:uppercase !important;letter-spacing:.5px !important;text-align:center !important;padding:8px 12px !important;border:none !important;}
-.tb-table thead tr.tb-col-row th{background:#F7F8FC !important;color:var(--erp-navy-2,#0B1F59) !important;font-size:11.5px !important;font-weight:800 !important;text-transform:uppercase !important;letter-spacing:.4px !important;padding:10px 14px !important;border:none !important;border-bottom:2px solid var(--erp-navy-1,#173CA7) !important;}
+.tb-table thead tr.tb-group-row th{background:#EEF1F8 !important;color:var(--erp-navy-1,#173CA7) !important;font-size:11px !important;font-weight:500 !important;text-transform:uppercase !important;letter-spacing:.5px !important;text-align:center !important;padding:8px 12px !important;border:none !important;}
+.tb-table thead tr.tb-col-row th{background:#F7F8FC !important;color:var(--erp-navy-2,#0B1F59) !important;font-size:11.5px !important;font-weight:500 !important;text-transform:uppercase !important;letter-spacing:.4px !important;padding:10px 14px !important;border:none !important;border-bottom:2px solid var(--erp-navy-1,#173CA7) !important;}
 .tb-table thead tr.tb-col-row th.text-right{text-align:right !important;}
 /* ---------- Body rows ---------- */
 .tb-table tbody td{border:none !important;border-bottom:1px solid #F1F3F9 !important;padding:10px 14px !important;font-size:13px !important;color:var(--erp-text,#3b3f5c) !important;vertical-align:middle !important;}
 .tb-table tbody tr:hover td{background:#F7F9FD !important;}
 .tb-table tbody tr:nth-child(even) td{background:#FAFBFE !important;}
 /* Level 1 rows - bold,tinted,accent bar */
-.tb-table tbody tr.tb-level-1 td{background:#F0F3FC !important;font-weight:800 !important;color:var(--erp-navy-2,#0B1F59) !important;font-size:13.5px !important;}
+.tb-table tbody tr.tb-level-1 td{background:#F0F3FC !important;font-weight:500 !important;color:var(--erp-navy-2,#0B1F59) !important;font-size:13.5px !important;}
 .tb-table tbody tr.tb-level-1 td:first-child{border-left:3px solid var(--erp-navy-1,#173CA7) !important;}
 /* Level 2-7 - progressively lighter accent colors,plain background */
 .tb-table tbody tr.tb-level-2 td:first-child{border-left:3px solid #ff8244 !important;}
@@ -1212,7 +1212,7 @@ input[type="button"].btn-sm.btn-primary:hover{transform:translateY(-1px) !import
 .tb-table tbody td.text-right{text-align:right !important;font-variant-numeric:tabular-nums !important;font-weight:700 !important;}
 /* ---------- Sticky footer total row ---------- */
 .tb-table tfoot{position:sticky !important;bottom:0 !important;z-index:5 !important;}
-.tb-table tfoot td{background:linear-gradient(90deg,#EAF1FF 0%,#F1F9F4 100%) !important;font-weight:800 !important;font-size:13.5px !important;color:var(--erp-navy-2,#0B1F59) !important;border-top:2px solid var(--erp-navy-1,#173CA7) !important;padding:13px 14px !important;}
+.tb-table tfoot td{background:linear-gradient(90deg,#EAF1FF 0%,#F1F9F4 100%) !important;font-weight:500 !important;font-size:13.5px !important;color:var(--erp-navy-2,#0B1F59) !important;border-top:2px solid var(--erp-navy-1,#173CA7) !important;padding:13px 14px !important;}
 /* ---------- Footer action (Customise button) ---------- */
 .tb-footer-action{padding:20px 32px !important;text-align:right !important;border-top:1px solid #EEF1F8 !important;}
 .tb-footer-action input[type="submit"]{height:44px !important;padding:0 26px !important;border-radius:11px !important;font-weight:700 !important;font-size:13.5px !important;background:linear-gradient(90deg,#173CA7 0%,#0B1F59 100%) !important;border:none !important;color:#fff !important;box-shadow:0 4px 12px rgba(23,60,167,0.20) !important;transition:.2s ease !important;}
@@ -1220,7 +1220,7 @@ input[type="button"].btn-sm.btn-primary:hover{transform:translateY(-1px) !import
 /* ===================================================================== PROFIT & LOSS STATEMENT — REDESIGN ===================================================================== */
 /* ---------- Header row (title + Print/Export) ---------- */
 .head_flex{display:flex !important;align-items:center !important;justify-content:space-between !important;margin-bottom:6px !important;}
-.headquids .subHeadingLabelClass{font-size:20px !important;font-weight:800 !important;color:var(--erp-navy-2,#0B1F59) !important;text-transform:none !important;letter-spacing:0 !important;}
+.headquids .subHeadingLabelClass{font-size:20px !important;font-weight:500 !important;color:var(--erp-navy-2,#0B1F59) !important;text-transform:none !important;letter-spacing:0 !important;}
 .prints{display:flex !important;align-items:center !important;gap:10px !important;}
 .prints .btn{height:42px !important;border-radius:10px !important;padding:0 20px !important;font-weight:700 !important;font-size:13px !important;display:inline-flex !important;align-items:center !important;gap:8px !important;}
 .btn-warning{background:linear-gradient(90deg,#ffab5c 0%,#ff8244 100%) !important;border:none !important;color:#fff !important;}
@@ -1234,13 +1234,13 @@ hr{border-top:1px solid #EDF0F8 !important;margin:14px 0 !important;}
 #filterYear:focus,#compareYear:focus,#comparetive:focus,#financial_year:focus{border-color:var(--erp-navy-1,#173CA7) !important;box-shadow:0 0 0 3px rgba(23,60,167,0.12) !important;outline:none !important;}
 /* ---------- P&L result table (from PHP output) ---------- */
 .profit_Loss_Statement{width:100% !important;border-collapse:separate !important;border-spacing:0 !important;background:#fff !important;border-radius:14px !important;overflow:hidden !important;box-shadow:0 4px 16px rgba(20,38,92,0.06) !important;}
-.profit_Loss_Statement th{background:#F7F8FC !important;color:var(--erp-navy-2,#0B1F59) !important;font-size:11.5px !important;font-weight:800 !important;text-transform:uppercase !important;letter-spacing:.4px !important;border:none !important;border-bottom:2px solid var(--erp-navy-1,#173CA7) !important;padding:10px 12px !important;}
+.profit_Loss_Statement th{background:#F7F8FC !important;color:var(--erp-navy-2,#0B1F59) !important;font-size:11.5px !important;font-weight:500 !important;text-transform:uppercase !important;letter-spacing:.4px !important;border:none !important;border-bottom:2px solid var(--erp-navy-1,#173CA7) !important;padding:10px 12px !important;}
 .profit_Loss_Statement td{border:none !important;border-bottom:1px solid #F1F3F9 !important;padding:9px 12px !important;font-size:13px !important;color:var(--erp-text,#3b3f5c) !important;}
 .profit_Loss_Statement tr:hover td{background:#F7F9FD !important;}
 .profit_Loss_Statement td.text-right{text-align:right !important;font-variant-numeric:tabular-nums !important;font-weight:700 !important;}
 /* Total/highlighted rows (inline background colors from PHP like lightsteelblue/lightyellow get normalized) */
-.profit_Loss_Statement tr[style*="lightsteelblue"] td{background:#EAF1FF !important;font-weight:800 !important;color:var(--erp-navy-2,#0B1F59) !important;}
-.profit_Loss_Statement tr[style*="lightyellow"] td{background:linear-gradient(90deg,#EAF1FF 0%,#F1F9F4 100%) !important;font-weight:800 !important;color:var(--erp-navy-2,#0B1F59) !important;border-top:2px solid var(--erp-navy-1,#173CA7) !important;}
+.profit_Loss_Statement tr[style*="lightsteelblue"] td{background:#EAF1FF !important;font-weight:500 !important;color:var(--erp-navy-2,#0B1F59) !important;}
+.profit_Loss_Statement tr[style*="lightyellow"] td{background:linear-gradient(90deg,#EAF1FF 0%,#F1F9F4 100%) !important;font-weight:500 !important;color:var(--erp-navy-2,#0B1F59) !important;border-top:2px solid var(--erp-navy-1,#173CA7) !important;}
 .head_lines{text-align:center !important;background:linear-gradient(180deg,#F3F5FB 0%,#EAEEFA 100%) !important;padding:24px 30px !important;border-radius:14px 14px 0 0 !important;margin-bottom:0 !important;}
 .head_lines h3{color:var(--erp-navy-2,#0B1F59) !important;font-weight:700 !important;margin:6px 0 !important;}
 .head_lines p{color:var(--erp-label,#5E5873) !important;font-size:13px !important;font-weight:600 !important;margin:4px 0 !important;}
@@ -1269,7 +1269,7 @@ table.sf-table-list{width:100% !important;border-collapse:separate !important;bo
 /* Status "Pending" pill */
 .sf-table-list .badge-status,.sf-table-list td .badge,.sf-table-list td .label,.sf-table-list td span.status-pending{display:inline-block !important;background:#E9E7FB !important;color:#6C5CE7 !important;font-size:12px !important;font-weight:700 !important;padding:5px 16px !important;border-radius:20px !important;border:none !important;}
 /* Total row — bold navy + top accent border like screenshot */
-.sf-table-list tbody tr:last-child td,.sf-table-list tfoot tr td{font-weight:800 !important;color:#0B1F59 !important;border-top:2px solid #173CA7 !important;border-bottom:none !important;background:#fff !important;padding-top:16px !important;}
+.sf-table-list tbody tr:last-child td,.sf-table-list tfoot tr td{font-weight:500 !important;color:#0B1F59 !important;border-top:2px solid #173CA7 !important;border-bottom:none !important;background:#fff !important;padding-top:16px !important;}
 /* Container card look (rounded outer white card) */
 .sf-table-list-wrap,div:has(> table.sf-table-list){background:#fff !important;border-radius:16px !important;box-shadow:0 6px 20px rgba(20,38,92,0.06) !important;}
 /* ================================================================ LEDGER / VOUCHER TABLE — modal (#showDetailModelOneParamerter) ke andar wali detail table — overall clean redesign ================================================================ */
@@ -1291,7 +1291,7 @@ table.sf-table-list{width:100% !important;border-collapse:separate !important;bo
 /* Negative balance in parentheses — muted red so it stands out clearly */
 #showDetailModelOneParamerter .modal-body table tbody td:last-child{font-variant-numeric:tabular-nums !important;}
 /* TOTAL row — bold,accent top border,no extra bottom gap */
-#showDetailModelOneParamerter .modal-body table tbody tr:last-child td{font-weight:800 !important;color:#0B1F59 !important;border-top:2px solid #173CA7 !important;border-bottom:none !important;background:#fff !important;padding-top:16px !important;padding-bottom:16px !important;}
+#showDetailModelOneParamerter .modal-body table tbody tr:last-child td{font-weight:500 !important;color:#0B1F59 !important;border-top:2px solid #173CA7 !important;border-bottom:none !important;background:#fff !important;padding-top:16px !important;padding-bottom:16px !important;}
 /* Remove excess gap between TOTAL row and the Export button below it */
 #showDetailModelOneParamerter .modal-body{padding-bottom:15px !important;}
 #showDetailModelOneParamerter .modal-body table + *{margin-top:10px !important;}
