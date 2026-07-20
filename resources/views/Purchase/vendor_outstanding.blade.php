@@ -1,3 +1,4 @@
+ 
 <?php
 
 
@@ -16,98 +17,42 @@ $data=ReuseableCode::get_account_year_from_to(Session::get('run_company'));
     @include('select2')
 
     <style>
-        .vo-card{
-            background:#fff;
-            border-radius:14px;
-            box-shadow:0 2px 10px rgba(0,0,0,0.06);
-            padding:24px 28px;
-            margin:20px;
-        }
-        .vo-header{
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            flex-wrap:wrap;
-            border-bottom:1px solid #eef0f4;
-            padding-bottom:16px;
-            margin-bottom:20px;
-        }
-        .vo-title{
-            font-size:20px;
-            font-weight:700;
-            color:#1b2559;
-            margin:0;
-        }
-        .vo-actions{
-            display:flex;
-            gap:10px;
-        }
-        .btn-vo-print{
-            background:#1b2559;
-            border:none;
-            color:#fff;
-            font-weight:600;
-            padding:9px 18px;
-            border-radius:8px;
-        }
-        .btn-vo-print:hover{ background:#141b45; color:#fff; }
-        .btn-vo-export{
-            background:#f5a623;
-            border:none;
-            color:#fff;
-            font-weight:600;
-            padding:9px 18px;
-            border-radius:8px;
-        }
-        .btn-vo-export:hover{ background:#e0921a; color:#fff; }
-        .vo-filters{
-            display:flex;
-            align-items:flex-end;
-            gap:24px;
-            flex-wrap:wrap;
-        }
-        .vo-field label{
-            display:block;
-            font-size:13px;
-            color:#6b7280;
-            margin-bottom:6px;
-            font-weight:500;
-        }
-        .vo-field .form-control{
-            border-radius:8px;
-            border:1px solid #e2e5ec;
-            background:#f8f9fc;
-            min-width:220px;
-            height:42px;
-        }
-        .vo-field.vo-vendor .form-control{
-            min-width:320px;
-        }
-        .btn-vo-submit{
-            background:#1b2559;
-            border:none;
-            color:#fff;
-            font-weight:600;
-            padding:10px 26px;
-            border-radius:8px;
-            height:42px;
-        }
-        .btn-vo-submit:hover{ background:#141b45; color:#fff; }
-        .vo-table-wrap{
-            margin-top:24px;
-        }
+        .vo-card{background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,0.06);padding:24px 28px;margin:20px;}
+.vo-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;border-bottom:1px solid #eef0f4;padding-bottom:16px;margin-bottom:20px;}
+.vo-title{font-size:20px;font-weight:700;color:#1b2559;margin:0;}
+.vo-actions{display:flex;gap:10px;}
+.btn-vo-print{background:#1b2559;border:none;color:#fff;font-weight:600;padding:9px 18px;border-radius:8px;}
+.btn-vo-print:hover{background:#141b45;color:#fff;}
+.btn-vo-export{background:#f5a623;border:none;color:#fff;font-weight:600;padding:9px 18px;border-radius:8px;}
+.btn-vo-export:hover{background:#e0921a;color:#fff;}
+.vo-filters{display:flex;align-items:flex-end;gap:24px;flex-wrap:wrap;}
+.vo-field label{display:block;font-size:13px;color:#6b7280;margin-bottom:6px;font-weight:500;}
+.vo-field .form-control{border-radius:8px;border:1px solid #e2e5ec;background:#f8f9fc;min-width:220px;height:42px;}
+.vo-field.vo-vendor .form-control{min-width:320px;}
+.btn-vo-submit{background:#1b2559;border:none;color:#fff;font-weight:600;padding:10px 26px;border-radius:8px;height:42px;}
+.btn-vo-submit:hover{background:#141b45;color:#fff;}
+.vo-table-wrap{margin-top:24px;}
+/* ---- Select2 fix + theme match ---- */
+ .vo-field.vo-vendor{min-width:320px;}
+.vo-field.vo-vendor .select2-container{width:100% !important;}
+.vo-field.vo-vendor .select2-selection--single{height:42px !important;border-radius:8px !important;border:1px solid #e2e5ec !important;background:#f8f9fc !important;display:flex;align-items:center;}
+.vo-field.vo-vendor .select2-selection__rendered{line-height:normal !important;padding-left:12px !important;color:#1b2559;}
+.vo-field.vo-vendor .select2-selection__arrow{height:40px !important;}
+.vo-field.vo-vendor .select2-container--default.select2-container--open .select2-selection--single{border-color:#1b2559 !important;}
+.select2-dropdown{border-radius:8px !important;border:1px solid #e2e5ec !important;overflow:hidden;}
+.select2-container--default .select2-results__option--highlighted[aria-selected]{background:#1b2559 !important;color:#fff !important;}
+.select2-container--default .select2-results__option[aria-selected=true]{background:#eef0f4 !important;color:#1b2559 !important;}
+.select2-search--dropdown .select2-search__field{border-radius:6px !important;border:1px solid #e2e5ec !important;padding:6px 10px !important;}
     </style>
 
     <?php if($export == true):?>
     <a id="dlink" style="display:none;"></a>
     <?php endif;?>
 
-
-    <div class="panel-body">
-        <div class="row">
-            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                <div class="well_N">
-                    <div class="dp_sdw">    
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="well_N">
                         <div class="vo-card">
                             <div class="vo-header">
                                 <h3 class="vo-title">Vendor Outstanding</h3>
@@ -157,8 +102,6 @@ $data=ReuseableCode::get_account_year_from_to(Session::get('run_company'));
                 </div>
             </div>
         </div>
-    </div>
-
 
     <script src="{{ URL::asset('assets/custom/js/exportToExcelXlsx.js') }}"></script>
     <script !src="">
@@ -172,7 +115,9 @@ $data=ReuseableCode::get_account_year_from_to(Session::get('run_company'));
     </script>
     <script>
         $(document).ready(function(){
-            $('.select2').select2();
+            $('.select2').select2({
+                width: '100%'
+            });
         });
 
         function get_data()
