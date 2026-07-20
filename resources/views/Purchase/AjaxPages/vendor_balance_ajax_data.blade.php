@@ -11,6 +11,113 @@ $view=ReuseableCode::check_rights(37);
 <script !src="">
     var n = 0;
 </script>
+
+<style>
+    /* ===== Vendor Balance Report - card style matching Trial Balance layout ===== */
+    #data .vbr-card {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(30, 39, 87, 0.08);
+        padding: 24px 24px 12px 24px;
+        margin-bottom: 20px;
+    }
+
+    #data .vbr-header-block {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    #data .vbr-header-block h5,
+    #data .vbr-header-block h3 {
+        color: #1e2757;
+    }
+
+    #data table.sf-report-print-table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-bottom: 28px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 4px rgba(30, 39, 87, 0.06);
+    }
+
+    /* Vendor name title row */
+    #data table.sf-report-print-table thead:first-of-type th {
+        background: #eef0fa;
+        border-left: 4px solid #6c5ce7;
+        text-align: left !important;
+        padding: 12px 16px;
+    }
+
+    #data table.sf-report-print-table thead:first-of-type h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #1e2757;
+    }
+
+    /* Column header row */
+    #data table.sf-report-print-table thead:nth-of-type(2) th {
+        background: #f5f6fb;
+        color: #444a6b;
+        font-weight: 600;
+        font-size: 13px;
+        padding: 10px 12px;
+        border-bottom: 1px solid #e2e4f0;
+    }
+
+    #data table.sf-report-print-table tbody td {
+        padding: 10px 12px;
+        font-size: 13.5px;
+        color: #2a2f4a;
+        border-bottom: 1px solid #eef0f6;
+    }
+
+    #data table.sf-report-print-table tbody tr:hover {
+        background: #fafbff;
+    }
+
+    /* Total row per vendor */
+    #data table.sf-report-print-table tbody tr:last-child td {
+        border-top: 2px solid #1e2757;
+        border-bottom: none;
+        background: #f8f9fd;
+        font-size: 14px !important;
+        font-weight: 700;
+        color: #1e2757;
+    }
+
+    /* Grand total table */
+    #data table.GrandTotal {
+        border-collapse: collapse;
+        width: 100%;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 4px rgba(30, 39, 87, 0.06);
+    }
+
+    #data table.GrandTotal thead th {
+        background: #1e2757;
+        color: #ffffff;
+        padding: 12px;
+        font-size: 13.5px;
+        font-weight: 600;
+    }
+
+    #data table.GrandTotal tbody td,
+    #data table.GrandTotal tr td {
+        padding: 12px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #1e2757;
+        background: #f5f6fb;
+    }
+
+    #data .btn-success.btn-xs {
+        border-radius: 6px;
+    }
+</style>
+
 <div class="row" id="data">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <?php echo Form::open(array('url' => '/PaymentPurchaseVoucher','id'=>'bankPaymentVoucherForm'));?>
@@ -19,10 +126,12 @@ $view=ReuseableCode::check_rights(37);
                 <?php //echo CommonHelper::headerPrintSectionInPrintView($m);?>
                 <div class="row">
                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                        <div class="">
+                        <div class="vbr-card">
                             <span id="MultiExport">
-                            <h5 style="text-align: center" id="h3"></h5>
-                            <?php echo CommonHelper::headerPrintSectionInPrintView(Session::get('run_company'), 'Vendor Balance Report', 'From '.CommonHelper::changeDateFormat($from).' To '.CommonHelper::changeDateFormat($to)); ?>
+                            <div class="vbr-header-block">
+                                <h5 style="text-align: center" id="h3"></h5>
+                                <?php echo CommonHelper::headerPrintSectionInPrintView(Session::get('run_company'), 'Vendor Balance Report', 'From '.CommonHelper::changeDateFormat($from).' To '.CommonHelper::changeDateFormat($to)); ?>
+                            </div>
                                 <?php
                                 $clause='';
                                 if ($vendor!=0):
@@ -273,5 +382,3 @@ $view=ReuseableCode::check_rights(37);
         }
     })();
 </script>
-
-
