@@ -150,9 +150,36 @@ canvas.Business_Flow_Chart{max-height:280px !important;}
    
    ?>
 @if(Session::get('run_company')==''):
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@700;800&family=Inter:wght@400;500;600&display=swap');
+#companyListModel{font-family:'Inter',sans-serif;}
+#companyListModel .modal-dialog.modalWidth{max-width:620px;margin:60px auto;}
+#companyListModel .model-n.modal-content{border-radius:22px !important;border:none !important;overflow:hidden;box-shadow:0 30px 70px rgba(19,27,46,0.35) !important;}
+#companyListModel .modal-body{padding:0 !important;}
+.mdel-bx{position:relative;background:#fff;}
+/* header strip */
+.mdel-bx .model-logo{display:flex;align-items:center;justify-content:space-between;padding:30px 36px 26px;border-bottom:1px solid #EEF0F7;}
+.mdel-bx .model-logo img{max-width:150px;}
+.mdel-bx .model-logo h4.modal-title{font-family:'Sora',sans-serif;font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#8A93A6;margin:0;}
+.mdel-bx .circle{position:absolute;top:-70px;right:-70px;width:220px;opacity:.06;z-index:0;pointer-events:none;}
+/* company grid */
+.mdel-bx .row{margin:0 !important;padding:30px 36px 10px;}
+.mdel-bx .ban-list{list-style:none;margin:0 !important;padding:0 !important;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;width:100%;/* display:grid; */}
+.mdel-bx .banq-box{border:1.5px solid #EEF0F7;border-radius:16px;background:#FBFCFE;transition:all .18s ease;}
+.mdel-bx .banq-box:hover{border-color:#7C5CFC;background:#fff;transform:translateY(-3px);box-shadow:0 12px 26px rgba(124,92,252,0.16);}
+.mdel-bx .banq-box a{display:flex;flex-direction:column;align-items:center;text-align:center;padding:24px 14px;text-decoration:none !important;}
+.mdel-bx .companyLetr{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#FF7A45,#7C5CFC) !important;color:#fff !important;font-family:'Sora',sans-serif;font-weight:700;font-size:19px;margin-bottom:12px;}
+.mdel-bx .item-model-company{font-size:13.5px !important;font-weight:600 !important;color:#1B2333 !important;margin:0 !important;line-height:1.4;}
+/* sign out */
+.mdel-bx .btn-b{display:block !important;width:calc(100% - 72px);margin:10px 36px 32px;text-align:center;padding:13px;border-radius:12px;background:#F2F3F8 !important;color:#4A5268 !important;font-weight:700;font-size:13.5px;text-decoration:none !important;transition:background .15s ease;}
+.model-logo h4{font-size:18px !important;;}
+.mdel-bx .btn-b:hover{background:#ea545545 !important;color:#353434 !important;transition: 0.5s !important;}
+.model-logo{justify-content:space-evenly !important;flex-direction:column !important;gap:20px !important;}
+
+</style>
+
 <div id="companyListModel" class="modal fade in" role="dialog" aria-hidden="false" style="display: block;">
    <div class="modal-dialog modalWidth dply">
-      <!-- Modal content-->
       <div class="model-n modal-content">
          <div class="modal-body">
             <div class="mdel-bx">
@@ -161,27 +188,19 @@ canvas.Business_Flow_Chart{max-height:280px !important;}
                   <img src="assets/img/logos/logo.png">
                   <h4 class="modal-title">Select Company</h4>
                </div>
-               @foreach($companiesList  as $key => $cRow1)
                <div class="row">
                   <ul class="ban-list">
+                     @foreach($companiesList as $key => $cRow1)
                      <li>
                         <div class="banq-box">
                            <a href="{{url('set_user_db_id?company='.$cRow1->id)}}">
-                              <span class="companyLetr theme-bg theme-f-m">D</span>
+                              <span class="companyLetr theme-bg theme-f-m">{{ strtoupper(substr($cRow1->name, 0, 1)) }}</span>
                               <h3 class="item-model-company theme-f-m">{{ $cRow1->name }}</h3>
                            </a>
                         </div>
                      </li>
-                     {{-- <li>
-                        <div class="banq-box">
-                           <a href="{{url('set_user_db_id?company='.$cRow1->id)}}">
-                              <span class="companyLetr theme-bg theme-f-m">D</span>
-                              <h3 class="item-model-company theme-f-m">{{ $cRow1->name }}</h3>
-                           </a>
-                        </div>
-                     </li> --}}
+                     @endforeach
                   </ul>
-                  @endforeach
                </div>
                <a href="{{url('/logout')}}" class="btn-b">Sign Out</a>
             </div>
