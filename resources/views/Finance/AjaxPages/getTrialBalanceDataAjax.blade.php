@@ -49,14 +49,14 @@ span.SpacesCls{padding-left:20px;}
 <div class="">
 
     <form class="tb-filter-bar" method="GET" action="{{ url()->current() }}" id="tbFilterForm">
-        <div class="tb-date-group">
+        <!-- <div class="tb-date-group">
             From Date
             <input type="date" name="from" value="<?php echo date_format(date_create($from),'Y-m-d'); ?>" onchange="document.getElementById('tbFilterForm').submit()">
         </div>
         <div class="tb-date-group">
             To Date
             <input type="date" name="to" value="<?php echo date_format(date_create($to),'Y-m-d'); ?>" onchange="document.getElementById('tbFilterForm').submit()">
-        </div>
+        </div> -->
 
         <div class="tb-nature-group" id="tbNatureGroup">
             <label class="tb-nature-pill"><input type="radio" name="nature" value=""  checked> ALL</label>

@@ -45,7 +45,7 @@ $AccYearTo = $AccYearDate->accyearto;
                         <div class="panel-body">
                             <div class="row">
 
-                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 ">
                                     <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                                         <label for="">From Date</label>
                                         <input type="date" max="<?php echo $AccYearTo?>" min="<?php echo $AccYearFrom?>" value="<?php echo $currentMonthStartDate?>" class="form-control" id="FromDate" name="FromDate">
