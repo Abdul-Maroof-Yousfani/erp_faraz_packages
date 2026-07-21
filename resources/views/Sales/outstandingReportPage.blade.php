@@ -14,6 +14,10 @@ $currentMonthEndDate   = date('Y-m-t');
 $AccYearDate = DB::table('company')->select('accyearfrom','accyearto')->where('id',$_GET['m'])->first();
 $AccYearFrom = $AccYearDate->accyearfrom;
 $AccYearTo = $AccYearDate->accyearto;
+
+// Add these two lines:
+$from = $AccYearFrom;
+$to   = date('Y-m-d');
 ?>
 @extends('layouts.default')
 @section('content')
@@ -22,57 +26,53 @@ $AccYearTo = $AccYearDate->accyearto;
         <div class="row">
             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                 <div class="well_N">
-                <div class="dp_sdw">    
-                    <div class="row">
-                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-                            <span class="subHeadingLabelClass">Debtor Outstanding</span>
+                    <div class="dp_sdw">    
+                        <div class="row">
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                <span class="subHeadingLabelClass">Debtor Outstanding</span>
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 text-right">
+                                <button class="btn btn-primary" onclick="printView('PrintEmpExitInterviewList','','1')" style="">
+                                    <span class="glyphicon glyphicon-print"> </span> Print
+                                </button>
+                                <a id="dlink" style="display:none;"></a>
+                                <button type="button" class="btn btn-warning" onclick="ExportToExcel('xlsx')">Export <b>(xlsx)</b></button>
+                            </div>
                         </div>
-                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 text-right">
-                            <button class="btn btn-primary" onclick="printView('PrintEmpExitInterviewList','','1')" style="">
-                                <span class="glyphicon glyphicon-print"> </span> Print
-                            </button>
-                            <a id="dlink" style="display:none;"></a>
-                            <button type="button" class="btn btn-warning" onclick="ExportToExcel('xlsx')">Export <b>(xlsx)</b></button>
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="row">
-                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-                            <label>As On:</label>
-                            <input type="hidden" name="FromDate" id="FromDate"  value="<?php echo $AccYearFrom;?>" class="form-control" min="<?php echo $AccYearFrom?>" max="<?php echo $AccYearTo?>"/>
-                            <input type="Date" name="ToDate" id="ToDate" max="<?php echo $AccYearTo?>" value="<?php echo date('Y-m-d')?>" class="form-control" min="<?php echo $AccYearFrom?>"  />
-                        </div>
-                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
-                            <label for="">CustomerName</label>
-                            <select onchange="" name="ClientId" id="ClientId" class="form-control select2">
-                                <option value="">All</option>
-                                <?php foreach($Customer as $Fil):?>
-                                <option value="<?php echo $Fil->id?>"><?php echo $Fil->name?></option>
-                                <?php endforeach;?>
-                            </select>
-                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+                                <label>As On:</label>
+                                <input type="hidden" name="FromDate" id="FromDate"  value="<?php echo $AccYearFrom;?>" class="form-control" min="<?php echo $AccYearFrom?>" max="<?php echo $AccYearTo?>"/>
+                                <input type="Date" name="ToDate" id="ToDate" max="<?php echo $AccYearTo?>" value="<?php echo date('Y-m-d')?>" class="form-control" min="<?php echo $AccYearFrom?>"  />
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                                <label for="">CustomerName</label>
+                                <select onchange="" name="ClientId" id="ClientId" class="form-control select2">
+                                    <option value="">All</option>
+                                    <?php foreach($Customer as $Fil):?>
+                                    <option value="<?php echo $Fil->id?>"><?php echo $Fil->name?></option>
+                                    <?php endforeach;?>
+                                </select>
+                            </div>
 
-                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12 text-left">
-                            <input type="button" value="Submit" class="btn btn-sm btn-primary" onclick="getRecieptDataClientWise()" style="margin-top: 32px;" />
+                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12 text-left">
+                                <input type="button" value="Submit" class="btn btn-sm btn-primary" onclick="getRecieptDataClientWise()" style="margin-top: 32px;" />
+                            </div>
                         </div>
-                    </div>
-
-
-                    <div class="lineHeight">&nbsp;</div>
-                    <div class="panel">
-                        <div class="panel-body" id="PrintEmpExitInterviewList">
-                            <?php echo CommonHelper::headerPrintSectionInPrintView($m);?>
-                            <p class="tb-report-title">Debtor Outstanding Report</p>
-                            <div class="row">
-                                <div class="col-lg-12 col-md-12 col-sm-12col-xs-12">
-                                    <div class="table-responsive" id="ShowHide">
-
+                        <div class="lineHeight">&nbsp;</div>
+                        <div class="panel">
+                            <div class="panel-body" id="PrintEmpExitInterviewList">
+                                <?php echo CommonHelper::headerPrintSectionInPrintView($m,'Debtor Outstanding Report','As On ' . CommonHelper::changeDateFormat($to)); ?>
+                                <div class="row">
+                                    <div class="col-lg-12 col-md-12 col-sm-12col-xs-12">
+                                        <div class="table-responsive" id="ShowHide">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
                 </div>
             </div>
         </div>

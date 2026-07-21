@@ -45,10 +45,9 @@ table.tb-table tfoot td{background:#f4f6fb !important;color:#1f2a5c !important;f
 .GrandTotal{margin-bottom:10px;}
 .GrandTotal .tb-table thead tr.tb-col-row th{background:#1f2a5c;color:#ffffff;border-bottom:none;}
 .GrandTotal .tb-table tbody td{position:static !important;background:#1f2a5c !important;color:#ffffff !important;font-size:15px !important;font-weight:700 !important;padding:14px 8px !important;border:none !important;}
-
 .sf-report-print-table thead th h3{margin:0 !important;font-size:16px !important;font-weight:800 !important;color:#1f2440 !important;}
 .sf-report-print-table thead th p{margin:0 !important;font-size:16px !important;font-weight:800 !important;color:#1f2440 !important;}
-p.tb-company-name{margin:0 !important;font-size:16px !important;font-weight:800 !important;color:#1f2440 !important;font-weight:500 !important;text-align:center;}
+p.tb-company-name{margin:0 !important;font-size:16px !important;color:#1f2440 !important;font-weight:500 !important;text-align:center;background:#f7f8fc !important;text-transform:uppercase !important;letter-spacing:.3px !important;padding:10px 12px !important;border:none !important;border-bottom:1px solid #ebebeb !important;white-space:nowrap;border-radius:10px 10px 0px 0px;}
 </style>
 <script !src="">
     var n = 0;
