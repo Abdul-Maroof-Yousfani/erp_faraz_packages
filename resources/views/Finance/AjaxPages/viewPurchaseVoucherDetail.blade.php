@@ -329,6 +329,7 @@ foreach ($PurchaseVoucher as $row) {
                         ?>
 
                         <table style="display: none;" id="" class="table table-bordered tra">
+                            <thead>
                             <tr class="">
                                 <th class="text-center" style="width:50px;">S.No</th>
                                 <th class="text-center">Account</th>
