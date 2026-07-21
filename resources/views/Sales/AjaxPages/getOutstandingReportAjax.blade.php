@@ -25,6 +25,83 @@ $remainingEnd=0;
 $total_return_end=0;
 $main_count=1;
 ?>
+<style>
+/* ===== Self-contained styling for Debtor Outstanding Report ===== */
+/* Reset any inherited sticky/fixed positioning that can make a table's
+   Total row bleed/overlap over the next stacked customer table while scrolling */
+.tb-report-wrap{
+    position:relative;
+    background:#ffffff;
+    border:1px solid #dde1ee;
+    border-radius:12px;
+    padding:20px 22px 4px 22px;
+    margin-bottom:24px;
+    overflow:hidden;
+    z-index:auto;
+}
+.tb-report-header{text-align:center;margin-bottom:14px;}
+.tb-report-title{font-size:16px;font-weight:700;color:#1f2a5c;margin:0 0 4px 0;}
+.tb-printed-on{font-size:11px;color:#6b7094;margin:0 0 6px 0;}
+.tb-company-name{font-size:14px;font-weight:700;color:#2b3350;margin:0;}
+
+.tb-table-scroll{overflow-x:auto;position:relative;}
+
+table.tb-table{width:100%;border-collapse:collapse;font-size:12.5px;background:#ffffff;margin:0;}
+
+table.tb-table thead tr.tb-col-row th{
+    position:static !important;
+    top:auto !important;
+    background:#eef1f8;
+    color:#2b3350;
+    font-weight:700;
+    text-transform:uppercase;
+    font-size:11px;
+    letter-spacing:.3px;
+    padding:10px 8px;
+    border:none;
+    border-bottom:2px solid #1f2a5c;
+}
+
+table.tb-table tbody td{
+    padding:9px 8px;
+    border:none;
+    border-bottom:1px solid #eef0f6;
+    color:#2a2f4a;
+    background:#ffffff;
+}
+table.tb-table tbody tr:hover td{background:#f7f9fd;}
+
+/* Total row (tfoot) - forced static + opaque background so it can never
+   float/stick over content from another table on the page */
+table.tb-table tfoot,
+table.tb-table tfoot tr,
+table.tb-table tfoot td{
+    position:static !important;
+    top:auto !important;
+    bottom:auto !important;
+}
+table.tb-table tfoot td{
+    background:#f4f6fb !important;
+    color:#1f2a5c !important;
+    font-weight:700 !important;
+    border:none !important;
+    border-top:2px solid #1f2a5c !important;
+    padding:11px 8px !important;
+}
+
+/* Grand Total card - dark navy banner, consistent with other ERP reports */
+.GrandTotal{margin-bottom:10px;}
+.GrandTotal .tb-table thead tr.tb-col-row th{background:#1f2a5c;color:#ffffff;border-bottom:none;}
+.GrandTotal .tb-table tbody td{
+    position:static !important;
+    background:#1f2a5c !important;
+    color:#ffffff !important;
+    font-size:15px !important;
+    font-weight:700 !important;
+    padding:14px 8px !important;
+    border:none !important;
+}
+</style>
 <script !src="">
     var n = 0;
 </script>
