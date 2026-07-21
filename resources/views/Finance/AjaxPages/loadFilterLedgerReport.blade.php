@@ -26,32 +26,10 @@ $m=Input::get('m');
 
 ?>
 <style>
-    .hov:hover {
-        background-color: yellow;
-    }
+  .hov:hover{background-color:yellow;}
+.ledger-report-table .ledger-entry-link{display:inline-flex;align-items:center;justify-content:center;min-width:108px;padding:6px 12px;border-radius:6px;border:1px solid #18a85b;background:#eaf8f0;color:#137a43 !important;font-size:12px;font-weight:600;line-height:1.2;text-decoration:none !important;white-space:nowrap;}
+.ledger-report-table .ledger-entry-link:hover,.ledger-report-table .ledger-entry-link:focus{background:#d7f1e2;color:#0f6235 !important;}
 
-    .ledger-report-table .ledger-entry-link {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 108px;
-        padding: 6px 12px;
-        border-radius: 6px;
-        border: 1px solid #18a85b;
-        background: #eaf8f0;
-        color: #137a43 !important;
-        font-size: 12px;
-        font-weight: 600;
-        line-height: 1.2;
-        text-decoration: none !important;
-        white-space: nowrap;
-    }
-
-    .ledger-report-table .ledger-entry-link:hover,
-    .ledger-report-table .ledger-entry-link:focus {
-        background: #d7f1e2;
-        color: #0f6235 !important;
-    }
 
 </style>
 
@@ -261,7 +239,7 @@ $m=Input::get('m');
         </div>
     </div>
 
-    <div class="text-left" style="font-size:18px; margin-top:6px;">
+    <div class="text-center" style="font-size:18px; margin-top:6px;">
         <b>
             Account Name:
             (<?php echo CommonHelper::get_account_code($acc_id).' --- '.CommonHelper::get_account_name($acc_id); ?>)

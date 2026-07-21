@@ -1216,7 +1216,7 @@ input[type="button"].btn-sm.btn-primary:hover{transform:translateY(-1px) !import
 /* Amount columns */
 .tb-table tbody td.text-right{text-align:right !important;font-variant-numeric:tabular-nums !important;font-weight:700 !important;}
 /* ---------- Sticky footer total row ---------- */
-.tb-table tfoot{position:sticky !important;bottom:0 !important;z-index:5 !important;}
+/* .tb-table tfoot{position:sticky !important;bottom:0 !important;z-index:5 !important;} */
 .tb-table tfoot td{background:linear-gradient(90deg,#EAF1FF 0%,#F1F9F4 100%) !important;font-weight:500 !important;font-size:13.5px !important;color:var(--erp-navy-2,#0B1F59) !important;border-top:2px solid var(--erp-navy-1,#173CA7) !important;padding:13px 14px !important;}
 /* ---------- Footer action (Customise button) ---------- */
 .tb-footer-action{padding:20px 32px !important;text-align:right !important;border-top:1px solid #EEF1F8 !important;}
