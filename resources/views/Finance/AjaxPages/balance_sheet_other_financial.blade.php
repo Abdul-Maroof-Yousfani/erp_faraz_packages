@@ -45,9 +45,23 @@ tr.bs-subtotal td{color:#241e6b;}
 tr.bs-grandtotal{background:#eef0ff !important;font-weight:500;font-size:14.5px;border-left:4px solid #241e6b !important;}
 tr.bs-grandtotal td{color:#1f2440 !important;border-top:1px solid #d7dbf5 !important;}
 .table-responsive{height:auto !important;}
+ .report-header{background:linear-gradient(135deg,#eef1fb,#f7f8fd);border-radius:14px;border:1px solid #e3e7f5;padding:22px 28px 16px 28px;margin-bottom:24px;position:relative;text-align:center;}
+.report-header .company-name{font-size:22px;font-weight:500;color:#1c2b4a;margin-bottom:6px;}
+.report-header .report-title{font-size:16px;font-weight:500;color:#4a5aa8;margin-bottom:10px;}
+.report-header .report-range{font-size:13.5px;color:#3a4256;font-weight:500;}
+.report-header .report-range b{color:#1c2b4a;}
+.report-header .printed-on{position:absolute;top:18px;right:22px;font-size:12.5px;font-weight:500;color:#6b7280;}
+
 </style>
 <span id="MultiExport">
-<h2 class="text-center topp"></h2>
+<div class="report-header">
+    <div class="printed-on">Printed On: {{ date('F d, Y') }}</div>
+    <div class="company-name">{!! CommonHelper::get_company_name($m) !!}</div>
+    <div class="report-title">Balance Sheet {{ isset($compareYear) ? '(Compare)' : '' }}</div>
+    <div class="report-range">
+         <?php echo date_format(date_create(date('Y-m-d')),'F d, Y')?>
+    </div>
+</div>
 
 
 <div class="row" id="data">

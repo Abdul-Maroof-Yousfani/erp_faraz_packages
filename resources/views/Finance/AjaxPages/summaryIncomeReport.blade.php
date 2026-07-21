@@ -17,128 +17,55 @@
 
 <style>
 /* ===================================================================== PROFIT & LOSS (Yearly) — LAYOUT (navy/lavender/amber report theme) ===================================================================== */
-.pl-wrapper .table-responsive{
-    background:#ffffff !important;
-    border:1px solid #EDF0F8 !important;
-    border-radius:16px !important;
-    box-shadow:0 6px 22px rgba(20,38,92,0.07) !important;
-    padding:22px 24px !important;
-    overflow-x:auto !important;
+.pl-wrapper .table-responsive{background:#ffffff !important;border:1px solid #EDF0F8 !important;border-radius:16px !important;box-shadow:0 6px 22px rgba(20,38,92,0.07) !important;padding:22px 24px !important;overflow-x:auto !important;}
+table.Profit_Loss{width:100% !important;border-collapse:collapse !important;margin:0 !important;/* table-layout:fixed hata diya — colspan="50"/"100" ke sath conflict kar raha tha */
 }
-table.Profit_Loss{
-    width:100% !important;
-    border-collapse:collapse !important;
-    margin:0 !important;
-    /* table-layout:fixed hata diya — colspan="50"/"100" ke sath conflict kar raha tha */
+table.Profit_Loss th,table.Profit_Loss td{word-wrap:normal !important;overflow-wrap:normal !important;white-space:nowrap !important;}
+table.Profit_Loss thead th{background:#F0F3FB !important;color:#4A5268 !important;font-size:11.5px !important;font-weight:800 !important;letter-spacing:.4px !important;text-transform:uppercase !important;padding:12px 10px !important;text-align:right !important;border:none !important;border-bottom:2px solid #E3E7F3 !important;}
+table.Profit_Loss thead th:first-child,table.Profit_Loss tbody td:first-child,table.Profit_Loss tbody th:first-child{width:34% !important;min-width:220px !important;white-space:normal !important;/* account names lambe ho sakte hain,wrap karne do */
 }
-table.Profit_Loss th,
-table.Profit_Loss td{
-    word-wrap:normal !important;
-    overflow-wrap:normal !important;
-    white-space:nowrap !important;
-}
-table.Profit_Loss thead th{
-    background:#F0F3FB !important;
-    color:#4A5268 !important;
-    font-size:11.5px !important;
-    font-weight:800 !important;
-    letter-spacing:.4px !important;
-    text-transform:uppercase !important;
-    padding:12px 10px !important;
-    text-align:right !important;
-    border:none !important;
-    border-bottom:2px solid #E3E7F3 !important;
-}
-table.Profit_Loss thead th:first-child,
-table.Profit_Loss tbody td:first-child,
-table.Profit_Loss tbody th:first-child{
-    width:34% !important;
-    min-width:220px !important;
-    white-space:normal !important; /* account names lambe ho sakte hain, wrap karne do */
-}
-table.Profit_Loss thead th:not(:first-child),
-table.Profit_Loss tbody td:not(:first-child),
-table.Profit_Loss tbody th:not(:first-child){
-    min-width:130px !important;
-}
-table.Profit_Loss tbody td,
-table.Profit_Loss tbody th{
-    padding:10px !important;
-    font-size:13px !important;
-    font-weight:600 !important;
-    color:#1B2333 !important;
-    text-align:right !important;
-    border:none !important;
-    border-bottom:1px solid #F0F2F8 !important;
-    vertical-align:middle !important;
-}
-table.Profit_Loss tbody td:first-child,
-table.Profit_Loss tbody th:first-child{ text-align:left !important; width:34% !important; }
-table.Profit_Loss tbody tr:hover td{ background:#FAFBFE !important; }
-table.Profit_Loss a{ color:inherit !important; text-decoration:none !important; }
-
-/* section headers: Revenue / Cost of Goods Sold / Expense / Other Income */
-.pl-section-row td{
-    background:#EEF1FA !important;
-    font-size:14.5px !important;
-    font-weight:800 !important;
-    color:#0B1F59 !important;
-    padding:13px 10px !important;
-    text-transform:uppercase !important;
-    letter-spacing:.4px !important;
-    border-top:2px solid #E3E7F3 !important;
-    border-bottom:2px solid #E3E7F3 !important;
-}
-
+table.Profit_Loss thead th:not(:first-child),table.Profit_Loss tbody td:not(:first-child),table.Profit_Loss tbody th:not(:first-child){min-width:130px !important;}
+table.Profit_Loss tbody td,table.Profit_Loss tbody th{padding:10px !important;font-size:13px !important;font-weight:600 !important;color:#1B2333 !important;text-align:right !important;border:none !important;border-bottom:1px solid #F0F2F8 !important;vertical-align:middle !important;}
+table.Profit_Loss tbody td:first-child,table.Profit_Loss tbody th:first-child{text-align:left !important;width:34% !important;}
+table.Profit_Loss tbody tr:hover td{background:#FAFBFE !important;}
+table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
+/* section headers:Revenue / Cost of Goods Sold / Expense / Other Income */
+.pl-section-row td{background:#EEF1FA !important;font-size:14.5px !important;font-weight:800 !important;color:#0B1F59 !important;padding:13px 10px !important;text-transform:uppercase !important;letter-spacing:.4px !important;border-top:2px solid #E3E7F3 !important;border-bottom:2px solid #E3E7F3 !important;}
 /* top-level account rows (level 1 / head==3) */
-.pl-level-1{
-    font-size:13.5px !important;
-    font-weight:800 !important;
-    color:#0B1F59 !important;
-}
-.pl-level-detail{ font-weight:600 !important; color:#4A5268 !important; }
-
-/* subtotal rows: Total Revenue / Total COGS / Total Expense / Total Other Income */
-.pl-total-row td,
-.pl-total-row th{
-    background:#F7F9FD !important;
-    font-weight:800 !important;
-    color:#1E3A8A !important;
-    border-top:2px solid #E3E7F3 !important;
-    border-bottom:2px solid #E3E7F3 !important;
-}
-
+.pl-level-1{font-size:13.5px !important;font-weight:800 !important;color:#0B1F59 !important;}
+.pl-level-detail{font-weight:600 !important;color:#4A5268 !important;}
+/* subtotal rows:Total Revenue / Total COGS / Total Expense / Total Other Income */
+.pl-total-row td,.pl-total-row th{background:#F7F9FD !important;font-weight:800 !important;color:#1E3A8A !important;border-top:2px solid #E3E7F3 !important;border-bottom:2px solid #E3E7F3 !important;}
 /* Gross Profit row */
-.pl-gross-profit-row th{
-    background:#FFF4E5 !important;
-    color:#B5651D !important;
-    font-weight:800 !important;
-    font-size:14.5px !important;
-    border-top:2px solid #F3D9AE !important;
-    border-bottom:2px solid #F3D9AE !important;
-}
-
+.pl-gross-profit-row th{background:#FFF4E5 !important;color:#B5651D !important;font-weight:800 !important;font-size:14.5px !important;border-top:2px solid #F3D9AE !important;border-bottom:2px solid #F3D9AE !important;}
 /* Net Profit row */
-.pl-net-profit-row th{
-    background:#173ca7d1 !important;
-    color:#ffffff !important;
-    font-weight:800 !important;
-    font-size:14.5px !important;
-    border:none !important;
-    padding:13px 10px !important;
-}
-.pl-net-profit-row th:first-child{ border-top-left-radius:10px !important; border-bottom-left-radius:10px !important; }
-.pl-net-profit-row th:last-child{ border-top-right-radius:10px !important; border-bottom-right-radius:10px !important; }
-
+.pl-net-profit-row th{background:#173ca7d1 !important;color:#ffffff !important;font-weight:800 !important;font-size:14.5px !important;border:none !important;padding:13px 10px !important;}
+.pl-net-profit-row th:first-child{border-top-left-radius:10px !important;border-bottom-left-radius:10px !important;}
+.pl-net-profit-row th:last-child{border-top-right-radius:10px !important;border-bottom-right-radius:10px !important;}
 /* spacer row between sections */
-.pl-spacer-row td{
-    padding:6px !important;
-    border:none !important;
-    background:transparent !important;
-}
+.pl-spacer-row td{padding:6px !important;border:none !important;background:transparent !important;}
+.report-header{background:linear-gradient(135deg,#eef1fb,#f7f8fd);border-radius:14px;border:1px solid #e3e7f5;padding:22px 28px 16px 28px;margin-bottom:24px;position:relative;text-align:center;}
+.report-header .company-name{font-size:22px;font-weight:500;color:#1c2b4a;margin-bottom:6px;}
+.report-header .report-title{font-size:16px;font-weight:500;color:#4a5aa8;margin-bottom:10px;}
+.report-header .report-range{font-size:13.5px;color:#3a4256;font-weight:500;}
+.report-header .report-range b{color:#1c2b4a;}
+.report-header .printed-on{position:absolute;top:18px;right:22px;font-size:12.5px;font-weight:500;color:#6b7280;}
+
 </style>
 
 <div class="row pl-wrapper">
+    <div class="report-header">
+    <div class="printed-on">Printed On: {{ date('F d, Y') }}</div>
+    <div class="company-name">{!! CommonHelper::get_company_name($CompanyId) !!}</div>
+    <div class="report-title">Profit & Loss</div>
+    <div class="report-range">
+    @if(isset($from_date) && isset($to_date) && strtotime($from_date) && strtotime($to_date))
+        FROM <b>{{ date('F d, Y', strtotime($from_date)) }}</b> TO <b>{{ date('F d, Y', strtotime($to_date)) }}</b>
+    @else
+        FY <b>{{ $financial_year[0] }} - {{ $financial_year[1] }}</b>
+    @endif
+</div>
+</div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <div class="table-responsive">
             <table class="table table-bordered table-striped Profit_Loss">
