@@ -41,16 +41,16 @@ table.sf-report-print-table tbody tr.text-right td{background:#FFF4E5 !important
 </style>
 
 
-<div class="">
+<div class="" id="trial_bal">
     <?php echo CommonHelper::headerPrintSectionInPrintView(Session::get('run_company'), 'Trial Balance 5th Column', date_format(date_create($from),'d-m-Y').' To '.date_format(date_create($to),'d-m-Y')); ?>
-    <div class="table-responsive" id="trial_bal">
+    <div class="table-responsive" >
 
         <table class="table table-bordered sf-report-print-table" id="table_export1">
             <thead>
-                <th colspan="3" class="text-center"></th>
-                <th colspan="1" class="text-center">Opening Balance</th>
-                <th colspan="2" class="text-center">Transactions</th>
-                <th colspan="2" class="text-center">Closing Balance</th>
+                <th colspan="2" class="text-center"></th>
+                <th colspan="2" class="text-center"style=" text-align:center !important;padding-left:93px !important;" >Opening Balance</th>
+                <th colspan="2" class="text-center"style=" text-align:center !important;padding-left:90px !important;">Transactions</th>
+                <th colspan="2" class="text-center"style=" text-align:center !important;padding-left:90px !important;">Closing Balance</th>
             </thead>
 
             <thead>

@@ -1909,10 +1909,13 @@ public function trialBalanceData()
             <thead>
                 <tr class="tb-group-row">
                     <th colspan="3"></th>
-                    <th colspan="2" class="tb-group-open">Opening Balance</th>
-                    <th colspan="2" class="tb-group-tx">Transactions</th>
-                    <th colspan="2" class="tb-group-close">Closing Balance</th>
+                    <th colspan="2" style=" padding-left:90px !important;"class="tb-group-open">Opening Balance</th>
+                    <th colspan="2" style=" padding-left:90px !important;"class="tb-group-tx">Transactions</th>
+                    <th colspan="2" style=" padding-left:120px !important;"class="tb-group-close">Closing Balance</th>
                 </tr>
+                <thead>
+                
+            </thead>
                 <tr class="tb-col-row">
                     <th>Sr.No</th>
                     <th>Acc.Code</th>
@@ -2067,9 +2070,9 @@ public function trialBalanceData()
         </table>
         </div>
 
-        <div class="tb-footer-action">
+        <!-- <div class="tb-footer-action">
             <input type="submit" value="Customise Trial Balance" class="btn btn-success">
-        </div>
+        </div> -->
     </form>
 </div>
 
