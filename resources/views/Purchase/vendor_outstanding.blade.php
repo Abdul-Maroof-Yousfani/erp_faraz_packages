@@ -19,7 +19,7 @@ $data=ReuseableCode::get_account_year_from_to(Session::get('run_company'));
     <style>
         .vo-card{background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,0.06);padding:24px 28px;margin:20px;}
 .vo-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;border-bottom:1px solid #eef0f4;padding-bottom:16px;margin-bottom:20px;}
-.vo-title{font-size:20px;font-weight:700;color:#1b2559;margin:0;}
+.vo-title{font-size:20px;font-weight:700;color:#1b2559;margin:0;font-weight: bold !important;}
 .vo-actions{display:flex;gap:10px;}
 .btn-vo-print{background: linear-gradient(90deg, var(--erp-navy-1) 0%, var(--erp-navy-2) 100%) !important;border:none;color:#fff;font-weight:600;padding:9px 18px;border-radius:8px;}
 .btn-vo-print:hover{background:#141b45;color:#fff;}

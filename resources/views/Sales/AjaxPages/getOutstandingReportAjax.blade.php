@@ -28,7 +28,7 @@ $main_count=1;
 <style>
 /* ===== Self-contained styling for Debtor Outstanding Report ===== */
 /* Reset any inherited sticky/fixed positioning that can make a table's Total row bleed/overlap over the next stacked customer table while scrolling */
-.tb-report-wrap{position:relative;background:#ffffff;border:1px solid #dde1ee;border-radius:12px;padding:20px 22px 4px 22px;margin-bottom:24px;overflow:hidden;z-index:auto;}
+.tb-report-wrap{position:relative;background: #f7f8fc !important;border:1px solid #dde1ee;border-radius:12px;padding:20px 22px 4px 22px;margin-bottom:24px;overflow:hidden;z-index:auto;}
 .tb-report-header{text-align:center;margin-bottom:14px;}
 .tb-report-title{font-size:16px;font-weight:700;color:#1f2a5c;margin:0 0 4px 0;}
 .tb-printed-on{font-size:11px;color:#6b7094;margin:0 0 6px 0;}
@@ -46,6 +46,9 @@ table.tb-table tfoot td{background:#f4f6fb !important;color:#1f2a5c !important;f
 .GrandTotal .tb-table thead tr.tb-col-row th{background:#1f2a5c;color:#ffffff;border-bottom:none;}
 .GrandTotal .tb-table tbody td{position:static !important;background:#1f2a5c !important;color:#ffffff !important;font-size:15px !important;font-weight:700 !important;padding:14px 8px !important;border:none !important;}
 
+.sf-report-print-table thead th h3{margin:0 !important;font-size:16px !important;font-weight:800 !important;color:#1f2440 !important;}
+.sf-report-print-table thead th p{margin:0 !important;font-size:16px !important;font-weight:800 !important;color:#1f2440 !important;}
+p.tb-company-name{margin:0 !important;font-size:16px !important;font-weight:800 !important;color:#1f2440 !important;font-weight:500 !important;text-align:center;}
 </style>
 <script !src="">
     var n = 0;
@@ -61,110 +64,109 @@ $Invoice = DB::Connection('mysql2')->select('select * from sales_tax_invoice
 
 if((!empty($Invoice))):
 ?>
-<div class="tb-report-wrap AutoCounter table{{$main_count}}" id="export_table_to_excel_<?php echo $main_count?>">
+<div class="AutoCounter table{{$main_count}}" id="export_table_to_excel_<?php echo $main_count?>">
     <!-- <div class="tb-report-header">
         <p class="tb-printed-on">Printed On: <?php echo date_format(date_create(date('Y-m-d')),'F d, Y')?></p>
         
     </div> -->
-
     <div class="tb-table-scroll">
-    <table class="tb-table">
-        <thead>
-        </thead>
-        <thead>
-            <p class="tb-company-name"><?php echo CommonHelper::byers_name($CustFil->id)->name?></p>
-        </thead>
-        <thead>
-        <tr class="tb-col-row">
-            <th class="text-center">S.No</th>
-            <th class="text-center">SI No</th>
-            <th class="text-center">ST No</th>
-            <th class="text-center">SI Date</th>
-            <th class="text-center">SO No.</th>
-            <th class="text-center">Buyer's Order No</th>
-            <th class="text-center">Buyer's Unit</th>
-            <th class="text-center">Due Date</th>
-            <th class="text-right">Invoice Amount</th>
-            <th class="text-right">Return Amount</th>
-            <th class="text-right">Received Amount</th>
-            <th class="text-right">Remaining Amount</th>
-            <th class="text-center printHide">View</th>
-        </tr>
-        </thead>
-        <tbody id="data">
-        <?php
-        $total=0;
-        $received=0;
-        $remaining=0;
-        $Counter = 1;
-        $total_return=0;
-        ?>
-
-        @foreach($Invoice as $row)
-            <?php
-            CommonHelper::companyDatabaseConnection($_GET['m']);
-            $data=SalesHelper::getTotalAmountSalesTaxInvoice($row->id);
-            $get_freight=SalesHelper::get_freight($row->id);
-            $customer=CommonHelper::byers_name($row->buyers_id);
-            $return_amount=SalesHelper::get_sales_return_from_sales_tax_invoice_by_date($row->id,$FromDate,$ToDate);
-
-            $rece = CommonHelper::bearkup_receievd($row->id,$FromDate,$ToDate);
-            CommonHelper::reconnectMasterDatabase();
-            $BuyersUnit = '';
-            $BuyerOrderNo = '';
-            if($row->so_id != 0 ):
-                $SoData = DB::Connection('mysql2')->table('sales_order')
-                    ->where('id',$row->so_id)
-                    ->select('purchase_order_no','buyers_unit')
-                    ->first();
-                $BuyersUnit = $SoData->buyers_unit ?? '';
-                $BuyerOrderNo = $SoData->purchase_order_no ?? '';
-            endif;
-
-            $rema=$data->total+$get_freight-$return_amount-$rece;
-
-            if($rema > 0.5):
-            ?>
-            <tr @if($rema==0) style="background-color: #bdefbd" @endif title="{{$row->id}}" id="{{$row->id}}">
-                <td class="text-center"><?php echo $Counter++;?></td>
-                <td class="text-center">{{strtoupper($row->gi_no)}}</td>
-                <td class="text-center">{{strtoupper($row->sc_no)}}</td>
-                <td class="text-center"><?php echo '`'.CommonHelper::changeDateFormat($row->gi_date); ?></td>
-                <td title="{{$row->id}}" class="text-center">{{strtoupper($row->so_no)}}</td>
-                <td class="text-center"><?php echo '`'.$BuyerOrderNo?></td>
-                <td class="text-center"><?php echo $BuyersUnit?></td>
-                <td title="{{$row->id}}" class="text-center">{{'`'.CommonHelper::changeDateFormat($row->due_date)}}</td>
-
-                <?php $inv=$data->total+$get_freight; ?>
-                <td class="text-right">{{number_format($inv,2)}}</td>
-                <td class="text-right">{{number_format($return_amount,2)}} <?php $total_return+=$return_amount; ?></td>
-                <td class="text-right">{{number_format($rece,2)}}</td>
-                <td class="text-right">{{number_format($rema,2)}}</td>
-
-                <?php
-                $total+=$inv;
-                $received+=$rece;
-                $remaining+=$rema;
-                ?>
-
-                <td class="text-center printHide">
-                    <button onclick="showDetailModelOneParamerter('sales/viewSalesTaxInvoiceDetail','<?php echo $row->id ?>','View Sales Tax Invoice')" type="button" class="btn btn-success btn-xs">View</button>
-                </td>
+        <table class="tb-table sf-report-print-table">
+            <thead>
+            </thead>
+            <thead>
+                <p class="tb-company-name"><?php echo CommonHelper::byers_name($CustFil->id)->name?></p>
+            </thead>
+            <thead>
+            <tr class="tb-col-row">
+                <th class="text-center">S.No</th>
+                <th class="text-center">SI No</th>
+                <th class="text-center">ST No</th>
+                <th class="text-center">SI Date</th>
+                <th class="text-center">SO No.</th>
+                <th class="text-center">Buyer's Order No</th>
+                <th class="text-center">Buyer's Unit</th>
+                <th class="text-center">Due Date</th>
+                <th class="text-right">Invoice Amount</th>
+                <th class="text-right">Return Amount</th>
+                <th class="text-right">Received Amount</th>
+                <th class="text-right">Remaining Amount</th>
+                <th class="text-center printHide">View</th>
             </tr>
-            <?php endif;?>
-        @endforeach
-        </tbody>
-        <tfoot>
-        <tr>
-            <td class="text-center" colspan="8">Total</td>
-            <td class="text-right">{{number_format($total,2)}}<?php $totalEnd+=$total;?></td>
-            <td class="text-right">{{number_format($total_return,2)}}<?php $total_return_end+=$total_return;?></td>
-            <td class="text-right">{{number_format($received,2)}}<?php $receivedEnd+=$received;?></td>
-            <td class="text-right <?php if ($remaining==0): ?>hidee{{$main_count}}<?php endif ?>" colspan="2">{{number_format($remaining,2)}}<?php $remainingEnd+=$remaining;?></td>
-            <input type="hidden" value="{{$remaining}}" class="val" id="{{$main_count}}"/>
-        </tr>
-        </tfoot>
-    </table>
+            </thead>
+            <tbody id="data">
+            <?php
+            $total=0;
+            $received=0;
+            $remaining=0;
+            $Counter = 1;
+            $total_return=0;
+            ?>
+
+            @foreach($Invoice as $row)
+                <?php
+                CommonHelper::companyDatabaseConnection($_GET['m']);
+                $data=SalesHelper::getTotalAmountSalesTaxInvoice($row->id);
+                $get_freight=SalesHelper::get_freight($row->id);
+                $customer=CommonHelper::byers_name($row->buyers_id);
+                $return_amount=SalesHelper::get_sales_return_from_sales_tax_invoice_by_date($row->id,$FromDate,$ToDate);
+
+                $rece = CommonHelper::bearkup_receievd($row->id,$FromDate,$ToDate);
+                CommonHelper::reconnectMasterDatabase();
+                $BuyersUnit = '';
+                $BuyerOrderNo = '';
+                if($row->so_id != 0 ):
+                    $SoData = DB::Connection('mysql2')->table('sales_order')
+                        ->where('id',$row->so_id)
+                        ->select('purchase_order_no','buyers_unit')
+                        ->first();
+                    $BuyersUnit = $SoData->buyers_unit ?? '';
+                    $BuyerOrderNo = $SoData->purchase_order_no ?? '';
+                endif;
+
+                $rema=$data->total+$get_freight-$return_amount-$rece;
+
+                if($rema > 0.5):
+                ?>
+                <tr @if($rema==0) style="background-color: #bdefbd" @endif title="{{$row->id}}" id="{{$row->id}}">
+                    <td class="text-center"><?php echo $Counter++;?></td>
+                    <td class="text-center">{{strtoupper($row->gi_no)}}</td>
+                    <td class="text-center">{{strtoupper($row->sc_no)}}</td>
+                    <td class="text-center"><?php echo '`'.CommonHelper::changeDateFormat($row->gi_date); ?></td>
+                    <td title="{{$row->id}}" class="text-center">{{strtoupper($row->so_no)}}</td>
+                    <td class="text-center"><?php echo '`'.$BuyerOrderNo?></td>
+                    <td class="text-center"><?php echo $BuyersUnit?></td>
+                    <td title="{{$row->id}}" class="text-center">{{'`'.CommonHelper::changeDateFormat($row->due_date)}}</td>
+
+                    <?php $inv=$data->total+$get_freight; ?>
+                    <td class="text-right">{{number_format($inv,2)}}</td>
+                    <td class="text-right">{{number_format($return_amount,2)}} <?php $total_return+=$return_amount; ?></td>
+                    <td class="text-right">{{number_format($rece,2)}}</td>
+                    <td class="text-right">{{number_format($rema,2)}}</td>
+
+                    <?php
+                    $total+=$inv;
+                    $received+=$rece;
+                    $remaining+=$rema;
+                    ?>
+
+                    <td class="text-center printHide">
+                        <button onclick="showDetailModelOneParamerter('sales/viewSalesTaxInvoiceDetail','<?php echo $row->id ?>','View Sales Tax Invoice')" type="button" class="btn btn-success btn-xs">View</button>
+                    </td>
+                </tr>
+                <?php endif;?>
+            @endforeach
+            </tbody>
+            <tfoot>
+            <tr>
+                <td class="text-center" colspan="8">Total</td>
+                <td class="text-right">{{number_format($total,2)}}<?php $totalEnd+=$total;?></td>
+                <td class="text-right">{{number_format($total_return,2)}}<?php $total_return_end+=$total_return;?></td>
+                <td class="text-right">{{number_format($received,2)}}<?php $receivedEnd+=$received;?></td>
+                <td class="text-right <?php if ($remaining==0): ?>hidee{{$main_count}}<?php endif ?>" colspan="2">{{number_format($remaining,2)}}<?php $remainingEnd+=$remaining;?></td>
+                <input type="hidden" value="{{$remaining}}" class="val" id="{{$main_count}}"/>
+            </tr>
+            </tfoot>
+        </table>
     </div>
 </div>
 <div style="height: 24px;"></div>
