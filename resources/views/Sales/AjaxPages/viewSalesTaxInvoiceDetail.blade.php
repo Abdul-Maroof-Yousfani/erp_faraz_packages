@@ -30,14 +30,16 @@ if (empty($sales_tax_invoice)) {
  body{font-size:9px !important;}
 textarea{border-style:none;border-color:Transparent;}
 @media print{@page{size:A4;margin:1mm 5mm 5mm 5mm !important;}
+body{-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;}
 .printHide{display:none !important;}
 .fa{font-size:small;!important;}
 .gateprint{margin-top:-95px !important;}
 .table-bordered{border:1px solid black;}
 table.table-bordered > thead > tr > th{border:1px solid blue !important;}
+.si-print-doc table th,.si-print-doc table td{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
 }
 /* ===== SCOPED FIX:neutralize global dashboard CSS bleeding into this printable invoice ===== */
- .si-print-doc h2,.si-print-doc h3,.si-print-doc h4{font-family:inherit !important;color:#000 !important;font-weight:bold !important;margin-bottom:6px !important;}
+ .si-print-doc h2,.si-print-doc h3,.si-print-doc h4{font-family:inherit !important;color:#1e2757 !important;font-weight:bold !important;margin-bottom:6px !important;}
 .si-print-doc h2{font-size:20px !important;}
 .si-print-doc h3{font-size:15px !important;}
 .si-print-doc h4{font-size:12px !important;}
@@ -45,8 +47,64 @@ table.table-bordered > thead > tr > th{border:1px solid blue !important;}
 rule was forcing every small voucher/COGS table on this page to reserve 600px of empty space — override it back to the table's real content height */
  .si-print-doc .table-responsive{height:auto !important;overflow:visible !important;}
 /* keep this invoice's own compact table styling in charge,not the global dashboard table theme */
- .si-print-doc table th,.si-print-doc table td{font-size:9px !important;padding:4px 6px !important;background:inherit !important;text-transform:none !important;letter-spacing:normal !important;}
-.si-print-doc .sales_Tax_Invoice_data th{background:#f5f5f5 !important;font-weight:bold !important;}
+ .si-print-doc table th,.si-print-doc table td{font-size:9px !important;padding:7px 9px !important;background:inherit !important;text-transform:none !important;letter-spacing:normal !important;}
+
+/* ===== Consistent navy/lavender invoice theme (matches other ERP reports) ===== */
+.si-print-doc table.sales_Tax_Invoice_data,
+.si-print-doc table#tablee{
+    border:1px solid #dde1ee !important;
+    border-radius:8px;
+    border-collapse:collapse !important;
+    overflow:hidden;
+}
+.si-print-doc table.sales_Tax_Invoice_data th,
+.si-print-doc table.sales_Tax_Invoice_data td,
+.si-print-doc table#tablee th,
+.si-print-doc table#tablee td{
+    border:none !important;
+    border-bottom:1px solid #eef0f6 !important;
+    color:#2a2f4a;
+}
+.si-print-doc table.sales_Tax_Invoice_data th{
+    background:#eef1f8 !important;
+    color:#2b3350 !important;
+    font-weight:700 !important;
+}
+.si-print-doc table#tablee thead th{
+    background:#1f2a5c !important;
+    color:#ffffff !important;
+    font-weight:700 !important;
+    text-align:center;
+    letter-spacing:.2px;
+}
+.si-print-doc table#tablee tbody tr:hover td{background:#f6f8fc !important;}
+
+/* Sub-total row (Total bags/qty/amount) */
+.si-print-doc table#tablee tr.si-subtotal-row td{
+    background:#f4f6fb !important;
+    color:#1f2a5c !important;
+    border-top:1px solid #d8dcec !important;
+    font-weight:700 !important;
+}
+/* Sales Tax / Further Tax / Advance Tax / Cartage / Additional expense rows */
+.si-print-doc table#tablee tr.si-tax-row td{
+    background:#fafbfe !important;
+    color:#33395c !important;
+    font-weight:700 !important;
+}
+/* Grand Total - matches the dark navy banner used across other ERP reports */
+.si-print-doc table#tablee tr.si-grand-total-row td{
+    background:#1f2a5c !important;
+    color:#ffffff !important;
+    font-size:11px !important;
+    padding:10px 9px !important;
+    font-weight:700 !important;
+}
+
+/* Voucher / COGS breakdown tables (Show Voucher toggle) */
+.si-print-doc .ShowVoucherDetail table.sales_Tax_Invoice_data thead th{background:#eef1f8 !important;color:#2b3350 !important;}
+.si-print-doc .ShowVoucherDetail table.sales_Tax_Invoice_data tbody tr:last-child td{background:#f4f6fb !important;font-weight:700 !important;color:#1f2a5c !important;}
+
 .table-responsive{height:auto !important;}
 </style>
 <?php
@@ -334,7 +392,7 @@ rule was forcing every small voucher/COGS table on this page to reserve 600px of
                                         </tr>
                                     @endforeach
                                         
-                                    <tr class="text-center" style="font-weight: bold">
+                                    <tr class="text-center si-subtotal-row" style="font-weight: bold">
                                         <td  colspan="2" style="border:1px solid black;"> Total </td>
                                         <td class="text-right" colspan="1" style="border:1px solid black;"> {{ number_format($total_bags,2) }} </td>
                                         <td></td>
@@ -348,24 +406,24 @@ rule was forcing every small voucher/COGS table on this page to reserve 600px of
                                     </tr>
 
                                     @if((float) ($sales_tax_invoice->sales_tax ?? 0) > 0)
-                                    <tr class="text-center" style="font-weight: bold">
+                                    <tr class="text-center si-tax-row" style="font-weight: bold">
                                         <td colspan="6" style="border:1px solid black;">Sales Tax {{ number_format((float) (($sales_tax_invoice->sales_tax > 0 && $total_before_tax > 0) ? (($sales_tax_invoice->sales_tax / $total_before_tax) * 100) : 0),2) }}</td>
                                         <td class="text-right" style="border:1px solid black;"> {{ number_format($sales_tax_invoice->sales_tax,2) }} </td>
                                     </tr>
                                     @endif
 
                                     @if((float) ($sales_tax_invoice->sales_tax_further ?? 0) > 0)
-                                    <tr class="text-center" style="font-weight: bold">
+                                    <tr class="text-center si-tax-row" style="font-weight: bold">
                                         <td colspan="6" style="border:1px solid black;">Further Sales Tax {{ number_format((float) (($sales_tax_invoice->sales_tax_further > 0 && $total_before_tax > 0) ? (($sales_tax_invoice->sales_tax_further / $total_before_tax) * 100) : 0),2) }}</td>
                                         <td class="text-right" style="border:1px solid black;"> {{ number_format($sales_tax_invoice->sales_tax_further,2) }} </td>
                                     </tr>
                                     @endif
 
-                                    <tr class="text-center" style="font-weight: bold">
+                                    <tr class="text-center si-tax-row" style="font-weight: bold">
                                         <td colspan="6" style="border:1px solid black;">Advance Tax</td>
                                         <td class="text-right" style="border:1px solid black;"> {{ number_format($sales_tax_invoice->advance_tax_amount,2) }} </td>
                                     </tr>
-                                    <tr class="text-center" style="font-weight: bold">
+                                    <tr class="text-center si-tax-row" style="font-weight: bold">
                                         <td colspan="6" style="border:1px solid black;">Cartage Amount</td>
                                         <td class="text-right" style="border:1px solid black;"> {{ number_format($sales_tax_invoice->cartage_amount,2) }} </td>
                                     </tr>
@@ -375,7 +433,7 @@ rule was forcing every small voucher/COGS table on this page to reserve 600px of
                                     ?>
                                     @if($AddionalExpense->count() > 0)
                                         @foreach($AddionalExpense->get() as $Fil)
-                                            <tr class="text-center">
+                                            <tr class="text-center si-tax-row">
 
                                                 <td style="border:1px solid black;" colspan="7">
                                                         <?php $Accounts = CommonHelper::get_single_row('accounts','id',$Fil->acc_id);
@@ -388,7 +446,7 @@ rule was forcing every small voucher/COGS table on this page to reserve 600px of
                                         @endforeach
                                     @endif
 
-                                    <tr class="text-center" style="font-weight: bold">
+                                    <tr class="text-center si-grand-total-row" style="font-weight: bold">
                                         <td colspan="6" style="border:1px solid black;">Grand Total</td>
                                         <td class="text-right" style="border:1px solid black;"> {{ number_format($total_before_tax + $sales_tax_invoice->sales_tax + $sales_tax_invoice->sales_tax_further + $total_expense + $sales_tax_invoice->cartage_amount + $sales_tax_invoice->advance_tax_amount,2) }} </td>
                                     </tr>
