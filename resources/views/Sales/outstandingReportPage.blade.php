@@ -61,7 +61,8 @@ $AccYearTo = $AccYearDate->accyearto;
                     <div class="lineHeight">&nbsp;</div>
                     <div class="panel">
                         <div class="panel-body" id="PrintEmpExitInterviewList">
-                            <?php echo CommonHelper::headerPrintSectionInPrintView($m);?>
+                            <?php echo CommonHelper::headerPrintSectionInPrintView(Session::get('run_company'), 'Debtor Outstanding Report', 'From '.CommonHelper::changeDateFormat($from).' To '.CommonHelper::changeDateFormat($to)); ?>
+                            <p class="tb-report-title"></p>
                             <div class="row">
                                 <div class="col-lg-12 col-md-12 col-sm-12col-xs-12">
                                     <div class="table-responsive" id="ShowHide">
