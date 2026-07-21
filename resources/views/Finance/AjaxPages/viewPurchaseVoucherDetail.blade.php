@@ -37,26 +37,26 @@ foreach ($PurchaseVoucher as $row) {
  .row > .col-lg-12.text-right .btn{margin-left:8px;border-radius:6px;}
 /* PV info + Bill/Supplier info boxes */
  #printPurchaseVoucherDetail table.tableMargin{border:none;border-collapse:collapse;margin-bottom:20px;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(30,39,87,0.06);}
-#printPurchaseVoucherDetail table.tableMargin > tbody > tr > td:first-child{color:#6c5ce7;font-weight:600;background:#f7f7fc;}
+#printPurchaseVoucherDetail table.tableMargin > tbody > tr > td:first-child{color:#6c5ce7;font-weight: 500;background:#f7f7fc;}
 #printPurchaseVoucherDetail table.tableMargin > tbody > tr:nth-child(even){background:#eef0fa;}
-#printPurchaseVoucherDetail table.tableMargin > tbody > tr:nth-child(even) td{border-bottom:1px solid #1e2757;color:#1e2757;font-weight:600;}
+#printPurchaseVoucherDetail table.tableMargin > tbody > tr:nth-child(even) td{border-bottom:1px solid #1e2757;color:#1e2757;font-weight: 500;}
 #printPurchaseVoucherDetail table.tableMargin > tbody > tr > td{border:none;border-bottom:1px solid #eef0f6;padding:9px 12px;font-size:13.5px;color:#2a2f4a;background:#ffffff;}
 /* Item / expense / transaction tables */
  #printPurchaseVoucherDetail .table-responsive table,#printPurchaseVoucherDetail table.tra{border:none;border-collapse:collapse;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(30,39,87,0.06);}
-#printPurchaseVoucherDetail .table-responsive table thead th,#printPurchaseVoucherDetail table.tra thead th,#printPurchaseVoucherDetail table.tra tr:first-child th{background:#eef0fa;color:#444a6b;font-weight:600;font-size:13px;padding:10px 12px;border:none;border-bottom:1px solid #dfe2f2;}
+#printPurchaseVoucherDetail .table-responsive table thead th,#printPurchaseVoucherDetail table.tra thead th,#printPurchaseVoucherDetail table.tra tr:first-child th{background:#eef0fa;color:#444a6b;font-weight: 500;font-size:13px;padding:10px 12px;border:none;border-bottom:1px solid #dfe2f2;}
 #printPurchaseVoucherDetail .table-responsive table tbody td,#printPurchaseVoucherDetail table.tra tbody td{padding:10px 12px;font-size:13.5px;color:#2a2f4a;border:none;border-bottom:1px solid #eef0f6;background:#ffffff;}
 #printPurchaseVoucherDetail .table-responsive table tbody tr:hover,#printPurchaseVoucherDetail table.tra tbody tr:hover{background:#fafbff;}
 /* Total / Sales tax / Total after tax rows */
  #printPurchaseVoucherDetail .table-responsive table tbody tr:has(td label) td,#printPurchaseVoucherDetail .table-responsive table tbody tr td b{color:#1e2757;}
-#printPurchaseVoucherDetail .table-responsive table tbody tr td label{color:#6b7094;font-weight:600;}
+#printPurchaseVoucherDetail .table-responsive table tbody tr td label{color:#6b7094;font-weight: 500;}
 /* Fallback for browsers without:has() support - target rows by structure */
  #printPurchaseVoucherDetail .table-responsive table tbody tr:nth-last-child(1) td,#printPurchaseVoucherDetail .table-responsive table tbody tr:nth-last-child(2) td,#printPurchaseVoucherDetail .table-responsive table tbody tr:nth-last-child(3) td,#printPurchaseVoucherDetail .table-responsive table tbody tr:nth-last-child(4) td{border-bottom:none;}
 #printPurchaseVoucherDetail table.tra .sf-table-total td,#printPurchaseVoucherDetail .table-responsive table tbody tr td b{border-top:2px solid #1e2757 !important;background:#f8f9fd;}
 #rupees{color:#444a6b;font-style:italic;font-size:13px;padding-top:12px !important;}
 /* Show Voucher checkbox label */
- label.check{display:inline-block;margin:14px 0;font-weight:600;color:#444a6b;}
+ label.check{display:inline-block;margin:14px 0;font-weight: 500;color:#444a6b;}
 /* Signature / approval boxes */
- #printPurchaseVoucherDetail .signature_bor{color:#6b7094;font-weight:600;font-size:13px;border-top:2px solid #1e2757;padding-top:10px;margin-top:40px;}
+ #printPurchaseVoucherDetail .signature_bor{color:#000;font-weight: 500;font-size:13px;border-top:2px solid #1e2757;padding-top:10px;margin-top:40px;}
 #printPurchaseVoucherDetail .col-lg-3.text-center b p{color:#1e2757;font-weight:700;margin-top:4px;}
 .table-responsive{height:auto !important;}
 
@@ -71,7 +71,7 @@ foreach ($PurchaseVoucher as $row) {
     #printPurchaseVoucherDetail .table-responsive table,#printPurchaseVoucherDetail table.tra{box-shadow:none;border:1px solid #dfe2f2;}
     #printPurchaseVoucherDetail .table-responsive table thead th,#printPurchaseVoucherDetail table.tra thead th{background:#eef0fa !important;color:#444a6b !important;}
     #printPurchaseVoucherDetail table.tra .sf-table-total td,#printPurchaseVoucherDetail .table-responsive table tbody tr td b{background:#f8f9fd !important;}
-    #printPurchaseVoucherDetail .signature_bor{border-top:2px solid #1e2757 !important;}
+    #printPurchaseVoucherDetail .signature_bor{border-top:2px solid #1e2757 !important;color:#000;font-size:12px!important;padding-top:8px!important;margin-top:30px!important;}
 }
 
 </style>
