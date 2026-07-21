@@ -65,8 +65,8 @@ ul.m-li li.firs{width:27%;}
 ul.m-li li.las{width:68%;}
 .premier_igmcol h3{font-size:19px;font-weight:500;}
 .premier_igm2 img{margin:0 !important;}
-.text-center.head_of_form h3{color:#000;font-weight:600;margin-bottom:30px;border-bottom:1px solid #ddd;padding:17px 0px;border-top:1px solid #ddd;}
-.text-center.head_of_form p{color:#000;font-weight:600;margin-bottom:30px;font-size:24px;}
+.text-center.head_of_form h3{color:#000;font-weight:500;margin-bottom:30px;border-bottom:1px solid #ddd;padding:17px 0px;border-top:1px solid #ddd;}
+.text-center.head_of_form p{color:#000;font-weight:500;margin-bottom:30px;font-size:24px;}
 .head_lines{margin-top:100px;margin-bottom:50px;}
 .text-right.head_of_form.print_views_para{text-align:left;font-size:15px;margin-top:50px;font-weight:500;}
 input[type="radio"],input[type="checkbox"]{margin:4px 0 0;line-height:normal;border:none !important;outline:5px auto #adadad !important;outline-offset:-2px !important;}
@@ -141,7 +141,7 @@ ul.sale-l{padding:0;}
 /*margin*/
  .mb{margin-bottom:30px;}
 /*heading*/
- .m1-h h5{font-size:22px;font-weight:600;}
+ .m1-h h5{font-size:22px;font-weight:500;}
 .m2-h h5{}
 .m3-h h5{}
 .m4-h h5{}
@@ -184,7 +184,7 @@ ul.sale-l{padding:0;}
 .meinbox{display:flex;align-items:center;justify-content:right;gap:50px;}
 .calender a i{font-size:22px;color:#8b8c8d;}
 .notifction_text a{display:flex;align-items:center;justify-content:center;gap:3px;}
-.notifction_text a p{margin:0;color:#8b8c8d;font-weight:600;font-size:13px;}
+.notifction_text a p{margin:0;color:#8b8c8d;font-weight:500;font-size:13px;}
 .searchBox{background:#f4f5fb;border:1px solid #f4f5fb;border-radius:60px;padding:8px 10px;position:relative;width:66px;transition:width 0.5s ease;}
 .searchButton{background:white;color:#2f3640;width:56px;height:56px;border-radius:50%;border:none;transition:0.4s;position:absolute;top:2px;right:4px;}
 .searchInput{background-color:transparent;border:transparent;font-size:16px;transition:0.4s;font-weight:500;width:0;transition:width 0.5s ease;}
@@ -200,13 +200,13 @@ button.searchButton:hover i{color:#000000;transition:all 0.5s;}
 .btn-a>span{margin-right:7px;}
 .btn-a:hover{color:#fff;}
 .btnwrpa{position:absolute;right:0;top:1%;z-index:1;}
-.form-control{border:1px solid #D8D6DE;height:44px;font-size:14px;color:#000!important;font-weight:600;margin-bottom:10px;}
+.form-control{border:1px solid #D8D6DE;height:44px;font-size:14px;color:#000!important;font-weight:500;margin-bottom:10px;}
 .select2-container--default .select2-selection--single .select2-selection__rendered{color:#000;line-height:28px;font-weight:bold;}
 .form-control::placeholder{color:#000 !important;}
 .boking-wrp{background-color:#fff;}
 .boking-wrp label{font-size:13px;color:#5E5873;}
 #calendar .date-h{background-color:#00AAFF;font-size:11px;text-align:center;padding:2px 7px!important;font-weight:500;color:#fff;line-height:initial;width:auto!important;}
-#calendar .date{font-weight:600;color:#837f7f!important;margin-bottom:20px;}
+#calendar .date{font-weight:500;color:#837f7f!important;margin-bottom:20px;}
 td.days a,td.days span{font-weight:500;font-size:11px!important;text-decoration:none;}
 .clndrsdw.table-responsive{box-shadow:0 4px 24px 0 rgb(34 41 47 / 19%);padding:15px;border-radius:6px;}
 .bk_cldr{box-shadow:0 4px 24px 0 rgb(34 41 47 / 19%);padding:15px 9px;border-radius:6px;margin-bottom:25px;}
@@ -251,7 +251,7 @@ ul.list-unstyled>li{margin-bottom:0px;}
  .login-fwrp{max-width:400px;margin:auto;position:relative;background:#fff;z-index:1;box-shadow:0 4px 24px 0 rgb(34 41 47 / 10%);border-radius:8px;}
 section.login-sec{display:-ms-flexbox;display:flex;-ms-flex-preferred-size:100%;flex-basis:100%;min-height:100vh;align-items:center;justify-content:center;position:relative;z-index:1;background-repeat:no-repeat;background-size:cover;}
 .l-logo{text-align:center;padding:15px 0;}
-.login-fwrp h3{font-size:20px;font-weight:600;}
+.login-fwrp h3{font-size:20px;font-weight:500;}
 .login-fwrp h3>span{font-weight:500;color:#0af;}
 .form-signin .singInput::placeholder{border-radius:0px;height:50px;font-size:12px;font-weight:500;}
 .inner-addon span{position:absolute;left:8px;bottom:0;top:0;margin:auto;height:fit-content;color:#0af;font-size:13px;border-right:1px solid #d9d9d9;padding-right:6px;}
@@ -259,7 +259,7 @@ section.login-sec{display:-ms-flexbox;display:flex;-ms-flex-preferred-size:100%;
 #remember p,#remember label{display:inline-block;vertical-align:middle;margin:0;font-size:12px;}
 div#remember{margin-bottom:20px;}
 .fga{text-align:center;padding:14px 0 0;}
-.fga a{font-size:13px;color:#0af;font-weight:600;}
+.fga a{font-size:13px;color:#0af;font-weight:500;}
 .login-fwrp::before{width:244px;height:243px;content:" ";position:absolute;top:-77px;content:'';background-image:url(../img/login.png);z-index:-1;left:-71px;}
 .login-btn i{font-size:12px;}
 section.login-sec img.circle{left:-6%;right:inherit;width:29%;top:-12%;}
@@ -270,7 +270,7 @@ section.login-sec img.circle{left:-6%;right:inherit;width:29%;top:-12%;}
 */
  .model-n{min-width:1000px;min-height:500px;margin:0 30px;max-height:800px;overflow:auto;overflow-x:hidden;position:relative;z-index:1;}
 .model-n.modal-content .modal-body{height:100%;text-align:center;padding:5px 22px;}
-.model-logo h4{font-size:19px;font-weight:600;text-transform:uppercase;}
+.model-logo h4{font-size:19px;font-weight:500;text-transform:uppercase;}
 .model-logo img{margin-bottom:5px;}
 .model-logo{margin-top:7px;margin-bottom:30px;position:relative;text-align:center;}
 ul.ban-list{display:block;padding:0;margin-bottom:40px;/* text-align:left;*/
@@ -337,7 +337,7 @@ section.footer-section.active{opacity:1;bottom:0;}
 ul.v-ctn{padding:0;list-style:none;padding-left:0;}
 .v-img{}
 ul.v-ctn>li>span{display:inline-flex;color:#fff;width:27px;height:27px;align-items:center;justify-content:center;border-radius:50%;margin-right:9px;font-size:14px;vertical-align:middle;background:transparent linear-gradient(90deg,#173CA7 0%,#0B1F59 100%) 0% 0% no-repeat padding-box;}
-ul.v-ctn>li>p{display:inline-block;vertical-align:middle;margin:0;font-size:12px;font-weight:600;color:#7e7777;}
+ul.v-ctn>li>p{display:inline-block;vertical-align:middle;margin:0;font-size:12px;font-weight:500;color:#7e7777;}
 ul.v-ctn>li{margin-bottom:10px;}
 .view-listbx{position:relative;margin-bottom:25px;}
 .table-bordered > thead > tr > th,.table-bordered > tbody > tr > th,.table-bordered > tfoot > tr > th,.table-bordered > thead > tr > td,.table-bordered > tbody > tr > td,.table-bordered > tfoot > tr > td{border:2px solid #f1e8e8;padding:10px 8px;vertical-align:middle;font-size:13px;}
@@ -345,7 +345,7 @@ ul.v-ctn>li{margin-bottom:10px;}
 .print-btn{backface-visibility:hidden;margin-left:270px;padding:13px 20px;background:#fff;box-shadow:0 4px 24px 0 rgb(34 41 47 / 10%);}
 .slipN{color:#000;}
 .head-h{text-align:center;}
-.head-h h3{font-weight:600;font-size:20px;margin:0;color:#7c7979;}
+.head-h h3{font-weight:500;font-size:20px;margin:0;color:#7c7979;}
 /*view-list*/
 table.table-bordered.vander_fom{width:100%;}
 /* .view_purchase_tab > thead > tr > th,.view_purchase_tab > tbody > tr > th,.view_purchase_tab > tfoot > tr > th,.view_purchase_tab > thead > tr > td,.view_purchase_tab > tbody > tr > td,.view_purchase_tab > tfoot > tr > td{border:none !important;border-bottom:1px solid #000 !important;text-align:left;font-weight:bold;color:#000 !important;}
@@ -477,7 +477,7 @@ border-width:1px;}
 .ibox-title h5{display:inline-block;font-size:19px;margin:0 16px 7px 0px;padding:0;text-overflow:ellipsis;float:none;border:solid 0px #15389e61;padding:16px 16px;border-radius:34px;color:#15389e;background-color:#15389e61;box-shadow:2px 2px 7px 0px #c1c1c1;}
 .no-margins{margin:0!important;}
 .text-success{color:#1c84c6!important;}
-.font-bold{font-weight:600;}
+.font-bold{font-weight:500;}
 .stat-percent{float:right;}
 .fa{display:inline-block;font:normal normal normal 14px/1 FontAwesome;font-size:inherit;text-rendering:auto;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
 .small,small{font-size:80%;font-weight:400;}
@@ -690,7 +690,7 @@ thead.bgBlueofTd tr th{background:#315EFB!important;color:#fff !important;}
 .diswrp.action_add{display:flex;align-items:center;justify-content:left;width:100px;flex-direction:column;}
 .btn_create_del{display:flex;align-items:center;justify-content:left;}
 .value_form2{margin-top:30px;}
-.userlittab > thead > tr > td,.userlittab > tbody > tr > td,.userlittab > tfoot > tr > td{padding:10px 15px;vertical-align:middle;font-size:14px;color:#000;font-family:"erp-regular";font-style:normal;font-weight:600 !important;line-height:normal;border-left:none !important;border-right:none;border-bottom:1px solid #000 !important;text-align:center;}
+.userlittab > thead > tr > td,.userlittab > tbody > tr > td,.userlittab > tfoot > tr > td{padding:10px 15px;vertical-align:middle;font-size:14px;color:#000;font-family:"erp-regular";font-style:normal;font-weight:500 !important;line-height:normal;border-left:none !important;border-right:none;border-bottom:1px solid #000 !important;text-align:center;}
 .headquid_aprks{text-align:left;}
 /* Company List Model Begin */
  @media (min-width:0px) and (max-width:479px){.erp-menus .col-xs-12 .row .active-erp:after{top:-5px;left:35%;transform:rotate(269deg);}
@@ -703,7 +703,7 @@ th.wsale2{width:20% !important;}
 th.wsale{width:14% !important;}
 th.wsale2{width:20% !important;}
 .tems_sec{margin-top:30px;}
-.lsitsleques_print > thead > tr > th,.lsitsleques_print > tbody > tr > th,.lsitsleques_print > tfoot > tr > th{border-bottom:1px solid #000000 !important;background:#dfe5ec !important;border:none !important;color:#000 !important;font-size:14px !important;font-weight:600 !important;text-align:left !important;font-family:"erp-semiBold" !important;}
+.lsitsleques_print > thead > tr > th,.lsitsleques_print > tbody > tr > th,.lsitsleques_print > tfoot > tr > th{border-bottom:1px solid #000000 !important;background:#dfe5ec !important;border:none !important;color:#000 !important;font-size:14px !important;font-weight:500 !important;text-align:left !important;font-family:"erp-semiBold" !important;}
 h2.adas{margin-top:2px!important;margin-bottom:85px !important;}
 /* .con_rew2 h2{margin:0 !important;text-align:right !important;}
 */
@@ -742,12 +742,12 @@ table.userlittab2.table.table-bordered.sf-table-list2 tr th{background:#c5c5c5 !
 .view_header2 h2{background:#f8cbad;color:#000000;font-size:20px;padding:10px 0px;margin:0;}
 .table-bordered.viewcashflow_report > thead > tr > th,.table-bordered.viewcashflow_report > tbody > tr > th,.table-bordered.viewcashflow_report > tfoot > tr > th{border-bottom:1px solid #ffffff !important;padding:7px 8px !important;}
 /* sale_order */
-.con_rew2 h2{font-size:22px;font-weight:600;background:#dbdbdb;padding:10px 0px;}
+.con_rew2 h2{font-size:22px;font-weight:500;background:#dbdbdb;padding:10px 0px;}
 .con_rew2{text-align:center;}
 .con_rew3 h2{font-size:19px;margin-bottom:-18px;font-weight:500;}
 .contra{margin-bottom:50px;}
 .secc h2{text-align:center;font-size:17px;font-weight:500;}
-.ode h2{font-size:19px;font-weight:600;margin-bottom:30px;}
+.ode h2{font-size:19px;font-weight:500;margin-bottom:30px;}
 .ordeno h2{font-size:17px;font-weight:500;margin:0;margin-bottom:10px;}
 .ors_pra p{margin-bottom:13px;font-weight:bold;}
 .ode2 h2{width:100%;margin:0;font-size:20px;font-weight:500;}
@@ -803,8 +803,8 @@ div#showDetailModelOneParamerter .modalWidth{width:95% !important;}
 /* --------------------------------------------------------------------- 1. HEADINGS (h1–h4 + .subHeadingLabelClass) --------------------------------------------------------------------- */
 .ibox h1,.headquid h2,h1{font-family:"erp-semiBold",Inter,sans-serif !important;color:var(--erp-navy-2) !important;font-weight:700 !important;letter-spacing:0.2px !important;}
 h2{font-family:"erp-semiBold",Inter,sans-serif !important;font-size:20px !important;font-weight:700 !important;color:var(--erp-text) !important;margin-bottom:12px !important;}
-h3{font-family:"erp-Medium",Inter,sans-serif !important;font-size:17px !important;font-weight:600 !important;color:var(--erp-text) !important;}
-h4{font-family:"erp-regular",Inter,sans-serif !important;font-size:14px !important;font-weight:600 !important;color:var(--erp-label) !important;}
+h3{font-family:"erp-Medium",Inter,sans-serif !important;font-size:17px !important;font-weight:500 !important;color:var(--erp-text) !important;}
+h4{font-family:"erp-regular",Inter,sans-serif !important;font-size:14px !important;font-weight:500 !important;color:var(--erp-label) !important;}
 .subHeadingLabelClass{display:inline-block !important;font-size:11px !important;font-weight:700 !important;letter-spacing:0.6px !important;text-transform:uppercase !important;color:var(--erp-muted) !important;margin-bottom:4px !important;}
 /* --------------------------------------------------------------------- 2. CARD / PANEL WRAPPER (.dp_sdw,.dp_sdw2,.ibox,.cus-tab) --------------------------------------------------------------------- */
 .dp_sdw,.dp_sdw2,.ibox,.cus-tab,.cus-tab2{background:#fff !important;border:1px solid var(--erp-border) !important;border-radius:var(--erp-radius-lg) !important;box-shadow:var(--erp-shadow) !important;padding:20px 22px !important;transition:box-shadow .25s ease;}
@@ -839,7 +839,7 @@ h4{font-family:"erp-regular",Inter,sans-serif !important;font-size:14px !importa
 .label{border-radius:999px !important;padding:4px 12px !important;font-weight:700 !important;letter-spacing:.2px !important;}
 .label-success{background:#E7F8EF !important;color:var(--erp-green) !important;}
 /* --------------------------------------------------------------------- 4. INPUTS + SELECT2 (.form-control,input,select2) --------------------------------------------------------------------- */
-.form-control,input.fomn1,input[type="text"],input[type="number"],input[type="email"],input[type="password"],input[type="date"],input[type="time"],input[type="datetime-local"],input[type="month"],input[type="search"]{height:44px !important;border:1px solid var(--erp-border) !important;border-radius:11px !important;background:var(--erp-bg-soft) !important;color:var(--erp-text) !important;font-weight:600 !important;font-size:13.5px !important;padding:10px 16px !important;box-shadow:none !important;transition:border-color .2s ease,box-shadow .2s ease,background .2s ease !important;}
+.form-control,input.fomn1,input[type="text"],input[type="number"],input[type="email"],input[type="password"],input[type="date"],input[type="time"],input[type="datetime-local"],input[type="month"],input[type="search"]{height:44px !important;border:1px solid var(--erp-border) !important;border-radius:11px !important;background:var(--erp-bg-soft) !important;color:var(--erp-text) !important;font-weight:500 !important;font-size:13.5px !important;padding:10px 16px !important;box-shadow:none !important;transition:border-color .2s ease,box-shadow .2s ease,background .2s ease !important;}
 .form-control::placeholder,input::placeholder{color:#a7abc3 !important;font-weight:500 !important;}
 .form-control:focus,input:focus{background:#fff !important;border-color:var(--erp-navy-1) !important;box-shadow:0 0 0 3px rgba(23,60,167,0.12) !important;outline:none !important;}
 .form-control:hover:not(:focus),input:hover:not(:focus){border-color:#c9cfe6 !important;}
@@ -855,7 +855,7 @@ h4{font-family:"erp-regular",Inter,sans-serif !important;font-size:14px !importa
 .select2-container--default.select2-container--open .select2-selection--single{border-color:var(--erp-navy-1) !important;background:#fff !important;box-shadow:0 0 0 3px rgba(23,60,167,0.12) !important;}
 .select2-dropdown{border:1px solid var(--erp-border) !important;border-radius:11px !important;box-shadow:var(--erp-shadow) !important;overflow:hidden !important;margin-top:4px !important;}
 .select2-search--dropdown .select2-search__field{border:1px solid var(--erp-border) !important;border-radius:8px !important;padding:7px 10px !important;}
-.select2-results__option{padding:9px 14px !important;font-size:13px !important;font-weight:600 !important;}
+.select2-results__option{padding:9px 14px !important;font-size:13px !important;font-weight:500 !important;}
 .select2-results__option--highlighted[aria-selected]{background:var(--erp-navy-1) !important;border-radius:6px !important;}
 /* --------------------------------------------------------------------- 6. BUG FIXES — matches the EXACT specificity of pre-existing rules in style2.css that were still winning the cascade fight. --------------------------------------------------------------------- */
 /* fix #1:".btn-primary:hover:not(.disabled):not(:disabled)" already existed in style2.css and was overriding my earlier hover fix (it has a longer selector chain = higher specificity). Matching it exactly here,placed after it in the file,wins the cascade. */
@@ -890,7 +890,7 @@ input[type="radio"]:hover,input[type="checkbox"]:hover{border-color:var(--erp-na
 /* header row — works on any table using these classes,any column count */
 .table-bordered thead tr th,.userlittab thead tr th,.sf-table-list2 thead tr th,.sf-table-list3 thead tr th,.lsitsleques_print thead tr th,.vandertd thead tr th,.viewcashflow_report thead tr th,.home_table thead tr th{background:var(--erp-bg-head) !important;color:var(--erp-navy-2) !important;font-family:"erp-semiBold",Inter,sans-serif !important;font-size:12.5px !important;font-weight:700 !important;text-transform:uppercase !important;letter-spacing:0.4px !important;border:none !important;border-bottom:2px solid var(--erp-border) !important;padding:6px 16px !important;text-align:left !important;vertical-align:middle !important;}
 /* body rows */
-.table-bordered tbody tr td,.userlittab tbody tr td,.sf-table-list2 tbody tr td,.sf-table-list3 tbody tr td,.lsitsleques_print tbody tr td,.vandertd tbody tr td,.viewcashflow_report tbody tr td,.home_table tbody tr td{border:none !important;border-bottom:1px solid var(--erp-border) !important;padding:11px 16px !important;font-size:13px !important;font-weight:600 !important;color:var(--erp-text) !important;vertical-align:middle !important;}
+.table-bordered tbody tr td,.userlittab tbody tr td,.sf-table-list2 tbody tr td,.sf-table-list3 tbody tr td,.lsitsleques_print tbody tr td,.vandertd tbody tr td,.viewcashflow_report tbody tr td,.home_table tbody tr td{border:none !important;border-bottom:1px solid var(--erp-border) !important;padding:11px 16px !important;font-size:13px !important;font-weight:500 !important;color:var(--erp-text) !important;vertical-align:middle !important;}
 /* zebra + hover — automatically applies to every row,no class needed */
 .table-bordered tbody tr:nth-child(even) td,.userlittab tbody tr:nth-child(even) td,.sf-table-list2 tbody tr:nth-child(even) td,.sf-table-list3 tbody tr:nth-child(even) td,.home_table tbody tr:nth-child(even) td{background:#FAFBFE !important;}
 .table-bordered tbody tr:hover td,.userlittab tbody tr:hover td,.sf-table-list2 tbody tr:hover td,.sf-table-list3 tbody tr:hover td,.home_table tbody tr:hover td{background:#F5F7FD !important;}
@@ -915,7 +915,7 @@ input[type="radio"]:hover,input[type="checkbox"]:hover{border-color:var(--erp-na
 .view_header,.view_header2{text-align:center !important;background:linear-gradient(180deg,#F3F5FB 0%,#EAEEFA 100%) !important;padding:24px 30px !important;border-bottom:1px solid var(--erp-border) !important;}
 .view_header h2,.view_header h3,.view_header h4,.view_header2 h2{background:transparent !important;color:var(--erp-navy-2) !important;}
 /* existing dropdown-menu classes (period filter,action menus,etc.) */
-.dropdown-menu > li > a{border-radius:8px !important;padding:9px 16px !important;font-size:13px !important;font-weight:600 !important;color:var(--erp-text) !important;}
+.dropdown-menu > li > a{border-radius:8px !important;padding:9px 16px !important;font-size:13px !important;font-weight:500 !important;color:var(--erp-text) !important;}
 .dropdown-menu > li > a:hover{background:var(--erp-bg-head) !important;color:var(--erp-navy-1) !important;}
 .dropdown-menu{border:1px solid var(--erp-border) !important;border-radius:var(--erp-radius-md) !important;box-shadow:var(--erp-shadow) !important;}
 /* ===================================================================== SIDEBAR + NAVBAR + DASHBOARD — NAVY BLUE REFRESH --------------------------------------------------------------------- Zero new classes. style2.css ke sabse aakhir mein paste karo. ===================================================================== */
@@ -1010,7 +1010,7 @@ button.close_model_btn,.model-logo .btn-danger{background:#F1F3F9 !important;col
 /* Line-items table — soft rounded card look */
 .model-n table{width:100% !important;border-radius:14px !important;overflow:hidden !important;box-shadow:0 4px 14px rgba(20,38,92,0.06) !important;margin-top:20px !important;}
 .model-n table thead th{background:#F1F3F9 !important;color:#0B1F59 !important;font-weight:700 !important;text-transform:uppercase !important;font-size:11.5px !important;letter-spacing:.4px !important;padding:12px 15px !important;border:none !important;}
-.model-n table tbody td{padding:12px 15px !important;border:none !important;border-bottom:1px solid #F1F3F9 !important;font-size:13px !important;font-weight:600 !important;color:#3b3f5c !important;}
+.model-n table tbody td{padding:12px 15px !important;border:none !important;border-bottom:1px solid #F1F3F9 !important;font-size:13px !important;font-weight:500 !important;color:#3b3f5c !important;}
 .model-n table tbody tr:nth-child(even) td{background:#FBFCFE !important;}
 .model-n table tbody tr:hover td{background:#F1F5FF !important;}
 .model-n table tbody tr:last-child td{border-bottom:none !important;}
@@ -1036,7 +1036,7 @@ button.close_model_btn,.model-logo .btn-danger{background:#F1F3F9 !important;col
 .monthPickerPanel.open{display:block !important;}
 .monthPickerPanel::-webkit-scrollbar{width:5px !important;}
 .monthPickerPanel::-webkit-scrollbar-thumb{background:#D6DEF5 !important;border-radius:10px !important;}
-.monthCheckItem{display:flex !important;align-items:center !important;gap:10px !important;padding:9px 10px !important;border-radius:8px !important;font-size:13px !important;font-weight:600 !important;color:var(--erp-text,#3b3f5c) !important;cursor:pointer !important;margin:0 !important;transition:.15s ease !important;}
+.monthCheckItem{display:flex !important;align-items:center !important;gap:10px !important;padding:9px 10px !important;border-radius:8px !important;font-size:13px !important;font-weight:500 !important;color:var(--erp-text,#3b3f5c) !important;cursor:pointer !important;margin:0 !important;transition:.15s ease !important;}
 .monthCheckItem:hover{background:#F7F8FC !important;}
 .monthCheckbox{-webkit-appearance:none !important;appearance:none !important;width:16px !important;height:16px !important;min-width:16px !important;border-radius:5px !important;border:2px solid #c7cbe0 !important;outline:none !important;margin:0 !important;position:relative !important;background:#fff !important;cursor:pointer !important;flex-shrink:0 !important;}
 .monthCheckbox:checked{background:var(--erp-navy-1,#173CA7) !important;border-color:var(--erp-navy-1,#173CA7) !important;}
@@ -1084,9 +1084,9 @@ input[type="button"].btn-sm.btn-primary:hover{transform:translateY(-1px) !import
 .tb-report-header{background:linear-gradient(180deg,#F3F5FB 0%,#EAEEFA 100%) !important;padding:28px 32px 22px !important;text-align:center !important;border-bottom:1px solid #E4E7EC !important;position:relative !important;}
 .tb-company-name{font-size:22px !important;font-weight:500 !important;color:var(--erp-navy-2,#0B1F59) !important;margin:0 0 6px !important;}
 .tb-report-title{font-size:16px !important;font-weight:700 !important;color:var(--erp-navy-1,#173CA7) !important;margin:0 0 10px !important;}
-.tb-date-range{font-size:14px !important;font-weight:600 !important;color:var(--erp-text,#3b3f5c) !important;margin:0 !important;}
+.tb-date-range{font-size:14px !important;font-weight:500 !important;color:var(--erp-text,#3b3f5c) !important;margin:0 !important;}
 .tb-date-range b{color:var(--erp-navy-2,#0B1F59) !important;}
-.tb-printed-on{position:absolute !important;top:24px !important;right:32px !important;font-size:11.5px !important;font-weight:600 !important;color:var(--erp-label,#5E5873) !important;margin:0 !important;}
+.tb-printed-on{position:absolute !important;top:24px !important;right:32px !important;font-size:11.5px !important;font-weight:500 !important;color:var(--erp-label,#5E5873) !important;margin:0 !important;}
 /* ---------- Scroll container ---------- */
 .tb-table-scroll{max-height:70vh !important;overflow-y:auto !important;overflow-x:auto !important;}
 .tb-table-scroll::-webkit-scrollbar{width:6px !important;height:6px !important;}
@@ -1112,9 +1112,9 @@ input[type="button"].btn-sm.btn-primary:hover{transform:translateY(-1px) !import
 .tb-table tbody tr.tb-level-5 td:first-child{border-left:3px solid #7ed9a3 !important;}
 .tb-table tbody tr.tb-level-6 td:first-child{border-left:3px solid #1c9a5b !important;}
 .tb-table tbody tr.tb-level-7 td:first-child{border-left:3px solid #00cfe8 !important;}
-.tb-table tbody tr.tb-level-2 td,.tb-table tbody tr.tb-level-3 td,.tb-table tbody tr.tb-level-4 td,.tb-table tbody tr.tb-level-5 td,.tb-table tbody tr.tb-level-6 td,.tb-table tbody tr.tb-level-7 td{font-weight:600 !important;}
+.tb-table tbody tr.tb-level-2 td,.tb-table tbody tr.tb-level-3 td,.tb-table tbody tr.tb-level-4 td,.tb-table tbody tr.tb-level-5 td,.tb-table tbody tr.tb-level-6 td,.tb-table tbody tr.tb-level-7 td{font-weight:500 !important;}
 /* Account name links */
-.tb-table .link_hide{color:var(--erp-navy-1,#173CA7) !important;font-weight:600 !important;cursor:pointer !important;}
+.tb-table .link_hide{color:var(--erp-navy-1,#173CA7) !important;font-weight:500 !important;cursor:pointer !important;}
 .tb-table .link_hide:hover{color:var(--erp-navy-2,#0B1F59) !important;text-decoration:underline !important;}
 /* Amount columns */
 .tb-table tbody td.text-right{text-align:right !important;font-variant-numeric:tabular-nums !important;font-weight:700 !important;}
@@ -1151,7 +1151,7 @@ hr{border-top:1px solid #EDF0F8 !important;margin:14px 0 !important;}
 .profit_Loss_Statement tr[style*="lightyellow"] td{background:linear-gradient(90deg,#EAF1FF 0%,#F1F9F4 100%) !important;font-weight:500 !important;color:var(--erp-navy-2,#0B1F59) !important;border-top:2px solid var(--erp-navy-1,#173CA7) !important;}
 .head_lines{text-align:center !important;background:linear-gradient(180deg,#F3F5FB 0%,#EAEEFA 100%) !important;padding:24px 30px !important;border-radius:14px 14px 0 0 !important;margin-bottom:0 !important;}
 .head_lines h3{color:var(--erp-navy-2,#0B1F59) !important;font-weight:700 !important;margin:6px 0 !important;}
-.head_lines p{color:var(--erp-label,#5E5873) !important;font-size:13px !important;font-weight:600 !important;margin:4px 0 !important;}
+.head_lines p{color:var(--erp-label,#5E5873) !important;font-size:13px !important;font-weight:500 !important;margin:4px 0 !important;}
 .sf-report-print-header{background:linear-gradient(180deg,#F3F5FB 0%,#EAEEFA 100%) !important;padding:28px 32px 22px !important;text-align:center !important;border-bottom:1px solid #E4E7EC !important;position:relative !important;border-radius:16px 16px 0px 0px !important;margin-bottom:0 !important;}
 .sf-report-print-title{font-size:16px !important;font-weight:700 !important;color:var(--erp-navy-1,#173CA7) !important;margin:0 0 10px !important;}
 .tb-toolbar{padding:0 32px 16px !important;text-align:right !important;}
@@ -1170,7 +1170,7 @@ table.sf-table-list{width:100% !important;border-collapse:separate !important;bo
 /* Header row */
 .sf-table-list thead tr th,.sf-table-th.sf-table-list thead tr th{background:#EEF0FA !important;color:#5E5873 !important;font-size:12px !important;font-weight:700 !important;text-transform:uppercase !important;letter-spacing:.3px !important;text-align:left !important;border:none !important;padding:14px 12px !important;vertical-align:middle !important;}
 /* Body cells */
-.sf-table-list tbody tr td{border:none !important;border-bottom:1px solid #EEF0FA !important;padding:14px 12px !important;font-size:13.5px !important;font-weight:600 !important;color:#0B1F59 !important;text-align:left !important;vertical-align:middle !important;}
+.sf-table-list tbody tr td{border:none !important;border-bottom:1px solid #EEF0FA !important;padding:14px 12px !important;font-size:13.5px !important;font-weight:500 !important;color:#0B1F59 !important;text-align:left !important;vertical-align:middle !important;}
 /* Zebra striping */
 .sf-table-list tbody tr:nth-child(even) td{background:#F7F8FC !important;}
 .sf-table-list tbody tr:hover td{background:#F1F3FB !important;}
@@ -1187,7 +1187,7 @@ table.sf-table-list{width:100% !important;border-collapse:separate !important;bo
 /* Numeric columns (DR / CR / BALANCE) — right align header + data both */
 #showDetailModelOneParamerter .modal-body table thead th:nth-last-child(-n+3),#showDetailModelOneParamerter .modal-body table tbody td:nth-last-child(-n+3){text-align:right !important;}
 /* Body cells — consistent padding + subtle border */
-#showDetailModelOneParamerter .modal-body table tbody td{border:none !important;border-bottom:1px solid #EEF0FA !important;padding:14px 16px !important;font-size:13px !important;font-weight:600 !important;color:#3b3f5c !important;vertical-align:middle !important;}
+#showDetailModelOneParamerter .modal-body table tbody td{border:none !important;border-bottom:1px solid #EEF0FA !important;padding:14px 16px !important;font-size:13px !important;font-weight:500 !important;color:#3b3f5c !important;vertical-align:middle !important;}
 /* Zebra striping — consistent,subtle */
 #showDetailModelOneParamerter .modal-body table tbody tr:nth-child(even) td{background:#F7F8FC !important;}
 #showDetailModelOneParamerter .modal-body table tbody tr:hover td{background:#F1F3FB !important;}
