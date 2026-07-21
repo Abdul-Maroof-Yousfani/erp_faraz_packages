@@ -35,7 +35,7 @@ $m=Input::get('m');
 
 
 
-<div id="">
+<div class="table-responsive" id="">
     <?php echo CommonHelper::headerPrintSectionInPrintView(Session::get('run_company'), 'Ledger Report', 'From '.CommonHelper::changeDateFormat($from).' To '.CommonHelper::changeDateFormat($to)); ?>
     <table class="table table-bordered sf-table-th sf-table-list ledger-report-table sf-report-print-table" id="table_export1" >
         <?php
@@ -227,25 +227,25 @@ $m=Input::get('m');
         <thead>
 
 
-<div style="margin-bottom: 10px;">
-    <div class="row" style="font-size:13px;">
-        <div class="col-xs-6">
-            <b>Ledger Report of:</b>
-            <?php echo CommonHelper::get_account_name($acc_id); ?>
-        </div>
-        <div class="col-xs-6 text-right">
-            <b>From:</b> <?php echo date('d-M-Y', strtotime($from)); ?>
-            <b>To:</b> <?php echo date('d-M-Y', strtotime($to)); ?>
-        </div>
-    </div>
+        <div style="margin-bottom: 10px;">
+            <div class="row" style="font-size:13px;">
+                <div class="col-xs-6">
+                    <b>Ledger Report of:</b>
+                    <?php echo CommonHelper::get_account_name($acc_id); ?>
+                </div>
+                <div class="col-xs-6 text-right">
+                    <b>From:</b> <?php echo date('d-M-Y', strtotime($from)); ?>
+                    <b>To:</b> <?php echo date('d-M-Y', strtotime($to)); ?>
+                </div>
+            </div>
 
-    <div class="text-center" style="font-size:18px; margin-top:6px;">
-        <b>
-            Account Name:
-            (<?php echo CommonHelper::get_account_code($acc_id).' --- '.CommonHelper::get_account_name($acc_id); ?>)
-        </b>
-    </div>
-</div>
+            <div class="text-center" style="font-size:18px; margin-top:6px;">
+                <b>
+                    Account Name:
+                    (<?php echo CommonHelper::get_account_code($acc_id).' --- '.CommonHelper::get_account_name($acc_id); ?>)
+                </b>
+            </div>
+        </div>
 
         <tr>
             <th style="width: 100px" class="text-center">Voucher No</th>
@@ -372,7 +372,7 @@ $m=Input::get('m');
         CommonHelper::reconnectMasterDatabase();
         endif;
 
-    $so='';
+        $so='';
         if ($trow->voucher_type==6  || $trow->voucher_type==8):
         $detail='sales/viewSalesTaxInvoiceDetail';
         $PageTitle = 'Invoice';
