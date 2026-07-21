@@ -59,7 +59,8 @@ tr.bs-grandtotal td{color:#1f2440 !important;border-top:1px solid #d7dbf5 !impor
     <div class="company-name">{!! CommonHelper::get_company_name($m) !!}</div>
     <div class="report-title">Balance Sheet {{ isset($compareYear) ? '(Compare)' : '' }}</div>
     <div class="report-range">
-         <?php echo date_format(date_create(date('Y-m-d')),'F d, Y')?>
+        <b>FROM</b> <b>{{ FinanceHelper::changeDateFormat($from_date) }}</b>
+        <b>TO</b> <b>{{ FinanceHelper::changeDateFormat($to_date) }}</b>
     </div>
 </div>
 
