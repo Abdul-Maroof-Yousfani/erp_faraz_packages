@@ -32,19 +32,73 @@ $main_count=1;
 <style>
    .var-report-card{background:#fff;border:1px solid #dde1ee;border-radius:14px;padding:26px 30px 30px 30px;}
 .var-report-card .print-header{text-align:center;margin-bottom:8px;}
+
 .var-table-wrap{margin-top:22px;border:1px solid #1f2a5c;border-radius:10px;overflow:hidden;}
-table.var-aging-table{width:100%;border-collapse:collapse;font-size:14px;background:#fff;}
-table.var-aging-table thead th{background:#eef1f8;color:#3a3f55;font-weight:700;text-transform:uppercase;letter-spacing:.3px;font-size:12px;text-align:center;padding:14px 10px;border:none;border-bottom:2px solid #1f2a5c;}
+.var-table-scroll{overflow-x:auto;}
+table.var-aging-table{width:100%;min-width:960px;border-collapse:collapse;font-size:14px;background:#fff;}
+
+table.var-aging-table thead th{color:#2b3350;font-weight:700;text-transform:uppercase;letter-spacing:.3px;font-size:11.5px;text-align:center;padding:14px 10px;border:none;border-bottom:2px solid #1f2a5c;}
 table.var-aging-table thead th:first-child{text-align:left;padding-left:20px;}
+
+/* Supplier header */
+table.var-aging-table thead th.var-h-supplier{background:#eef1f8;}
+/* Aging bucket headers - severity gradient: green (not due / fresh) -> red (very overdue) */
+table.var-aging-table thead th.var-h-notdue{background:#e3f5ea;color:#1c7a45;}
+table.var-aging-table thead th.var-h-1-30{background:#eaf3fb;color:#245b9c;}
+table.var-aging-table thead th.var-h-31-60{background:#fdf3d9;color:#8a6b0c;}
+table.var-aging-table thead th.var-h-61-90{background:#fce8d6;color:#a85c17;}
+table.var-aging-table thead th.var-h-91-180{background:#fbdede;color:#b13333;}
+table.var-aging-table thead th.var-h-180plus{background:#f8d0d0;color:#9c1f1f;}
+table.var-aging-table thead th.var-h-total{background:#1f2a5c;color:#fff;}
+
 table.var-aging-table tbody td,table.var-aging-table tbody th{padding:12px 10px;text-align:center;border:none;border-bottom:1px solid #eef0f5;color:#333;font-weight:400;}
-table.var-aging-table tbody th{text-align:center;font-weight:600;color:#333;}
-table.var-aging-table tbody tr td:first-child,table.var-aging-table tbody tr th{background:#eef1f8;}
+table.var-aging-table tbody th{text-align:left;padding-left:20px;font-weight:600;color:#2b3350;background:#f7f8fb;}
 table.var-aging-table tbody tr:hover td,table.var-aging-table tbody tr:hover th{background:#eef3ff;}
-table.var-aging-table .var-total-col{background:#d9dce6 !important;font-weight:600;}
-table.var-aging-table .var-grand-total-row th,table.var-aging-table .var-grand-total-row td{font-size:16px !important;font-weight:700;border-top:2px solid #1f2a5c;border-bottom:none;background:#eef1f8;}
-table.var-aging-table .var-grand-total-row .var-total-col{background:#d9dce6 !important;}
+
+/* subtle tint per bucket column in body, lighter than header */
+table.var-aging-table tbody td.var-b-notdue{background:#f4fbf6;}
+table.var-aging-table tbody td.var-b-1-30{background:#f5f9fd;}
+table.var-aging-table tbody td.var-b-31-60{background:#fefaee;}
+table.var-aging-table tbody td.var-b-61-90{background:#fef6ee;}
+table.var-aging-table tbody td.var-b-91-180{background:#fdf1f1;}
+table.var-aging-table tbody td.var-b-180plus{background:#fceded;}
+table.var-aging-table tbody tr:hover td.var-b-notdue,
+table.var-aging-table tbody tr:hover td.var-b-1-30,
+table.var-aging-table tbody tr:hover td.var-b-31-60,
+table.var-aging-table tbody tr:hover td.var-b-61-90,
+table.var-aging-table tbody tr:hover td.var-b-91-180,
+table.var-aging-table tbody tr:hover td.var-b-180plus{background:#eef3ff;}
+
+table.var-aging-table .var-total-col{background:#eef1fb !important;font-weight:700;color:#1f2a5c;}
+table.var-aging-table .var-mismatch{color:#c0293c;font-weight:700;}
+
+table.var-aging-table .var-grand-total-row th,
+table.var-aging-table .var-grand-total-row td{
+    font-size:15px !important;
+    font-weight:700;
+    border-top:2px solid #1f2a5c;
+    border-bottom:none;
+    background:#1f2a5c !important;
+    color:#fff !important;
+    padding:16px 10px !important;
+}
+table.var-aging-table .var-grand-total-row .var-total-col{background:#141c40 !important;color:#fff !important;}
+
 .hide{display:none;}
 
+@media print{
+    body{-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;}
+    .var-report-card{border:none;padding:0;}
+    .var-table-wrap{border:1px solid #1f2a5c;border-radius:0;}
+    .var-table-scroll{overflow:visible;}
+    table.var-aging-table{width:100%;min-width:0;table-layout:fixed;font-size:10.5px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    table.var-aging-table thead th{padding:6px 4px;font-size:9px;}
+    table.var-aging-table tbody td,table.var-aging-table tbody th{padding:6px 4px;}
+    table.var-aging-table tbody th{padding-left:6px;}
+    table.var-aging-table thead th:first-child{padding-left:6px;}
+    table.var-aging-table .var-grand-total-row th,
+    table.var-aging-table .var-grand-total-row td{padding:8px 4px !important;font-size:11px !important;}
+}
 </style>
 
 <div class="var-report-card">
@@ -52,19 +106,20 @@ table.var-aging-table .var-grand-total-row .var-total-col{background:#d9dce6 !im
     <?php echo CommonHelper::headerPrintSectionInPrintView(Session::get('run_company'), 'Vendor Ageing Summary Report', 'AS ON '.date_format(date_create($to),'F d, Y'));?>
 
     <div class="var-table-wrap">
+    <div class="var-table-scroll">
     <table class="table var-aging-table" id="export_table_to_excel_1">
         <thead>
         </thead>
         <thead>
         <tr title="" class="text-center">
-            <th colspan="8" class="text-center">Supplier</th>
-            <th class="text-center">Not Yet Due</th>
-            <th class="text-center">(1-30)</th>
-            <th class="text-center">(31-60)</th>
-            <th class="text-center">(61-90)</th>
-            <th class="text-center">(91-180)</th>
-            <th class="text-center">More Than 180 days</th>
-            <th class="text-center var-total-col">Total Amount</th>
+            <th colspan="8" class="text-center var-h-supplier">Supplier</th>
+            <th class="text-center var-h-notdue">Not Yet Due</th>
+            <th class="text-center var-h-1-30">(1-30)</th>
+            <th class="text-center var-h-31-60">(31-60)</th>
+            <th class="text-center var-h-61-90">(61-90)</th>
+            <th class="text-center var-h-91-180">(91-180)</th>
+            <th class="text-center var-h-180plus">More Than 180 days</th>
+            <th class="text-center var-h-total">Total Amount</th>
         </tr>
         </thead>
         <tbody>
@@ -157,14 +212,14 @@ endforeach;?>
 <?php if($TotOverAll > 0):?>
 <tr title="{{$VendorCounter++}}" class="text-center yes">
     <th colspan="8" class="text-center"><?php echo CommonHelper::get_supplier_name($Sfil->id)?></th>
-    <td><?php echo number_format($TotNotYet,2); $TotNotYetDueEnd+=$TotNotYet;?></td>
-    <td><?php echo number_format($Tot_1_30,2); $Tot_1_30End+=$Tot_1_30;?></td>
-    <td><?php echo number_format($Tot_31_60,2); $Tot_31_60End+=$Tot_31_60;?></td>
-    <td><?php echo number_format($Tot_61_90,2); $Tot_61_90End+=$Tot_61_90;?></td>
-    <td><?php echo number_format($Tot_91_180,2); $Tot_91_180End+=$Tot_91_180?></td>
-    <td><?php echo number_format($Tot_180_1000,2); $Tot_180_1000End+=$Tot_180_1000;?></td>
+    <td class="var-b-notdue"><?php echo number_format($TotNotYet,2); $TotNotYetDueEnd+=$TotNotYet;?></td>
+    <td class="var-b-1-30"><?php echo number_format($Tot_1_30,2); $Tot_1_30End+=$Tot_1_30;?></td>
+    <td class="var-b-31-60"><?php echo number_format($Tot_31_60,2); $Tot_31_60End+=$Tot_31_60;?></td>
+    <td class="var-b-61-90"><?php echo number_format($Tot_61_90,2); $Tot_61_90End+=$Tot_61_90;?></td>
+    <td class="var-b-91-180"><?php echo number_format($Tot_91_180,2); $Tot_91_180End+=$Tot_91_180?></td>
+    <td class="var-b-180plus"><?php echo number_format($Tot_180_1000,2); $Tot_180_1000End+=$Tot_180_1000;?></td>
 
-    <td @if($amount!=$TotOverAll) style="color: red;" @endif class="var-total-col"><?php echo number_format($TotOverAll,2); $TotOverAllEnd+=$TotOverAll;?></td>
+    <td class="var-total-col <?php if($amount!=$TotOverAll) echo 'var-mismatch'; ?>"><?php echo number_format($TotOverAll,2); $TotOverAllEnd+=$TotOverAll;?></td>
     <td class="var-total-col hide"><?php echo number_format($amount,2)?></td>
     <?php $remaining+=$TotOverAll-$amount; ?>
     <td class="var-total-col hide"><?php echo number_format($TotOverAll-$amount,2)?></td>
@@ -185,6 +240,7 @@ endforeach;?>
 </tr>
 </tbody>
 </table>
+    </div>
     </div>
 </div>
 
