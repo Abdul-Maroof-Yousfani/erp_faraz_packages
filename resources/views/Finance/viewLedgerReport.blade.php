@@ -54,73 +54,18 @@ $All = session()->all();
 @section('content')
     @include('select2')
     <style>
-        .ledger-filter-row {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: flex-end;
-            margin-left: -8px;
-            margin-right: -8px;
-        }
+  .ledger-filter-row{display:flex;flex-wrap:wrap;align-items:flex-end;margin-left:-8px;margin-right:-8px;}
+.ledger-filter-row > [class*="col-"]{padding-left:8px;padding-right:8px;margin-bottom:12px;}
+.ledger-filter-row .form-control,.ledger-filter-row .select2,.ledger-filter-row .select2-container{width:100% !important;margin:0;}
+.ledger-date-group .row{margin-left:-8px;margin-right:-8px;}
+.ledger-date-group .row > [class*="col-"]{padding-left:8px;padding-right:8px;}
+.ledger-submit-btn{width:100%;margin-top:24px;}
+.ledger-toolbar .btn{margin-left:6px;}
+.ledger-report-table .ledger-entry-link{display:inline-flex;align-items:center;justify-content:center;min-width:108px;padding:6px 12px;border-radius:6px;border:1px solid #18a85b;background:#eaf8f0;color:#137a43 !important;font-size:12px;font-weight:500;line-height:1.2;text-decoration:none !important;white-space:nowrap;}
+.ledger-report-table .ledger-entry-link:hover,.ledger-report-table .ledger-entry-link:focus{background:#d7f1e2;color:#0f6235 !important;}
+@media (max-width:991px){.ledger-submit-btn{margin-top:0;}
+}
 
-        .ledger-filter-row > [class*="col-"] {
-            padding-left: 8px;
-            padding-right: 8px;
-            margin-bottom: 12px;
-        }
-
-        .ledger-filter-row .form-control,
-        .ledger-filter-row .select2,
-        .ledger-filter-row .select2-container {
-            width: 100% !important;
-        }
-
-        .ledger-date-group .row {
-            margin-left: -8px;
-            margin-right: -8px;
-        }
-
-        .ledger-date-group .row > [class*="col-"] {
-            padding-left: 8px;
-            padding-right: 8px;
-        }
-
-        .ledger-submit-btn {
-            width: 100%;
-            margin-top: 24px;
-        }
-
-        .ledger-toolbar .btn {
-            margin-left: 6px;
-        }
-
-        .ledger-report-table .ledger-entry-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 108px;
-            padding: 6px 12px;
-            border-radius: 6px;
-            border: 1px solid #18a85b;
-            background: #eaf8f0;
-            color: #137a43 !important;
-            font-size: 12px;
-            font-weight: 600;
-            line-height: 1.2;
-            text-decoration: none !important;
-            white-space: nowrap;
-        }
-
-        .ledger-report-table .ledger-entry-link:hover,
-        .ledger-report-table .ledger-entry-link:focus {
-            background: #d7f1e2;
-            color: #0f6235 !important;
-        }
-
-        @media (max-width: 991px) {
-            .ledger-submit-btn {
-                margin-top: 0;
-            }
-        }
     </style>
     <div class="well_N">
     <div class="dp_sdw">

@@ -5,7 +5,9 @@ use App\Helpers\CommonHelper;
 $count = 1;
 $total_amount = 0 ;
 ?>
-
+<style>
+    .table-responsive{height:auto !important;}
+</style>
 <form action="{{route('finance.addCashFlowHeadInTransaction')}}" method="post">
 <input type="hidden" name="_token" value="{{ csrf_token() }}">
 
