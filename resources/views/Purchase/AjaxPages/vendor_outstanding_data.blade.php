@@ -25,13 +25,6 @@ $accType = Auth::user()->acc_type;
 .GrandTotal{width:100%;border-collapse:separate !important;border-spacing:0;margin-top:6px;border:1px solid #241e6b !important;border-radius:12px !important;overflow:hidden;box-shadow:0 2px 6px rgba(30,30,80,.1);}
 .GrandTotal thead th{background:#241e6b !important;color:#fff !important;font-weight:800 !important;font-size:12px !important;text-transform:uppercase !important;letter-spacing:.3px !important;padding:12px 14px !important;border:none !important;white-space:nowrap;}
 .GrandTotal tbody tr td,.GrandTotal tr td{padding:13px 14px !important;font-size:16px !important;font-weight:800 !important;color:#0B1F59 !important;background:linear-gradient(90deg,#eaf1ff 0%,#f1f9f4 100%) !important;border:none !important;}
-.tb-report-header {
-    background: linear-gradient(180deg, #F3F5FB 0%, #EAEEFA 100%) !important;
-    padding: 28px 32px 22px !important;
-    text-align: center !important;
-    border-bottom: 1px solid #E4E7EC !important;
-    position: relative !important;
-}
 </style>
 <script !src="">
     var n = 0;
@@ -74,14 +67,12 @@ $accType = Auth::user()->acc_type;
 
 
                             <table style="width: 100%" class="table-bordered sf-table-list AutoCounter table{{$main_count}} sf-report-print-table" id="export_table_to_excel_<?php echo $main_count; ?>">
-                                
-                                
-                                <div class="tb-report-header">
-                                    <h3 class="table{{$main_count}}">{{$row->name}}</h3>
-                                </div>
-                               
                                 <thead>
-
+                                </thead>
+                                <thead>
+                                    <th colspan="7"style=" text-align:center !important;" class="text-center"><h3 class="table{{$main_count}}">{{$row->name}}</h3></th>
+                                </thead>
+                                <thead>
                                 <th class="text-center">S.No</th>
                                 <th class="text-center">PI. No.</th>
                                 <th class="text-center">PI Date</th>
