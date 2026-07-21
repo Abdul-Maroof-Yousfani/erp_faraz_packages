@@ -1913,9 +1913,6 @@ public function trialBalanceData()
                     <th colspan="2" style=" padding-left:90px !important;"class="tb-group-tx">Transactions</th>
                     <th colspan="2" style=" padding-left:120px !important;"class="tb-group-close">Closing Balance</th>
                 </tr>
-                <thead>
-                
-            </thead>
                 <tr class="tb-col-row">
                     <th>Sr.No</th>
                     <th>Acc.Code</th>
