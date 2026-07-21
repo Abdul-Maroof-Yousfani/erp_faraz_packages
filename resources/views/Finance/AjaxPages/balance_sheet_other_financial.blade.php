@@ -23,7 +23,7 @@ table.Balance_Sheet td{border:none !important;border-bottom:1px solid #edeef7 !i
 .bs-banner .bs-icon{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;}
 .bs-banner-assets{background:linear-gradient(135deg,#24265f,#4a56c9);}
 .bs-banner-equity{background:linear-gradient(135deg,#7c3aed,#a855f7);}
-.bs-banner-liabilities{background:linear-gradient(135deg,#173ca7,#eee);}
+.bs-banner-liabilities{background:linear-gradient(135deg,#173ca7,#173ca7);}
 .bs-card thead th{background:#eef0fb;color:#241e6b;font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;padding:12px 14px;border-bottom:2px solid #241e6b !important;}
 .bs-card tbody tr:nth-child(odd){background:#f8f9fe;}
 .bs-card tbody tr:hover{background:#eef0ff;}
@@ -120,7 +120,7 @@ tr.bs-grandtotal td{color:#1f2440 !important;border-top:1px solid #d7dbf5 !impor
 
             <table id="table2" class="table table-bordered sf-table-list Balance_Sheet">
                 <thead>
-                    <th class="text-center">Owners Equity</th>
+                    <th colspan="2" class="text-center">Owners Equity</th>
                 </thead>
                 <tbody>
 
@@ -231,7 +231,7 @@ tr.bs-grandtotal td{color:#1f2440 !important;border-top:1px solid #d7dbf5 !impor
 
             <table id="table3" class="table table-bordered sf-table-list Balance_Sheet">
                 <thead>
-                <th class="text-center">Liabilities</th>
+                <th colspan="2" class="text-center">Liabilities</th>
                 </thead>
                 <tbody>
 

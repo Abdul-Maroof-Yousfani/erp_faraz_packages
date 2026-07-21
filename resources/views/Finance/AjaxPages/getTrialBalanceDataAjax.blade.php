@@ -43,6 +43,7 @@ $end_credit = 0;
 #trial_bal .bg-danger{background:#fde2e2 !important;color:#991b1b !important;}
 .table-responsive{height:600px;}
 #trial_bal{margin-top:0px !important;}
+span.SpacesCls{padding-left:20px;}
 </style>
 
 <div class="">
