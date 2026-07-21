@@ -475,7 +475,7 @@ class CommonHelper
         ];
 
         if ((int) $companyId === 1) {
-            $meta['name'] = 'FARAZ PACKAGES';
+            $meta['name'] = $company->name ?? 'FARAZ PACKAGES';
             $meta['address'] = 'F-98 S.I.T.E KARACHI.';
             $meta['phone'] = '0321 - 2254444';
             $meta['email'] = 'farazpackages@gmail.com';
