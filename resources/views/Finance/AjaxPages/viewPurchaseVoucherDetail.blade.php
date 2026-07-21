@@ -60,6 +60,20 @@ foreach ($PurchaseVoucher as $row) {
 #printPurchaseVoucherDetail .col-lg-3.text-center b p{color:#1e2757;font-weight:700;margin-top:4px;}
 .table-responsive{height:auto !important;}
 
+@media print{
+    body{-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;}
+    .btn,.reverse-direct-invoice,.printHide,label.check{display:none !important;}
+    #printPurchaseVoucherDetail{box-shadow:none;border:1px solid #dfe2f2;padding:14px 18px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    #printPurchaseVoucherDetail table.tableMargin{box-shadow:none;border:1px solid #dfe2f2;}
+    #printPurchaseVoucherDetail table.tableMargin > tbody > tr > td:first-child{background:#f7f7fc !important;color:#6c5ce7 !important;}
+    #printPurchaseVoucherDetail table.tableMargin > tbody > tr:nth-child(even){background:#eef0fa !important;}
+    #printPurchaseVoucherDetail table.tableMargin > tbody > tr:nth-child(even) td{color:#1e2757 !important;}
+    #printPurchaseVoucherDetail .table-responsive table,#printPurchaseVoucherDetail table.tra{box-shadow:none;border:1px solid #dfe2f2;}
+    #printPurchaseVoucherDetail .table-responsive table thead th,#printPurchaseVoucherDetail table.tra thead th{background:#eef0fa !important;color:#444a6b !important;}
+    #printPurchaseVoucherDetail table.tra .sf-table-total td,#printPurchaseVoucherDetail .table-responsive table tbody tr td b{background:#f8f9fd !important;}
+    #printPurchaseVoucherDetail .signature_bor{border-top:2px solid #1e2757 !important;}
+}
+
 </style>
 <div class="row">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-right">
