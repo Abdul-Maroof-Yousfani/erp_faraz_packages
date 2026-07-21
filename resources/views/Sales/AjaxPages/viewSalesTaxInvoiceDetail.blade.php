@@ -26,6 +26,87 @@ if (empty($sales_tax_invoice)) {
 ?>
 
 
+<style>
+ body{font-size:9px !important;}
+textarea{border-style:none;border-color:Transparent;}
+@media print{@page{size:A4;margin:1mm 5mm 5mm 5mm !important;}
+body{-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;}
+.printHide{display:none !important;}
+.fa{font-size:small;!important;}
+.gateprint{margin-top:-95px !important;}
+.table-bordered{border:1px solid black;}
+table.table-bordered > thead > tr > th{border:1px solid blue !important;}
+.si-print-doc table th,.si-print-doc table td{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+}
+/* ===== SCOPED FIX:neutralize global dashboard CSS bleeding into this printable invoice ===== */
+ .si-print-doc h2,.si-print-doc h3,.si-print-doc h4{font-family:inherit !important;color:#1e2757 !important;font-weight:bold !important;margin-bottom:6px !important;}
+.si-print-doc h2{font-size:20px !important;}
+.si-print-doc h3{font-size:15px !important;}
+.si-print-doc h4{font-size:12px !important;}
+/* the global .table-responsive{height:600px}
+rule was forcing every small voucher/COGS table on this page to reserve 600px of empty space — override it back to the table's real content height */
+ .si-print-doc .table-responsive{height:auto !important;overflow:visible !important;}
+/* keep this invoice's own compact table styling in charge,not the global dashboard table theme */
+ .si-print-doc table th,.si-print-doc table td{font-size:9px !important;padding:7px 9px !important;background:inherit !important;text-transform:none !important;letter-spacing:normal !important;}
+
+/* ===== Consistent navy/lavender invoice theme (matches other ERP reports) ===== */
+.si-print-doc table.sales_Tax_Invoice_data,
+.si-print-doc table#tablee{
+    border:1px solid #dde1ee !important;
+    border-radius:8px;
+    border-collapse:collapse !important;
+    overflow:hidden;
+}
+.si-print-doc table.sales_Tax_Invoice_data th,
+.si-print-doc table.sales_Tax_Invoice_data td,
+.si-print-doc table#tablee th,
+.si-print-doc table#tablee td{
+    border:none !important;
+    border-bottom:1px solid #eef0f6 !important;
+    color:#2a2f4a;
+}
+.si-print-doc table.sales_Tax_Invoice_data th{
+    background:#eef1f8 !important;
+    color:#2b3350 !important;
+    font-weight:700 !important;
+}
+.si-print-doc table#tablee thead th{
+    background:#1f2a5c !important;
+    color:#ffffff !important;
+    font-weight:700 !important;
+    text-align:center;
+    letter-spacing:.2px;
+}
+.si-print-doc table#tablee tbody tr:hover td{background:#f6f8fc !important;}
+
+/* Sub-total row (Total bags/qty/amount) */
+.si-print-doc table#tablee tr.si-subtotal-row td{
+    background:#f4f6fb !important;
+    color:#1f2a5c !important;
+    border-top:1px solid #d8dcec !important;
+    font-weight:700 !important;
+}
+/* Sales Tax / Further Tax / Advance Tax / Cartage / Additional expense rows */
+.si-print-doc table#tablee tr.si-tax-row td{
+    background:#fafbfe !important;
+    color:#33395c !important;
+    font-weight:700 !important;
+}
+/* Grand Total - matches the dark navy banner used across other ERP reports */
+.si-print-doc table#tablee tr.si-grand-total-row td{
+    background:#1f2a5c !important;
+    color:#ffffff !important;
+    font-size:11px !important;
+    padding:10px 9px !important;
+    font-weight:700 !important;
+}
+
+/* Voucher / COGS breakdown tables (Show Voucher toggle) */
+.si-print-doc .ShowVoucherDetail table.sales_Tax_Invoice_data thead th{background:#eef1f8 !important;color:#2b3350 !important;}
+.si-print-doc .ShowVoucherDetail table.sales_Tax_Invoice_data tbody tr:last-child td{background:#f4f6fb !important;font-weight:700 !important;color:#1f2a5c !important;}
+
+.table-responsive{height:auto !important;}
+</style>
 <?php
 
 ?>
