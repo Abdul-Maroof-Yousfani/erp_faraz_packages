@@ -14,7 +14,131 @@
     $expense_total = 0 ;
     $other_total = 0;
 @endphp
-<div class="row">
+
+<style>
+/* ===================================================================== PROFIT & LOSS (Yearly) — LAYOUT (navy/lavender/amber report theme) ===================================================================== */
+.pl-wrapper .table-responsive{
+    background:#ffffff !important;
+    border:1px solid #EDF0F8 !important;
+    border-radius:16px !important;
+    box-shadow:0 6px 22px rgba(20,38,92,0.07) !important;
+    padding:22px 24px !important;
+    overflow-x:auto !important;
+}
+table.Profit_Loss{
+    width:100% !important;
+    border-collapse:collapse !important;
+    margin:0 !important;
+    /* table-layout:fixed hata diya — colspan="50"/"100" ke sath conflict kar raha tha */
+}
+table.Profit_Loss th,
+table.Profit_Loss td{
+    word-wrap:normal !important;
+    overflow-wrap:normal !important;
+    white-space:nowrap !important;
+}
+table.Profit_Loss thead th{
+    background:#F0F3FB !important;
+    color:#4A5268 !important;
+    font-size:11.5px !important;
+    font-weight:800 !important;
+    letter-spacing:.4px !important;
+    text-transform:uppercase !important;
+    padding:12px 10px !important;
+    text-align:right !important;
+    border:none !important;
+    border-bottom:2px solid #E3E7F3 !important;
+}
+table.Profit_Loss thead th:first-child,
+table.Profit_Loss tbody td:first-child,
+table.Profit_Loss tbody th:first-child{
+    width:34% !important;
+    min-width:220px !important;
+    white-space:normal !important; /* account names lambe ho sakte hain, wrap karne do */
+}
+table.Profit_Loss thead th:not(:first-child),
+table.Profit_Loss tbody td:not(:first-child),
+table.Profit_Loss tbody th:not(:first-child){
+    min-width:130px !important;
+}
+table.Profit_Loss tbody td,
+table.Profit_Loss tbody th{
+    padding:10px !important;
+    font-size:13px !important;
+    font-weight:600 !important;
+    color:#1B2333 !important;
+    text-align:right !important;
+    border:none !important;
+    border-bottom:1px solid #F0F2F8 !important;
+    vertical-align:middle !important;
+}
+table.Profit_Loss tbody td:first-child,
+table.Profit_Loss tbody th:first-child{ text-align:left !important; width:34% !important; }
+table.Profit_Loss tbody tr:hover td{ background:#FAFBFE !important; }
+table.Profit_Loss a{ color:inherit !important; text-decoration:none !important; }
+
+/* section headers: Revenue / Cost of Goods Sold / Expense / Other Income */
+.pl-section-row td{
+    background:#EEF1FA !important;
+    font-size:14.5px !important;
+    font-weight:800 !important;
+    color:#0B1F59 !important;
+    padding:13px 10px !important;
+    text-transform:uppercase !important;
+    letter-spacing:.4px !important;
+    border-top:2px solid #E3E7F3 !important;
+    border-bottom:2px solid #E3E7F3 !important;
+}
+
+/* top-level account rows (level 1 / head==3) */
+.pl-level-1{
+    font-size:13.5px !important;
+    font-weight:800 !important;
+    color:#0B1F59 !important;
+}
+.pl-level-detail{ font-weight:600 !important; color:#4A5268 !important; }
+
+/* subtotal rows: Total Revenue / Total COGS / Total Expense / Total Other Income */
+.pl-total-row td,
+.pl-total-row th{
+    background:#F7F9FD !important;
+    font-weight:800 !important;
+    color:#1E3A8A !important;
+    border-top:2px solid #E3E7F3 !important;
+    border-bottom:2px solid #E3E7F3 !important;
+}
+
+/* Gross Profit row */
+.pl-gross-profit-row th{
+    background:#FFF4E5 !important;
+    color:#B5651D !important;
+    font-weight:800 !important;
+    font-size:14.5px !important;
+    border-top:2px solid #F3D9AE !important;
+    border-bottom:2px solid #F3D9AE !important;
+}
+
+/* Net Profit row */
+.pl-net-profit-row th{
+    background:#173ca7d1 !important;
+    color:#ffffff !important;
+    font-weight:800 !important;
+    font-size:14.5px !important;
+    border:none !important;
+    padding:13px 10px !important;
+}
+.pl-net-profit-row th:first-child{ border-top-left-radius:10px !important; border-bottom-left-radius:10px !important; }
+.pl-net-profit-row th:last-child{ border-top-right-radius:10px !important; border-bottom-right-radius:10px !important; }
+
+/* spacer row between sections */
+.pl-spacer-row td{
+    padding:6px !important;
+    border:none !important;
+    background:transparent !important;
+}
+</style>
+
+<div class="row pl-wrapper">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <div class="table-responsive">
             <table class="table table-bordered table-striped Profit_Loss">
@@ -92,13 +216,13 @@
                             $paramOne = "fdc/getSummaryLedgerDetail?m=".$CompanyId;
                             $counter++;
                             if($counter == 1){
-                                echo '<tr><td style="font-size: 20px !important;font-weight: bold" colspan="50">Revenue</td></tr>';
+                                echo '<tr class="pl-section-row"><td colspan="50">Revenue</td></tr>';
                             }else{
                     ?>
                             <tr>
-                                <td class="text-left" <?php if($head==3){ ?> style="font-size: large;font-weight: bolder" <?php } ?>>
+                                <td class="text-left <?php if($head==3){ echo 'pl-level-1'; } else { echo 'pl-level-detail'; } ?>">
                                     <?php if($level == 1):?>
-                                        <b style="font-size: large;font-weight: bold"><a href="#"><?php echo strtoupper($row1->name)?></a></b>
+                                        <a href="#"><?php echo strtoupper($row1->name)?></a>
                                     <?php elseif($level == 2):?>
                                         <a href="#"><?php echo  ''. $row1->name?></a>
                                     <?php elseif($level == 3):?>
@@ -114,7 +238,7 @@
                                     <?php endif;?>
                                 </td>
                                
-                                    <td <?php if($head==3){ ?> style="text-align: left;font-size: large;font-weight: bolder" <?php } ?> class="text-right"  style="text-align: left;">
+                                    <td class="text-right <?php if($head==3){ echo 'pl-level-1'; } ?>">
                                         <?php 
                                             $amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row1->code,'1',0,1);
                                             $revenue_total += $amount;
@@ -130,7 +254,7 @@
                                             
                                         ?>
                                     </td>
-                                <td style="text-align: left;">
+                                <td class="text-right">
                                     @php
                                         if($revenue_total < 0 ):
                                             echo "(".number_format(abs((float)$revenue_total)).")";
@@ -148,10 +272,10 @@
                             $counterTwo++;
                             if($counterTwo == 1){
                     ?>
-                                <tr>
+                                <tr class="pl-total-row">
                                     <th>Total Revenue</th>
                                  
-                                        <th <?php if($head==3){ ?> style="text-align: left;font-size: large;font-weight: bolder" <?php } ?> class="text-right" style="text-align: left;">
+                                        <th class="text-right">
                                             <?php 
                                                 $amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row2->code,'1',0,1);
                                                 $revenueArray[$from_date] = [$amount];
@@ -167,7 +291,7 @@
                                             ?>
                                         </th>
                                     
-                                    <th style="text-align: left;">
+                                    <th class="text-right">
                                         <?php 
                                         $revenueArrayTotal = array_sum(array_map('current', $revenueArray)); ?>
                                     
@@ -186,7 +310,7 @@
                         endforeach;
                     ?>
                     {{-- Revenue End --}}
-                    <tr>
+                    <tr class="pl-spacer-row">
                         <td colspan="100">&nbsp;</td>
                     </tr>
                     {{-- Cost Of Goods Sold Start --}}
@@ -197,14 +321,14 @@
                             $cCounter++;
                             $headWiseTotalAmount = 0;
                             if($cCounter == 1){
-                                echo '<tr><td colspan="50">Cost of Goods Sold</td></tr>';
+                                echo '<tr class="pl-section-row"><td colspan="50">Cost of Goods Sold</td></tr>';
                             }else{
                             //$amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row->code,'1',1,0);
                     ?>
                             <tr id="costOfGoodsSoldRecordRow_<?php echo $cCounter?>">
-                                <td class="text-left" <?php if($head==3){ ?> style="font-size: large;font-weight: bolder" <?php } ?> >
+                                <td class="text-left <?php if($head==3){ echo 'pl-level-1'; } else { echo 'pl-level-detail'; } ?>">
                                     <?php if($level == 1):?>
-                                        <b style="font-size: large;font-weight: bolder"><a href="#"><?php echo strtoupper($row5->name)?></a></b>
+                                        <a href="#"><?php echo strtoupper($row5->name)?></a>
                                     <?php elseif($level == 2):?>
                                         <a href="#"><?php echo  '<span class="SpacesCls"></span>'. $row5->name?></a>
                                     <?php elseif($level == 3):?>
@@ -220,7 +344,7 @@
                                     <?php endif;?>
                                 </td>
                                
-                                    <td <?php if($head==3){ ?> style="text-align: left;font-size: large;font-weight: bolder" <?php } ?> class="text-right" style="text-align: left;">
+                                    <td class="text-right <?php if($head==3){ echo 'pl-level-1'; } ?>">
                                         <?php 
                                             $amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row5->code,'1',1,0);
                                             if($amount != 0){
@@ -255,10 +379,10 @@
                         if($cCounterTwo == 1){
                         //$amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row->code,'1',1,0);
                 ?>
-                        <tr>
+                        <tr class="pl-total-row">
                             <td>Total Cost of Goods Sold</td>
                             
-                                <td <?php if($head==3){ ?> style="text-align: left;font-size: large;font-weight: bolder" <?php } ?> class="text-right" style="text-align: left;">
+                                <td class="text-right">
                                     <?php 
                                         $amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row6->code,'1',1,0);
                                         $cogsArray[$from_date] = [$amount];
@@ -275,7 +399,7 @@
                                         echo $amount;
                                     ?>
                                 </td>
-                           <td style="text-align: left;">
+                           <td class="text-right">
                             
                                 @php
                                     $otherIncomeArrayTotal = array_sum(array_map('current', $otherIncomeArray));
@@ -296,12 +420,12 @@
 
                     {{-- Gross Profit Start --}}
 
-                    <tr>
-                        <th style="font-size: 20px !important;font-weight: bold; background:#dfe5ec !important;" >Gross Profit</th>
+                    <tr class="pl-gross-profit-row">
+                        <th>Gross Profit</th>
                      
-                            <th style="background:#dfe5ec !important;" class="text-right" id="grossProfit_<?php echo $from_date?>"><?php echo $revenueArray[$from_date][0] - $cogsArray[$from_date][0];?></th>
+                            <th class="text-right" id="grossProfit_<?php echo $from_date?>"><?php echo $revenueArray[$from_date][0] - $cogsArray[$from_date][0];?></th>
                      
-                        <th style="background:#dfe5ec !important;text-align: left;">
+                        <th class="text-right">
                             @php
                                 $grossProfitTotal = array_sum(array_map('current', $revenueArray)) - array_sum(array_map('current', $cogsArray));
                                 if($grossProfitTotal < 0 ):
@@ -316,7 +440,7 @@
                     
                     {{-- Gross Profit End --}}
 
-                    <tr>
+                    <tr class="pl-spacer-row">
                         <td colspan="100">&nbsp;</td>
                     </tr>
                     {{-- Expense Start --}}
@@ -327,14 +451,14 @@
                             $bCounter++;
                             $headWiseTotalAmount = 0;
                             if($bCounter == 1){
-                                echo '<tr><td style="font-size: 20px !important;font-weight: bold"  colspan="50">Expense</td></tr>';
+                                echo '<tr class="pl-section-row"><td colspan="50">Expense</td></tr>';
                             }else{
                             //$amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row->code,'1',1,0);
                     ?>
                             <tr id="expenseRecordRow_<?php echo $bCounter?>">
-                                <td class="text-left" <?php if($head==3){ ?> style="font-size: large;font-weight: bolder" <?php } ?> >
+                                <td class="text-left <?php if($head==3){ echo 'pl-level-1'; } else { echo 'pl-level-detail'; } ?>">
                                     <?php if($level == 1):?>
-                                        <b style="font-size: large;font-weight: bolder"><a href="#"><?php echo strtoupper($row3->name)?></a></b>
+                                        <a href="#"><?php echo strtoupper($row3->name)?></a>
                                     <?php elseif($level == 2):?>
                                         <a href="#"><?php echo  '<span class="SpacesCls"></span>'. $row3->name?></a>
                                     <?php elseif($level == 3):?>
@@ -349,7 +473,7 @@
                                         <a href="#"><?php echo  '<span class="SpacesCls"></span>'. $row3->name?></a>
                                     <?php endif;?>
                                 </td>
-                                    <td <?php if($head==3){ ?> style="text-align: left;font-size: large;font-weight: bolder" <?php } ?> class="text-right" style="text-align: left;">
+                                    <td class="text-right <?php if($head==3){ echo 'pl-level-1'; } ?>">
                                         <?php 
                                             $amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row3->code,'1',1,0);
                                             $expense_total += (int)$amount ?? 0 ; 
@@ -369,7 +493,7 @@
                                         ?>
                                     </td>
                                 <?php }?>
-                                <td style="text-align: left;">
+                                <td class="text-right">
                                     @php
                                         if($expense_total < 0 ):
                                             echo "(".number_format(abs((float)$expense_total)).")";
@@ -389,10 +513,10 @@
                             $bCounterTwo++;
                             if($bCounterTwo == 1){
                     ?>
-                                <tr>
+                                <tr class="pl-total-row">
                                     <th>Total Expense</th>
                                    
-                                        <th <?php if($head==3){ ?> style="text-align: left;font-size: large;font-weight: bolder" <?php } ?> class="text-right" style="text-align: left;">
+                                        <th class="text-right">
                                             <?php 
                                                 $amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row4->code,'1',1,0);
                                                 $expenseArray[$from_date] = [$amount];
@@ -406,7 +530,7 @@
                                                 echo $amount;
                                             ?>
                                         </th>
-                                        <th style="text-align: left;">
+                                        <th class="text-right">
                                         
                                             @php
                                                 $expenseArrayTotal = array_sum(array_map('current', $expenseArray));
@@ -433,14 +557,14 @@
                             $dCounter++;
                             $headWiseTotalAmount = 0;
                             if($dCounter == 1){
-                                echo '<tr><td colspan="50">Other Income</td></tr>';
+                                echo '<tr class="pl-section-row"><td colspan="50">Other Income</td></tr>';
                             }else{
                             //$amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row->code,'1',1,0);
                     ?>
                             <tr id="otherIncomeRecordRow_<?php echo $dCounter?>">
-                                <td class="text-left" <?php if($head==3){ ?> style="font-size: large;font-weight: bolder" <?php } ?> >
+                                <td class="text-left <?php if($head==3){ echo 'pl-level-1'; } else { echo 'pl-level-detail'; } ?>">
                                     <?php if($level == 1):?>
-                                        <b style="font-size: large;font-weight: bolder"><a href="#"><?php echo strtoupper($row7->name)?></a></b>
+                                        <a href="#"><?php echo strtoupper($row7->name)?></a>
                                     <?php elseif($level == 2):?>
                                         <a href="#"><?php echo  '<span class="SpacesCls"></span>'. $row7->name?></a>
                                     <?php elseif($level == 3):?>
@@ -456,7 +580,7 @@
                                     <?php endif;?>
                                 </td>
                                 
-                                    <td <?php if($head==3){ ?> style="text-align: left;font-size: large;font-weight: bolder" <?php } ?> class="text-right" style="text-align: left;">
+                                    <td class="text-right <?php if($head==3){ echo 'pl-level-1'; } ?>">
                                         <?php 
                                             $amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row7->code,'1',1,0);
                                             $other_total += $amount; 
@@ -474,7 +598,7 @@
 
                                         ?>
                                     </td>
-                                    <td style="text-align: left;">
+                                    <td class="text-right">
                                         @php
                                             if($other_total < 0 ):
                                                 echo "(".abs((float)$other_total).")";
@@ -503,10 +627,10 @@
                         if($dCounterTwo == 1){
                         //$amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row->code,'1',1,0);
                 ?>
-                        <tr>
+                        <tr class="pl-total-row">
                             <th>Total Other Income</th>
                          
-                                <th <?php if($head==3){ ?> style="text-align: left;font-size: large;font-weight: bolder" <?php } ?> class="text-right" style="text-align: left;">
+                                <th class="text-right">
                                     <?php 
                                         $amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row8->code,'1',1,0);
                                         $otherIncomeArray[$from_date] = [$amount];
@@ -523,7 +647,7 @@
                                         echo $amount;
                                     ?>
 
-                                <th style="text-align: left;">
+                                <th class="text-right">
                                     @php
                                         $otherIncomeArrayTotal = array_sum(array_map('current', $otherIncomeArray));
                                         if($otherIncomeArrayTotal < 0 ):
@@ -545,10 +669,10 @@
 
                     {{-- Net Profit Start --}}
 
-                    <tr>
+                    <tr class="pl-net-profit-row">
                         <th> Net Profit</th>
                     
-                            <th style="text-align: left;" class="text-right" id="grossProfit_<?php echo $from_date?>">
+                            <th class="text-right" id="grossProfit_<?php echo $from_date?>">
                                 @php
                                     $NetProfitTotal = $revenueArray[$from_date][0] - $cogsArray[$from_date][0] - $expenseArray[$from_date][0] + $otherIncomeArray[$from_date][0];
                                     if($NetProfitTotal < 0 ):
@@ -559,7 +683,7 @@
                                 @endphp 
                             </th>
 
-                        <th style="text-align: left;">
+                        <th class="text-right">
                                 @php
                                     $NetProfitArrayTotal = array_sum(array_map('current', $revenueArray)) - array_sum(array_map('current', $cogsArray)) - array_sum(array_map('current', $expenseArray)) + array_sum(array_map('current', $otherIncomeArray)) ;
                                     if($NetProfitArrayTotal < 0 ):
