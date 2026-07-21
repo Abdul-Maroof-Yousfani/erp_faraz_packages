@@ -15,107 +15,36 @@ function bs_indent($level) {
 }
 ?>
 <style>
-    table.Balance_Sheet {
-        border: 1px solid #dfe2f5 !important;
-        border-collapse: collapse !important;
-        width: 100%;
-        background: #fff;
-    }
-    table.Balance_Sheet td {
-        border: none !important;
-        border-bottom: 1px solid #edeef7 !important;
-        padding: 8px 12px;
-        font-size: 13px;
-        color: #2b2f4a;
-    }
-
-    .bs-card {
-        border: 1px solid #e6e8f5;
-        border-radius: 12px;
-        overflow: hidden;
-        margin-bottom: 24px;
-        box-shadow: 0 1px 3px rgba(30,30,80,.08);
-    }
-    .bs-card table.Balance_Sheet { border: none !important; }
-
-    .bs-banner {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 16px 20px;
-        color: #fff;
-        font-size: 17px;
-        font-weight: 700;
-        letter-spacing: .01em;
-    }
-    .bs-banner .bs-icon {
-        width: 26px;
-        height: 26px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-    }
-    .bs-banner-assets      { background: linear-gradient(135deg, #24265f, #4a56c9); }
-    .bs-banner-equity      { background: linear-gradient(135deg, #7c3aed, #a855f7); }
-    .bs-banner-liabilities { background: linear-gradient(135deg, #b91c1c, #ef4444); }
-
-    .bs-card thead th {
-        background: #eef0fb;
-        color: #241e6b;
-        font-size: 13px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: .04em;
-        padding: 12px 14px;
-        border-bottom: 2px solid #241e6b !important;
-    }
-
-    .bs-card tbody tr:nth-child(odd) { background: #f8f9fe; }
-    .bs-card tbody tr:hover { background: #eef0ff; }
-
-    .bs-card tbody tr { border-left: 4px solid transparent; }
-    .bs-card tbody tr.bs-level-1,
-    .bs-card tbody tr.bs-level-2 { border-left-color: #241e6b; }
-    .bs-card tbody tr.bs-level-3,
-    .bs-card tbody tr.bs-level-4,
-    .bs-card tbody tr.bs-level-5,
-    .bs-card tbody tr.bs-level-6,
-    .bs-card tbody tr.bs-level-7 { border-left-color: #f59e0b; }
-
-    .bs-name-cell { cursor: pointer; }
-    .bs-name-cell:hover { color: #3452d1; text-decoration: underline; }
-
-    .bs-level-1 .bs-name-cell { font-size: 15px; font-weight: 800; color: #1f2440; }
-    .bs-level-2 .bs-name-cell { font-weight: 700; color: #1f2440; }
-    .bs-level-3 .bs-name-cell { font-weight: 700; color: #33375a; }
-    .bs-level-4 .bs-name-cell,
-    .bs-level-5 .bs-name-cell,
-    .bs-level-6 .bs-name-cell,
-    .bs-level-7 .bs-name-cell { color: #3452d1; font-weight: 400; }
-
-    .bs-level-1 .bs-amt-cell { font-size: 15px; font-weight: 800; color: #1f2440; }
-    .bs-level-2 .bs-amt-cell,
-    .bs-level-3 .bs-amt-cell { font-weight: 700; color: #1f2440; }
-
-    .bs-card tbody tr.bs-type-highlight { background: #eaf2ff !important; }
-    .bs-card tbody tr.bs-type-muted { background: #f2f3f6 !important; }
-
-    tr.bs-subtotal {
-        background: #eef0ff !important;
-        font-weight: 700;
-        font-size: 14px;
-        border-left: 4px solid #6d63e0 !important;
-    }
-    tr.bs-subtotal td { color: #241e6b; }
-
-    tr.bs-grandtotal {
-        background: #eef0ff !important;
-        font-weight: 800;
-        font-size: 14.5px;
-        border-left: 4px solid #241e6b !important;
-    }
-    tr.bs-grandtotal td { color: #1f2440 !important; border-top: 1px solid #d7dbf5 !important; }
+   table.Balance_Sheet{border:1px solid #dfe2f5 !important;border-collapse:collapse !important;width:100%;background:#fff;}
+table.Balance_Sheet td{border:none !important;border-bottom:1px solid #edeef7 !important;padding:8px 12px;font-size:13px;color:#2b2f4a;}
+.bs-card{border:1px solid #e6e8f5;border-radius:12px;overflow:hidden;margin-bottom:24px;box-shadow:0 1px 3px rgba(30,30,80,.08);}
+.bs-card table.Balance_Sheet{border:none !important;}
+.bs-banner{display:flex;align-items:center;gap:10px;padding:16px 20px;color:#fff;font-size:17px;font-weight:500;letter-spacing:.01em;}
+.bs-banner .bs-icon{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;}
+.bs-banner-assets{background:linear-gradient(135deg,#24265f,#4a56c9);}
+.bs-banner-equity{background:linear-gradient(135deg,#7c3aed,#a855f7);}
+.bs-banner-liabilities{background:linear-gradient(135deg,#173ca7,#eee);}
+.bs-card thead th{background:#eef0fb;color:#241e6b;font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;padding:12px 14px;border-bottom:2px solid #241e6b !important;}
+.bs-card tbody tr:nth-child(odd){background:#f8f9fe;}
+.bs-card tbody tr:hover{background:#eef0ff;}
+.bs-card tbody tr{border-left:4px solid transparent;}
+.bs-card tbody tr.bs-level-1,.bs-card tbody tr.bs-level-2{border-left-color:#241e6b;}
+.bs-card tbody tr.bs-level-3,.bs-card tbody tr.bs-level-4,.bs-card tbody tr.bs-level-5,.bs-card tbody tr.bs-level-6,.bs-card tbody tr.bs-level-7{border-left-color:#f59e0b;}
+.bs-name-cell{cursor:pointer;}
+.bs-name-cell:hover{color:#3452d1;text-decoration:underline;}
+.bs-level-1 .bs-name-cell{font-size:15px;font-weight:500;color:#1f2440;}
+.bs-level-2 .bs-name-cell{font-weight:500;color:#1f2440;}
+.bs-level-3 .bs-name-cell{font-weight:500;color:#33375a;}
+.bs-level-4 .bs-name-cell,.bs-level-5 .bs-name-cell,.bs-level-6 .bs-name-cell,.bs-level-7 .bs-name-cell{color:#3452d1;font-weight:400;}
+.bs-level-1 .bs-amt-cell{font-size:15px;font-weight:500;color:#1f2440;}
+.bs-level-2 .bs-amt-cell,.bs-level-3 .bs-amt-cell{font-weight:500;color:#1f2440;}
+.bs-card tbody tr.bs-type-highlight{background:#eaf2ff !important;}
+.bs-card tbody tr.bs-type-muted{background:#f2f3f6 !important;}
+tr.bs-subtotal{background:#eef0ff !important;font-weight:500;font-size:14px;border-left:4px solid #6d63e0 !important;}
+tr.bs-subtotal td{color:#241e6b;}
+tr.bs-grandtotal{background:#eef0ff !important;font-weight:500;font-size:14.5px;border-left:4px solid #241e6b !important;}
+tr.bs-grandtotal td{color:#1f2440 !important;border-top:1px solid #d7dbf5 !important;}
+.table-responsive{height:auto !important;}
 </style>
 <span id="MultiExport">
 <h2 class="text-center topp"></h2>

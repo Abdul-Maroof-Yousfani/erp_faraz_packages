@@ -10,157 +10,43 @@ $net_profit_array = [];
 $owner_equity_array = [];
 ?>
 <style>
-    /* ---------- Base Reset ---------- */
-    .Balance_Sheet, .Balance_Sheet * { box-sizing: border-box; }
+   /* ---------- Base Reset ---------- */
+ .Balance_Sheet,.Balance_Sheet *{box-sizing:border-box;}
+table{border:1px solid #CCC !important;border-collapse:collapse !important;}
+td{border:none !important;}
+/* ---------- Card Wrapper for each table ---------- */
+ .report-card{background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(30,41,59,0.06);border:1px solid #eef0f5;margin-bottom:28px;overflow:hidden;}
+.report-card-title{display:flex;align-items:center;gap:10px;padding:16px 20px;font-size:15px;font-weight:500;letter-spacing:0.4px;color:#fff;}
+.report-card-title.assets{background:linear-gradient(135deg,#2b3a67,#4a5aa8);}
+.report-card-title.equity{background:linear-gradient(135deg,#6a3fbd,#9163e0);}
+.report-card-title.liabilities{background:linear-gradient(135deg,#d9822b,#f0a94e);}
+.table-responsive{overflow-x:auto;scrollbar-width:thin;height:auto !important;}
+.table-responsive::-webkit-scrollbar{height:8px;}
+.table-responsive::-webkit-scrollbar-thumb{background:#d8dce6;border-radius:8px;}
+/* ---------- Table ---------- */
+ table.sf-table-list{width:100%;border-collapse:collapse !important;border:none !important;font-family:'Segoe UI',Roboto,sans-serif;font-size:13.5px;font-weight:400;min-width:900px;}
+table.sf-table-list thead th{background:#f6f7fb;color:#5b6472;font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;padding:12px 16px;border-bottom:2px solid #e7e9f0 !important;white-space:nowrap;position:sticky;top:0;z-index:2;}
+table.sf-table-list thead th:first-child{text-align:left;position:sticky;left:0;z-index:3;background:#f6f7fb;}
+table.sf-table-list tbody td{padding:10px 16px;border-bottom:1px solid #f0f1f5 !important;border:none;color:#2e3440;font-weight:400 !important;font-variant-numeric:tabular-nums;white-space:nowrap;}
+/* Neutralize the inline <b style="font-weight:bolder"> from the PHP */
+ table.sf-table-list tbody td b{font-weight:500 !important;font-size:inherit !important;}
+table.sf-table-list tbody td:first-child{position:sticky;left:0;background:#fff;z-index:1;box-shadow:2px 0 4px -2px rgba(0,0,0,0.06);font-weight:400;}
+table.sf-table-list tbody tr:hover td{background:#f8f9fd;}
+table.sf-table-list tbody tr:hover td:first-child{background:#f2f3fb;}
+/* zero / muted values */
+ table.sf-table-list td:not(:first-child){color:#a4a9b3;font-weight:400;}
+/* Total rows — only these stay clearly bold */
+ table.sf-table-list tr[style*="lightblue"] td{background:#eef3ff !important;color:#1c2b4a !important;font-weight:500 !important;border-top:2px solid #d7e2ff !important;border-bottom:2px solid #d7e2ff !important;}
+table.sf-table-list tr[style*="lightblue"] td:first-child{background:#e4ecff !important;}
+table.sf-table-list tr[style*="lightblue"] td b{font-weight:500 !important;}
+table.sf-table-list tr[style*="lightgray"] td{background:#f4f5f7 !important;}
+/* Net income row */
+ table.sf-table-list tr[style*="bolder;font-size:large"] td{color:#6a3fbd;font-weight:500;}
+/* Account name cell clickable */
+ table.sf-table-list td[onclick]{cursor:pointer;transition:color 0.15s ease;}
+table.sf-table-list td[onclick]:hover{color:#4a5aa8;text-decoration:underline;}
+.SpacesCls{display:inline-block;width:14px;}
 
-    table {
-        border: 1px solid #CCC !important;
-        border-collapse: collapse !important;
-    }
-
-    td {
-        border: none !important;
-    }
-
-    /* ---------- Card Wrapper for each table ---------- */
-    .report-card {
-        background: #fff;
-        border-radius: 14px;
-        box-shadow: 0 2px 10px rgba(30, 41, 59, 0.06);
-        border: 1px solid #eef0f5;
-        margin-bottom: 28px;
-        overflow: hidden;
-    }
-
-    .report-card-title {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 16px 20px;
-        font-size: 15px;
-        font-weight: 600;
-        letter-spacing: 0.4px;
-        color: #fff;
-    }
-    .report-card-title.assets      { background: linear-gradient(135deg, #2b3a67, #4a5aa8); }
-    .report-card-title.equity      { background: linear-gradient(135deg, #6a3fbd, #9163e0); }
-    .report-card-title.liabilities { background: linear-gradient(135deg, #d9822b, #f0a94e); }
-
-    .table-responsive {
-        overflow-x: auto;
-        scrollbar-width: thin;
-    }
-    .table-responsive::-webkit-scrollbar { height: 8px; }
-    .table-responsive::-webkit-scrollbar-thumb { background: #d8dce6; border-radius: 8px; }
-
-    /* ---------- Table ---------- */
-    table.sf-table-list {
-        width: 100%;
-        border-collapse: collapse !important;
-        border: none !important;
-        font-family: 'Segoe UI', Roboto, sans-serif;
-        font-size: 13.5px;
-        font-weight: 400;
-        min-width: 900px;
-    }
-
-    table.sf-table-list thead th {
-        background: #f6f7fb;
-        color: #5b6472;
-        font-weight: 600;
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        padding: 12px 16px;
-        border-bottom: 2px solid #e7e9f0 !important;
-        white-space: nowrap;
-        position: sticky;
-        top: 0;
-        z-index: 2;
-    }
-
-    table.sf-table-list thead th:first-child {
-        text-align: left;
-        position: sticky;
-        left: 0;
-        z-index: 3;
-        background: #f6f7fb;
-    }
-
-    table.sf-table-list tbody td {
-        padding: 10px 16px;
-        border-bottom: 1px solid #f0f1f5 !important;
-        border: none;
-        color: #2e3440;
-        font-weight: 400 !important;
-        font-variant-numeric: tabular-nums;
-        white-space: nowrap;
-    }
-
-    /* Neutralize the inline <b style="font-weight: bolder"> from the PHP */
-    table.sf-table-list tbody td b {
-        font-weight: 500 !important;
-        font-size: inherit !important;
-    }
-
-    table.sf-table-list tbody td:first-child {
-        position: sticky;
-        left: 0;
-        background: #fff;
-        z-index: 1;
-        box-shadow: 2px 0 4px -2px rgba(0,0,0,0.06);
-        font-weight: 400;
-    }
-
-    table.sf-table-list tbody tr:hover td {
-        background: #f8f9fd;
-    }
-    table.sf-table-list tbody tr:hover td:first-child {
-        background: #f2f3fb;
-    }
-
-    /* zero / muted values */
-    table.sf-table-list td:not(:first-child) {
-        color: #a4a9b3;
-        font-weight: 400;
-    }
-
-    /* Total rows — only these stay clearly bold */
-    table.sf-table-list tr[style*="lightblue"] td {
-        background: #eef3ff !important;
-        color: #1c2b4a !important;
-        font-weight: 600 !important;
-        border-top: 2px solid #d7e2ff !important;
-        border-bottom: 2px solid #d7e2ff !important;
-    }
-    table.sf-table-list tr[style*="lightblue"] td:first-child {
-        background: #e4ecff !important;
-    }
-    table.sf-table-list tr[style*="lightblue"] td b {
-        font-weight: 600 !important;
-    }
-
-    table.sf-table-list tr[style*="lightgray"] td {
-        background: #f4f5f7 !important;
-    }
-
-    /* Net income row */
-    table.sf-table-list tr[style*="bolder;font-size: large"] td {
-        color: #6a3fbd;
-        font-weight: 500;
-    }
-
-    /* Account name cell clickable */
-    table.sf-table-list td[onclick] {
-        cursor: pointer;
-        transition: color 0.15s ease;
-    }
-    table.sf-table-list td[onclick]:hover {
-        color: #4a5aa8;
-        text-decoration: underline;
-    }
-
-    .SpacesCls { display: inline-block; width: 14px; }
 </style>
 <span id="MultiExport">
 <h2 class="text-center topp"></h2>
