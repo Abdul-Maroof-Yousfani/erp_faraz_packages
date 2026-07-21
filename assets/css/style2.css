@@ -1,5 +1,5 @@
  @media print{@page{margin:1em;}
- body{background-color:#fff !important;}
+body{background-color:#fff !important;}
 table{page-break-after:auto !important;border-collapse:collapse !important;}
 tr{page-break-inside:avoid !important;page-break-after:auto !important}
 td{page-break-inside:avoid !important;page-break-after:auto !important}
@@ -10,6 +10,7 @@ ul.m-li li.las{width:62% !important;}
 .premier_igmcol h3{font-size:19px !important;font-weight:700 !important;}
 .subHeadingLabelClass{font-size:10px !important;}
 .headquid h2{font-size:10px !important;}
+#printPurchaseVoucherDetail .signature_bor{border-top:2px solid #1e2757 !important;color:#000;font-size:12px!important;padding-top:8px!important;margin-top:30px!important;}
 /* new print css */
  .headquid.head_quotations h2.subHeadingLabelClass{font-size:10px !important;}
 .headquid.head_quotations2 h2.subHeadingLabelClass{font-size:10px !important;}
@@ -1050,13 +1051,17 @@ button.searchButton i{color:var(--erp-navy-dark) !important;}
 .mainDashBox .title h6{font-weight:700 !important;letter-spacing:.2px !important;line-height:1.4 !important;padding-top:2px !important;margin-top:0 !important;margin-bottom:8px !important;}
 .mainDashBox h4{font-weight:500 !important;line-height:1.3 !important;color:#fff !important;}
 .mainDashBox::after{font-family:"FontAwesome" !important;font-weight:normal !important;position:absolute !important;right:16px !important;top:14px !important;font-size:20px !important;color:rgba(255,255,255,0.55) !important;}
-/* .priorMainBox2 > a:nth-child(1) .mainDashBox::after{content:"\f155";} */
+/* .priorMainBox2 > a:nth-child(1) .mainDashBox::after{content:"\f155";}
+*/
 /* usd */
-/* .priorMainBox2 > a:nth-child(2) .mainDashBox::after{content:"\f201";} */
+/* .priorMainBox2 > a:nth-child(2) .mainDashBox::after{content:"\f201";}
+*/
 /* line-chart */
-/* .priorMainBox2 > a:nth-child(3) .mainDashBox::after{content:"\f0d6";} */
+/* .priorMainBox2 > a:nth-child(3) .mainDashBox::after{content:"\f0d6";}
+*/
 /* money-bill-alt */
-/* .priorMainBox2 > a:nth-child(4) .mainDashBox::after{content:"\f0d6";} */
+/* .priorMainBox2 > a:nth-child(4) .mainDashBox::after{content:"\f0d6";}
+*/
 /* --------------------------------------------------------------------- 6. DASHBOARD TABLE --------------------------------------------------------------------- */
 thead.bgBlueofTd tr th{background:linear-gradient(90deg,var(--erp-navy) 0%,var(--erp-navy-dark) 100%) !important;color:#ffffff !important;font-weight:700 !important;letter-spacing:.3px !important;text-transform:uppercase !important;font-size:11.5px !important;border:none !important;}
 .home_table,.userlittab.home_table{border-radius:14px !important;overflow:hidden !important;box-shadow:0 6px 20px rgba(20,38,92,0.08) !important;}

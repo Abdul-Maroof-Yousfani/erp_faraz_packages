@@ -1,6 +1,7 @@
 /*============================================================= Authour URI:www.binarytheme.com License:Commons Attribution 3.0 http://creativecommons.org/licenses/by/3.0/ 100% Free To use For Personal And Commercial Use. IN EXCHANGE JUST GIVE US CREDITS AND TELL YOUR FRIENDS ABOUT US ======================================================== */
 /* ============================================================= GENERAL STYLES ============================================================ */
-@media print{ body{background-color:#fff !important;}.userlittab > thead > tr > td,.userlittab > tbody > tr > td,.userlittab > tfoot > tr > td{border-left:2px solid #000 !important;}
+@media print{body{background-color:#fff !important;}
+.userlittab > thead > tr > td,.userlittab > tbody > tr > td,.userlittab > tfoot > tr > td{border-left:2px solid #000 !important;}
 ul.m-li{margin-bottom:0px;}
 ul.m-li li{display:inline-block !important;width:44% !important;vertical-align:top !important;}
 ul.m-li li h2{font-size:10px !important;line-height:13px !important;margin:0 !important;padding:0 !important;font-weight:900 !important;color:#000 !important;}
@@ -9,6 +10,7 @@ ul.m-li{margin-bottom:0px !important;}
 ul.m-li li.firs{width:35% !important;}
 ul.m-li li.las{width:62% !important;}
 .premier_igmcol h3{font-size:19px !important;font-weight:700 !important;}
+#printPurchaseVoucherDetail .signature_bor{border-top:2px solid #1e2757 !important;color:#000;font-size:12px!important;padding-top:8px!important;margin-top:30px!important;}
 }
 body{font-family:'Inter',sans-serif!important;line-height:28px;-moz-transform:scale(1,1);zoom:1;zoom:100%;}
 .set-radius-zero{border-radius:0px;-moz-border-radius:0px;-webkit-border-radius:0px;}
@@ -958,13 +960,17 @@ button.searchButton i{color:var(--erp-navy-dark) !important;}
 .mainDashBox .title h6{font-weight:700 !important;letter-spacing:.2px !important;line-height:1.4 !important;padding-top:2px !important;margin-top:0 !important;margin-bottom:8px !important;}
 .mainDashBox h4{font-weight:500 !important;line-height:1.3 !important;color:#fff !important;}
 .mainDashBox::after{font-family:"FontAwesome" !important;font-weight:normal !important;position:absolute !important;right:16px !important;top:14px !important;font-size:20px !important;color:rgba(255,255,255,0.55) !important;}
-/* .priorMainBox2 > a:nth-child(1) .mainDashBox::after{content:"\f155";} */
+/* .priorMainBox2 > a:nth-child(1) .mainDashBox::after{content:"\f155";}
+*/
 /* usd */
-/* .priorMainBox2 > a:nth-child(2) .mainDashBox::after{content:"\f201";} */
+/* .priorMainBox2 > a:nth-child(2) .mainDashBox::after{content:"\f201";}
+*/
 /* line-chart */
-/* .priorMainBox2 > a:nth-child(3) .mainDashBox::after{content:"\f0d6";} */
+/* .priorMainBox2 > a:nth-child(3) .mainDashBox::after{content:"\f0d6";}
+*/
 /* money-bill-alt */
-/* .priorMainBox2 > a:nth-child(4) .mainDashBox::after{content:"\f0d6";} */
+/* .priorMainBox2 > a:nth-child(4) .mainDashBox::after{content:"\f0d6";}
+*/
 /* --------------------------------------------------------------------- 6. DASHBOARD TABLE --------------------------------------------------------------------- */
 thead.bgBlueofTd tr th{background:linear-gradient(90deg,var(--erp-navy) 0%,var(--erp-navy-dark) 100%) !important;color:#ffffff !important;font-weight:700 !important;letter-spacing:.3px !important;text-transform:uppercase !important;font-size:11.5px !important;border:none !important;}
 .home_table,.userlittab.home_table{border-radius:14px !important;overflow:hidden !important;box-shadow:0 6px 20px rgba(20,38,92,0.08) !important;}
