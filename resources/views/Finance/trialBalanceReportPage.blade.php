@@ -25,6 +25,24 @@ $AccYearTo = $AccYearDate->accyearto;
 @section('content')
     @include('select2')
 
+    <style>
+ /* ---------- Nature filter pills (Assets / Liabilities / Capital / Expenses / Revenue) ---------- */
+ .tb-nature-filter{display:flex !important;align-items:center !important;gap:12px !important;flex-wrap:wrap !important;}
+.tb-nature-pill{display:inline-flex !important;align-items:center !important;gap:8px !important;background:#F7F9FD !important;border:1px solid #E3E7F3 !important;border-radius:999px !important;padding:9px 16px !important;cursor:pointer !important;transition:border-color .15s ease,background .15s ease !important;user-select:none !important;}
+.tb-nature-pill:hover{border-color:#B9C2E0 !important;}
+.tb-nature-pill input[type="radio"]{width:15px !important;height:15px !important;margin:0 !important;accent-color:#1E3A8A !important;cursor:pointer !important;}
+.tb-nature-pill span{font-size:12px !important;font-weight:500 !important;letter-spacing:.4px !important;text-transform:uppercase !important;color:#4A5268 !important;}
+.tb-nature-pill.active{background:#EEF1FA !important;border-color:#1E3A8A !important;}
+.tb-nature-pill.active span{color:#0B1F59 !important;}
+/* ---------- Filter bar:single row,no column-overflow wrap ---------- */
+ .tb-filter-bar{display:flex !important;align-items:flex-end !important;gap:18px !important;flex-wrap:wrap !important;margin-bottom:6px !important;}
+.tb-filter-bar .tb-filter-field{display:flex !important;flex-direction:column !important;gap:4px !important;}
+.tb-filter-bar .tb-filter-field label{margin:0 !important;font-size:12.5px !important;font-weight:500 !important;color:#4A5268 !important;}
+.tb-filter-bar .tb-filter-field input[type="date"]{height:38px !important;}
+.tb-filter-bar #BtnGetData{height:38px !important;margin:0 !important;}
+
+    </style>
+
     <div class="well_N">
     <div class="dp_sdw">    
         <div class="row">
@@ -46,19 +64,43 @@ $AccYearTo = $AccYearDate->accyearto;
                             <div class="row">
 
                                 <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                        <label for="">From Date</label>
-                                        <input type="date" max="<?php echo $AccYearTo?>" min="<?php echo $AccYearFrom?>" value="<?php echo $currentMonthStartDate?>" class="form-control" id="FromDate" name="FromDate">
+                                    <div class="tb-filter-bar">
+                                        <div class="tb-filter-field">
+                                            <label for="">From Date</label>
+                                            <input type="date" max="<?php echo $AccYearTo?>" min="<?php echo $AccYearFrom?>" value="<?php echo $currentMonthStartDate?>" class="form-control" id="FromDate" name="FromDate">
+                                        </div>
+                                        <div class="tb-filter-field">
+                                            <label for="">To Date</label>
+                                            <input type="date" max="<?php echo $AccYearTo?>" min="<?php echo $AccYearFrom?>" value="<?php echo $currentMonthEndDate?>" class="form-control" id="ToDate" name="ToDate">
+                                        </div>
+                                        <div class="tb-nature-filter" id="NatureFilterGroup">
+                                            <label class="tb-nature-pill active">
+                                                <input type="radio" name="NatureFilter" value="" checked>
+                                                <span>All</span>
+                                            </label>
+                                            <label class="tb-nature-pill">
+                                                <input type="radio" name="NatureFilter" value="1">
+                                                <span>Assets</span>
+                                            </label>
+                                            <label class="tb-nature-pill">
+                                                <input type="radio" name="NatureFilter" value="2">
+                                                <span>Liabilities</span>
+                                            </label>
+                                            <label class="tb-nature-pill">
+                                                <input type="radio" name="NatureFilter" value="3">
+                                                <span>Capital</span>
+                                            </label>
+                                            <label class="tb-nature-pill">
+                                                <input type="radio" name="NatureFilter" value="4">
+                                                <span>Expenses</span>
+                                            </label>
+                                            <label class="tb-nature-pill">
+                                                <input type="radio" name="NatureFilter" value="5">
+                                                <span>Revenue</span>
+                                            </label>
+                                        </div>
+                                        <button class="btn btn-sm btn-primary" id="BtnGetData" onclick="GetTrialBalanceDataAjax()">Submit</button>
                                     </div>
-                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                        <label for="">To Date</label>
-                                        <input type="date" max="<?php echo $AccYearTo?>" min="<?php echo $AccYearFrom?>" value="<?php echo $currentMonthEndDate?>" class="form-control" id="ToDate" name="ToDate">
-                                    </div>
-                                    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                        <button class="btn btn-sm btn-primary" id="BtnGetData" onclick="GetTrialBalanceDataAjax()" style="margin: 35px 0px 0px 0px;">Submit</button>
-                                    </div>
-
-
                                 </div>
 
                                 <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
@@ -77,6 +119,35 @@ $AccYearTo = $AccYearDate->accyearto;
     </div>
     <script src="{{ URL::asset('assets/custom/js/exportToExcelXlsx.js') }}"></script>
     <script !src="">
+        $(document).on('click', '.tb-nature-pill', function(){
+            $('.tb-nature-pill').removeClass('active');
+            $(this).addClass('active');
+            applyNatureFilter();
+        });
+
+        // Client-side row filter — matches each row's data-nature attribute
+        // (added on <tr> in the trial balance table partial) against the selected pill.
+        // Runs immediately on pill click, and again after every AJAX reload.
+        function applyNatureFilter()
+        {
+            var NatureFilter = $('input[name="NatureFilter"]:checked').val();
+            if(NatureFilter === '' || NatureFilter === undefined){
+                $('#tbl_id tr').show();
+                return;
+            }
+            $('#tbl_id tr').each(function(){
+                var rowNature = $(this).attr('data-nature');
+                if(rowNature === undefined){
+                    // total/difference rows etc. without a nature — always keep visible
+                    $(this).show();
+                }else if(rowNature === NatureFilter){
+                    $(this).show();
+                }else{
+                    $(this).hide();
+                }
+            });
+        }
+
         function ExportToExcel(type, fn, dl) {
             var decide = $('#AccountSpaces').val();
             if(decide == 1)
@@ -103,14 +174,16 @@ $AccYearTo = $AccYearDate->accyearto;
             var AccYearFrom = '<?php echo $AccYearFrom?>';
             var AccYearTo = '<?php echo $AccYearTo?>';
             var m = '<?php echo $m?>';
+            var NatureFilter = $('input[name="NatureFilter"]:checked').val();
             $('#AjaxDataHere').html('<div class="loader"></div>');
             $.ajax({
                 url: '<?php echo url('/')?>/fdc/getTrialBalanceDataAjax',
                 type: "GET",
-                data: {FromDate:FromDate,ToDate:ToDate,AccYearFrom:AccYearFrom,AccYearTo:AccYearTo,m:m},
+                data: {FromDate:FromDate,ToDate:ToDate,AccYearFrom:AccYearFrom,AccYearTo:AccYearTo,m:m,NatureFilter:NatureFilter},
                 success: function (data) {
                 $('#AjaxDataHere').html(data);
                     $('#OtherArea').css('display','block');
+                    applyNatureFilter();
                 }
             });
         }

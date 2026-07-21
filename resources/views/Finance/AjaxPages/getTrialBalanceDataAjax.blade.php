@@ -8,6 +8,38 @@ $to = $ToDate;
 $end_credit = 0;
 ?>
 
+<style>
+/* ===================================================================== TRIAL BALANCE (5th Column) — LAYOUT (navy/lavender/amber report theme) ===================================================================== */
+.table-responsive#trial_bal{background:#ffffff !important;border:1px solid #EDF0F8 !important;border-radius:16px !important;box-shadow:0 6px 22px rgba(20,38,92,0.07) !important;padding:22px 24px !important;overflow-x:auto !important;}
+table.sf-report-print-table{width:100% !important;border-collapse:collapse !important;margin:0 !important;}
+table.sf-report-print-table th,table.sf-report-print-table td{white-space:nowrap !important;}
+/* group header row:Opening Balance / Transactions / Closing Balance */
+table.sf-report-print-table thead:first-of-type th{background:#EEF1FA !important;color:#0B1F59 !important;font-size:11.5px !important;font-weight:500 !important;letter-spacing:.5px !important;text-transform:uppercase !important;padding:10px !important;border:none !important;border-bottom:1px solid #E3E7F3 !important;}
+/* column header row:Code / Account Name / Nature / Open.Bal / Dr / Cr / End.Dr / End.Cr */
+table.sf-report-print-table thead:last-of-type th{background:#F0F3FB !important;color:#4A5268 !important;font-size:11px !important;font-weight:500 !important;letter-spacing:.4px !important;text-transform:uppercase !important;padding:11px 10px !important;border:none !important;border-bottom:2px solid #E3E7F3 !important;text-align:right !important;}
+table.sf-report-print-table thead:last-of-type th:nth-child(1),table.sf-report-print-table thead:last-of-type th:nth-child(2),table.sf-report-print-table thead:last-of-type th:nth-child(3){text-align:left !important;}
+/* body rows */
+table.sf-report-print-table tbody td{padding:9px 10px !important;font-size:12.5px !important;font-weight:500 !important;color:#1B2333 !important;border:none !important;border-bottom:1px solid #F0F2F8 !important;vertical-align:middle !important;}
+table.sf-report-print-table tbody tr:hover td{background:#FAFBFE !important;}
+table.sf-report-print-table .link_hide{color:inherit !important;cursor:pointer !important;}
+table.sf-report-print-table .smr-text-red{color:#1B2333 !important;}
+/* ---------- Per-level accent (left border),instead of old solid saturated row backgrounds ---------- */
+table.sf-report-print-table tbody tr.smr-purple td:first-child{border-left:4px solid #1E3A8A !important;}
+table.sf-report-print-table tbody tr.smr-purple td{background:#F4F7FD !important;font-weight:500 !important;color:#0B1F59 !important;}
+table.sf-report-print-table tbody tr.smr-pink td:first-child{border-left:3px solid #E8722A !important;}
+table.sf-report-print-table tbody tr.smr-orange td:first-child{border-left:3px solid #9B6BFF !important;}
+table.sf-report-print-table tbody tr.smr-yellow td:first-child{border-left:3px solid #D4A017 !important;}
+table.sf-report-print-table tbody tr.smr-lightgreen td:first-child{border-left:3px solid #16A34A !important;}
+table.sf-report-print-table tbody tr.smr-green td:first-child{border-left:3px solid #059669 !important;}
+table.sf-report-print-table tbody tr.smr-lightblue td:first-child{border-left:3px solid #0EA5E9 !important;}
+/* ---------- Total row ---------- */
+table.sf-report-print-table tr.sf-table-total td{background:#F7F9FD !important;font-weight:500 !important;color:#1E3A8A !important;border-top:2px solid #E3E7F3 !important;border-bottom:2px solid #E3E7F3 !important;padding:12px 10px !important;}
+table.sf-report-print-table tr.sf-table-total td.bg-danger{background:#FDECEC !important;color:#B42318 !important;}
+/* ---------- Difference row ---------- */
+table.sf-report-print-table tbody tr.text-right td{background:#FFF4E5 !important;color:#B5651D !important;font-weight:500 !important;padding:11px 10px !important;border:none !important;}
+
+</style>
+
 
 <div class="">
     <?php echo CommonHelper::headerPrintSectionInPrintView(Session::get('run_company'), 'Trial Balance 5th Column', date_format(date_create($from),'d-m-Y').' To '.date_format(date_create($to),'d-m-Y')); ?>
@@ -55,7 +87,7 @@ $end_credit = 0;
             $level = count($array);
             $nature = $array[0];
             ?>
-            <tr  class="<?php if($level == 1){echo 'smr-purple';}
+            <tr  data-nature="<?php echo $nature; ?>" class="<?php if($level == 1){echo 'smr-purple';}
             elseif($level == 2){echo 'smr-pink';}
             elseif($level == 3){echo 'smr-orange';}
             elseif($level == 4){echo 'smr-yellow';}
@@ -540,5 +572,3 @@ $bal = 0;
         </table>
     </div>
 </div>
-
-
