@@ -28,7 +28,7 @@
 .dp_sdw h4,.ibox h4,.dp_sdw h6,.ibox-title h5,.dashTableHeading h6{font-size:17px !important;font-weight:800 !important;color:var(--erp-navy-dark) !important;margin-bottom:16px !important;}
 .dp_sdw > .d-flex,.ibox-title{display:flex !important;align-items:center !important;justify-content:space-between !important;margin-bottom:14px !important;}
 .dp_sdw select,.dp_sdw input[type="date"],.dp_sdw input[type="month"]{height:38px !important;border-radius:9px !important;border:1px solid var(--erp-navy-tint) !important;background:#F7F9FD !important;font-weight:700 !important;font-size:12.5px !important;color:var(--erp-navy-dark) !important;}
-.dp_sdw p.text-muted,.dp_sdw > p{color:#8892b0 !important;font-size:13px !important;font-weight:600 !important;}
+.dp_sdw p.text-muted,.dp_sdw > p{color:#8892b0 !important;font-size:13px !important;font-weight:500 !important;}
 /* ---------- Stat cards (Modern refresh) ---------- */
 .priorMainBox2{display:flex !important;gap:18px !important;flex-wrap:wrap !important;margin-bottom:26px !important;align-items:stretch !important;}
 .priorMainBox2 a{flex:1 1 220px !important;text-decoration:none !important;display:block !important;padding: 10px 10px !important;}
@@ -41,7 +41,7 @@
 .mainDashBox .title{position:relative;z-index:1;}
 .mainDashBox .title:first-of-type{display:flex;align-items:flex-start;justify-content:space-between;}
 .mainDashBox .title h6{font-size:13px !important;font-weight:700 !important;color:rgba(255,255,255,0.9) !important;margin-bottom:3px !important;letter-spacing:.2px;}
-.mainDashBox .title p{font-size:11px !important;color:rgba(255,255,255,0.55) !important;margin-bottom:0 !important;font-weight:600 !important;}
+.mainDashBox .title p{font-size:11px !important;color:rgba(255,255,255,0.55) !important;margin-bottom:0 !important;font-weight:500 !important;}
 .mainDashBox .title:last-of-type{display:flex !important;align-items:center !important;justify-content:space-between !important;margin-top:14px !important;}
 .mainDashBox .title img{width:34px;height:34px;padding:7px;background:rgba(255,255,255,0.14);border-radius:10px;object-fit:contain;}
 .mainDashBox h4{font-size:25px !important;font-weight:800 !important;color:#fff !important;margin:0 !important;letter-spacing:.2px !important;}
@@ -55,20 +55,20 @@
 .home_table thead tr th:first-child{border-top-left-radius:10px !important;}
 .home_table thead tr th:last-child{border-top-right-radius:10px !important;}
 .home_table thead.bgBlueofTd th{background:#F0F3FB !important;color:#4A5268 !important;font-size:11.5px !important;font-weight:800 !important;letter-spacing:.4px !important;text-transform:uppercase !important;border-bottom:none !important;padding:12px 10px !important;}
-.home_table td{font-size:13px !important;font-weight:600 !important;color:#1B2333 !important;padding:12px 10px !important;vertical-align:middle !important;}
+.home_table td{font-size:13px !important;font-weight:500 !important;color:#1B2333 !important;padding:12px 10px !important;vertical-align:middle !important;}
 .home_table td .label,.home_table td span.badge,.home_table td span.pendings_approvalss{border-radius:20px !important;padding:5px 14px !important;font-size:11px !important;font-weight:800 !important;letter-spacing:.3px !important;display:inline-block !important;}
 .home_table td .badge-warning,.home_table td span.pending,span.pendings_approvalss{background:#FFF4E5 !important;color:#B5651D !important;border:2px solid #fff4e5 !important;box-shadow:none !important;}
 .home_table tbody tr:not(:last-child) td:last-child{background:#ffffff !important;border-radius:0px !important;padding:19px 10px !important;}
 /* ---------- Sidebar:expanded submenu ---------- */
 .smastermnu .list-unstyled{padding-left:6px !important;}
-.smastermnu .list-unstyled > li > a{font-size:13.5px !important;font-weight:600 !important;padding:9px 12px !important;border-radius:9px !important;color:var(--erp-sidebar-text) !important;margin-bottom:2px !important;}
+.smastermnu .list-unstyled > li > a{font-size:13.5px !important;font-weight:500 !important;padding:9px 12px !important;border-radius:9px !important;color:var(--erp-sidebar-text) !important;margin-bottom:2px !important;}
 .smastermnu .list-unstyled > li:hover a{background:rgba(255,255,255,0.08) !important;color:#ffffff !important;}
 .smastermnu .list-unstyled li.active a{background:linear-gradient(90deg,var(--erp-navy) 0%,var(--erp-navy-dark) 100%) !important;color:#ffffff !important;}
 .sm-bx button.settingListSb.active,button.btn.settingListSb.theme-bg.active{background:linear-gradient(90deg,var(--erp-navy) 0%,var(--erp-navy-dark) 100%) !important;border-left:none !important;border-radius:10px !important;box-shadow:0 4px 14px rgba(30,58,138,0.35) !important;}
 ul.m_list > li{border-left:none !important;}
 .sidenavnr ul li{border-bottom:none !important;}
 ul.m_list{margin-bottom:6px !important;}
-.sm-bx button > p{font-size:14px !important;font-weight:600 !important;}
+.sm-bx button > p{font-size:14px !important;font-weight:500 !important;}
 .sidenavnr::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.18) !important;border-radius:10px !important;}
 /* ---------- Cards:Sales Flow Chart / Receipts / Receivables ---------- */
 .barChartHead,.pieChartHead,.card{background:#ffffff !important;border:1px solid #EDF0F8 !important;border-radius:16px !important;box-shadow:0 6px 22px rgba(20,38,92,0.07) !important;padding:22px 24px !important;margin-bottom:24px !important;}
@@ -81,13 +81,13 @@ ul.m_list{margin-bottom:6px !important;}
 .barChartHead .card-body{padding:0 !important;min-height:280px !important;}
 canvas.Business_Flow_Chart{max-height:280px !important;}
 .barChartHead ul.hidden{display:flex !important;gap:16px !important;list-style:none !important;padding:0 !important;margin:10px 0 0 !important;}
-.barChartHead ul.hidden li{font-size:12.5px !important;font-weight:600 !important;color:var(--erp-label) !important;display:flex !important;align-items:center !important;gap:6px !important;}
+.barChartHead ul.hidden li{font-size:12.5px !important;font-weight:500 !important;color:var(--erp-label) !important;display:flex !important;align-items:center !important;gap:6px !important;}
 /* ---------- Sales Orders table card ---------- */
 .table-responsive.dashTable{background:#ffffff !important;border:1px solid #EDF0F8 !important;border-radius:16px !important;box-shadow:0 6px 22px rgba(20,38,92,0.07) !important;padding:22px 24px !important;}
 .dashTableHeading{display:flex !important;align-items:center !important;justify-content:space-between !important;margin-bottom:16px !important;}
 .dashTableHeading .btn-primary{border-radius:10px !important;font-weight:700 !important;font-size:12.5px !important;padding:9px 18px !important;border:none !important;background:linear-gradient(90deg,#1E3A8A 0%,#0B1F59 100%) !important;box-shadow:0 6px 16px rgba(30,58,138,0.28) !important;}
 /* ---------- Cash-flow helper text ---------- */
-.cashSection .card-title{color:#8892b0 !important;font-size:13px !important;font-weight:600 !important;}
+.cashSection .card-title{color:#8892b0 !important;font-size:13px !important;font-weight:500 !important;}
 /* ---------- Receivables & Payables list ---------- */
 .payable.pieChartHead ul#ReceivablesAndPayablesDiv{list-style:none !important;padding:0 !important;margin-top:10px !important;}
 .payable.pieChartHead ul#ReceivablesAndPayablesDiv > li{margin-bottom:14px !important;}
@@ -95,7 +95,7 @@ canvas.Business_Flow_Chart{max-height:280px !important;}
 /* ---------- Empty state ---------- */
 .empty-state{display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;padding:50px 20px !important;color:#a7abc3 !important;text-align:center !important;min-height:200px !important;}
 .empty-state i{font-size:34px !important;margin-bottom:12px !important;color:#c9cfe6 !important;}
-.empty-state p{font-size:13.5px !important;font-weight:600 !important;margin:0 !important;color:#8892b0 !important;}
+.empty-state p{font-size:13.5px !important;font-weight:500 !important;margin:0 !important;color:#8892b0 !important;}
 /* ===================================================================== COMPANY SELECT MODAL ===================================================================== */
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@700;800&family=Inter:wght@400;500;600&display=swap');#companyListModel{font-family:'Inter',sans-serif;}
 #companyListModel .modal-dialog.modalWidth{max-width:620px;margin:60px auto;}
@@ -113,7 +113,7 @@ canvas.Business_Flow_Chart{max-height:280px !important;}
 .mdel-bx .banq-box:hover{border-color:#7C5CFC;background:#fff;transform:translateY(-3px);box-shadow:0 12px 26px rgba(124,92,252,0.16);}
 .mdel-bx .banq-box a{display:flex;flex-direction:column;align-items:center;text-align:center;padding:24px 14px;text-decoration:none !important;}
 .mdel-bx .companyLetr{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(90deg,#173CA7 0%,#0B1F59 100%) !important;color:#fff !important;font-family:'Sora',sans-serif;font-weight:700;font-size:19px;margin-bottom:12px;}
-.mdel-bx .item-model-company{font-size:13.5px !important;font-weight:600 !important;color:#1B2333 !important;margin:0 !important;line-height:1.4;}
+.mdel-bx .item-model-company{font-size:13.5px !important;font-weight:500 !important;color:#1B2333 !important;margin:0 !important;line-height:1.4;}
 .mdel-bx .btn-b{display:block !important;width:calc(100% - 72px);margin:10px 36px 32px;text-align:center;padding:13px;border-radius:12px;background:#F2F3F8 !important;color:#4A5268 !important;font-weight:700;font-size:13.5px;text-decoration:none !important;transition:background .15s ease;}
 .mdel-bx .btn-b:hover{background:#ea545545 !important;color:#353434 !important;transition:0.5s !important;}
 
