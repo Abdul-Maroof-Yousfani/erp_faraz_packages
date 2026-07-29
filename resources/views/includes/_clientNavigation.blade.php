@@ -249,36 +249,63 @@ $icons = [
                     <div class="profie">
                         <ul class="profile-admin d-flex">
                             <li>
-                                <div class="calender">
-                                    <a href="#">
+                                <div class="calender" style="position:relative;">
+                                    <a href="#" id="calendarToggleBtn">
                                         <i class="fa-regular fa-calendar-days"></i>
                                     </a>
+                                    <div class="account-information calendar-dropdown-panel" id="calendarPanel" style="display:none; right:0; padding:15px; width:280px;">
+                                        <div class="calendar-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; gap:6px;">
+                                            <button type="button" id="calPrevMonth" style="border:none;background:transparent;font-size:16px;cursor:pointer;">&#8249;</button>
+                                            <select id="calMonthSelect" style="border:1px solid #E4E7EC;border-radius:6px;padding:4px 6px;font-size:13px;font-weight:700;"></select>
+                                            <select id="calYearSelect" style="border:1px solid #E4E7EC;border-radius:6px;padding:4px 6px;font-size:13px;font-weight:700;"></select>
+                                            <button type="button" id="calNextMonth" style="border:none;background:transparent;font-size:16px;cursor:pointer;">&#8250;</button>
+                                        </div>
+                                        <table style="width:100%; text-align:center; font-size:12px;" id="calTable"></table>
+                                        <div style="text-align:center; margin-top:10px; border-top:1px solid #eee; padding-top:8px;">
+                                            <a href="#" id="calTodayBtn" style="color:#173CA7; font-weight:700; font-size:13px;">Today</a>
+                                        </div>
+                                    </div>
                                 </div>
                             </li>
                             <li class="nav-item dropdown dropdown-notification me-25">
-                                <div class="notifction_text">
-                                    <a class="nav-link bella" href="{{route('alert')}}" data-bs-toggle="dropdown">
+                                <div class="notifction_text" style="position:relative;">
+                                    <a class="nav-link bella" href="{{route('alert')}}" id="notificationToggleBtn">
                                         <div class="not1">
                                             <i class="fa-regular fa-bell"></i>
-                                            <span class="badge rounded-pill bg-danger badge-up">5</span>
+                                            <span class="badge rounded-pill bg-danger badge-up" id="notifCountBadge" style="display:none;">0</span>
                                         </div>
                                     </a>
+                                    <div class="account-information notification-dropdown-panel" id="notificationPanel" style="display:none; right:0; width:320px; max-height:350px; overflow-y:auto;">
+                                        <div style="padding:15px; border-bottom:1px solid #eee;">
+                                            <strong>Notifications</strong>
+                                        </div>
+                                        <ul class="list-unstyled" id="notificationList" style="margin:0;">
+                                            <li style="padding:15px; text-align:center; color:#999;">Loading...</li>
+                                        </ul>
+                                        <div style="padding:10px 15px; text-align:center; border-top:1px solid #eee;">
+                                            <a href="{{route('alert')}}" style="color:#173CA7; font-weight:600; font-size:13px;">View All Alerts</a>
+                                        </div>
+                                    </div>
                                 </div>
                             </li>
+                            <!-- Header wala avatar -->
                             <li>
                                 <div class="pro-user d-flex">
-                                    <span class="avatar">
-                                        <img class="round" src="https://demos.pixinvent.com/vuexy-html-admin-template/assets/img/avatars/1.png" alt="avatar" height="40" width="40">
+                                    <span class="avatar" style="cursor:pointer;" id="avatarClickTrigger">
+                                        <img class="round" id="headerAvatarImg" src="{{ Auth::user()->profile_pic ? asset('uploads/profile_pics/'.Auth::user()->profile_pic) : 'https://demos.pixinvent.com/vuexy-html-admin-template/assets/img/avatars/1.png' }}" alt="avatar" height="40" width="40">
                                     </span>
                                     <div class="user-nav d-sm-flex d-none"><span class="user-name fw-bolder">{{ Auth::user()->name }}</span></div>
                                 </div>
                             </li>
+
+                            <!-- Hidden file input, page mein kahin bhi ek baar rakh do -->
+                            <input type="file" id="profilePicInput" accept="image/*" style="display:none;">
                             <li class="dropdown user-name-drop">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa-solid fa-angle-down"></i></a>
                                 <div class="account-information dropdown-menu">
                                     <div class="account-inner">
                                         <div class="davtar">
-                                            <span class="avatar"> <img class="round" src="https://demos.pixinvent.com/vuexy-html-admin-template/assets/img/avatars/1.png" alt="avatar" > </span>
+                                            <span class="avatar"> <img class="round" id="dropdownAvatarImg" src="{{ Auth::user()->profile_pic ? asset('uploads/profile_pics/'.Auth::user()->profile_pic) : 'https://demos.pixinvent.com/vuexy-html-admin-template/assets/img/avatars/1.png' }}" alt="avatar"> </span>
                                             <div class="content_profile">
                                                 <h5>{{ Auth::user()->name }}</h5>
                                                 <!-- <p>Bridging the Future of Industry.</p> -->
@@ -701,6 +728,237 @@ $(document).ready(function() {
 });
 
 </script>
+<!-- Calendar -->
+<script>
+$(document).ready(function () {
+    var calDate = new Date(); // hamesha aaj ki date se start hoga
+
+    var monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+    function buildMonthYearSelects() {
+        var $m = $('#calMonthSelect').empty();
+        monthNames.forEach(function (name, idx) {
+            $m.append('<option value="' + idx + '">' + name + '</option>');
+        });
+
+        var $y = $('#calYearSelect').empty();
+        var currentYear = new Date().getFullYear();
+        for (var y = currentYear - 10; y <= currentYear + 10; y++) {
+            $y.append('<option value="' + y + '">' + y + '</option>');
+        }
+    }
+
+    function renderCalendar() {
+        var year  = calDate.getFullYear();
+        var month = calDate.getMonth();
+
+        $('#calMonthSelect').val(month);
+        $('#calYearSelect').val(year);
+
+        var firstDay = new Date(year, month, 1).getDay();
+        var daysInMonth = new Date(year, month + 1, 0).getDate();
+        var today = new Date();
+
+        var html = '<tr>';
+        ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(function (d) {
+            html += '<th style="padding:5px;color:#5E5873;">' + d + '</th>';
+        });
+        html += '</tr><tr>';
+
+        for (var i = 0; i < firstDay; i++) html += '<td></td>';
+
+        for (var day = 1; day <= daysInMonth; day++) {
+            var isToday = (day === today.getDate() && month === today.getMonth() && year === today.getFullYear());
+            html += '<td style="padding:6px 0;' + (isToday ? 'background:#173CA7;color:#fff;border-radius:50%;font-weight:bold;' : '') + '">' + day + '</td>';
+            if ((firstDay + day) % 7 === 0) html += '</tr><tr>';
+        }
+        html += '</tr>';
+
+        $('#calTable').html(html);
+    }
+
+    buildMonthYearSelects();
+    renderCalendar();
+
+    $('#calendarToggleBtn').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // har baar dropdown open hone pe wapas AAJ ki date pe reset ho
+        calDate = new Date();
+        renderCalendar();
+
+        $('#calendarPanel').toggle();
+        $('#notificationPanel').hide();
+    });
+
+    $('#calPrevMonth').on('click', function () {
+        calDate.setMonth(calDate.getMonth() - 1);
+        renderCalendar();
+    });
+
+    $('#calNextMonth').on('click', function () {
+        calDate.setMonth(calDate.getMonth() + 1);
+        renderCalendar();
+    });
+
+    $('#calMonthSelect').on('change', function () {
+        calDate.setMonth(parseInt($(this).val()));
+        renderCalendar();
+    });
+
+    $('#calYearSelect').on('change', function () {
+        calDate.setFullYear(parseInt($(this).val()));
+        renderCalendar();
+    });
+
+    $('#calTodayBtn').on('click', function (e) {
+        e.preventDefault();
+        calDate = new Date();
+        renderCalendar();
+    });
+
+    $(document).on('click', function (e) {
+        if (!$(e.target).closest('.calender').length) {
+            $('#calendarPanel').hide();
+        }
+    });
+});
+
+</script>
+
+<!-- notification -->
+ <script>
+    $(document).ready(function () {
+    $('#notificationToggleBtn').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var $panel = $('#notificationPanel');
+        var isOpening = $panel.is(':hidden');
+
+        $('#calendarPanel').hide();
+        $panel.toggle();
+
+        if (isOpening) {
+            $('#notificationList').html('<li style="padding:15px; text-align:center; color:#999;">Loading...</li>');
+            $.ajax({
+                url: '<?php echo url('/'); ?>/getRecentNotifications', // <-- apna actual route yahan lagao
+                type: 'GET',
+                success: function (response) {
+                    $('#notificationList').html(response);
+                },
+                error: function () {
+                    $('#notificationList').html('<li style="padding:15px; text-align:center; color:#999;">No notifications</li>');
+                }
+            });
+        }
+    });
+
+    $(document).on('click', function (e) {
+        if (!$(e.target).closest('.notifction_text').length) {
+            $('#notificationPanel').hide();
+        }
+    });
+});
+
+
+$(document).ready(function () {
+
+    function loadNotificationCount() {
+        $.ajax({
+            url: '<?php echo url('/'); ?>/getNotificationCount',
+            type: 'GET',
+            success: function (response) {
+                var count = response.count || 0;
+                var $badge = $('#notifCountBadge');
+                if (count > 0) {
+                    $badge.text(count > 99 ? '99+' : count).show();
+                } else {
+                    $badge.hide();
+                }
+            }
+        });
+    }
+
+    loadNotificationCount(); // page load hote hi actual count aajayega
+
+    $('#notificationToggleBtn').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var $panel = $('#notificationPanel');
+        var isOpening = $panel.is(':hidden');
+
+        $('#calendarPanel').hide();
+        $panel.toggle();
+
+        if (isOpening) {
+            $('#notificationList').html('<li style="padding:15px; text-align:center; color:#999;">Loading...</li>');
+            $.ajax({
+                url: '<?php echo url('/'); ?>/getRecentNotifications',
+                type: 'GET',
+                success: function (response) {
+                    $('#notificationList').html(response);
+                },
+                error: function () {
+                    $('#notificationList').html('<li style="padding:15px; text-align:center; color:#999;">No notifications</li>');
+                }
+            });
+        }
+    });
+
+    $(document).on('click', function (e) {
+        if (!$(e.target).closest('.notifction_text').length) {
+            $('#notificationPanel').hide();
+        }
+    });
+});
+
+ </script>
+<!-- profile image -->
+ <script>
+    $(document).ready(function () {
+    $('#avatarClickTrigger').on('click', function () {
+        $('#profilePicInput').click();
+    });
+
+    $('#profilePicInput').on('change', function () {
+        var file = this.files[0];
+        if (!file) return;
+
+        // instant preview
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            $('#headerAvatarImg, #dropdownAvatarImg').attr('src', e.target.result);
+        };
+        reader.readAsDataURL(file);
+
+        var formData = new FormData();
+        formData.append('profile_pic', file);
+        formData.append('_token', $('meta[name="csrf-token"]').attr('content'));
+
+        $.ajax({
+            url: '<?php echo url('/'); ?>/users/updateProfilePic',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                if (response.status === 'success') {
+                    $('#headerAvatarImg, #dropdownAvatarImg').attr('src', response.new_path + '?t=' + new Date().getTime());
+                } else {
+                    alert('Upload failed: ' + response.message);
+                }
+            },
+            error: function () {
+                alert('Something went wrong while uploading.');
+            }
+        });
+    });
+});
+ </script>
+
 
 <input type="hidden" id="baseUrl" value="<?php echo url("/"); ?>">
 <input type="hidden" id="emp_code" value="<?php echo Auth::user()

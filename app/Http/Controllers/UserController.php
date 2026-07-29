@@ -9,7 +9,7 @@ use App\Models\MainMenuTitle;
 use App\Models\Menu;
 use DB;
 use Cache;
-
+use Auth;
 class UserController extends Controller
 {
 
@@ -30,6 +30,41 @@ class UserController extends Controller
 
         }
     }
+
+    // AlertController.php mein add karo
+public function getRecentNotifications()
+{
+    $notifications = DB::table('alerts')
+        ->where('user_id', Auth::user()->id)
+        ->orderBy('created_at', 'desc')
+        ->limit(5)
+        ->get();
+
+    $html = '';
+    if ($notifications->count() > 0) {
+        foreach ($notifications as $n) {
+            $html .= '<li style="padding:12px 15px; border-bottom:1px solid #f1f1f1;">
+                        <p style="margin:0; font-size:13px; font-weight:500;">'.e($n->title ?? $n->message).'</p>
+                        <small style="color:#999;">'.\Carbon\Carbon::parse($n->created_at)->diffForHumans().'</small>
+                      </li>';
+        }
+    } else {
+        $html = '<li style="padding:15px; text-align:center; color:#999;">No notifications</li>';
+    }
+
+    return $html;
+}
+
+public function getNotificationCount()
+{
+    $count = DB::table('alerts')
+        ->where('user_id', Auth::user()->id)
+        ->where('is_read', 0) // agar tumhare table mein read/unread column ka naam alag hai to yahan badlo
+        ->count();
+
+    return response()->json(['count' => $count]);
+}
+    
 
     public function add_notifications()
     {

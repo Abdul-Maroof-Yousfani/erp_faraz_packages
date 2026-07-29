@@ -176,6 +176,9 @@ Route::group(['prefix' => 'ccd', 'before' => 'csrf'], function () {
 
 Route::group(['prefix' => 'users', 'middleware' => 'mysql2', 'before' => 'csrf'], function () {
     Route::get('/add_notifications', 'UserController@add_notifications');
+    //   Notifications
+    Route::get('/getRecentNotifications', [App\Http\Controllers\UserController::class, 'getRecentNotifications']);
+    Route::get('/getNotificationCount', [App\Http\Controllers\UserController::class, 'getNotificationCount']);
     Route::get('/get_behavior', 'UserController@get_behavior');
     Route::get('/get_notification_data', 'UserController@get_notification_data');
     Route::get('/notifications_list', 'UserController@notifications_list');
