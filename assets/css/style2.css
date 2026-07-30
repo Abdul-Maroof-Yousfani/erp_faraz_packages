@@ -1307,7 +1307,7 @@ table.sf-table-list{width:100% !important;border-collapse:separate !important;bo
 #paid_to:empty,#paid_to .select2-container:has(option:only-child[value=""]){display:none !important;}
 .select2-container{width:100% !important;}
 /* ===== SELECT2 DROPDOWN FIX (table-responsive escape + z-index) ===== */
-.select2-container{z-index:99999 !important;}
+/* .select2-container{z-index:99999 !important;} */
 .select2-container--open{z-index:100000 !important;}
 .select2-dropdown{z-index:100000 !important;min-width:220px !important;border:1px solid var(--erp-border,#E4E7EC) !important;border-radius:11px !important;box-shadow:0 12px 30px rgba(20,38,92,0.16) !important;}
 .select2-results__options{max-height:240px !important;overflow-y:auto !important;}
