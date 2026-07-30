@@ -1149,7 +1149,7 @@ vertical-align:middle;}
 					alert('Percentage Cannot Exceed by 100');
 					$('#' + id).val(0);
 					x = 0;
-				}
+			 	}
 
 				x = x * amount;
 				var tax_amount = parseFloat(x / 100).toFixed(2);
