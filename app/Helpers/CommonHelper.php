@@ -4119,7 +4119,7 @@ class CommonHelper
     public static function in_stock_edit($item, $warehouse, $batch_code)
     {
         $in = DB::Connection('mysql2')->table('stock')->where('status', 1)
-            ->whereIn('voucher_type', [1, 4, 6, 3, 10, 11])
+            ->whereIn('voucher_type', [1, 4, 6, 10, 11])
             ->where('sub_item_id', $item)
             ->where('warehouse_id', $warehouse);
 

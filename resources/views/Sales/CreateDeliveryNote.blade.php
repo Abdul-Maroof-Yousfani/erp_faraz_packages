@@ -869,7 +869,7 @@ use App\Helpers\ReuseableCode;
         function get_stock_qty(number,number2) {
             var warehouse = $('#warehouse'+number).val();
             var item = $('#item_id'+number).val();
-            var batch_code = $('#batch_code'+number+'_'+number2).val();
+            var batch_code = 0;
 
             $.ajax({
                 url: '<?php echo url('/')?>/pdc/get_stock_location_wise?batch_code='+batch_code,

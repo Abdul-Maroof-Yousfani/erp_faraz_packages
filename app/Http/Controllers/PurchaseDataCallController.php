@@ -3224,11 +3224,11 @@ echo "aa"; die;
     }
     public function get_stock_location_wise(Request $request)
     {
-        $warehouse = $request->warehouse;
+        $warehouse = 1;
         $item = $request->item;
         $bacth_code = $request->batch_code;
     
-        // dd($request);
+        // dd($request->all());
         if ($bacth_code == ''):
             $in = DB::Connection('mysql2')->table('stock')->where('status', 1)
                 ->where('sub_item_id', $item)
@@ -3253,24 +3253,24 @@ echo "aa"; die;
             $in = DB::Connection('mysql2')->table('stock')->where('status', 1)
                 ->whereIn('voucher_type', [1, 4, 6, 10, 11])
                 ->where('sub_item_id', $item)
-                // ->where('warehouse_id', $warehouse)
-                ->where('batch_code', $bacth_code)
+                ->where('warehouse_id', $warehouse)
+                // ->where('batch_code', $bacth_code)
                 ->select('stock.*', DB::raw('SUM(qty) As qty'), DB::raw('SUM(amount) As amount'))
                 ->first();
 
             $out = DB::Connection('mysql2')->table('stock')->where('status', 1)
                 ->whereIn('voucher_type', [2,3, 5, 9, 8])
                 ->where('sub_item_id', $item)
-                // ->where('warehouse_id', $warehouse)
-                ->where('batch_code', $bacth_code)
+                ->where('warehouse_id', $warehouse)
+                // ->where('batch_code', $bacth_code)
                 ->select('stock.*',DB::raw('SUM(qty) As qty'), DB::raw('SUM(amount) As amount'))
                 ->first();
+
                 
             $qty = $in->qty - $out->qty;
             $amount = $in->amount;
             $rate = 0;
             if ($qty > 0):
-
                 $rate = number_format($amount / $in->qty, 2, '.', '');
                 echo number_format((float) $qty, 2, '.', '') . '/' . $rate;
             else:

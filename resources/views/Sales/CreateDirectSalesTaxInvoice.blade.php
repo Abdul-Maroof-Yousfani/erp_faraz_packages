@@ -1108,7 +1108,7 @@ vertical-align:middle;}
 
 				var warehouse = $('#warehouse' + number).val();
 				var myArray = $('#item_id' + number).find(":selected").val();
-				var item = myArray.split(",");
+				var item = myArray.split("@");
 				var batch_code = 0;
 				$.ajax({
 					url: '<?php echo url('/')?>/pdc/get_stock_location_wise?batch_code=' + batch_code,
