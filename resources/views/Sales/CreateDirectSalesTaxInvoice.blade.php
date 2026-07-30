@@ -355,7 +355,7 @@ vertical-align:middle;}
 														</td> --}}
 														<td class="">
 															<select onchange="get_stock_qty(this.id,'1');ApplyAll('1')"
-																class="form-control  ClsAll ShowOn1" name="warehouse[]"
+																class="form-control select2 ClsAll ShowOn1" name="warehouse[]"
 																id="warehouse1">
 																<option value="">Select</option>
 																@foreach(CommonHelper::get_all_warehouse() as $row)
@@ -383,7 +383,7 @@ vertical-align:middle;}
 														</td>
 														<td>
 															<select name="rate_cal_by[]" id="rate_cal_by_1"
-																class="form-control" onchange="calculateLineAmount(this)">
+																class="form-control select2" onchange="calculateLineAmount(this)">
 																<option value="1">By BAGS</option>
 																<option value="2">By KGS</option>
 																<option value="3">By LBS</option>
@@ -550,7 +550,10 @@ vertical-align:middle;}
 					"<button type='button' id='BtnRemoveExpense" + CounterExpense + "' class='btn btn-sm btn-danger' onclick='RemoveExpense(" + CounterExpense + ")'> - </button>" +
 					"</td>" +
 					"</tr>");
-				$('#account_id' + CounterExpense).select2();
+				$('#account_id' + CounterExpense).select2({
+					dropdownParent: $('body'),
+					width: '100%'
+				});
 			}
 
 			function RemoveExpense(Row) {
@@ -612,7 +615,7 @@ vertical-align:middle;}
 								</td>
 
 													<td class="">
-														<select onchange="get_stock_qty(this.id,${Counter});ApplyAll(${Counter})" class="form-control  select2 ClsAll ShowOn${Counter}" name="warehouse[]" id="warehouse${Counter}">
+														<select onchange="get_stock_qty(this.id,${Counter});ApplyAll(${Counter})" class="form-control select2 ClsAll ShowOn${Counter}" name="warehouse[]" id="warehouse${Counter}">
 															<option value="">Select</option>
 																@foreach(CommonHelper::get_all_warehouse() as $row)
 																	<option value="{{$row->id}}">{{$row->name}}</option>
@@ -632,7 +635,7 @@ vertical-align:middle;}
 																name="commission[]" id="commission${Counter}" value="" />
 														</td>
 													<td>
-														<select name="rate_cal_by[]" id="rate_cal_by_${Counter}" class="form-contro select2" onchange="calculateLineAmount(this)">
+														<select name="rate_cal_by[]" id="rate_cal_by_${Counter}" class="form-control select2" onchange="calculateLineAmount(this)">
 															<option value="1">By BAGS</option>
 															<option value="2">By KGS</option>
 															<option value="3">By LBS</option>
@@ -662,7 +665,17 @@ vertical-align:middle;}
 														<button type="button" class="btn btn-sm btn-danger" id="BtnRemove${Counter}" onclick="RemoveSection(${Counter})"> - </button>
 													</td>
 											</tr>`);
-				$('.select2').select2();
+
+				// Init select2 ONLY on the newly added row — prevents duplicate/broken widgets on old rows
+				$('#RemoveRows' + Counter).find('.select2').each(function () {
+					if ($(this).hasClass('select2-hidden-accessible')) {
+						$(this).select2('destroy');
+					}
+					$(this).select2({
+						dropdownParent: $('body'),
+						width: '100%'
+					});
+				});
 
 				var AutoCount = 1;
 				$(".AutoCounter").each(function () {
@@ -1310,9 +1323,6 @@ vertical-align:middle;}
 				$('#uom_id' + id).val(sub_ic_data[1]);
 			}
 		</script>
-		<script type="text/javascript">
-			$('.select2').select2();
-		</script>
 		<script>
 			$(document).ready(function () {
 
@@ -1354,5 +1364,15 @@ vertical-align:middle;}
 
 	});
 		</script>
+
+		<script type="text/javascript">
+			$(document).ready(function () {
+				$('.select2').not('.select2-hidden-accessible').select2({
+					dropdownParent: $('body'),
+					width: '100%'
+				});
+			});
+		</script>
+
 		<script src="{{ URL::asset('assets/js/select2/js_tabindex.js') }}"></script>
 @endsection

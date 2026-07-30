@@ -1223,4 +1223,4 @@ table.sf-table-list{width:100% !important;border-collapse:separate !important;bo
 .select2-search--dropdown{padding:8px !important;}
 /* table ke andar wale select2 boxes full width lein taake dropdown bhi field jitna wide ho */
 td .select2-container{width:100% !important;}
-
+tbody#AppnedHtml input{margin-bottom:0;width: 100px;}

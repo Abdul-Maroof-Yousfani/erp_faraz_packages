@@ -195,7 +195,7 @@ input[type="checkbox"]{width:20px !important;height:20px !important;cursor:point
 .ser{position:relative;}
 .mb-20{margin-bottom:20px;}
 .mp-20{padding-bottom:20px;}
-tbody#AppnedHtml input{margin-bottom:0;}
+tbody#AppnedHtml input{margin-bottom:0;width: 100px;}
 .ser input{width:700px;/* border-radius:10px;*/
  border:1px solid #dbdddf;background:#eaeff5;padding:10px 50px 10px 10px;}
 .ser button{position:absolute;right:10px;background:transparent;border:navajowhite;font-size:21px;bottom:0;top:0;margin:auto;color:#adaaaa;}
