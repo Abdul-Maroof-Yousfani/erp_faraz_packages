@@ -2651,7 +2651,7 @@ class SalesAddDetailControler extends Controller
                     'opening' => 0,
                     'so_data_id' => '',
                 );
-                DB::Connection('mysql2')->table('stock')->insert($stock);
+                // DB::Connection('mysql2')->table('stock')->insert($stock);
             }
 
                $cogs = DB::Connection('mysql2')->table('sales_tax_invoice as a')

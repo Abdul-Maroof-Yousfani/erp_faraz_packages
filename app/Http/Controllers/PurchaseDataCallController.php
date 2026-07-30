@@ -3251,7 +3251,7 @@ echo "aa"; die;
             endif;
         else:
             $in = DB::Connection('mysql2')->table('stock')->where('status', 1)
-                ->whereIn('voucher_type', [1, 4, 6, 3, 10, 11])
+                ->whereIn('voucher_type', [1, 4, 6, 10, 11])
                 ->where('sub_item_id', $item)
                 // ->where('warehouse_id', $warehouse)
                 ->where('batch_code', $bacth_code)
@@ -3259,13 +3259,13 @@ echo "aa"; die;
                 ->first();
 
             $out = DB::Connection('mysql2')->table('stock')->where('status', 1)
-                ->whereIn('voucher_type', [2, 5, 9, 8])
+                ->whereIn('voucher_type', [2,3, 5, 9, 8])
                 ->where('sub_item_id', $item)
                 // ->where('warehouse_id', $warehouse)
                 ->where('batch_code', $bacth_code)
                 ->select('stock.*',DB::raw('SUM(qty) As qty'), DB::raw('SUM(amount) As amount'))
                 ->first();
-
+                
             $qty = $in->qty - $out->qty;
             $amount = $in->amount;
             $rate = 0;

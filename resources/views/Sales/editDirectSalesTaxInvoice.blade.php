@@ -1393,12 +1393,11 @@ $expenseRowCount = isset($additional_expense) ? $additional_expense->count() : 0
 				var batch_code = 0;
 
 				$.ajax({
-					url: '<?php echo url('/')?>/pdc/get_stock_location_wise?batch_code=' + batch_code,
+					url: '<?php echo url('/')?>/pdc/get_available_stock_location_wise',
 					type: "GET",
-					data: { warehouse: warehouse, item: myArray[0], batch_code: batch_code },
+					data: { warehouse: warehouse, item: myArray[0] },
 					success: function (data) {
-						alert(data);
-						$('#instock' + number).html(data);
+						$('#instock' + number).val(data);
 					}
 				});
 
