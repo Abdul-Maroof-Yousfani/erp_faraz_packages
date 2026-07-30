@@ -41,46 +41,48 @@ $currentMonthEndDate   = date('Y-m-t');
                     <input type="hidden" name="pageType" id="pageType" value="0" readonly="readonly" class="form-control" />
                     <input type="hidden" name="filterType" id="filterType" value="2" readonly="readonly" class="form-control" />
                     <div class="row">
-                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                             <label>Sub Department</label>
                             <input type="hidden" readonly name="selectSubDepartmentId" id="selectSubDepartmentId" class="form-control" value="">
                             <input list="selectSubDepartment" name="selectSubDepartment" id="selectSubDepartmentTwo" class="form-control clearable">
                             <?php echo CommonHelper::subDepartmnetSelectList($m);?>
                         </div>
-                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+                      <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                             <label>Supplier Name</label>
                             <input type="hidden" readonly name="selectSupplierId" id="selectSupplierId" class="form-control" value="">
                             <input list="selectSupplier" name="selectSupplier" id="selectSupplierTwo" class="form-control clearable">
                             <?php echo CommonHelper::supplierSelectList($m);?>
                         </div>
-                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+                       <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                             <label>From Date</label>
                             <input type="Date" name="fromDate" id="fromDate" max="<?php echo $current_date;?>" value="<?php echo $currentMonthStartDate;?>" class="form-control" />
                         </div>
-                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+                       <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                             <label>To Date</label>
                             <input type="Date" name="toDate" id="toDate" max="<?php echo $current_date;?>" value="<?php echo $currentMonthEndDate;?>" class="form-control" />
                         </div>
-                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+                       <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                             <label>Select Voucher Status</label>
                             <select name="selectVoucherStatus" id="selectVoucherStatus" class="form-control">
                                 <?php echo CommonHelper::voucherStatusSelectList();?>
                             </select>
                         </div>
-                        <div class="col-lg-1 col-md-1 col-sm-1 col-xs-12 text-right">
+                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 text-left">
                             <input type="button" value="View Filter Data" class="btn btn-sm btn-primary" onclick="viewRangeWiseDataFilter(0);" style="margin-top: 32px;" />
                         </div>
                     </div>
 
                     <div class="row">
-                        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
                             <label>GRN No</label>
                             <input type="text"  name="grn_no" id="grn_no" class="form-control" value="">
                             <span id="GrnNoError"></span>
                         </div>
-                        <div class="col-lg-1 col-md-1 col-sm-1 col-xs-12 text-right">
+                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 text-left">
                             <input type="button" value="Search" class="btn btn-sm btn-primary" onclick="get_grn(1);" style="margin-top: 32px;" />
                         </div>
+                         <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12"></div>
+                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 "></div>
                     </div>
                     <div class="row">&nbsp;</div>
                     <div class="row" id="printGoodsReceiptNoteList">
