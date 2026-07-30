@@ -32,11 +32,30 @@ $m=Input::get('m');
 
 
 </style>
+    <?php echo CommonHelper::headerPrintSectionInPrintView(Session::get('run_company'), 'Ledger Report', 'From '.CommonHelper::changeDateFormat($from).' To '.CommonHelper::changeDateFormat($to)); ?>
 
+     <div style="margin-bottom: 10px;">
+                <div class="row" style="font-size:13px;">
+                    <div class="col-xs-6">
+                        <b>Ledger Report of:</b>
+                        <?php echo CommonHelper::get_account_name($acc_id); ?>
+                    </div>
+                    <div class="col-xs-6 text-right">
+                        <b>From:</b> <?php echo date('d-M-Y', strtotime($from)); ?>
+                        <b>To:</b> <?php echo date('d-M-Y', strtotime($to)); ?>
+                    </div>
+                </div>
+    
+                <div class="text-center" style="font-size:18px; margin-top:6px;">
+                    <b>
+                        Account Name:
+                        (<?php echo CommonHelper::get_account_code($acc_id).' --- '.CommonHelper::get_account_name($acc_id); ?>)
+                    </b>
+                </div>
+            </div>
 
 
 <div class="table-responsive" id="">
-    <?php echo CommonHelper::headerPrintSectionInPrintView(Session::get('run_company'), 'Ledger Report', 'From '.CommonHelper::changeDateFormat($from).' To '.CommonHelper::changeDateFormat($to)); ?>
     <table class="table table-bordered sf-table-th sf-table-list ledger-report-table sf-report-print-table" id="table_export1" >
         <?php
         CommonHelper::companyDatabaseConnection($_GET['m']);
@@ -225,28 +244,6 @@ $m=Input::get('m');
         CommonHelper::reconnectMasterDatabase();
         ?>
         <thead>
-
-
-        <div style="margin-bottom: 10px;">
-            <div class="row" style="font-size:13px;">
-                <div class="col-xs-6">
-                    <b>Ledger Report of:</b>
-                    <?php echo CommonHelper::get_account_name($acc_id); ?>
-                </div>
-                <div class="col-xs-6 text-right">
-                    <b>From:</b> <?php echo date('d-M-Y', strtotime($from)); ?>
-                    <b>To:</b> <?php echo date('d-M-Y', strtotime($to)); ?>
-                </div>
-            </div>
-
-            <div class="text-center" style="font-size:18px; margin-top:6px;">
-                <b>
-                    Account Name:
-                    (<?php echo CommonHelper::get_account_code($acc_id).' --- '.CommonHelper::get_account_name($acc_id); ?>)
-                </b>
-            </div>
-        </div>
-
         <tr>
             <th style="width: 100px" class="text-center">Voucher No</th>
             <th style="width: 120px" class="text-center">Date</th>
@@ -294,11 +291,6 @@ $m=Input::get('m');
             </td>
         </tr>
         <?php
-
-
-
-
-
         foreach($quarter as $trow):
         $code=$trow->acc_code;
         $level=explode('-',$code);
@@ -330,11 +322,7 @@ $m=Input::get('m');
             ->first();
         
         $description = $pvs->description ?? '';
-
-
         endif;
-
-
         $cheque_no='';
         $ref_no='';
         $cheque_date='';

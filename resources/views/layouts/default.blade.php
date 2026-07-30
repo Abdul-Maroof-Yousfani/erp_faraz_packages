@@ -2266,6 +2266,86 @@ function DeletePvActivity(pv_id,pv_no,pv_date,pv_amount)
 
 
 }
+
+// dropdown
+
+/* =====================================================================
+   FIX: Dropdown menu clipping/mispositioning inside .table-responsive
+   getBoundingClientRect() use kiya (viewport-relative) kyunki
+   position:fixed bhi viewport-relative hota hai — .offset() (jQuery,
+   document-relative) galat position deta tha jab row scroll ho.
+   right:'auto' isliye zaroori hai kyunki original CSS mein
+   .dropdown-menu pe right:0 pehle se laga hai — ye stretch kar deta
+   tha jab tak explicitly override na karo.
+   ===================================================================== */
+(function () {
+    function closeMenu($menu) {
+        var $orig = $menu.data('erp-orig-parent');
+        $menu.removeClass('open')
+             .css({ position: '', top: '', left: '', right: '', zIndex: '', display: '' })
+             .removeAttr('data-erp-floated');
+        if ($orig && $orig.length) {
+            $orig.append($menu);
+        }
+        $menu.closest('.dropdown, .btn-group').removeClass('open');
+    }
+
+    function closeAllMenus() {
+        $('.dropdown-menu[data-erp-floated]').each(function () {
+            closeMenu($(this));
+        });
+    }
+
+    $(document).on('click', '.table-responsive [data-toggle="dropdown"]', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var $toggle = $(e.currentTarget);
+        var $menu   = $toggle.closest('.dropdown, .btn-group').find('.dropdown-menu').first();
+        if (!$menu.length) return;
+
+        var alreadyOpen = $menu.attr('data-erp-floated') === '1';
+        closeAllMenus();
+        if (alreadyOpen) return;
+
+        $menu.data('erp-orig-parent', $menu.parent());
+
+        // getBoundingClientRect = viewport ke against, position:fixed ke liye sahi
+        var rect = $toggle[0].getBoundingClientRect();
+
+        $menu.appendTo('body')
+             .addClass('open')
+             .attr('data-erp-floated', '1')
+             .css({ position: 'fixed', display: 'block', visibility: 'hidden', top: 0, left: 0, right: 'auto', zIndex: 99999 });
+
+        var menuWidth  = $menu.outerWidth();
+        var menuHeight = $menu.outerHeight();
+
+        var top  = rect.bottom + 4;
+        var left = rect.right - menuWidth;
+
+        if (top + menuHeight > window.innerHeight) {
+            top = rect.top - menuHeight - 4;
+        }
+        if (left < 4) left = rect.left;
+
+        // right edge se bahar na jaye
+        if (left + menuWidth > window.innerWidth - 4) {
+            left = window.innerWidth - menuWidth - 4;
+        }
+
+        $menu.css({ top: top, left: left, right: 'auto', visibility: 'visible' });
+        $toggle.closest('.dropdown, .btn-group').addClass('open');
+    });
+
+    $(document).on('click', function (e) {
+        if ($(e.target).closest('.dropdown-menu[data-erp-floated]').length) return;
+        if ($(e.target).closest('[data-toggle="dropdown"]').length) return;
+        closeAllMenus();
+    });
+
+    $(window).on('scroll resize', closeAllMenus);
+})();
 </script>
 
 </body>

@@ -25,63 +25,25 @@ use App\Helpers\ReuseableCode;
 
 
 	<style>
-		* {
-			font-size: 12px !important;
+		*{font-size:12px !important;}
+label{text-transform:capitalize;}
+.table-compact{font-size:0.92rem;/* slightly smaller than default ~1rem */
+line-height:1.2;/* tighter vertical spacing */
+}
+.table-compact th,.table-compact td{padding:4px 6px !important;/* much less padding → more rows visible */
+vertical-align:middle;}
+.table-compact input.form-control,.table-compact select.form-control{font-size:0.9rem;padding:4px 6px;height:28px;/* smaller input height */
+}
+.table-compact .btn-sm{padding:3px 8px;font-size:0.8rem;}
+.table-compact th{font-size:0.85rem;white-space:nowrap;/* prevent header wrapping */
+}
+/* Optional:make really narrow columns even tighter */
+.col-very-narrow{width:60px !important;min-width:60px !important;}
+.col-narrow{width:90px !important;min-width:90px !important;}
+/* Prevent text wrapping in critical columns */
+.nowrap{white-space:nowrap;}
+.table-responsive{height:auto !important;}
 
-		}
-
-		label {
-			text-transform: capitalize;
-		}
-
-		.table-compact {
-			font-size: 0.92rem;
-			/* slightly smaller than default ~1rem */
-			line-height: 1.2;
-			/* tighter vertical spacing */
-		}
-
-		.table-compact th,
-		.table-compact td {
-			padding: 4px 6px !important;
-			/* much less padding → more rows visible */
-			vertical-align: middle;
-		}
-
-		.table-compact input.form-control,
-		.table-compact select.form-control {
-			font-size: 0.9rem;
-			padding: 4px 6px;
-			height: 28px;
-			/* smaller input height */
-		}
-
-		.table-compact .btn-sm {
-			padding: 3px 8px;
-			font-size: 0.8rem;
-		}
-
-		.table-compact th {
-			font-size: 0.85rem;
-			white-space: nowrap;
-			/* prevent header wrapping */
-		}
-
-		/* Optional: make really narrow columns even tighter */
-		.col-very-narrow {
-			width: 60px !important;
-			min-width: 60px !important;
-		}
-
-		.col-narrow {
-			width: 90px !important;
-			min-width: 90px !important;
-		}
-
-		/* Prevent text wrapping in critical columns */
-		.nowrap {
-			white-space: nowrap;
-		}
 	</style>
 
 
@@ -110,14 +72,11 @@ use App\Helpers\ReuseableCode;
 									<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 										<div class="row">
 											<?php
-
-	//$gi_no=$sales_order->so_no;
-	$so_date = date('Y-m-d');//$sales_order->so_date;
-	//$gi_no=str_replace("SO","GI",$gi_no);
-	$gi_no = SalesHelper::get_unique_no_sales_tax_invoice(date('y'), date('m'));
+											//$gi_no=$sales_order->so_no;
+											$so_date = date('Y-m-d');//$sales_order->so_date;
+											//$gi_no=str_replace("SO","GI",$gi_no);
+											$gi_no = SalesHelper::get_unique_no_sales_tax_invoice(date('y'), date('m'));
 														?>
-
-
 											<div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">
 												<label class="sf-label">Invoice No<span
 														class="rflabelsteric"><strong>*</strong></span></label>
@@ -145,13 +104,7 @@ use App\Helpers\ReuseableCode;
 													id="other_refrence" value="" />
 											</div>
 										</div>
-
-
 										<div class="row">
-
-									
-									
-
 											<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
 												<label class="sf-label">Buyer's Order Date<span
 														class="rflabelsteric"></span></label>
@@ -184,77 +137,61 @@ use App\Helpers\ReuseableCode;
 												<input type="text" class="form-control" placeholder="" name="destination"
 													id="destination" value="" />
 											</div>
-
-
-
-
 										</div>
 
 										<div class="row">
 
 											<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-												<label class="sf-label">Despatched through<span
-														class="rflabelsteric"></span></label>
-												<input type="text" class="form-control" placeholder=""
-													name="despacth_through" id="despacth_through" value="" />
+												<label class="sf-label">Despatched through<spanclass="rflabelsteric"></spanclass=></label>
+												<input type="text" class="form-control" placeholder=""name="despacth_through" id="despacth_through" value="" />
 											</div>
-
 
 											<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-												<label class="sf-label">Terms Of Delivery<span
-														class="rflabelsteric"></span></label>
-												<input type="text" class="form-control" placeholder=""
-													name="terms_of_delivery" id="terms_of_delivery" value="" />
+												<label class="sf-label">Terms Of Delivery<spanclass="rflabelsteric"></spanclass=></label>
+												<input type="text" class="form-control" placeholder=""name="terms_of_delivery" id="terms_of_delivery" value="" />
 											</div>
 
-							<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12" id="customer_select_wrapper">
-								<label class="sf-label">
-									Buyer's Name <span class="rflabelsteric"><strong>*</strong></span>
-								</label>
+											<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12" id="customer_select_wrapper">
+												<label class="sf-label">
+													Buyer's Name <span class="rflabelsteric"><strong>*</strong></span>
+												</label>
 
-								<select style="width: 100%" name="buyers_id" id="ntn"
-							class="form-control select2" required>
-									<option value="">Select</option>
+												<select  name="buyers_id" id="ntn"class="form-control select2" required>
+													<option value="">Select</option>
 
-									@foreach(SalesHelper::get_all_customer() as $row)
-										<option value="{{ $row->id . '*' . $row->cnic_ntn . '*' . $row->strn }}">
-											{{ $row->name }}
-										</option>
-									@endforeach
+													@foreach(SalesHelper::get_all_customer() as $row)
+														<option value="{{ $row->id . '*' . $row->cnic_ntn . '*' . $row->strn }}">
+															{{ $row->name }}
+														</option>
+													@endforeach
 
-								</select>
-							</div>
+												</select>
+											</div>
 
-							<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-								<label class="sf-label">Commission Buyer</label>
-								<select style="width: 100%" name="commission_buyer" id="commission_buyer"
-									class="form-control select2">
-									<option value="">Select</option>
-									@foreach(SalesHelper::get_all_customer() as $row)
-										<option value="{{ $row->id}}">
-											{{ $row->name }}
-										</option>
-									@endforeach
-								</select>
-							</div>
+											<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
+												<label class="sf-label">Commission Buyer</label>
+												<select  name="commission_buyer" id="commission_buyer"class="form-control select2">
+													<option value="">Select</option>
+													@foreach(SalesHelper::get_all_customer() as $row)
+														<option value="{{ $row->id}}">
+															{{ $row->name }}
+														</option>
+													@endforeach
+												</select>
+											</div>
 
-								<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12" id="walkin_customer_wrapper" style="display: none">
-									<label class="sf-label">Walkin Customer Name <span
-										class="rflabelsteric"><strong>*</strong></span></label>
-									<input type="text" class="form-control" placeholder=""
-										name="walkin_customer_name" id="walkin_customer_name" value="" />
-								</div>
+											<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12" id="walkin_customer_wrapper" style="display: none">
+												<label class="sf-label">Walkin Customer Name <span class="rflabelsteric"><strong>*</strong></span></label>
+												<input type="text" class="form-control" placeholder=""name="walkin_customer_name" id="walkin_customer_name" value="" />
+											</div>
 
-
-									<div class="col-lg-3 col-md-2 col-sm-2 col-xs-12" id="buyers_ntn_wrapper">
-											<label class="sf-label">Buyer's Ntn </label>
-											<input readonly type="text" class="form-control" placeholder=""
-												name="buyers_ntn" id="buyers_ntn" value="" />
+											<div class="col-lg-3 col-md-2 col-sm-2 col-xs-12" id="buyers_ntn_wrapper">
+												<label class="sf-label">Buyer's Ntn </label>
+												<input readonly type="text" class="form-control" placeholder=""name="buyers_ntn" id="buyers_ntn" value="" />
+											</div>
 										</div>
 
-									</div>
-
-									<div class="row">
+										<div class="row">
 
 											<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
 												<label class="sf-label">Buyer's Sales Tax No </label>
@@ -266,15 +203,15 @@ use App\Helpers\ReuseableCode;
 												<input type="date" class="form-control" placeholder="" name="due_date"
 													id="due_date" value="" />
 											</div>
-											<?php
+												`<?php
 
-													$accounts = DB::connection('mysql2')
-														->table('accounts')
-														->where('status', 1)
-														->where('parent_code', 'like', '5%')
-														->get();
+												$accounts = DB::connection('mysql2')
+													->table('accounts')
+													->where('status', 1)
+													->where('parent_code', 'like', '5%')
+													->get();
 
-														?>
+													?>`
 											<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12 hide">
 												<label class="sf-label">Cr Account<span
 														class="rflabelsteric requiredField"><strong>*</strong></span></label>
@@ -315,25 +252,16 @@ use App\Helpers\ReuseableCode;
 
 											</div>
 
-
 										</div>
-
-
 
 										<input type="hidden" name="demand_type" id="demand_type">
-										<div class="row">
-
-
-										</div>
 									</div>
 									<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 										<div class="row">
 											<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 												<label class="sf-label">Description</label>
 												<span class="rflabelsteric">
-													<textarea name="description" id="description" rows="4" cols="50"
-														style="resize:none;text-transform: capitalize"
-														class="form-control"></textarea>
+													<textarea name="description" id="description" rows="4" cols="50"style="resize:none;text-transform: capitalize"class="form-control"></textarea>
 											</div>
 										</div>
 									</div>
@@ -427,7 +355,7 @@ use App\Helpers\ReuseableCode;
 														</td> --}}
 														<td class="">
 															<select onchange="get_stock_qty(this.id,'1');ApplyAll('1')"
-																class="form-control  ClsAll ShowOn1" name="warehouse[]"
+																class="form-control select2 ClsAll ShowOn1" name="warehouse[]"
 																id="warehouse1">
 																<option value="">Select</option>
 																@foreach(CommonHelper::get_all_warehouse() as $row)
@@ -455,7 +383,7 @@ use App\Helpers\ReuseableCode;
 														</td>
 														<td>
 															<select name="rate_cal_by[]" id="rate_cal_by_1"
-																class="form-control" onchange="calculateLineAmount(this)">
+																class="form-control select2" onchange="calculateLineAmount(this)">
 																<option value="1">By BAGS</option>
 																<option value="2">By KGS</option>
 																<option value="3">By LBS</option>
@@ -622,7 +550,10 @@ use App\Helpers\ReuseableCode;
 					"<button type='button' id='BtnRemoveExpense" + CounterExpense + "' class='btn btn-sm btn-danger' onclick='RemoveExpense(" + CounterExpense + ")'> - </button>" +
 					"</td>" +
 					"</tr>");
-				$('#account_id' + CounterExpense).select2();
+				$('#account_id' + CounterExpense).select2({
+					dropdownParent: $('body'),
+					width: '100%'
+				});
 			}
 
 			function RemoveExpense(Row) {
@@ -684,7 +615,7 @@ use App\Helpers\ReuseableCode;
 								</td>
 
 													<td class="">
-														<select onchange="get_stock_qty(this.id,${Counter});ApplyAll(${Counter})" class="form-control  ClsAll ShowOn${Counter}" name="warehouse[]" id="warehouse${Counter}">
+														<select onchange="get_stock_qty(this.id,${Counter});ApplyAll(${Counter})" class="form-control select2 ClsAll ShowOn${Counter}" name="warehouse[]" id="warehouse${Counter}">
 															<option value="">Select</option>
 																@foreach(CommonHelper::get_all_warehouse() as $row)
 																	<option value="{{$row->id}}">{{$row->name}}</option>
@@ -704,7 +635,7 @@ use App\Helpers\ReuseableCode;
 																name="commission[]" id="commission${Counter}" value="" />
 														</td>
 													<td>
-														<select name="rate_cal_by[]" id="rate_cal_by_${Counter}" class="form-control" onchange="calculateLineAmount(this)">
+														<select name="rate_cal_by[]" id="rate_cal_by_${Counter}" class="form-control select2" onchange="calculateLineAmount(this)">
 															<option value="1">By BAGS</option>
 															<option value="2">By KGS</option>
 															<option value="3">By LBS</option>
@@ -734,7 +665,17 @@ use App\Helpers\ReuseableCode;
 														<button type="button" class="btn btn-sm btn-danger" id="BtnRemove${Counter}" onclick="RemoveSection(${Counter})"> - </button>
 													</td>
 											</tr>`);
-				$('.select2').select2();
+
+				// Init select2 ONLY on the newly added row — prevents duplicate/broken widgets on old rows
+				$('#RemoveRows' + Counter).find('.select2').each(function () {
+					if ($(this).hasClass('select2-hidden-accessible')) {
+						$(this).select2('destroy');
+					}
+					$(this).select2({
+						dropdownParent: $('body'),
+						width: '100%'
+					});
+				});
 
 				var AutoCount = 1;
 				$(".AutoCounter").each(function () {
@@ -1381,9 +1322,6 @@ use App\Helpers\ReuseableCode;
 				$('#uom_id' + id).val(sub_ic_data[1]);
 			}
 		</script>
-		<script type="text/javascript">
-			$('.select2').select2();
-		</script>
 		<script>
 			$(document).ready(function () {
 
@@ -1425,5 +1363,15 @@ use App\Helpers\ReuseableCode;
 
 	});
 		</script>
+
+		<script type="text/javascript">
+			$(document).ready(function () {
+				$('.select2').not('.select2-hidden-accessible').select2({
+					dropdownParent: $('body'),
+					width: '100%'
+				});
+			});
+		</script>
+
 		<script src="{{ URL::asset('assets/js/select2/js_tabindex.js') }}"></script>
 @endsection
