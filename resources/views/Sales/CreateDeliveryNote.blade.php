@@ -58,7 +58,7 @@ use App\Helpers\ReuseableCode;
                                             ?>
 
                                             <div class="col-lg-2 col-md-2 col-sm-2 col-xs-12">
-                                                <label class="sf-label">Delivery Note No<span class="rflabelsteric"><strong>*</strong></span></label>
+                                                <label class="sf-label">Deliveryy Note No<span class="rflabelsteric"><strong>*</strong></span></label>
                                                 <input readonly type="text" class="form-control requiredField" placeholder="" name="gd_no" id="gd_no" value="{{strtoupper($gd_no)}}" />
                                             </div>
 
