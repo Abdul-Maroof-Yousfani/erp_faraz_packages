@@ -116,7 +116,8 @@ $AccYearTo = $AccYearDate->accyearto;
 
                             <!-- ===== Sales Flow Chart (hidden by default, toggled via button) ===== -->
                             <div class="row" id="salesFlowChartWrap" style="display:none;">
-                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2"> </div>
+                                <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
                                     <div class="card barChartHead">
                                         <div>
                                             <div>
@@ -138,6 +139,7 @@ $AccYearTo = $AccYearDate->accyearto;
                                         </div>
                                     </div>
                                 </div>
+                                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2"> </div>
                             </div>
 
                             <div class="row  align-items-center">
@@ -265,19 +267,28 @@ $AccYearTo = $AccYearDate->accyearto;
             });
         }
 
+        // ===== Combined Bar + Line Chart (replaces old bar-only chart) =====
         function Business_Flow_Chart_Report(data)
         {
             let labels = [];
-            let datas  = [];
+            let barData  = [];
+            let lineData = [];
 
             if (!data || data.length === 0) {
                 $('.Business_Flow_Chart_Report').closest('.card-body').html('<div class="empty-state"><i class="fa fa-bar-chart"></i><p>No sales data available for this year</p></div>');
                 return;
             }
 
+            var runningTotal = 0;
+
             data.forEach(item => {
                 labels.push(item.month_name);
-                datas.push(item.total_amount);
+                var amount = parseFloat(item.total_amount) || 0;
+                barData.push(amount);
+
+                // Line dataset = Cumulative (running total) sales trend
+                runningTotal += amount;
+                lineData.push(runningTotal);
             });
 
             let barChartEx = $('.Business_Flow_Chart_Report');
@@ -288,23 +299,55 @@ $AccYearTo = $AccYearDate->accyearto;
 
             window.salesFlowChartReportInstance = new Chart(barChartEx, {
                 type: 'bar',
-                options: {
-                    legend: { display: false },
-                    scales: {
-                        yAxes: [{ ticks: { beginAtZero: true } }]
-                    }
-                },
                 data: {
                     labels: labels,
                     datasets: [
                         {
-                            data: datas,
+                            type: 'bar',
+                            label: 'Monthly Sales',
+                            data: barData,
                             barThickness: 15,
                             backgroundColor: 'rgba(30, 58, 138, 0.25)',
                             borderColor: 'rgba(30, 58, 138, 1)',
-                            borderWidth: 1
+                            borderWidth: 1,
+                            yAxisID: 'y-bar',
+                            order: 2
+                        },
+                        {
+                            type: 'line',
+                            label: 'Cumulative Sales',
+                            data: lineData,
+                            fill: false,
+                            backgroundColor: 'rgba(245, 166, 35, 1)',
+                            borderColor: 'rgba(245, 166, 35, 1)',
+                            borderWidth: 2,
+                            pointRadius: 3,
+                            pointBackgroundColor: 'rgba(245, 166, 35, 1)',
+                            lineTension: 0,
+                            yAxisID: 'y-line',
+                            order: 1
                         }
                     ]
+                },
+                options: {
+                    legend: { display: true, position: 'top' },
+                    scales: {
+                        yAxes: [
+                            {
+                                id: 'y-bar',
+                                position: 'left',
+                                ticks: { beginAtZero: true },
+                                scaleLabel: { display: true, labelString: 'Monthly Sales' }
+                            },
+                            {
+                                id: 'y-line',
+                                position: 'right',
+                                ticks: { beginAtZero: true },
+                                gridLines: { drawOnChartArea: false },
+                                scaleLabel: { display: true, labelString: 'Cumulative Sales' }
+                            }
+                        ]
+                    }
                 }
             });
         }
