@@ -1891,6 +1891,10 @@ public function trialBalanceData()
         $newdate = strtotime('-1 day', strtotime($from));
         $newdate = date('Y-m-d', $newdate);
         $acc_year_from = '2019-07-01';
+
+        // shared column widths so the outer header row and every inner accordion
+        // table line up exactly (needed because table-layout is fixed below)
+        $tbColWidths = ['6%','10%','30%','9%','9%','9%','9%','9%','9%'];
 ?>
 
 <div class="tb-report-wrap">
@@ -1905,7 +1909,12 @@ public function trialBalanceData()
         <input type="hidden" name="_token" value="<?php echo csrf_token() ?>">
 
         <div class="tb-table-scroll">
-        <table id="header-fixed1" class="tb-table">
+        <table id="header-fixed1" class="tb-table" style="table-layout:fixed;width:100%;">
+            <colgroup>
+                <?php foreach($tbColWidths as $w): ?>
+                <col style="width:<?php echo $w; ?>;">
+                <?php endforeach; ?>
+            </colgroup>
             <thead>
                 <tr class="tb-group-row">
                     <th colspan="3"></th>
@@ -1940,8 +1949,11 @@ public function trialBalanceData()
         $Counter=1;
         $paramOne = "fdc/getSummaryLedgerDetail?m=".$m;
 
-        // ADDED: section-header tracking (ASSETS/LIABILITIES/CAPITAL/EXPENSES/REVENUE)
+        // ADDED: accordion section tracking. Each section's rows now live inside their
+        // own <div> (wrapped in a small nested table) so jQuery slideDown/slideUp animates
+        // a real block element instead of a <tr> -> smooth animation.
         $lastSectionCode = null;
+        $sectionOpen = false;
         $sectionLabels = [
             '1' => 'ASSETS',
             '2' => 'LIABILITIES',
@@ -1969,18 +1981,40 @@ public function trialBalanceData()
 
             if ($total_check!=0):
 
-                // ADDED: clickable section header row, printed once per section
                 $sectionCode = $array[0];
                 if ($sectionCode !== $lastSectionCode):
+
+                    // close the previous section's wrapper (inner table + div + td + tr)
+                    if ($sectionOpen):
+?>
+                    </tbody>
+                </table>
+            </div>
+        </td>
+    </tr>
+<?php
+                    endif;
+
                     $lastSectionCode = $sectionCode;
                     $sectionLabel = isset($sectionLabels[$sectionCode]) ? $sectionLabels[$sectionCode] : 'OTHER';
 ?>
-        <tr class="tb-section-header-row" data-section="<?php echo $sectionCode; ?>" style="background:#EDF0F8;cursor:pointer;transition:background .2s ease;" onclick="filterTrialBalanceSection('<?php echo $sectionCode; ?>')">
-            <td colspan="9" style="font-weight:700;font-size:14px;color:#0B1F59;padding:10px 12px;letter-spacing:.03em;">
-                <span class="tb-section-arrow" style="display:inline-block;margin-right:8px;transition:transform .25s ease;">&#9654;</span><?php echo $sectionLabel; ?>
-            </td>
-        </tr>
+    <tr class="tb-section-header-row" data-section="<?php echo $sectionCode; ?>" style="background:#EDF0F8;cursor:pointer;transition:background .2s ease;" onclick="filterTrialBalanceSection('<?php echo $sectionCode; ?>')">
+        <td colspan="9" style="font-weight:700;font-size:14px;color:#0B1F59;padding:10px 12px;letter-spacing:.03em;">
+            <span class="tb-section-arrow" style="display:inline-block;margin-right:8px;transition:transform .25s ease;">&#9654;</span><?php echo $sectionLabel; ?>
+        </td>
+    </tr>
+    <tr class="tb-section-body-row" data-section="<?php echo $sectionCode; ?>">
+        <td colspan="9" style="padding:0;border:none;">
+            <div class="tb-section-body-wrap" data-section="<?php echo $sectionCode; ?>" style="display:none;overflow:hidden;">
+                <table class="tb-section-inner-table" style="width:100%;table-layout:fixed;border-collapse:collapse;">
+                    <colgroup>
+                        <?php foreach($tbColWidths as $w): ?>
+                        <col style="width:<?php echo $w; ?>;">
+                        <?php endforeach; ?>
+                    </colgroup>
+                    <tbody>
 <?php
+                    $sectionOpen = true;
                 endif;
 ?>
     <tr id="tr<?php echo $Counter ?>" class="tb-row tb-level-<?php echo $level ?>" data-section="<?php echo $sectionCode; ?>">
@@ -2076,6 +2110,16 @@ public function trialBalanceData()
        <?php if ($end_result==0): ?> <input value="<?php echo $end_result  ?>"  type="hidden" id="remove<?php echo  $Counter ?>" class="remove" /> <?php endif; ?>
     </tr>
 <?php $Counter++; endif; endforeach; ?>
+<?php
+        // close the last section's wrapper (inner table + div + td + tr)
+        if ($sectionOpen):
+?>
+                    </tbody>
+                </table>
+            </div>
+        </td>
+    </tr>
+<?php endif; ?>
             </tbody>
             <tfoot>
                 <tr>
@@ -2103,45 +2147,37 @@ $( document ).ready(function() {
         });
 });
 
-// ADDED: click a section header (ASSETS/LIABILITIES/CAPITAL/EXPENSES/REVENUE) to isolate it in the table.
-// ADDED: click a section header (ASSETS/LIABILITIES/CAPITAL/EXPENSES/REVENUE) to isolate it in the table.
-// click same header again to bring all sections back. Arrow icon rotates + rows slide for clear visual feedback.
+// ADDED: true accordion — only one section open at a time. Rows now sit inside a
+// real <div> per section (.tb-section-body-wrap), so slideDown/slideUp animates
+// smoothly (jQuery can't smoothly animate <tr> height, only block elements).
 var trialBalanceActiveSection = '';
 function filterTrialBalanceSection(section)
 {
     var $table = $('#header-fixed1');
     var $allHeaderRows = $table.find('.tb-section-header-row');
     var $clickedHeader = $table.find('.tb-section-header-row[data-section="' + section + '"]');
-    var $dataRows = $table.find('tbody tr:not(.tb-section-header-row)');
+    var $allWraps = $table.find('.tb-section-body-wrap');
+    var $clickedWrap = $table.find('.tb-section-body-wrap[data-section="' + section + '"]');
 
-    // reset all arrows + header backgrounds first
     $allHeaderRows.css('background', '#EDF0F8');
     $allHeaderRows.find('.tb-section-arrow').css('transform', 'rotate(0deg)');
 
     if (trialBalanceActiveSection === section) {
-        // toggle OFF -> show everything again
+        // already open -> collapse it
         trialBalanceActiveSection = '';
-        $dataRows.stop(true, true).slideDown(200);
-        $allHeaderRows.stop(true, true).slideDown(200);
+        $clickedWrap.stop(true, true).slideUp(320);
         return;
     }
 
-    // toggle ON for the clicked section
-    trialBalanceActiveSection = section;
+    // collapse whichever section was open before
+    if (trialBalanceActiveSection !== '') {
+        $allWraps.filter('[data-section="' + trialBalanceActiveSection + '"]').stop(true, true).slideUp(320);
+    }
 
+    trialBalanceActiveSection = section;
     $clickedHeader.css('background', '#D8DEF7');
     $clickedHeader.find('.tb-section-arrow').css('transform', 'rotate(90deg)');
-
-    // hide other headers + their rows, slide-hide non-matching rows, keep matching ones visible
-    $allHeaderRows.not($clickedHeader).stop(true, true).slideUp(200);
-    $dataRows.each(function () {
-        var $row = $(this);
-        if ($row.data('section') == section) {
-            $row.stop(true, true).slideDown(200);
-        } else {
-            $row.stop(true, true).slideUp(200);
-        }
-    });
+    $clickedWrap.stop(true, true).slideDown(320);
 }
 </script>
 <?php
