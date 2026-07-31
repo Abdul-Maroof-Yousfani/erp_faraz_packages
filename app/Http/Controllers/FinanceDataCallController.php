@@ -1895,257 +1895,257 @@ public function trialBalanceData()
         // shared column widths so the outer header row and every inner accordion
         // table line up exactly (needed because table-layout is fixed below)
         $tbColWidths = ['6%','10%','30%','9%','9%','9%','9%','9%','9%'];
-?>
+        ?>
 
-<div class="tb-report-wrap">
-    <div class="tb-report-header">
-        <h2 class="tb-company-name"><?php echo CommonHelper::get_company_name(Session::get('run_company'));?></h2>
-        <h3 class="tb-report-title">Trial Balance 6th Column</h3>
-        <p class="tb-date-range">FROM <b><?php echo date_format(date_create($from),'F d, Y'); ?></b> TO <b><?php echo date_format(date_create($to),'F d, Y'); ?></b></p>
-        <p class="tb-printed-on">Printed On: <?php echo date_format(date_create(date('Y-m-d')),'F d, Y'); ?></p>
-    </div>
+                        <div class="tb-report-wrap">
+                            <div class="tb-report-header">
+                                <h2 class="tb-company-name"><?php echo CommonHelper::get_company_name(Session::get('run_company'));?></h2>
+                                <h3 class="tb-report-title">Trial Balance 6th Column</h3>
+                                <p class="tb-date-range">FROM <b><?php echo date_format(date_create($from),'F d, Y'); ?></b> TO <b><?php echo date_format(date_create($to),'F d, Y'); ?></b></p>
+                                <p class="tb-printed-on">Printed On: <?php echo date_format(date_create(date('Y-m-d')),'F d, Y'); ?></p>
+                            </div>
 
-    <form action="<?php echo url('/'); ?>/fad/CustomiseTrialbal?m=<?php echo $_GET['m']; ?>" method="post" id='formsubmit'>
-        <input type="hidden" name="_token" value="<?php echo csrf_token() ?>">
+                            <form action="<?php echo url('/'); ?>/fad/CustomiseTrialbal?m=<?php echo $_GET['m']; ?>" method="post" id='formsubmit'>
+                                <input type="hidden" name="_token" value="<?php echo csrf_token() ?>">
 
-        <div class="tb-table-scroll">
-        <table id="header-fixed1" class="tb-table" style="table-layout:fixed;width:100%;">
-            <colgroup>
-                <?php foreach($tbColWidths as $w): ?>
-                <col style="width:<?php echo $w; ?>;">
-                <?php endforeach; ?>
-            </colgroup>
-            <thead>
-                <tr class="tb-group-row">
-                    <th colspan="3"></th>
-                    <th colspan="2" style=" padding-left:90px !important;"class="tb-group-open">Opening Balance</th>
-                    <th colspan="2" style=" padding-left:90px !important;"class="tb-group-tx">Transactions</th>
-                    <th colspan="2" style=" padding-left:120px !important;"class="tb-group-close">Closing Balance</th>
+                                <div class="tb-table-scroll">
+                                <table id="header-fixed1" class="tb-table" style="table-layout:fixed;width:100%;">
+                                    <colgroup>
+                                        <?php foreach($tbColWidths as $w): ?>
+                                        <col style="width:<?php echo $w; ?>;">
+                                        <?php endforeach; ?>
+                                    </colgroup>
+                                    <thead>
+                                        <tr class="tb-group-row">
+                                            <th colspan="3"></th>
+                                            <th colspan="2" style=" padding-left:90px !important;"class="tb-group-open">Opening Balance</th>
+                                            <th colspan="2" style=" padding-left:90px !important;"class="tb-group-tx">Transactions</th>
+                                            <th colspan="2" style=" padding-left:120px !important;"class="tb-group-close">Closing Balance</th>
+                                        </tr>
+                                        <tr class="tb-col-row">
+                                            <th>Sr.No</th>
+                                            <th>Acc.Code</th>
+                                            <th>Account</th>
+                                            <th class="text-right">Open.Dr</th>
+                                            <th class="text-right">Open.Cr</th>
+                                            <th class="text-right">Tx.Dr</th>
+                                            <th class="text-right">Tx.Cr</th>
+                                            <th class="text-right">Cl.Dr</th>
+                                            <th class="text-right">Cl.Cr</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                        <?php
+                                CommonHelper::companyDatabaseConnection($CompanyId);
+                                $trial=  DB::select('select a.* from accounts a
+                                        inner join
+                                        transactions b
+                                        on
+                                        a.id=b.acc_id
+                                        where a.status=1
+                                        and b.amount>0
+                                        '.$clause.' group by a.id order by a.level1,a.level2,a.level3,a.level4,a.level5,a.level6,a.level7');
+
+                                $Counter=1;
+                                $paramOne = "fdc/getSummaryLedgerDetail?m=".$m;
+
+                                // ADDED: accordion section tracking. Each section's rows now live inside their
+                                // own <div> (wrapped in a small nested table) so jQuery slideDown/slideUp animates
+                                // a real block element instead of a <tr> -> smooth animation.
+                                $lastSectionCode = null;
+                                $sectionOpen = false;
+                                $sectionLabels = [
+                                    '1' => 'ASSETS',
+                                    '2' => 'LIABILITIES',
+                                    '3' => 'CAPITAL',
+                                    '4' => 'EXPENSES',
+                                    '5' => 'REVENUE',
+                                ];
+
+                                foreach($trial as $row):
+
+                                    $array = explode('-',$row->code);
+                                    $level = count($array);
+
+                                    $tr_debit=0;
+                                    $tx_credit=0;
+                                    $tr_debit=DB::selectOne('select sum(amount)amount from transactions where acc_id="'.$row->id.'" and status=1 and opening_bal=0
+                                                and debit_credit=1
+                                                and v_date between "'.$from.'" and "'.$to.'" and status=1');
+
+                                    $tr_credit=DB::selectOne('select sum(amount)amount from transactions where acc_id="'.$row->id.'" and status=1 and opening_bal=0
+                                            and debit_credit=0
+                                            and v_date between "'.$from.'" and "'.$to.'" and status=1');
+
+                                    $total_check=0.1;
+
+                                    if ($total_check!=0):
+
+                                        $sectionCode = $array[0];
+                                        if ($sectionCode !== $lastSectionCode):
+
+                                            // close the previous section's wrapper (inner table + div + td + tr)
+                                            if ($sectionOpen):
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+        </td>
                 </tr>
-                <tr class="tb-col-row">
-                    <th>Sr.No</th>
-                    <th>Acc.Code</th>
-                    <th>Account</th>
-                    <th class="text-right">Open.Dr</th>
-                    <th class="text-right">Open.Cr</th>
-                    <th class="text-right">Tx.Dr</th>
-                    <th class="text-right">Tx.Cr</th>
-                    <th class="text-right">Cl.Dr</th>
-                    <th class="text-right">Cl.Cr</th>
+                            <?php
+                                                endif;
+
+                                                $lastSectionCode = $sectionCode;
+                                                $sectionLabel = isset($sectionLabels[$sectionCode]) ? $sectionLabels[$sectionCode] : 'OTHER';
+                            ?>
+                <tr class="tb-section-header-row" data-section="<?php echo $sectionCode; ?>" style="background:#EDF0F8;cursor:pointer;transition:background .2s ease;" onclick="filterTrialBalanceSection('<?php echo $sectionCode; ?>')">
+                    <td colspan="9" style="font-weight:700;font-size:14px;color:#0B1F59;padding:10px 12px;letter-spacing:.03em;">
+                        <span class="tb-section-arrow" style="display:inline-block;margin-right:8px;transition:transform .25s ease;">&#9654;</span><?php echo $sectionLabel; ?>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-<?php
-        CommonHelper::companyDatabaseConnection($CompanyId);
-        $trial=  DB::select('select a.* from accounts a
-                   inner join
-                   transactions b
-                   on
-                   a.id=b.acc_id
-                   where a.status=1
-                   and b.amount>0
-                 '.$clause.' group by a.id order by a.level1,a.level2,a.level3,a.level4,a.level5,a.level6,a.level7');
+                <tr class="tb-section-body-row" data-section="<?php echo $sectionCode; ?>">
+                    <td colspan="9" style="padding:0;border:none;">
+                        <div class="tb-section-body-wrap" data-section="<?php echo $sectionCode; ?>" style="display:none;overflow:hidden;">
+                            <table class="tb-section-inner-table" style="width:100%;table-layout:fixed;border-collapse:collapse;">
+                                <colgroup>
+                                    <?php foreach($tbColWidths as $w): ?>
+                                    <col style="width:<?php echo $w; ?>;">
+                                    <?php endforeach; ?>
+                                </colgroup>
+                                <tbody>
+            <?php
+                                $sectionOpen = true;
+                            endif;
+            ?>
+                <tr id="tr<?php echo $Counter ?>" class="tb-row tb-level-<?php echo $level ?>" data-section="<?php echo $sectionCode; ?>">
 
-        $Counter=1;
-        $paramOne = "fdc/getSummaryLedgerDetail?m=".$m;
+                    <td class="text-center">
+                    <?php echo $Counter;?>
+                    <input type="hidden" name="acc_id[]" value="<?php echo $row->id; ?>">
+                    </td>
+                    <td class="text-left"><?php echo $row->code; ?></td>
+                    <td class="sf-uc-first text-left">
 
-        // ADDED: accordion section tracking. Each section's rows now live inside their
-        // own <div> (wrapped in a small nested table) so jQuery slideDown/slideUp animates
-        // a real block element instead of a <tr> -> smooth animation.
-        $lastSectionCode = null;
-        $sectionOpen = false;
-        $sectionLabels = [
-            '1' => 'ASSETS',
-            '2' => 'LIABILITIES',
-            '3' => 'CAPITAL',
-            '4' => 'EXPENSES',
-            '5' => 'REVENUE',
-        ];
+                        <?php if($level ==1){ ?>	<div style="cursor: pointer" class="link_hide" onclick="newTabOpen('<?php echo $from?>','<?php echo $to?>','<?php echo $row->code?>')"    ><?php echo  $row->name;}
+                            elseif($level ==2){?>	<div style="cursor: pointer"  class="link_hide"  onclick="newTabOpen('<?php echo $from?>','<?php echo $to?>','<?php echo $row->code?>')"  ><?php echo '<span class="SpacesCls">&emsp;</span>'.$row->name;}
+                                elseif($level ==3){?>	<div style="cursor: pointer"  class="link_hide"  onclick="newTabOpen('<?php echo $from?>','<?php echo $to?>','<?php echo $row->code?>')"  ><?php echo '<span class="SpacesCls">&emsp;&emsp;</span>'.$row->name;}
+                                    elseif($level ==4){?>	<div style="cursor: pointer"  class="link_hide"  onclick="newTabOpen('<?php echo $from?>','<?php echo $to?>','<?php echo $row->code?>')"  ><?php echo '<span class="SpacesCls">&emsp;&emsp;&emsp;</span>'.$row->name;}
+                                        elseif($level ==5){?>	<div style="cursor: pointer"  class="link_hide"  onclick="newTabOpen('<?php echo $from?>','<?php echo $to?>','<?php echo $row->code?>')" ><?php echo '<span class="SpacesCls">&emsp;&emsp;&emsp;&emsp;</span>'.$row->name;}
+                                            elseif($level ==6){?>	<div style="cursor: pointer"  class="link_hide"  onclick="newTabOpen('<?php echo $from?>','<?php echo $to?>','<?php echo $row->code?>')" ><?php echo '<span class="SpacesCls">&emsp;&emsp;&emsp;&emsp;&emsp;</span>'.$row->name;}
+                                                elseif($level ==7){?>	<div style="cursor: pointer"  class="link_hide" onclick="newTabOpen('<?php echo $from?>','<?php echo $to?>','<?php echo $row->code?>')" ><?php echo '<span class="SpacesCls">&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;</span>'.$row->name;}
+                                                    ?>
+                    </td>
 
-        foreach($trial as $row):
+            <?php
+                        $open=0;
+                        $open_data = DB::selectOne('select amount,debit_credit  from transactions where acc_code="'.$row->code.'" and status=1 and opening_bal=1
+                                and status=1');
+                        if (!empty($open_data)):
+                            if ($open_data->debit_credit==1):
+                                $open=$open_data->amount;
+                            else:
+                                $open=$open_data->amount*-1;
+                            endif;
+                        endif;
 
-            $array = explode('-',$row->code);
-            $level = count($array);
+                        $open_debit=DB::selectOne('select sum(amount)amount from transactions where acc_code="'.$row->code.'" and status=1 and opening_bal=0
+                                and status=1 and v_date between "'.$acc_year_from.'" and "'.$newdate.'" and debit_credit=1')->amount;
 
-            $tr_debit=0;
-            $tx_credit=0;
-            $tr_debit=DB::selectOne('select sum(amount)amount from transactions where acc_id="'.$row->id.'" and status=1 and opening_bal=0
-                          and debit_credit=1
-                          and v_date between "'.$from.'" and "'.$to.'" and status=1');
+                        $open_credit=DB::selectOne('select sum(amount)amount from transactions where acc_code="'.$row->code.'" and status=1 and opening_bal=0
+                                and status=1 and v_date between "'.$acc_year_from.'" and "'.$newdate.'" and debit_credit=0')->amount;
 
-            $tr_credit=DB::selectOne('select sum(amount)amount from transactions where acc_id="'.$row->id.'" and status=1 and opening_bal=0
-                    and debit_credit=0
-                    and v_date between "'.$from.'" and "'.$to.'" and status=1');
+                        $total=$open_debit-$open_credit;
+                        $open= $open+$total;
+            ?>
+                    <td class="text-right">
+                        <?php
+                        $credit=0;
+                        $debit=0;
 
-            $total_check=0.1;
+                        if ($open>0):
+                            $debit=$open;
+                            $credit=0;
+                            echo number_format($open,2);
+                            $total_opening_debit += $open;
+                        endif; ?>
+                    </td>
+                    <td class="text-right"><?php if ($open<0):
+                            $credit=$open*-1;
+                            $debit=0;
+                            echo number_format($open*-1,2);
+                            $total_opening_credit+=$open;
+                        endif; ?></td>
 
-            if ($total_check!=0):
+                    <td class="text-right">
+                        <?php
+                        $tx_trial_debit+=$tr_debit->amount;
+                        $tx_debit=$tr_debit->amount;
+                        echo number_format($tx_debit,2);
+                        ?>
+                    </td>
+                    <td class="text-right">
+                        <?php
+                        $tx_trial_credit+=$tr_credit->amount;
+                        $tx_credit=$tr_credit->amount;;
+                        echo number_format($tx_credit,2);
+                        ?>
+                    </td>
 
-                $sectionCode = $array[0];
-                if ($sectionCode !== $lastSectionCode):
+            <?php 	 $end_result=$tr_debit->amount+$debit-$tr_credit->amount-$credit; ?>
+                    <td class="text-right">
+                        <?php
+                        if ($end_result>0):
+                            echo number_format($end_result,2);
+                            $end_debit_total+=$end_result;
+                        endif; ?>
+                    </td>
+                    <td class="text-right">
+                        <?php
+                        if ($end_result<0):
+                            echo number_format($end_result*-1,2);
+                            $end_credit_total+=$end_result;
+                        endif; ?>
+                    </td>
 
-                    // close the previous section's wrapper (inner table + div + td + tr)
+                <?php if ($end_result==0): ?> <input value="<?php echo $end_result  ?>"  type="hidden" id="remove<?php echo  $Counter ?>" class="remove" /> <?php endif; ?>
+                </tr>
+            <?php $Counter++; endif; endforeach; ?>
+            <?php
+                    // close the last section's wrapper (inner table + div + td + tr)
                     if ($sectionOpen):
-?>
-                    </tbody>
-                </table>
-            </div>
-        </td>
-    </tr>
-<?php
-                    endif;
-
-                    $lastSectionCode = $sectionCode;
-                    $sectionLabel = isset($sectionLabels[$sectionCode]) ? $sectionLabels[$sectionCode] : 'OTHER';
-?>
-    <tr class="tb-section-header-row" data-section="<?php echo $sectionCode; ?>" style="background:#EDF0F8;cursor:pointer;transition:background .2s ease;" onclick="filterTrialBalanceSection('<?php echo $sectionCode; ?>')">
-        <td colspan="9" style="font-weight:700;font-size:14px;color:#0B1F59;padding:10px 12px;letter-spacing:.03em;">
-            <span class="tb-section-arrow" style="display:inline-block;margin-right:8px;transition:transform .25s ease;">&#9654;</span><?php echo $sectionLabel; ?>
-        </td>
-    </tr>
-    <tr class="tb-section-body-row" data-section="<?php echo $sectionCode; ?>">
-        <td colspan="9" style="padding:0;border:none;">
-            <div class="tb-section-body-wrap" data-section="<?php echo $sectionCode; ?>" style="display:none;overflow:hidden;">
-                <table class="tb-section-inner-table" style="width:100%;table-layout:fixed;border-collapse:collapse;">
-                    <colgroup>
-                        <?php foreach($tbColWidths as $w): ?>
-                        <col style="width:<?php echo $w; ?>;">
-                        <?php endforeach; ?>
-                    </colgroup>
-                    <tbody>
-<?php
-                    $sectionOpen = true;
-                endif;
-?>
-    <tr id="tr<?php echo $Counter ?>" class="tb-row tb-level-<?php echo $level ?>" data-section="<?php echo $sectionCode; ?>">
-
-        <td class="text-center">
-        <?php echo $Counter;?>
-        <input type="hidden" name="acc_id[]" value="<?php echo $row->id; ?>">
-        </td>
-        <td class="text-left"><?php echo $row->code; ?></td>
-        <td class="sf-uc-first text-left">
-
-            <?php if($level ==1){ ?>	<div style="cursor: pointer" class="link_hide" onclick="newTabOpen('<?php echo $from?>','<?php echo $to?>','<?php echo $row->code?>')"    ><?php echo  $row->name;}
-                elseif($level ==2){?>	<div style="cursor: pointer"  class="link_hide"  onclick="newTabOpen('<?php echo $from?>','<?php echo $to?>','<?php echo $row->code?>')"  ><?php echo '<span class="SpacesCls">&emsp;</span>'.$row->name;}
-                    elseif($level ==3){?>	<div style="cursor: pointer"  class="link_hide"  onclick="newTabOpen('<?php echo $from?>','<?php echo $to?>','<?php echo $row->code?>')"  ><?php echo '<span class="SpacesCls">&emsp;&emsp;</span>'.$row->name;}
-                        elseif($level ==4){?>	<div style="cursor: pointer"  class="link_hide"  onclick="newTabOpen('<?php echo $from?>','<?php echo $to?>','<?php echo $row->code?>')"  ><?php echo '<span class="SpacesCls">&emsp;&emsp;&emsp;</span>'.$row->name;}
-                            elseif($level ==5){?>	<div style="cursor: pointer"  class="link_hide"  onclick="newTabOpen('<?php echo $from?>','<?php echo $to?>','<?php echo $row->code?>')" ><?php echo '<span class="SpacesCls">&emsp;&emsp;&emsp;&emsp;</span>'.$row->name;}
-                                elseif($level ==6){?>	<div style="cursor: pointer"  class="link_hide"  onclick="newTabOpen('<?php echo $from?>','<?php echo $to?>','<?php echo $row->code?>')" ><?php echo '<span class="SpacesCls">&emsp;&emsp;&emsp;&emsp;&emsp;</span>'.$row->name;}
-                                    elseif($level ==7){?>	<div style="cursor: pointer"  class="link_hide" onclick="newTabOpen('<?php echo $from?>','<?php echo $to?>','<?php echo $row->code?>')" ><?php echo '<span class="SpacesCls">&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;</span>'.$row->name;}
-                                        ?>
-        </td>
-
-<?php
-            $open=0;
-            $open_data = DB::selectOne('select amount,debit_credit  from transactions where acc_code="'.$row->code.'" and status=1 and opening_bal=1
-                    and status=1');
-            if (!empty($open_data)):
-                if ($open_data->debit_credit==1):
-                    $open=$open_data->amount;
-                else:
-                    $open=$open_data->amount*-1;
-                endif;
-            endif;
-
-            $open_debit=DB::selectOne('select sum(amount)amount from transactions where acc_code="'.$row->code.'" and status=1 and opening_bal=0
-                    and status=1 and v_date between "'.$acc_year_from.'" and "'.$newdate.'" and debit_credit=1')->amount;
-
-            $open_credit=DB::selectOne('select sum(amount)amount from transactions where acc_code="'.$row->code.'" and status=1 and opening_bal=0
-                    and status=1 and v_date between "'.$acc_year_from.'" and "'.$newdate.'" and debit_credit=0')->amount;
-
-            $total=$open_debit-$open_credit;
-            $open= $open+$total;
-?>
-        <td class="text-right">
-            <?php
-            $credit=0;
-            $debit=0;
-
-            if ($open>0):
-                $debit=$open;
-                $credit=0;
-                echo number_format($open,2);
-                $total_opening_debit += $open;
-            endif; ?>
-        </td>
-        <td class="text-right"><?php if ($open<0):
-                $credit=$open*-1;
-                $debit=0;
-                echo number_format($open*-1,2);
-                $total_opening_credit+=$open;
-            endif; ?></td>
-
-        <td class="text-right">
-            <?php
-            $tx_trial_debit+=$tr_debit->amount;
-            $tx_debit=$tr_debit->amount;
-            echo number_format($tx_debit,2);
             ?>
-        </td>
-        <td class="text-right">
-            <?php
-            $tx_trial_credit+=$tr_credit->amount;
-            $tx_credit=$tr_credit->amount;;
-            echo number_format($tx_credit,2);
-            ?>
-        </td>
-
-<?php 	 $end_result=$tr_debit->amount+$debit-$tr_credit->amount-$credit; ?>
-        <td class="text-right">
-            <?php
-            if ($end_result>0):
-                echo number_format($end_result,2);
-                $end_debit_total+=$end_result;
-            endif; ?>
-        </td>
-        <td class="text-right">
-            <?php
-            if ($end_result<0):
-                echo number_format($end_result*-1,2);
-                $end_credit_total+=$end_result;
-            endif; ?>
-        </td>
-
-       <?php if ($end_result==0): ?> <input value="<?php echo $end_result  ?>"  type="hidden" id="remove<?php echo  $Counter ?>" class="remove" /> <?php endif; ?>
-    </tr>
-<?php $Counter++; endif; endforeach; ?>
-<?php
-        // close the last section's wrapper (inner table + div + td + tr)
-        if ($sectionOpen):
-?>
-                    </tbody>
-                </table>
-            </div>
-        </td>
-    </tr>
-<?php endif; ?>
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="3">TOTAL</td>
-                    <td class="text-right"><?php echo number_format($total_opening_debit,2) ?></td>
-                    <td class="text-right"><?php echo number_format($total_opening_credit*-1,2) ?></td>
-                    <td class="text-right"><?php echo number_format($tx_trial_debit,2) ?></td>
-                    <td class="text-right"><?php echo number_format($tx_trial_credit,2) ?></td>
-                    <td class="text-right"><?php echo number_format($end_debit_total,2); ?></td>
-                    <td class="text-right"><?php echo number_format($end_credit_total*-1,2); ?></td>
+                                </tbody>
+                            </table>
+                        </div>
+                    </td>
                 </tr>
-            </tfoot>
-        </table>
-        </div>
+            <?php endif; ?>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3">TOTAL</td>
+                                <td class="text-right"><?php echo number_format($total_opening_debit,2) ?></td>
+                                <td class="text-right"><?php echo number_format($total_opening_credit*-1,2) ?></td>
+                                <td class="text-right"><?php echo number_format($tx_trial_debit,2) ?></td>
+                                <td class="text-right"><?php echo number_format($tx_trial_credit,2) ?></td>
+                                <td class="text-right"><?php echo number_format($end_debit_total,2); ?></td>
+                                <td class="text-right"><?php echo number_format($end_credit_total*-1,2); ?></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    </div>
 
-    </form>
-</div>
+                </form>
+            </div>
 
-<script>
-$( document ).ready(function() {
-   $('.remove').each(function(i, obj) {
-           var value= $(this).val();
-           var id=  $(this).attr("id");
-           var number=id.replace('remove','');
-        });
-});
+            <script>
+            $( document ).ready(function() {
+            $('.remove').each(function(i, obj) {
+                    var value= $(this).val();
+                    var id=  $(this).attr("id");
+                    var number=id.replace('remove','');
+                    });
+            });
 
 // ADDED: true accordion — only one section open at a time. Rows now sit inside a
 // real <div> per section (.tb-section-body-wrap), so slideDown/slideUp animates
@@ -2370,7 +2370,149 @@ function filterTrialBalanceSection(section)
             // return view('Finance.AjaxPages.balance_sheet_other_comparative',compact('fom_date','to_date','m','accounts1','accounts2','accounts3'));
             // return view('Finance.AjaxPages.balance_sheet_other',compact('fom_date','to_date','m','accounts1','accounts2','accounts3'));
         endif;
+
+
+
+
+        
 	}
+/**
+     * Feeds the "Sales Flow Chart" (bar + cumulative line) with real monthly
+     * Revenue totals for the selected year. Revenue is pulled the same way
+     * "Total Revenue" is calculated in IncomeStatement() / trialBalanceSheet()
+     * i.e. account code '5' (REVENUE) via CommonHelper::get_parent_and_account_amount.
+     */
+    public function BusinessFlowChartAjax(Request $request)
+    {
+        $year = $request->year ? $request->year : date('Y');
+        $CompanyId = Session::get('run_company');
+
+        $monthNames = [
+            1  => 'January',
+            2  => 'February',
+            3  => 'March',
+            4  => 'April',
+            5  => 'May',
+            6  => 'June',
+            7  => 'July',
+            8  => 'August',
+            9  => 'September',
+            10 => 'October',
+            11 => 'November',
+            12 => 'December',
+        ];
+
+        CommonHelper::companyDatabaseConnection($CompanyId);
+
+        $SalesFlowChart = [];
+
+        foreach ($monthNames as $num => $name) {
+
+            $from = $year . '-' . str_pad($num, 2, '0', STR_PAD_LEFT) . '-01';
+            $to   = date('Y-m-t', strtotime($from));
+
+            $amount = CommonHelper::get_parent_and_account_amount(1, $from, $to, 5, '1', 0, 1);
+
+            // Revenue naturally comes back negative (credit balance) from this
+            // helper — flip it so the chart shows a positive sales figure.
+            if ($amount < 0) {
+                $amount = $amount * -1;
+            }
+
+            $SalesFlowChart[] = [
+                'month_name'   => $name,
+                'total_amount' => round($amount, 2),
+            ];
+        }
+
+        CommonHelper::reconnectMasterDatabase();
+
+        return response()->json(['SalesFlowChart' => $SalesFlowChart]);
+    }
+
+/**
+ * Feeds the Sales/Trial-Balance Flow Chart with section-wise (Assets,
+ * Liabilities, Capital, Expenses, Revenue) closing balance totals for the
+ * SAME From/To date range that the Trial Balance 6th Column table uses.
+ * This keeps the chart figures matched with the table shown after Submit.
+ */
+public function TrialBalanceChartAjax(Request $request)
+{
+    $from = $request->from;
+    $to   = $request->to;
+    $CompanyId = $request->m;
+
+    $newdate = strtotime('-1 day', strtotime($from));
+    $newdate = date('Y-m-d', $newdate);
+    $acc_year_from = '2019-07-01';
+
+    $sectionLabels = [
+        '1' => 'ASSETS',
+        '2' => 'LIABILITIES',
+        '3' => 'CAPITAL',
+        '4' => 'EXPENSES',
+        '5' => 'REVENUE',
+    ];
+
+    $sectionTotals = [];
+    foreach ($sectionLabels as $code => $label) {
+        $sectionTotals[$code] = ['label' => $label, 'amount' => 0];
+    }
+
+    CommonHelper::companyDatabaseConnection($CompanyId);
+
+    $trial = DB::select('select a.* from accounts a
+            inner join transactions b on a.id = b.acc_id
+            where a.status = 1 and b.amount > 0
+            group by a.id
+            order by a.level1,a.level2,a.level3,a.level4,a.level5,a.level6,a.level7');
+
+    foreach ($trial as $row) {
+        $array = explode('-', $row->code);
+        $sectionCode = $array[0];
+        if (!isset($sectionTotals[$sectionCode])) continue;
+
+        // opening balance (same logic as trialBalanceData)
+        $open = 0;
+        $open_data = DB::selectOne('select amount, debit_credit from transactions
+                where acc_code="'.$row->code.'" and status=1 and opening_bal=1');
+        if (!empty($open_data)) {
+            $open = $open_data->debit_credit == 1 ? $open_data->amount : $open_data->amount * -1;
+        }
+
+        $open_debit = DB::selectOne('select sum(amount) amount from transactions
+                where acc_code="'.$row->code.'" and status=1 and opening_bal=0
+                and v_date between "'.$acc_year_from.'" and "'.$newdate.'" and debit_credit=1')->amount;
+
+        $open_credit = DB::selectOne('select sum(amount) amount from transactions
+                where acc_code="'.$row->code.'" and status=1 and opening_bal=0
+                and v_date between "'.$acc_year_from.'" and "'.$newdate.'" and debit_credit=0')->amount;
+
+        $open = $open + ($open_debit - $open_credit);
+
+        // period transactions (same From/To submitted by user)
+        $tr_debit = DB::selectOne('select sum(amount) amount from transactions
+                where acc_id="'.$row->id.'" and status=1 and opening_bal=0
+                and debit_credit=1 and v_date between "'.$from.'" and "'.$to.'"')->amount;
+
+        $tr_credit = DB::selectOne('select sum(amount) amount from transactions
+                where acc_id="'.$row->id.'" and status=1 and opening_bal=0
+                and debit_credit=0 and v_date between "'.$from.'" and "'.$to.'"')->amount;
+
+        $debit  = $open > 0 ? $open : 0;
+        $credit = $open < 0 ? ($open * -1) : 0;
+
+        $end_result = $tr_debit + $debit - $tr_credit - $credit;
+
+        // closing debit balance goes in as positive, closing credit as negative
+        $sectionTotals[$sectionCode]['amount'] += $end_result;
+    }
+
+    CommonHelper::reconnectMasterDatabase();
+
+    return response()->json(['sections' => array_values($sectionTotals)]);
+}
+
 
 	function trialBalanceSheet_old()
 	{

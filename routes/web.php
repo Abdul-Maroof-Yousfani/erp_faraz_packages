@@ -88,6 +88,7 @@ Route::group(['middleware' => 'mysql2', 'before' => 'csrf'], function () {
     Route::get('/alert', 'ClientController@alert')->name('alert');
     // Route::get('/financeDashboardAjax', 'ClientController@financeDashboardAjax');
     Route::get('/BusinessFlowChartAjax', 'ClientController@BusinessFlowChartAjax');
+    Route::get('/TrialBalanceChartAjax', 'FinanceDataCallController@TrialBalanceChartAjax');
     Route::get('/trtpAjax', 'ClientController@trtpAjax');
     Route::get('/salesAgingAjax', 'ClientController@salesAgingAjax');
     Route::get('/vendorAgingAjax', 'ClientController@vendorAgingAjax');

@@ -21,34 +21,41 @@ $AccYearTo = $AccYearDate->accyearto;
 
 <script>
 
-    function show()
-    {
-        var from=	$('#from_datee').val();
+function show()
+{
+    var from = $('#from_datee').val();
+    var m = '<?php echo $company_id;?>';
+    var to = $('#to_date').val();
 
-        var  m = '<?php echo $company_id;?>';
-        var to=	$('#to_date').val();
+    if(from !="" && to != "" ) {
 
-        if(from !="" && to != "" ) {
+        $('#trial_bal').html('<div class="loader"></div>');
+        $('#Error').html("");
 
-            $('#trial_bal').html('<div class="loader"></div>');
-            $('#Error').html("");
+        $.ajax({
+            url: '<?php echo url('/');?>/fdc/trialBalanceData',
+            type: 'GET',
+            data: {from: from, to: to, m:m},
+            success: function (response) {
+                $('#trial_bal').html(response);
+                $('#OtherArea').css('display','block');
+            }
+        });
 
-            $.ajax({
-                url: '<?php echo url('/');?>/fdc/trialBalanceData',
-                type: 'GET',
-                data: {from: from, to: to, m:m},
-                success: function (response) {
+        // NEW: chart ko bhi wahi from/to bhej kar refresh karein
+        $.ajax({
+            url: '<?php echo url('/');?>/TrialBalanceChartAjax',
+            type: 'GET',
+            data: {from: from, to: to, m: m},
+            success: function (response) {
+                Business_Flow_Chart_Report_TrialBalance(response?.sections);
+            }
+        });
 
-                    var v = $.trim(response);
-
-                    $('#trial_bal').html(response);
-                    $('#OtherArea').css('display','block');
-                }
-            });
-        }else{
-            $('#Error').html('<p class="text-danger">Select From And To Date</p>')
-        }
+    }else{
+        $('#Error').html('<p class="text-danger">Select From And To Date</p>')
     }
+}
 
     function newTabOpen(FromDate,ToDate,AccCode)
     {
@@ -86,7 +93,6 @@ $AccYearTo = $AccYearDate->accyearto;
         #salesFlowChartWrap h6{font-size:17px !important;font-weight:700 !important;color:var(--erp-navy-dark,#0B1F59) !important;margin:0 !important;}
         #salesFlowChartWrap .selectOption select{height:38px !important;border-radius:9px !important;border:1px solid var(--erp-navy-tint,#E8ECFA) !important;background:#F7F9FD !important;font-weight:700 !important;font-size:12.5px !important;color:var(--erp-navy-dark,#0B1F59) !important;padding:6px 12px !important;}
         #salesFlowChartWrap .card-body{padding:0 !important;min-height:280px !important;}
-        canvas.Business_Flow_Chart_Report{max-height:280px !important;}
         .empty-state{display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;padding:50px 20px !important;color:#a7abc3 !important;text-align:center !important;min-height:200px !important;}
         .empty-state i{font-size:34px !important;margin-bottom:12px !important;color:#c9cfe6 !important;}
         .empty-state p{font-size:13.5px !important;font-weight:500 !important;margin:0 !important;color:#8892b0 !important;}
@@ -135,7 +141,7 @@ $AccYearTo = $AccYearDate->accyearto;
                                             </div>
                                         </div>
                                         <div class="card-body">
-                                            <canvas class="Business_Flow_Chart_Report chartjs" data-height="425"></canvas>
+                                            <canvas class="Business_Flow_Chart_Report" data-height="425"></canvas>
                                         </div>
                                     </div>
                                 </div>
@@ -255,17 +261,89 @@ $AccYearTo = $AccYearDate->accyearto;
             }
         }
 
-        function BusinessFlowChartAjaxReport(year)
-        {
-            $.ajax({
-                url: '<?php echo url('/');?>/BusinessFlowChartAjax',
-                type: 'Get',
-                data: { year: year },
-                success: function (response) {
-                    Business_Flow_Chart_Report(response?.SalesFlowChart);
+function Business_Flow_Chart_Report_TrialBalance(sections)
+{
+    let labels  = [];
+    let barData = [];
+    let lineData = [];
+
+    if (!sections || sections.length === 0) {
+        $('.Business_Flow_Chart_Report').closest('.card-body').html('<div class="empty-state"><i class="fa fa-bar-chart"></i><p>No data available for selected dates</p></div>');
+        return;
+    }
+
+    var runningTotal = 0;
+
+    sections.forEach(item => {
+        labels.push(item.label);
+        var amount = parseFloat(item.amount) || 0;
+        barData.push(amount);
+
+        runningTotal += amount;
+        lineData.push(runningTotal);
+    });
+
+    // pehle se koi chart is canvas par attach ho to destroy karein
+    if (window.salesFlowChartReportInstance) {
+        window.salesFlowChartReportInstance.destroy();
+    }
+
+    var ctx = document.querySelector('.Business_Flow_Chart_Report');
+
+    window.salesFlowChartReportInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    type: 'bar',
+                    label: 'Closing Balance',
+                    data: barData,
+                    barThickness: 40,
+                    backgroundColor: 'rgba(30, 58, 138, 0.25)',
+                    borderColor: 'rgba(30, 58, 138, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y-bar',
+                    order: 2
+                },
+                {
+                    type: 'line',
+                    label: 'Cumulative Total',
+                    data: lineData,
+                    fill: false,
+                    backgroundColor: 'rgba(245, 166, 35, 1)',
+                    borderColor: 'rgba(245, 166, 35, 1)',
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    pointBackgroundColor: 'rgba(245, 166, 35, 1)',
+                    lineTension: 0,
+                    yAxisID: 'y-line',
+                    order: 1
                 }
-            });
+            ]
+        },
+        options: {
+            legend: { display: true, position: 'top' },
+            scales: {
+                yAxes: [
+                    {
+                        id: 'y-bar',
+                        position: 'left',
+                        ticks: { beginAtZero: true },
+                        scaleLabel: { display: true, labelString: 'Closing Balance' }
+                    },
+                    {
+                        id: 'y-line',
+                        position: 'right',
+                        ticks: { beginAtZero: true },
+                        gridLines: { drawOnChartArea: false },
+                        scaleLabel: { display: true, labelString: 'Cumulative Total' }
+                    }
+                ]
+            }
         }
+    });
+}
 
         // ===== Combined Bar + Line Chart (replaces old bar-only chart) =====
         function Business_Flow_Chart_Report(data)
