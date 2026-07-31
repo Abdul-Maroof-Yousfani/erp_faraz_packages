@@ -1940,6 +1940,16 @@ public function trialBalanceData()
         $Counter=1;
         $paramOne = "fdc/getSummaryLedgerDetail?m=".$m;
 
+        // ADDED: section-header tracking (ASSETS/LIABILITIES/CAPITAL/EXPENSES/REVENUE)
+        $lastSectionCode = null;
+        $sectionLabels = [
+            '1' => 'ASSETS',
+            '2' => 'LIABILITIES',
+            '3' => 'CAPITAL',
+            '4' => 'EXPENSES',
+            '5' => 'REVENUE',
+        ];
+
         foreach($trial as $row):
 
             $array = explode('-',$row->code);
@@ -1958,8 +1968,22 @@ public function trialBalanceData()
             $total_check=0.1;
 
             if ($total_check!=0):
+
+                // ADDED: clickable section header row, printed once per section
+                $sectionCode = $array[0];
+                if ($sectionCode !== $lastSectionCode):
+                    $lastSectionCode = $sectionCode;
+                    $sectionLabel = isset($sectionLabels[$sectionCode]) ? $sectionLabels[$sectionCode] : 'OTHER';
 ?>
-    <tr id="tr<?php echo $Counter ?>" class="tb-row tb-level-<?php echo $level ?>">
+        <tr class="tb-section-header-row" data-section="<?php echo $sectionCode; ?>" style="background:#EDF0F8;cursor:pointer;transition:background .2s ease;" onclick="filterTrialBalanceSection('<?php echo $sectionCode; ?>')">
+            <td colspan="9" style="font-weight:700;font-size:14px;color:#0B1F59;padding:10px 12px;letter-spacing:.03em;">
+                <span class="tb-section-arrow" style="display:inline-block;margin-right:8px;transition:transform .25s ease;">&#9654;</span><?php echo $sectionLabel; ?>
+            </td>
+        </tr>
+<?php
+                endif;
+?>
+    <tr id="tr<?php echo $Counter ?>" class="tb-row tb-level-<?php echo $level ?>" data-section="<?php echo $sectionCode; ?>">
 
         <td class="text-center">
         <?php echo $Counter;?>
@@ -2067,9 +2091,6 @@ public function trialBalanceData()
         </table>
         </div>
 
-        <!-- <div class="tb-footer-action">
-            <input type="submit" value="Customise Trial Balance" class="btn btn-success">
-        </div> -->
     </form>
 </div>
 
@@ -2079,9 +2100,49 @@ $( document ).ready(function() {
            var value= $(this).val();
            var id=  $(this).attr("id");
            var number=id.replace('remove','');
-       //    $('#tr'+number).remove();
         });
 });
+
+// ADDED: click a section header (ASSETS/LIABILITIES/CAPITAL/EXPENSES/REVENUE) to isolate it in the table.
+// ADDED: click a section header (ASSETS/LIABILITIES/CAPITAL/EXPENSES/REVENUE) to isolate it in the table.
+// click same header again to bring all sections back. Arrow icon rotates + rows slide for clear visual feedback.
+var trialBalanceActiveSection = '';
+function filterTrialBalanceSection(section)
+{
+    var $table = $('#header-fixed1');
+    var $allHeaderRows = $table.find('.tb-section-header-row');
+    var $clickedHeader = $table.find('.tb-section-header-row[data-section="' + section + '"]');
+    var $dataRows = $table.find('tbody tr:not(.tb-section-header-row)');
+
+    // reset all arrows + header backgrounds first
+    $allHeaderRows.css('background', '#EDF0F8');
+    $allHeaderRows.find('.tb-section-arrow').css('transform', 'rotate(0deg)');
+
+    if (trialBalanceActiveSection === section) {
+        // toggle OFF -> show everything again
+        trialBalanceActiveSection = '';
+        $dataRows.stop(true, true).slideDown(200);
+        $allHeaderRows.stop(true, true).slideDown(200);
+        return;
+    }
+
+    // toggle ON for the clicked section
+    trialBalanceActiveSection = section;
+
+    $clickedHeader.css('background', '#D8DEF7');
+    $clickedHeader.find('.tb-section-arrow').css('transform', 'rotate(90deg)');
+
+    // hide other headers + their rows, slide-hide non-matching rows, keep matching ones visible
+    $allHeaderRows.not($clickedHeader).stop(true, true).slideUp(200);
+    $dataRows.each(function () {
+        var $row = $(this);
+        if ($row.data('section') == section) {
+            $row.stop(true, true).slideDown(200);
+        } else {
+            $row.stop(true, true).slideUp(200);
+        }
+    });
+}
 </script>
 <?php
     }

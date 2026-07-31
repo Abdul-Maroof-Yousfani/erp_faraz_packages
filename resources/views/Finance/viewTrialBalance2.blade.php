@@ -25,15 +25,10 @@ $AccYearTo = $AccYearDate->accyearto;
     {
         var from=	$('#from_datee').val();
 
-        var nature=$("input[name='optradio']:checked").val();
-
         var  m = '<?php echo $company_id;?>';
-        //alert(m);
         var to=	$('#to_date').val();
-        //var url='< ?php echo base_url('finance_data_call/trial'); ?>';
 
         if(from !="" && to != "" ) {
-
 
             $('#trial_bal').html('<div class="loader"></div>');
             $('#Error').html("");
@@ -41,7 +36,7 @@ $AccYearTo = $AccYearDate->accyearto;
             $.ajax({
                 url: '<?php echo url('/');?>/fdc/trialBalanceData',
                 type: 'GET',
-                data: {from: from, to: to, nature: nature,m:m},
+                data: {from: from, to: to, m:m},
                 success: function (response) {
 
                     var v = $.trim(response);
@@ -75,8 +70,6 @@ $AccYearTo = $AccYearDate->accyearto;
             $("div").removeClass("well");
             var content = $("#includes").html()+$("#header").html()+$("#trial_bal").html();
             document.body.innerHTML = content;
-            //var content = document.getElementById('header').innerHTML;
-            //var content2 = document.getElementById('content').innerHTML;
             window.print();
             location.reload();
         })
@@ -103,9 +96,6 @@ $AccYearTo = $AccYearDate->accyearto;
         <div class="panel">
             <div class="panel-body">
                 <div class="row">
-                    {{--<div class="col-lg-2 col-md-2 col-sm-2 col-xs-12" style="display: none;">--}}
-                    {{--@include('Finance.'.$accType.'financeMenu')--}}
-                    {{--</div>--}}
                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                         <div class="well_N">
                         <div class="dp_sdw">    
@@ -120,7 +110,6 @@ $AccYearTo = $AccYearDate->accyearto;
                                         <a id="dlink" style="display:none;"></a>
                                         <button type="button" class="btn btn-warning" onclick="ExportToExcel('xlsx')">Export <b>(xlsx)</b></button>
                                     <?php endif;?>
-                                    <?php // echo CommonHelper::displayExportButton('trial_bal','','1')?>
                                 </div>
                             </div>
                             <div class="lineHeight">&nbsp;</div>
@@ -189,17 +178,9 @@ $AccYearTo = $AccYearDate->accyearto;
                                                     />
                                         </div>
 
-                                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-                                            <label class="radio-inline"><input type="radio" id="optradio" name="optradio" value="1"><b>ASSETS</b></label>
-                                            <label class="radio-inline"><input type="radio" id="optradio" name="optradio" value="2"><b>LIABILITIES</b></label>
-                                            <label class="radio-inline"><input type="radio" name="optradio" value="3"><b>CAPITAL</b></label>
-                                            <label class="radio-inline"><input type="radio" name="optradio" value="4"><b>EXPENSES</b></label>
-                                            <label class="radio-inline"><input type="radio" name="optradio" value="5"><b>REVENUE</b></label>
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" style="margin-top:24px;">
                                             <input type="button" onclick="show()" class="btn btn-sm btn-primary" value="Submit"/>
-
                                         </div>
-
-
 
                                     </div>
                                     <?php echo Form::close();?>
@@ -214,12 +195,6 @@ $AccYearTo = $AccYearDate->accyearto;
 
 
                                 <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-right">
-                                    <?php /*?>    	<a href="<?php echo base_url() ?>finance/income_statement" class="btn btn-xs btn-success">INCOME STATEMENT</a><?php */?>
-                                    <?php /*?><a  href="<?php echo base_url() ?>finance/chart_of_accounts" class="btn btn-xs btn-success">CHART OF ACCOUNTS</a><?php */?>
-                                    <?php /*?><a href="<?php echo base_url() ?>finance/bal_sheet" class="btn btn-xs btn-success">BALANCE SHEET</a><?php */?>
-
-                                    {{--<button class="btn btn-xs btn-primary" id="print">PRINT</button>--}}
-
 
                                 </div>
 
@@ -242,7 +217,6 @@ $AccYearTo = $AccYearDate->accyearto;
             if(decide == 1)
             {
                 $('.SpacesCls').show();
-                //$('.SpacesCls').css('display','block');
             }
             else{
                 $('.SpacesCls').html('');
