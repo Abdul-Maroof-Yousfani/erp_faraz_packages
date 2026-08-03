@@ -89,13 +89,27 @@ function show()
         /* ===== Sales Flow Chart (report page) ===== */
         #salesFlowChartWrap{margin-bottom:20px;}
         #salesFlowChartWrap .card.barChartHead{background:#fff !important;border:1px solid #EDF0F8 !important;border-radius:16px !important;box-shadow:0 6px 22px rgba(20,38,92,0.07) !important;padding:22px 24px !important;height: auto !important;}
-        #salesFlowChartWrap .card.barChartHead > div:first-child{display:flex !important;align-items:center !important;justify-content:space-between !important;margin-bottom:16px !important;}
+        #salesFlowChartWrap .card.barChartHead > div:first-child{display:flex !important;align-items:center !important;justify-content:space-between !important;margin-bottom:16px !important;flex-wrap:wrap !important;gap:12px !important;}
         #salesFlowChartWrap h6{font-size:17px !important;font-weight:700 !important;color:var(--erp-navy-dark,#0B1F59) !important;margin:0 !important;}
         #salesFlowChartWrap .selectOption select{height:38px !important;border-radius:9px !important;border:1px solid var(--erp-navy-tint,#E8ECFA) !important;background:#F7F9FD !important;font-weight:700 !important;font-size:12.5px !important;color:var(--erp-navy-dark,#0B1F59) !important;padding:6px 12px !important;}
         #salesFlowChartWrap .card-body{padding:0 !important;min-height:280px !important;}
         .empty-state{display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;padding:50px 20px !important;color:#a7abc3 !important;text-align:center !important;min-height:200px !important;}
         .empty-state i{font-size:34px !important;margin-bottom:12px !important;color:#c9cfe6 !important;}
         .empty-state p{font-size:13.5px !important;font-weight:500 !important;margin:0 !important;color:#8892b0 !important;}
+
+        /* ===== NEW: Chart view switcher (Line / Bar / Pivot) ===== */
+        .tb-chart-view-switch{display:inline-flex !important;background:#F1F3FB !important;border-radius:10px !important;padding:4px !important;gap:4px !important;}
+        .tb-view-btn{border:none !important;background:transparent !important;padding:7px 14px !important;font-size:12.5px !important;font-weight:700 !important;color:#5A6180 !important;border-radius:7px !important;cursor:pointer !important;transition:all .18s ease !important;white-space:nowrap !important;}
+        .tb-view-btn:hover{color:var(--erp-navy-dark,#0B1F59) !important;}
+        .tb-view-btn.active{background:#fff !important;color:var(--erp-navy-dark,#0B1F59) !important;box-shadow:0 2px 6px rgba(20,38,92,0.12) !important;}
+
+        /* ===== NEW: Pivot table view ===== */
+        .tb-pivot-table-wrap{padding:4px 4px 8px 4px !important;}
+        table.tb-pivot-table{width:100% !important;background:#fff !important;border-collapse:collapse !important;margin:0 !important;}
+        table.tb-pivot-table thead th{background:#EDF0F8 !important;color:#0B1F59 !important;font-weight:700 !important;font-size:12.5px !important;text-transform:uppercase !important;letter-spacing:.03em !important;padding:10px 14px !important;border-bottom:2px solid #D8DEF7 !important;}
+        table.tb-pivot-table tbody td{padding:9px 14px !important;font-size:13px !important;color:#2b2f4a !important;border-bottom:1px solid #EDF0F8 !important;}
+        table.tb-pivot-table tbody tr:hover td{background:#F7F9FD !important;}
+        table.tb-pivot-table tbody tr:last-child td{font-weight:700 !important;background:#F1F3FB !important;color:#0B1F59 !important;}
     </style>
 
     <div class="well">
@@ -129,7 +143,12 @@ function show()
                                             <div>
                                                 <h6>Sales Flow Chart</h6>
                                             </div>
-                                            <div class="text-right">
+                                            <div class="text-right" style="display:flex;align-items:center;gap:12px;">
+                                                <div class="tb-chart-view-switch">
+                                                    <button type="button" class="tb-view-btn active" data-view="line" onclick="switchTrialBalanceChartView('line')">Line Graph</button>
+                                                    <button type="button" class="tb-view-btn" data-view="bar" onclick="switchTrialBalanceChartView('bar')">Bar Chart</button>
+                                                    <button type="button" class="tb-view-btn" data-view="pivot" onclick="switchTrialBalanceChartView('pivot')">Pivot</button>
+                                                </div>
                                                 <div class="selectOption">
                                                     @php $currentChartYear = date('Y'); @endphp
                                                     <select id="report_chart_year" onchange="BusinessFlowChartAjaxReport(this.value)">
@@ -142,6 +161,18 @@ function show()
                                         </div>
                                         <div class="card-body">
                                             <canvas class="Business_Flow_Chart_Report" data-height="425"></canvas>
+                                            <div class="tb-pivot-table-wrap" style="display:none;">
+                                                <table class="table table-bordered tb-pivot-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Section / Month</th>
+                                                            <th class="text-right">Amount</th>
+                                                            <th class="text-right">Cumulative Total</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="tbPivotTableBody"></tbody>
+                                                </table>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -261,173 +292,201 @@ function show()
             }
         }
 
-function Business_Flow_Chart_Report_TrialBalance(sections)
-{
-    let labels  = [];
-    let barData = [];
-    let lineData = [];
+        // ===== NEW: shared state for the 3-view chart switcher =====
+        var trialBalanceChartCurrentView = 'line'; // 'line' | 'bar' | 'pivot'
+        var trialBalanceChartLastData = null;       // { labels: [], barData: [], lineData: [], barLabel: '', lineLabel: '' }
 
-    if (!sections || sections.length === 0) {
-        $('.Business_Flow_Chart_Report').closest('.card-body').html('<div class="empty-state"><i class="fa fa-bar-chart"></i><p>No data available for selected dates</p></div>');
-        return;
-    }
+        function switchTrialBalanceChartView(view)
+        {
+            trialBalanceChartCurrentView = view;
 
-    var runningTotal = 0;
+            $('.tb-view-btn').removeClass('active');
+            $('.tb-view-btn[data-view="' + view + '"]').addClass('active');
 
-    sections.forEach(item => {
-        labels.push(item.label);
-        var amount = parseFloat(item.amount) || 0;
-        barData.push(amount);
-
-        runningTotal += amount;
-        lineData.push(runningTotal);
-    });
-
-    // pehle se koi chart is canvas par attach ho to destroy karein
-    if (window.salesFlowChartReportInstance) {
-        window.salesFlowChartReportInstance.destroy();
-    }
-
-    var ctx = document.querySelector('.Business_Flow_Chart_Report');
-
-    window.salesFlowChartReportInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    type: 'bar',
-                    label: 'Closing Balance',
-                    data: barData,
-                    barThickness: 40,
-                    backgroundColor: 'rgba(30, 58, 138, 0.25)',
-                    borderColor: 'rgba(30, 58, 138, 1)',
-                    borderWidth: 1,
-                    yAxisID: 'y-bar',
-                    order: 2
-                },
-                {
-                    type: 'line',
-                    label: 'Cumulative Total',
-                    data: lineData,
-                    fill: false,
-                    backgroundColor: 'rgba(245, 166, 35, 1)',
-                    borderColor: 'rgba(245, 166, 35, 1)',
-                    borderWidth: 2,
-                    pointRadius: 3,
-                    pointBackgroundColor: 'rgba(245, 166, 35, 1)',
-                    lineTension: 0,
-                    yAxisID: 'y-line',
-                    order: 1
-                }
-            ]
-        },
-        options: {
-            legend: { display: true, position: 'top' },
-            scales: {
-                yAxes: [
-                    {
-                        id: 'y-bar',
-                        position: 'left',
-                        ticks: { beginAtZero: true },
-                        scaleLabel: { display: true, labelString: 'Closing Balance' }
-                    },
-                    {
-                        id: 'y-line',
-                        position: 'right',
-                        ticks: { beginAtZero: true },
-                        gridLines: { drawOnChartArea: false },
-                        scaleLabel: { display: true, labelString: 'Cumulative Total' }
-                    }
-                ]
+            if (view === 'pivot') {
+                $('.Business_Flow_Chart_Report').hide();
+                $('.tb-pivot-table-wrap').show();
+                renderTrialBalancePivotTable(trialBalanceChartLastData);
+            } else {
+                $('.tb-pivot-table-wrap').hide();
+                $('.Business_Flow_Chart_Report').show();
+                renderTrialBalanceFlowChart(trialBalanceChartLastData);
             }
         }
-    });
-}
 
-        // ===== Combined Bar + Line Chart (replaces old bar-only chart) =====
+        function renderTrialBalancePivotTable(chartData)
+        {
+            var $tbody = $('#tbPivotTableBody');
+            $tbody.empty();
+
+            if (!chartData || !chartData.labels || chartData.labels.length === 0) {
+                $tbody.html('<tr><td colspan="3" class="text-center">No data available for selected dates</td></tr>');
+                return;
+            }
+
+            chartData.labels.forEach(function (label, i) {
+                var amount = chartData.barData[i] || 0;
+                var cumulative = chartData.lineData[i] || 0;
+                $tbody.append(
+                    '<tr>' +
+                        '<td>' + label + '</td>' +
+                        '<td class="text-right">' + amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</td>' +
+                        '<td class="text-right">' + cumulative.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</td>' +
+                    '</tr>'
+                );
+            });
+        }
+
+        // Renders either the Line view or the Bar view depending on trialBalanceChartCurrentView
+        function renderTrialBalanceFlowChart(chartData)
+        {
+            if (!chartData || !chartData.labels || chartData.labels.length === 0) {
+                $('.Business_Flow_Chart_Report').closest('.card-body').find('.empty-state').remove();
+                $('.Business_Flow_Chart_Report').hide();
+                $('.card-body').append('<div class="empty-state"><i class="fa fa-bar-chart"></i><p>No data available for selected dates</p></div>');
+                return;
+            }
+
+            // agar pehle empty-state dikha diya tha to hataein aur canvas wapis dikhaein
+            $('.card-body .empty-state').remove();
+            $('.Business_Flow_Chart_Report').show();
+
+            if (window.salesFlowChartReportInstance) {
+                window.salesFlowChartReportInstance.destroy();
+            }
+
+            var ctx = document.querySelector('.Business_Flow_Chart_Report');
+
+            if (trialBalanceChartCurrentView === 'bar') {
+
+                window.salesFlowChartReportInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: chartData.labels,
+                        datasets: [
+                            {
+                                label: chartData.barLabel,
+                                data: chartData.barData,
+                                barThickness: 40,
+                                backgroundColor: 'rgba(30, 58, 138, 0.25)',
+                                borderColor: 'rgba(30, 58, 138, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        legend: { display: true, position: 'top' },
+                        scales: {
+                            yAxes: [
+                                {
+                                    ticks: { beginAtZero: true },
+                                    scaleLabel: { display: true, labelString: chartData.barLabel }
+                                }
+                            ]
+                        }
+                    }
+                });
+
+            } else {
+
+                // default: line view (cumulative total trend)
+                window.salesFlowChartReportInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: chartData.labels,
+                        datasets: [
+                            {
+                                label: chartData.lineLabel,
+                                data: chartData.lineData,
+                                fill: false,
+                                backgroundColor: 'rgba(245, 166, 35, 1)',
+                                borderColor: 'rgba(245, 166, 35, 1)',
+                                borderWidth: 2,
+                                pointRadius: 3,
+                                pointBackgroundColor: 'rgba(245, 166, 35, 1)',
+                                lineTension: 0
+                            }
+                        ]
+                    },
+                    options: {
+                        legend: { display: true, position: 'top' },
+                        scales: {
+                            yAxes: [
+                                {
+                                    ticks: { beginAtZero: true },
+                                    scaleLabel: { display: true, labelString: chartData.lineLabel }
+                                }
+                            ]
+                        }
+                    }
+                });
+            }
+        }
+
+        // Trial Balance date-range data (from show()'s TrialBalanceChartAjax call)
+        function Business_Flow_Chart_Report_TrialBalance(sections)
+        {
+            let labels  = [];
+            let barData = [];
+            let lineData = [];
+
+            if (sections && sections.length > 0) {
+                var runningTotal = 0;
+                sections.forEach(item => {
+                    labels.push(item.label);
+                    var amount = parseFloat(item.amount) || 0;
+                    barData.push(amount);
+                    runningTotal += amount;
+                    lineData.push(runningTotal);
+                });
+            }
+
+            trialBalanceChartLastData = {
+                labels: labels,
+                barData: barData,
+                lineData: lineData,
+                barLabel: 'Closing Balance',
+                lineLabel: 'Cumulative Total'
+            };
+
+            if (trialBalanceChartCurrentView === 'pivot') {
+                renderTrialBalancePivotTable(trialBalanceChartLastData);
+            } else {
+                renderTrialBalanceFlowChart(trialBalanceChartLastData);
+            }
+        }
+
+        // Year-wise monthly sales data (from BusinessFlowChartAjaxReport -> BusinessFlowChartAjax controller)
         function Business_Flow_Chart_Report(data)
         {
             let labels = [];
             let barData  = [];
             let lineData = [];
 
-            if (!data || data.length === 0) {
-                $('.Business_Flow_Chart_Report').closest('.card-body').html('<div class="empty-state"><i class="fa fa-bar-chart"></i><p>No sales data available for this year</p></div>');
-                return;
+            if (data && data.length > 0) {
+                var runningTotal = 0;
+                data.forEach(item => {
+                    labels.push(item.month_name);
+                    var amount = parseFloat(item.total_amount) || 0;
+                    barData.push(amount);
+                    runningTotal += amount;
+                    lineData.push(runningTotal);
+                });
             }
 
-            var runningTotal = 0;
+            trialBalanceChartLastData = {
+                labels: labels,
+                barData: barData,
+                lineData: lineData,
+                barLabel: 'Monthly Sales',
+                lineLabel: 'Cumulative Sales'
+            };
 
-            data.forEach(item => {
-                labels.push(item.month_name);
-                var amount = parseFloat(item.total_amount) || 0;
-                barData.push(amount);
-
-                // Line dataset = Cumulative (running total) sales trend
-                runningTotal += amount;
-                lineData.push(runningTotal);
-            });
-
-            let barChartEx = $('.Business_Flow_Chart_Report');
-
-            if (window.salesFlowChartReportInstance) {
-                window.salesFlowChartReportInstance.destroy();
+            if (trialBalanceChartCurrentView === 'pivot') {
+                renderTrialBalancePivotTable(trialBalanceChartLastData);
+            } else {
+                renderTrialBalanceFlowChart(trialBalanceChartLastData);
             }
-
-            window.salesFlowChartReportInstance = new Chart(barChartEx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            type: 'bar',
-                            label: 'Monthly Sales',
-                            data: barData,
-                            barThickness: 15,
-                            backgroundColor: 'rgba(30, 58, 138, 0.25)',
-                            borderColor: 'rgba(30, 58, 138, 1)',
-                            borderWidth: 1,
-                            yAxisID: 'y-bar',
-                            order: 2
-                        },
-                        {
-                            type: 'line',
-                            label: 'Cumulative Sales',
-                            data: lineData,
-                            fill: false,
-                            backgroundColor: 'rgba(245, 166, 35, 1)',
-                            borderColor: 'rgba(245, 166, 35, 1)',
-                            borderWidth: 2,
-                            pointRadius: 3,
-                            pointBackgroundColor: 'rgba(245, 166, 35, 1)',
-                            lineTension: 0,
-                            yAxisID: 'y-line',
-                            order: 1
-                        }
-                    ]
-                },
-                options: {
-                    legend: { display: true, position: 'top' },
-                    scales: {
-                        yAxes: [
-                            {
-                                id: 'y-bar',
-                                position: 'left',
-                                ticks: { beginAtZero: true },
-                                scaleLabel: { display: true, labelString: 'Monthly Sales' }
-                            },
-                            {
-                                id: 'y-line',
-                                position: 'right',
-                                ticks: { beginAtZero: true },
-                                gridLines: { drawOnChartArea: false },
-                                scaleLabel: { display: true, labelString: 'Cumulative Sales' }
-                            }
-                        ]
-                    }
-                }
-            });
         }
     </script>
 
