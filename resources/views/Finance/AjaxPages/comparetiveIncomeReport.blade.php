@@ -48,6 +48,61 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
 .report-header .report-range{font-size:13.5px;color:#3a4256;font-weight:500;}
 .report-header .report-range b{color:#1c2b4a;}
 .report-header .printed-on{position:absolute;top:18px;right:22px;font-size:12.5px;font-weight:500;color:#6b7280;}
+
+/* =====================================================================
+   ACCORDION BEHAVIOUR - section headers clickable, detail rows collapse
+   Smooth open/close is done via a max-height transition on an inner
+   wrapper div inside every cell (animating a <tr>'s height directly is
+   unreliable across browsers, so this is the robust way to do it).
+   ===================================================================== */
+.pl-section-row{cursor:pointer !important;user-select:none !important;}
+.pl-section-row td{position:relative !important;}
+.pl-section-row:hover td{background:#E7EBFA !important;}
+.pl-section-row.active td{background:#E2E7F8 !important;color:#0B1F59 !important;}
+
+/* chevron arrow - a clean CSS triangle, rotates 90deg when section is open */
+.pl-section-row .acc-arrow{
+    display:inline-block;
+    width:0;height:0;
+    margin-right:10px;
+    border-top:5px solid transparent;
+    border-bottom:5px solid transparent;
+    border-left:7px solid #0B1F59;
+    vertical-align:middle;
+    transition:transform .25s ease;
+}
+.pl-section-row.active .acc-arrow{transform:rotate(90deg);}
+
+/* detail rows always exist in the DOM (tr height can't animate reliably),
+   the cell padding/border is stripped to 0 and the real content lives in
+   .acc-cell-inner, whose max-height/opacity/padding is what animates.
+   NOTE: selector specificity here is deliberately raised (table.Profit_Loss
+   tbody tr.acc-detail-row td) so it beats the earlier
+   table.Profit_Loss tbody td{padding:10px !important} rule - otherwise the
+   cell padding stays forced on and the "collapsed" row still shows as an
+   empty gap. */
+table.Profit_Loss tbody tr.acc-detail-row td,
+table.Profit_Loss tbody tr.acc-detail-row th{
+    padding:0 !important;
+    border-bottom:none !important;
+}
+table.Profit_Loss tbody tr.acc-detail-row.open td,
+table.Profit_Loss tbody tr.acc-detail-row.open th{
+    border-bottom:1px solid #F0F2F8 !important;
+}
+.acc-cell-inner{
+    display:block;
+    max-height:0;
+    opacity:0;
+    overflow:hidden;
+    padding:0 10px;
+    transition:max-height .32s ease, opacity .28s ease, padding .32s ease;
+}
+table.Profit_Loss tbody tr.acc-detail-row.open .acc-cell-inner{
+    max-height:60px;
+    opacity:1;
+    padding:10px;
+}
 </style>
 
 <div class="row pl-wrapper">
@@ -148,11 +203,12 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                             $paramOne = "fdc/getSummaryLedgerDetail?m=".$CompanyId;
                             $counter++;
                             if($counter == 1){
-                                echo '<tr class="pl-section-row"><td colspan="50">Revenue</td></tr>';
+                                echo '<tr class="pl-section-row" data-group="revenue"><td colspan="'.(count($filterMonth)+2).'"><span class="acc-arrow"></span>Revenue</td></tr>';
                             }else{
                     ?>
-                            <tr>
-                                <td class="text-left <?php if($head==3){ echo 'pl-level-1'; } else { echo 'pl-level-detail'; } ?>" style="padding-left: <?php echo 10 + (($level - 1) * 16); ?>px;">
+                            <tr class="acc-detail-row" data-group="revenue">
+                                <td class="text-left <?php if($head==3){ echo 'pl-level-1'; } else { echo 'pl-level-detail'; } ?>">
+                                    <div class="acc-cell-inner" style="padding-left: <?php echo 10 + (($level - 1) * 16); ?>px;">
                                     <?php if($level == 1):?>
                                         <a href="#"><?php echo strtoupper($row1->name)?></a>
                                     <?php elseif($level == 2):?>
@@ -168,6 +224,7 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                     <?php elseif($level == 7):?>
                                         <a href="#"><?php echo  ''. $row1->name?></a>
                                     <?php endif;?>
+                                    </div>
                                 </td>
                                 <?php 
                                     foreach($filterMonth as $fmRow){
@@ -179,6 +236,7 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                         $to_date = date($filterYear.'-'.$makeMNumber.'-t');
                                 ?>
                                     <td class="text-right <?php if($head==3){ echo 'pl-level-1'; } ?>">
+                                        <div class="acc-cell-inner">
                                         <?php 
                                             $amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row1->code,'1',0,1);
                                             $revenue_total += $amount;
@@ -193,9 +251,11 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
 
                                             
                                         ?>
+                                        </div>
                                     </td>
                                 <?php }?>
                                 <td class="text-right">
+                                    <div class="acc-cell-inner">
                                     @php
                                         if($revenue_total < 0 ):
                                             echo "(".number_format(abs((float)$revenue_total)).")";
@@ -203,6 +263,7 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                            echo number_format($revenue_total);
                                         endif;        
                                     @endphp 
+                                    </div>
                                 </td>
                             </tr>
                     <?php
@@ -213,8 +274,8 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                             $counterTwo++;
                             if($counterTwo == 1){
                     ?>
-                                <tr class="pl-total-row">
-                                    <th>Total Revenue</th>
+                                <tr class="pl-total-row acc-detail-row" data-group="revenue">
+                                    <th><div class="acc-cell-inner">Total Revenue</div></th>
                                     <?php 
                                         foreach($filterMonth as $fmRow){
                                             $makeMNumber = $fmRow;
@@ -225,6 +286,7 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                             $to_date = date($filterYear.'-'.$makeMNumber.'-t');
                                     ?>
                                         <th class="text-right">
+                                            <div class="acc-cell-inner">
                                             <?php 
                                                 $amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row2->code,'1',0,1);
                                                 $revenueArray[$fmRow] = [$amount];
@@ -238,10 +300,12 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                                 endif;
                                                 echo $amount;
                                             ?>
+                                            </div>
                                         </th>
                                     <?php }?>
                                     
                                     <th class="text-right">
+                                        <div class="acc-cell-inner">
                                         <?php 
                                         $revenueArrayTotal = array_sum(array_map('current', $revenueArray)); ?>
                                     
@@ -252,7 +316,7 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                             echo number_format($revenueArrayTotal);
                                             endif;        
                                         @endphp 
-                                        
+                                        </div>
                                         </th>
                                 </tr>
                     <?php
@@ -260,8 +324,8 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                         endforeach;
                     ?>
                     {{-- Revenue End --}}
-                    <tr class="pl-spacer-row">
-                        <td colspan="100">&nbsp;</td>
+                    <tr class="pl-spacer-row acc-detail-row" data-group="revenue">
+                        <td colspan="100"><div class="acc-cell-inner">&nbsp;</div></td>
                     </tr>
                     {{-- Cost Of Goods Sold Start --}}
                     <?php 
@@ -271,12 +335,13 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                             $cCounter++;
                             $headWiseTotalAmount = 0;
                             if($cCounter == 1){
-                                echo '<tr class="pl-section-row"><td colspan="50">Cost of Goods Sold</td></tr>';
+                                echo '<tr class="pl-section-row" data-group="cogs"><td colspan="'.(count($filterMonth)+2).'"><span class="acc-arrow"></span>Cost of Goods Sold</td></tr>';
                             }else{
                             //$amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row->code,'1',1,0);
                     ?>
-                            <tr id="costOfGoodsSoldRecordRow_<?php echo $cCounter?>">
-                                <td colspan="2" class="text-left <?php if($head==3){ echo 'pl-level-1'; } else { echo 'pl-level-detail'; } ?>" style="padding-left: <?php echo 10 + (($level - 1) * 16); ?>px;">
+                            <tr id="costOfGoodsSoldRecordRow_<?php echo $cCounter?>" class="acc-detail-row" data-group="cogs">
+                                <td colspan="2" class="text-left <?php if($head==3){ echo 'pl-level-1'; } else { echo 'pl-level-detail'; } ?>">
+                                    <div class="acc-cell-inner" style="padding-left: <?php echo 10 + (($level - 1) * 16); ?>px;">
                                     <?php if($level == 1):?>
                                         <a href="#"><?php echo strtoupper($row5->name)?></a>
                                     <?php elseif($level == 2):?>
@@ -292,6 +357,7 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                     <?php elseif($level == 7):?>
                                         <a href="#"><?php echo  ''. $row5->name?></a>
                                     <?php endif;?>
+                                    </div>
                                 </td>
                                 <?php
                                     foreach($filterMonth as $fmRow){
@@ -303,6 +369,7 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                         $to_date = date($filterYear.'-'.$makeMNumber.'-t');
                                 ?>
                                     <td  class="text-right <?php if($head==3){ echo 'pl-level-1'; } ?>">
+                                        <div class="acc-cell-inner">
                                         <?php 
                                             $amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row5->code,'1',1,0);
                                             if($amount != 0){
@@ -317,6 +384,7 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                             endif;
                                             echo $amount;
                                         ?>
+                                        </div>
                                     </td>
                                 <?php }?>
                             </tr>
@@ -338,8 +406,8 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                         if($cCounterTwo == 1){
                         //$amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row->code,'1',1,0);
                 ?>
-                        <tr class="pl-total-row">
-                            <th>Total Cost of Goods Sold</th>
+                        <tr class="pl-total-row acc-detail-row" data-group="cogs">
+                            <th><div class="acc-cell-inner">Total Cost of Goods Sold</div></th>
                             <?php
                                 foreach($filterMonth as $fmRow){
                                     $makeMNumber = $fmRow;
@@ -350,6 +418,7 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                     $to_date = date($filterYear.'-'.$makeMNumber.'-t');
                             ?>
                                 <th class="text-right">
+                                    <div class="acc-cell-inner">
                                     <?php 
                                         $amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row6->code,'1',1,0);
                                         $cogsArray[$fmRow] = [$amount];
@@ -365,10 +434,11 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                         endif;
                                         echo $amount;
                                     ?>
+                                    </div>
                                 </th>
                             <?php }?>
                            <th class="text-right">
-                            
+                                <div class="acc-cell-inner">
                                 @php
                                     $otherIncomeArrayTotal = array_sum(array_map('current', $otherIncomeArray));
                                     if($otherIncomeArrayTotal < 0 ):
@@ -377,7 +447,7 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                     echo number_format($otherIncomeArrayTotal);
                                     endif;        
                                 @endphp 
-                              
+                                </div>
                             </th>
                         </tr>
                 <?php
@@ -388,8 +458,8 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
 
                     {{-- Gross Profit Start --}}
 
-                    <tr class="pl-gross-profit-row">
-                        <th>Gross Profit</th>
+                    <tr class="pl-gross-profit-row acc-detail-row" data-group="cogs">
+                        <th><div class="acc-cell-inner">Gross Profit</div></th>
                         <?php
                             foreach($filterMonth as $fmRow){
                                 $makeMNumber = $fmRow;
@@ -399,9 +469,10 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                 $from_date = date($filterYear.'-'.$makeMNumber.'-01');
                                 $to_date = date($filterYear.'-'.$makeMNumber.'-t');
                         ?>
-                            <th class="text-right" id="grossProfit_<?php echo $fmRow?>"><?php echo $revenueArray[$fmRow][0] - $cogsArray[$fmRow][0];?></th>
+                            <th class="text-right" id="grossProfit_<?php echo $fmRow?>"><div class="acc-cell-inner"><?php echo $revenueArray[$fmRow][0] - $cogsArray[$fmRow][0];?></div></th>
                         <?php }?>
                         <th class="text-right">
+                            <div class="acc-cell-inner">
                             @php
                                 $grossProfitTotal = array_sum(array_map('current', $revenueArray)) - array_sum(array_map('current', $cogsArray));
                                 if($grossProfitTotal < 0 ):
@@ -410,14 +481,15 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                 echo number_format($grossProfitTotal);
                                 endif;        
                             @endphp 
+                            </div>
                         </th>
 
                     </tr>
                     
                     {{-- Gross Profit End --}}
 
-                    <tr class="pl-spacer-row">
-                        <td colspan="100">&nbsp;</td>
+                    <tr class="pl-spacer-row acc-detail-row" data-group="cogs">
+                        <td colspan="100"><div class="acc-cell-inner">&nbsp;</div></td>
                     </tr>
                     {{-- Expense Start --}}
                     <?php
@@ -427,12 +499,13 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                             $bCounter++;
                             $headWiseTotalAmount = 0;
                             if($bCounter == 1){
-                                echo '<tr class="pl-section-row"><td colspan="50">Expense</td></tr>';
+                                echo '<tr class="pl-section-row" data-group="expense"><td colspan="'.(count($filterMonth)+2).'"><span class="acc-arrow"></span>Expense</td></tr>';
                             }else{
                             //$amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row->code,'1',1,0);
                     ?>
-                            <tr id="expenseRecordRow_<?php echo $bCounter?>">
-                                <td class="text-left <?php if($head==3){ echo 'pl-level-1'; } else { echo 'pl-level-detail'; } ?>" style="padding-left: <?php echo 10 + (($level - 1) * 16); ?>px;">
+                            <tr id="expenseRecordRow_<?php echo $bCounter?>" class="acc-detail-row" data-group="expense">
+                                <td class="text-left <?php if($head==3){ echo 'pl-level-1'; } else { echo 'pl-level-detail'; } ?>">
+                                    <div class="acc-cell-inner" style="padding-left: <?php echo 10 + (($level - 1) * 16); ?>px;">
                                     <?php if($level == 1):?>
                                         <a href="#"><?php echo strtoupper($row3->name)?></a>
                                     <?php elseif($level == 2):?>
@@ -448,6 +521,7 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                     <?php elseif($level == 7):?>
                                         <a href="#"><?php echo  ''. $row3->name?></a>
                                     <?php endif;?>
+                                    </div>
                                 </td>
                                 <?php
                                     foreach($filterMonth as $fmRow){
@@ -459,6 +533,7 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                         $to_date = date($filterYear.'-'.$makeMNumber.'-t');
                                 ?>
                                     <td class="text-right <?php if($head==3){ echo 'pl-level-1'; } ?>">
+                                        <div class="acc-cell-inner">
                                         <?php 
                                             $amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row3->code,'1',1,0);
                                             $expense_total += (int)$amount ?? 0 ; 
@@ -476,9 +551,11 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                             echo $amount;
 
                                         ?>
+                                        </div>
                                     </td>
                                 <?php }?>
                                 <td class="text-right">
+                                    <div class="acc-cell-inner">
                                     @php
                                         if($expense_total < 0 ):
                                             echo "(".number_format(abs((float)$expense_total)).")";
@@ -486,6 +563,7 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                         echo number_format($expense_total);
                                         endif;        
                                     @endphp 
+                                    </div>
                                 </td>
                             </tr>
                     <?php
@@ -500,8 +578,8 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                             $bCounterTwo++;
                             if($bCounterTwo == 1){
                     ?>
-                                <tr class="pl-total-row">
-                                    <th>Total Expense</th>
+                                <tr class="pl-total-row acc-detail-row" data-group="expense">
+                                    <th><div class="acc-cell-inner">Total Expense</div></th>
                                     <?php 
                                         foreach($filterMonth as $fmRow){
                                             $makeMNumber = $fmRow;
@@ -512,6 +590,7 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                             $to_date = date($filterYear.'-'.$makeMNumber.'-t');
                                     ?>
                                         <th class="text-right">
+                                            <div class="acc-cell-inner">
                                             <?php 
                                                 $amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row4->code,'1',1,0);
                                                 $expenseArray[$fmRow] = [$amount];
@@ -524,10 +603,11 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                                 endif;
                                                 echo $amount;
                                             ?>
+                                            </div>
                                         </th>
                                     <?php }?>
                                         <th class="text-right">
-                                        
+                                            <div class="acc-cell-inner">
                                             @php
                                                 $expenseArrayTotal = array_sum(array_map('current', $expenseArray));
                                                 if($expenseArrayTotal < 0 ):
@@ -536,7 +616,7 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                                 echo number_format($expenseArrayTotal);
                                                 endif;        
                                             @endphp 
-                                            
+                                            </div>
                                         </th>
 
                                 </tr>
@@ -554,12 +634,13 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                             $dCounter++;
                             $headWiseTotalAmount = 0;
                             if($dCounter == 1){
-                                echo '<tr class="pl-section-row"><td colspan="50">Other Income</td></tr>';
+                                echo '<tr class="pl-section-row" data-group="other"><td colspan="'.(count($filterMonth)+2).'"><span class="acc-arrow"></span>Other Income</td></tr>';
                             }else{
                             //$amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row->code,'1',1,0);
                     ?>
-                            <tr id="otherIncomeRecordRow_<?php echo $dCounter?>">
-                                <td class="text-left <?php if($head==3){ echo 'pl-level-1'; } else { echo 'pl-level-detail'; } ?>" style="padding-left: <?php echo 10 + (($level - 1) * 16); ?>px;">
+                            <tr id="otherIncomeRecordRow_<?php echo $dCounter?>" class="acc-detail-row" data-group="other">
+                                <td class="text-left <?php if($head==3){ echo 'pl-level-1'; } else { echo 'pl-level-detail'; } ?>">
+                                    <div class="acc-cell-inner" style="padding-left: <?php echo 10 + (($level - 1) * 16); ?>px;">
                                     <?php if($level == 1):?>
                                         <a href="#"><?php echo strtoupper($row7->name)?></a>
                                     <?php elseif($level == 2):?>
@@ -575,6 +656,7 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                     <?php elseif($level == 7):?>
                                         <a href="#"><?php echo  ''. $row7->name?></a>
                                     <?php endif;?>
+                                    </div>
                                 </td>
                                 <?php
                                     foreach($filterMonth as $fmRow){
@@ -586,6 +668,7 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                         $to_date = date($filterYear.'-'.$makeMNumber.'-t');
                                 ?>
                                     <td class="text-right <?php if($head==3){ echo 'pl-level-1'; } ?>">
+                                        <div class="acc-cell-inner">
                                         <?php 
                                             $amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row7->code,'1',1,0);
                                             $other_total += $amount; 
@@ -602,10 +685,12 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                             echo $amount;
 
                                         ?>
+                                        </div>
                                     </td>
                                 <?php }?>
 
                                 <td class="text-right">
+                                    <div class="acc-cell-inner">
                                     @php
                                         if($other_total < 0 ):
                                             echo "(".abs((float)$other_total).")";
@@ -614,6 +699,7 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                         endif;
                                         
                                     @endphp
+                                    </div>
                                </td>
                             </tr>
                     <?php
@@ -634,8 +720,8 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                         if($dCounterTwo == 1){
                         //$amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row->code,'1',1,0);
                 ?>
-                        <tr class="pl-total-row">
-                            <th>Total Other Income</th>
+                        <tr class="pl-total-row acc-detail-row" data-group="other">
+                            <th><div class="acc-cell-inner">Total Other Income</div></th>
                             <?php
                                 foreach($filterMonth as $fmRow){
                                     $makeMNumber = $fmRow;
@@ -646,6 +732,7 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                     $to_date = date($filterYear.'-'.$makeMNumber.'-t');
                             ?>
                                 <th class="text-right">
+                                    <div class="acc-cell-inner">
                                     <?php 
                                         $amount = CommonHelper::get_parent_and_account_amount(1,$from_date,$to_date,$row8->code,'1',1,0);
                                         $otherIncomeArray[$fmRow] = [$amount];
@@ -661,9 +748,11 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                         endif;
                                         echo $amount;
                                     ?>
-
+                                    </div>
+                                </th>
                             <?php }?>
                             <th class="text-right">
+                                <div class="acc-cell-inner">
                                 @php
                                     $otherIncomeArrayTotal = array_sum(array_map('current', $otherIncomeArray));
                                     if($otherIncomeArrayTotal < 0 ):
@@ -672,6 +761,7 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
                                     echo number_format($otherIncomeArrayTotal);
                                     endif;        
                                 @endphp 
+                                </div>
                             </th>
                         </tr>
                 <?php
@@ -725,3 +815,30 @@ table.Profit_Loss a{color:inherit !important;text-decoration:none !important;}
         </div>
     </div>
 </div>
+
+<script>
+$(document).ready(function () {
+
+    // Accordion behaviour: click a section header (Revenue / Cost of Goods Sold /
+    // Expense / Other Income) -> its detail rows slide open. Click again -> close.
+    // Opening one section auto-closes whichever other section was open.
+    $(document).off('click', '.pl-section-row').on('click', '.pl-section-row', function () {
+
+        var $clickedHeader = $(this);
+        var group = $clickedHeader.data('group');
+        var wasActive = $clickedHeader.hasClass('active');
+
+        // close every section first (only one section open at a time)
+        $('.pl-section-row').removeClass('active');
+        $('.acc-detail-row').removeClass('open');
+
+        // if it was already open, clicking again just leaves everything closed.
+        // if it was closed, open this one.
+        if (!wasActive) {
+            $clickedHeader.addClass('active');
+            $('.acc-detail-row[data-group="' + group + '"]').addClass('open');
+        }
+    });
+
+});
+</script>

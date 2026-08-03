@@ -14,13 +14,17 @@ $owner_equity_compare_array = [];
    table{border:1px solid #CCC !important;border-collapse:collapse !important;}
    td{border:none !important;}
    .report-card{background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(30,41,59,0.06);border:1px solid #eef0f5;margin-bottom:28px;overflow:hidden;}
-   .report-card-title{display:flex;align-items:center;gap:10px;padding:16px 20px;font-size:15px;font-weight:500;letter-spacing:0.4px;color:#fff;}
+   .report-card-title{display:flex;align-items:center;gap:10px;padding:16px 20px;font-size:15px;font-weight:500;letter-spacing:0.4px;color:#fff;cursor:pointer;user-select:none;}
    .report-card-title.assets{background:linear-gradient(135deg,#2b3a67,#4a5aa8);}
    .report-card-title.equity{background:linear-gradient(135deg,#6a3fbd,#9163e0);}
    .report-card-title.liabilities{background:linear-gradient(135deg,#d9822b,#f0a94e);}
+   .report-card-title .toggle-arrow{margin-left:auto;font-size:14px;transition:transform .2s ease;}
+   .report-card-title.collapsed .toggle-arrow{transform:rotate(-90deg);}
    .table-responsive{overflow-x:auto;scrollbar-width:thin;height:auto !important;}
    .table-responsive::-webkit-scrollbar{height:8px;}
    .table-responsive::-webkit-scrollbar-thumb{background:#d8dce6;border-radius:8px;}
+   /* ---------- Accordion collapse behavior ---------- */
+   .collapsible-body{overflow:hidden;max-height:0;opacity:0;transition:max-height .4s cubic-bezier(.4,0,.2,1), opacity .3s ease;}
    table.sf-table-list{width:100%;border-collapse:collapse !important;border:none !important;font-family:'Segoe UI',Roboto,sans-serif;font-size:13.5px;font-weight:400;min-width:900px;}
    table.sf-table-list thead th{background:#f6f7fb;color:#5b6472;font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;padding:12px 16px;border-bottom:2px solid #e7e9f0 !important;white-space:nowrap;position:sticky;top:0;z-index:2;}
    table.sf-table-list thead th:first-child{text-align:left;position:sticky;left:0;z-index:3;background:#f6f7fb;}
@@ -63,10 +67,11 @@ $owner_equity_compare_array = [];
 <div class="row" id="data">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <div class="report-card">
-            <div class="report-card-title assets">
+            <div class="report-card-title assets collapsed" onclick="toggleBsSection(this,'body-assets')">
                 <i class="fa fa-university"></i> Assets (Compare)
+                <span class="toggle-arrow">&#9660;</span>
             </div>
-            <div class="table-responsive" style="overflow-x: scroll;">
+            <div class="table-responsive collapsible-body" id="body-assets" style="overflow-x: scroll;">
 
                 <table id="table1" class="table table-bordered sf-table-list Balance_Sheet">
                     <thead>
@@ -318,10 +323,11 @@ $owner_equity_compare_array = [];
 <div class="row">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <div class="report-card">
-            <div class="report-card-title equity">
+            <div class="report-card-title equity collapsed" onclick="toggleBsSection(this,'body-equity')">
                 <i class="fa fa-balance-scale"></i> Owner's Equity (Compare)
+                <span class="toggle-arrow">&#9660;</span>
             </div>
-            <div class="table-responsive" style="overflow-x: scroll;">
+            <div class="table-responsive collapsible-body" id="body-equity" style="overflow-x: scroll;">
 
                 <table id="table2" class="table table-bordered sf-table-list Balance_Sheet">
                     <thead>
@@ -705,10 +711,11 @@ $owner_equity_compare_array = [];
 <div class="row">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <div class="report-card">
-            <div class="report-card-title liabilities">
+            <div class="report-card-title liabilities collapsed" onclick="toggleBsSection(this,'body-liabilities')">
                 <i class="fa fa-file-invoice-dollar"></i> Liabilities (Compare)
+                <span class="toggle-arrow">&#9660;</span>
             </div>
-            <div class="table-responsive" style="overflow-x: scroll;"> 
+            <div class="table-responsive collapsible-body" id="body-liabilities" style="overflow-x: scroll;"> 
 
                 <table id="table3" class="table table-bordered sf-table-list Balance_Sheet">
                     <thead>
@@ -985,12 +992,69 @@ $owner_equity_compare_array = [];
 </span>
 
 <script>
-        function get_detai(url,from,to,code,name)
+    function get_detai(url,from,to,code,name)
     {
         showDetailModelOneParamerter(url,from+','+to+','+code+','+name);
     }
 
+    // Accordion toggle: click a category banner (Assets / Owner's Equity / Liabilities)
+    // to show its table. Opening one section smoothly closes any other open section,
+    // so only one section stays open at a time. Clicking the open section again closes it.
+    // Heights are measured with JS (scrollHeight) so the CSS transition animates between
+    // real pixel values instead of jumping against an arbitrary max-height cap.
+    var bsAllSections = ['body-assets', 'body-equity', 'body-liabilities'];
 
+    function bsCloseSection(el)
+    {
+        if (!el) return;
+        var current = el.scrollHeight;
+        el.style.maxHeight = current + 'px';
+        el.style.opacity = '1';
+        void el.offsetHeight;
+        el.style.maxHeight = '0px';
+        el.style.opacity = '0';
+    }
 
+    function bsOpenSection(el)
+    {
+        if (!el) return;
+        el.style.maxHeight = '0px';
+        el.style.opacity = '0';
+        void el.offsetHeight;
+        var target = el.scrollHeight;
+        el.style.maxHeight = target + 'px';
+        el.style.opacity = '1';
+        el.addEventListener('transitionend', function handler(e) {
+            if (e.propertyName === 'max-height') {
+                el.style.maxHeight = 'none';
+                el.removeEventListener('transitionend', handler);
+            }
+        });
+    }
+
+    function toggleBsSection(bannerEl, bodyId)
+    {
+        var body = document.getElementById(bodyId);
+        if (!body) return;
+
+        var isCurrentlyOpen = body.classList.contains('bs-open');
+
+        bsAllSections.forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el && el.classList.contains('bs-open')) {
+                bsCloseSection(el);
+                el.classList.remove('bs-open');
+            }
+        });
+        document.querySelectorAll('.report-card-title').forEach(function (b) {
+            b.classList.add('collapsed');
+        });
+
+        if (!isCurrentlyOpen) {
+            bsOpenSection(body);
+            body.classList.add('bs-open');
+            bannerEl.classList.remove('collapsed');
+        }
+    }
 </script>
 <?php
