@@ -113,14 +113,14 @@ table.Profit_Loss tbody tr.acc-detail-row.open .acc-cell-inner{
     $__toStr   = date('F d, Y', mktime(0,0,0,$__lastMonth,date('t',mktime(0,0,0,$__lastMonth,1,$filterYear)),$filterYear));
 ?>
 
-<div class="report-header">
-    <div class="printed-on">Printed On: {{ date('F d, Y') }}</div>
-    <div class="company-name">{!! CommonHelper::get_company_name($CompanyId) !!}</div>
-    <div class="report-title">Profit & Loss</div>
-    <div class="report-range">
-        FROM <b>{{ $__fromStr }}</b> TO <b>{{ $__toStr }}</b>
+    <div class="report-header">
+        <div class="printed-on">Printed On: {{ date('F d, Y') }}</div>
+        <div class="company-name">{!! CommonHelper::get_company_name($CompanyId) !!}</div>
+        <div class="report-title">Profit & Loss</div>
+        <div class="report-range">
+            FROM <b>{{ $__fromStr }}</b> TO <b>{{ $__toStr }}</b>
+        </div>
     </div>
-</div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <div class="table-responsive">
             <table class="table table-bordered table-striped Profit_Loss">
@@ -813,8 +813,21 @@ table.Profit_Loss tbody tr.acc-detail-row.open .acc-cell-inner{
                 </tbody>
             </table> 
         </div>
+
+        
     </div>
 </div>
+<?php
+    // NEW: chart data for the parent page's Line/Bar/Pie/Pivot switcher.
+    $plChartRevenue     = isset($revenueArrayTotal) ? $revenueArrayTotal : 0;
+    $plChartCogs        = isset($cogsArray) ? array_sum(array_map('current', $cogsArray)) : 0;
+    $plChartExpense     = isset($expenseArrayTotal) ? $expenseArrayTotal : 0;
+    $plChartOtherIncome = isset($otherIncomeArrayTotal) ? $otherIncomeArrayTotal : 0;
+    $plChartNetProfit   = isset($NetProfitArrayTotal) ? $NetProfitArrayTotal : 0;
+?>
+<script type="application/json" id="plChartDataJson">
+{"labels":["Revenue","COGS","Expense","Other Income","Net Profit"],"values":[<?php echo json_encode((float)$plChartRevenue);?>,<?php echo json_encode((float)$plChartCogs);?>,<?php echo json_encode((float)$plChartExpense);?>,<?php echo json_encode((float)$plChartOtherIncome);?>,<?php echo json_encode((float)$plChartNetProfit);?>]}
+</script>
 
 <script>
 $(document).ready(function () {

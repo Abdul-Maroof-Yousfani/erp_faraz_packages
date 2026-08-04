@@ -141,7 +141,7 @@ function show()
                                     <div class="card barChartHead">
                                         <div>
                                             <div>
-                                                <h6>Sales Flow Chart</h6>
+                                                <h6>Trial Balance 6th Column</h6>
                                             </div>
                                             <div class="text-right" style="display:flex;align-items:center;gap:12px;">
                                                 <div class="tb-chart-view-switch">

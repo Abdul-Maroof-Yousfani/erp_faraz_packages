@@ -718,6 +718,19 @@ table.Profit_Loss tbody tr.acc-detail-row.open .acc-cell-inner{
     </div>
 </div>
 
+<?php
+    // NEW: chart data for the parent page's Line/Bar/Pie/Pivot switcher.
+    // All totals below already exist in scope from the sections rendered above.
+    $plChartRevenue     = isset($revenueArrayTotal) ? $revenueArrayTotal : 0;
+    $plChartCogs        = isset($cogsArray) ? array_sum(array_map('current', $cogsArray)) : 0;
+    $plChartExpense     = isset($expenseArrayTotal) ? $expenseArrayTotal : 0;
+    $plChartOtherIncome = isset($otherIncomeArrayTotal) ? $otherIncomeArrayTotal : 0;
+    $plChartNetProfit   = isset($NetProfitArrayTotal) ? $NetProfitArrayTotal : 0;
+?>
+<script type="application/json" id="plChartDataJson">
+{"labels":["Revenue","COGS","Expense","Other Income","Net Profit"],"values":[<?php echo json_encode((float)$plChartRevenue);?>,<?php echo json_encode((float)$plChartCogs);?>,<?php echo json_encode((float)$plChartExpense);?>,<?php echo json_encode((float)$plChartOtherIncome);?>,<?php echo json_encode((float)$plChartNetProfit);?>]}
+</script>
+
 <script>
 $(document).ready(function () {
 

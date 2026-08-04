@@ -1296,6 +1296,22 @@ table.Profit_Loss tbody tr.acc-detail-row.open .acc-cell-inner{
     </div>
 </div>
 
+<?php
+    // NEW: chart data for the parent page's Line/Bar/Pie/Pivot switcher.
+    // This view mixes two years, so the chart shows the FILTER YEAR totals only
+    // (recomputed fresh here from the per-month arrays already filled above);
+    // the note tag below tells the user that's what they're looking at.
+    $plChartRevenue     = isset($revenueArray) ? array_sum(array_map('current', $revenueArray)) : 0;
+    $plChartCogs        = isset($cogsArray) ? array_sum(array_map('current', $cogsArray)) : 0;
+    $plChartExpense     = isset($expenseArray) ? array_sum(array_map('current', $expenseArray)) : 0;
+    $plChartOtherIncome = isset($otherIncomeArray) ? array_sum(array_map('current', $otherIncomeArray)) : 0;
+    $plChartNetProfit   = $plChartRevenue - $plChartCogs - $plChartExpense + $plChartOtherIncome;
+?>
+<script type="application/json" id="plChartDataJson">
+{"labels":["Revenue","COGS","Expense","Other Income","Net Profit"],"values":[<?php echo json_encode((float)$plChartRevenue);?>,<?php echo json_encode((float)$plChartCogs);?>,<?php echo json_encode((float)$plChartExpense);?>,<?php echo json_encode((float)$plChartOtherIncome);?>,<?php echo json_encode((float)$plChartNetProfit);?>]}
+</script>
+<script type="text/plain" id="plChartReportNote">Chart sirf Filter Year ({{ $filterYear }}) ke totals dikha raha hai — table mein Compare Year ({{ $compareYear }}) side-by-side mojood hai.</script>
+
 <script>
 $(document).ready(function () {
 
