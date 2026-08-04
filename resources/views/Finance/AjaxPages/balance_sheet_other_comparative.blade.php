@@ -555,7 +555,19 @@ table.sf-table-list td[onclick]:hover{color:#4a5aa8;text-decoration:underline;}
     </div>
 </div>
 
-
+<?php $bsLastM = end($monthArray); ?>
+<script type="application/json" id="bsChartDataJson">
+<?php
+    echo json_encode([
+        'labels' => ['Total Assets', "Total Owner's Equity", 'Total Liabilities'],
+        'values' => [
+            (float) $total_assets,
+            (float) ($net_profit_array[$bsLastM] + $owner_equity_array[$bsLastM]),
+            (float) $liblaty_array[$bsLastM],
+        ],
+    ]);
+?>
+</script>
 
 
 </span>

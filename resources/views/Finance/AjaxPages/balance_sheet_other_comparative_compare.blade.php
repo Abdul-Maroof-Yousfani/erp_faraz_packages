@@ -987,8 +987,18 @@ $owner_equity_compare_array = [];
 </div>
 
 
-
-
+<script type="application/json" id="bsChartDataJson">
+<?php
+    echo json_encode([
+        'labels' => ['Total Assets ('.$filterYear.')', "Total Owner's Equity (".$filterYear.")", 'Total Liabilities ('.$filterYear.')'],
+        'values' => [
+            (float) array_sum($asset_total_amount_first),
+            (float) array_sum($total_owner_equity_total_amount_first),
+            (float) array_sum($liabilties_total_amount_first),
+        ],
+    ]);
+?>
+</script>
 </span>
 
 <script>

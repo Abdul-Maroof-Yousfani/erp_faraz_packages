@@ -315,7 +315,18 @@ tr.bs-grandtotal td{color:#1f2440 !important;border-top:1px solid #d7dbf5 !impor
         </div>
     </div>
 </div>
-
+<script type="application/json" id="bsChartDataJson">
+<?php
+    echo json_encode([
+        'labels' => ['Total Assets', "Total Owner's Equity", 'Total Liabilities'],
+        'values' => [
+            (float) $total_assets,
+            (float) ($net_profit + $owner_equity),
+            (float) $liblaty,
+        ],
+    ]);
+?>
+</script>
 </span>
 
 <script>
