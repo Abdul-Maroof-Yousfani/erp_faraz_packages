@@ -19,8 +19,10 @@ function bs_indent($level) {
 table.Balance_Sheet td{border:none !important;border-bottom:1px solid #edeef7 !important;padding:8px 12px;font-size:13px;color:#2b2f4a;}
 .bs-card{border:1px solid #e6e8f5;border-radius:12px;overflow:hidden;margin-bottom:24px;box-shadow:0 1px 3px rgba(30,30,80,.08);}
 .bs-card table.Balance_Sheet{border:none !important;}
-.bs-banner{display:flex;align-items:center;gap:10px;padding:16px 20px;color:#fff;font-size:17px;font-weight:500;letter-spacing:.01em;}
+.bs-banner{display:flex;align-items:center;gap:10px;padding:16px 20px;color:#fff;font-size:17px;font-weight:500;letter-spacing:.01em;cursor:pointer;user-select:none;}
 .bs-banner .bs-icon{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;}
+.bs-banner .bs-toggle-arrow{margin-left:auto;font-size:14px;transition:transform .2s ease;}
+.bs-banner.collapsed .bs-toggle-arrow{transform:rotate(-90deg);}
 .bs-banner-assets{background:linear-gradient(135deg,#24265f,#4a56c9);}
 .bs-banner-equity{background:linear-gradient(135deg,#7c3aed,#a855f7);}
 .bs-banner-liabilities{background:linear-gradient(135deg,#173ca7,#173ca7);}
@@ -45,6 +47,7 @@ tr.bs-subtotal td{color:#241e6b;}
 tr.bs-grandtotal{background:#eef0ff !important;font-weight:500;font-size:14.5px;border-left:4px solid #241e6b !important;}
 tr.bs-grandtotal td{color:#1f2440 !important;border-top:1px solid #d7dbf5 !important;}
 .table-responsive{height:auto !important;}
+.bs-collapsible-body{overflow:hidden;max-height:0;opacity:0;transition:max-height .4s cubic-bezier(.4,0,.2,1), opacity .3s ease;}
  .report-header{background:linear-gradient(135deg,#eef1fb,#f7f8fd);border-radius:14px;border:1px solid #e3e7f5;padding:22px 28px 16px 28px;margin-bottom:24px;position:relative;text-align:center;}
 .report-header .company-name{font-size:22px;font-weight:500;color:#1c2b4a;margin-bottom:6px;}
 .report-header .report-title{font-size:16px;font-weight:500;color:#4a5aa8;margin-bottom:10px;}
@@ -68,8 +71,11 @@ tr.bs-grandtotal td{color:#1f2440 !important;border-top:1px solid #d7dbf5 !impor
 <div class="row" id="data">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <div class="bs-card">
-        <div class="bs-banner bs-banner-assets"><span class="bs-icon">&#127963;</span> Assets</div>
-        <div class="table-responsive">
+        <div class="bs-banner bs-banner-assets collapsed" onclick="toggleBsSection(this,'bs-body-assets')">
+            <span class="bs-icon">&#127963;</span> Assets
+            <span class="bs-toggle-arrow">&#9660;</span>
+        </div>
+        <div class="table-responsive bs-collapsible-body" id="bs-body-assets">
 
             <table id="table1" class="table table-bordered sf-table-list Balance_Sheet">
                 <thead>
@@ -130,8 +136,11 @@ tr.bs-grandtotal td{color:#1f2440 !important;border-top:1px solid #d7dbf5 !impor
 <div class="row">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <div class="bs-card">
-        <div class="bs-banner bs-banner-equity"><span class="bs-icon">&#9878;</span> Owner's Equity</div>
-        <div class="table-responsive">
+        <div class="bs-banner bs-banner-equity collapsed" onclick="toggleBsSection(this,'bs-body-equity')">
+            <span class="bs-icon">&#9878;</span> Owner's Equity
+            <span class="bs-toggle-arrow">&#9660;</span>
+        </div>
+        <div class="table-responsive bs-collapsible-body" id="bs-body-equity">
 
             <table id="table2" class="table table-bordered sf-table-list Balance_Sheet">
                 <thead>
@@ -241,8 +250,11 @@ tr.bs-grandtotal td{color:#1f2440 !important;border-top:1px solid #d7dbf5 !impor
 <div class="row">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <div class="bs-card">
-        <div class="bs-banner bs-banner-liabilities"><span class="bs-icon">&#128179;</span> Liabilities</div>
-        <div class="table-responsive">
+        <div class="bs-banner bs-banner-liabilities collapsed" onclick="toggleBsSection(this,'bs-body-liabilities')">
+            <span class="bs-icon">&#128179;</span> Liabilities
+            <span class="bs-toggle-arrow">&#9660;</span>
+        </div>
+        <div class="table-responsive bs-collapsible-body" id="bs-body-liabilities">
 
             <table id="table3" class="table table-bordered sf-table-list Balance_Sheet">
                 <thead>
@@ -303,12 +315,89 @@ tr.bs-grandtotal td{color:#1f2440 !important;border-top:1px solid #d7dbf5 !impor
         </div>
     </div>
 </div>
-
+<script type="application/json" id="bsChartDataJson">
+<?php
+    echo json_encode([
+        'labels' => ['Total Assets', "Total Owner's Equity", 'Total Liabilities'],
+        'values' => [
+            (float) $total_assets,
+            (float) ($net_profit + $owner_equity),
+            (float) $liblaty,
+        ],
+    ]);
+?>
+</script>
 </span>
 
 <script>
     function get_detai(url,from,to,code,name)
     {
         showDetailModelOneParamerter(url,from+','+to+','+code+','+name);
+    }
+
+    // Accordion toggle: click a category banner (Assets / Owner's Equity / Liabilities)
+    // to show its table. Opening one section smoothly closes any other open section,
+    // so only one section stays open at a time. Clicking the open section again closes it.
+    // Heights are measured with JS (scrollHeight) so the CSS transition animates between
+    // real pixel values instead of jumping against an arbitrary max-height cap.
+    var bsAllSections = ['bs-body-assets', 'bs-body-equity', 'bs-body-liabilities'];
+
+    function bsCloseSection(el)
+    {
+        if (!el) return;
+        // start from current rendered height, then animate down to 0
+        var current = el.scrollHeight;
+        el.style.maxHeight = current + 'px';
+        el.style.opacity = '1';
+        // force reflow so the browser registers the start height before we change it
+        void el.offsetHeight;
+        el.style.maxHeight = '0px';
+        el.style.opacity = '0';
+    }
+
+    function bsOpenSection(el)
+    {
+        if (!el) return;
+        el.style.maxHeight = '0px';
+        el.style.opacity = '0';
+        void el.offsetHeight;
+        var target = el.scrollHeight;
+        el.style.maxHeight = target + 'px';
+        el.style.opacity = '1';
+        // once the animation finishes, release the fixed height so content
+        // (e.g. if it changes later) is never clipped
+        el.addEventListener('transitionend', function handler(e) {
+            if (e.propertyName === 'max-height') {
+                el.style.maxHeight = 'none';
+                el.removeEventListener('transitionend', handler);
+            }
+        });
+    }
+
+    function toggleBsSection(bannerEl, bodyId)
+    {
+        var body = document.getElementById(bodyId);
+        if (!body) return;
+
+        var isCurrentlyOpen = body.classList.contains('bs-open');
+
+        // Close every open section first
+        bsAllSections.forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el && el.classList.contains('bs-open')) {
+                bsCloseSection(el);
+                el.classList.remove('bs-open');
+            }
+        });
+        document.querySelectorAll('.bs-banner').forEach(function (b) {
+            b.classList.add('collapsed');
+        });
+
+        // If the clicked section was closed, open it now
+        if (!isCurrentlyOpen) {
+            bsOpenSection(body);
+            body.classList.add('bs-open');
+            bannerEl.classList.remove('collapsed');
+        }
     }
 </script>
