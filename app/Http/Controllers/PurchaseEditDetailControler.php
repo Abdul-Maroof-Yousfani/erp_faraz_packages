@@ -148,7 +148,6 @@ class PurchaseEditDetailControler extends Controller
         $data2['address'] = $address;
         $data2['registration_no'] = $registration_no;
         $data2['product_services_provided'] = $product_services_provided;
-        $data2['contact_person_no'] = $contact_person_no;
         $data2['contact_person_email'] = $contact_person_email;
         $data2['account_representative_name'] = $account_representative_name;
         $data2['account_representative_no'] = $account_representative_no;
@@ -157,6 +156,7 @@ class PurchaseEditDetailControler extends Controller
         $data2['account_title'] = $account_title;
         $data2['account_no'] = $account_no;
         $data2['ibn'] = $ibn;
+        $data2['mark_as_customer'] = (int) Input::get('mark_as_customer', 0);
 
 
         DB::table('supplier')->where('id',$id)->update($data2);
@@ -233,6 +233,7 @@ class PurchaseEditDetailControler extends Controller
                 'date' => date("Y-m-d"),
                 'time' => date("H:i:s"),
                 'action' => 'update',
+                'mark_as_supplier' => 1,
                 'status' => 1,
             ];
 

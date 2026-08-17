@@ -339,8 +339,11 @@ class PurchaseController extends Controller
         $supplier = Supplier::where('id', $id)->first();
         $supplier_info = SupplierInfo::where('supp_id', $id)->first();
         $transactions = Transactions::where('acc_id', $supplier->acc_id)->where('opening_bal', 1)->first();
-        $isMarkedAsCustomer = DB::Connection('mysql2')->table('customers')
-            ->where('acc_id', $supplier->acc_id)
+        $isMarkedAsCustomer = ((int)($supplier->mark_as_customer ?? 0) === 1) || DB::Connection('mysql2')->table('customers')
+            ->where(function($query) use ($supplier) {
+                $query->where('acc_id', $supplier->acc_id ?? 0)
+                      ->orWhereRaw('LOWER(TRIM(name)) = ?', [strtolower(trim($supplier->name ?? ''))]);
+            })
             ->where('status', 1)
             ->exists();
 

@@ -305,8 +305,11 @@ class SalesController extends Controller
         $customer = DB::Connection('mysql2')->table('customers')->where('id', $id)->first();
         $isMarkedAsSupplier = false;
         if ($customer) {
-            $isMarkedAsSupplier = DB::Connection('mysql2')->table('supplier')
-                ->where('acc_id', $customer->acc_id)
+            $isMarkedAsSupplier = ((int)($customer->mark_as_supplier ?? 0) === 1) || DB::Connection('mysql2')->table('supplier')
+                ->where(function($query) use ($customer) {
+                    $query->where('acc_id', $customer->acc_id ?? 0)
+                          ->orWhereRaw('LOWER(TRIM(name)) = ?', [strtolower(trim($customer->name ?? ''))]);
+                })
                 ->where('status', 1)
                 ->exists();
         }

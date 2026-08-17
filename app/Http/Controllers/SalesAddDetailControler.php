@@ -539,6 +539,7 @@ class SalesAddDetailControler extends Controller
         $data2['action'] = 'create';
         $data2['customer_type'] = $customer_type;
         $data2['terms_of_payment'] = Input::get('term') ?? 0;
+        $data2['mark_as_supplier'] = $mark_as_supplier;
         $CustId = DB::table('customers')->insertGetId($data2);
 
         $data3['acc_id'] = $acc_id;
@@ -650,6 +651,7 @@ class SalesAddDetailControler extends Controller
             $supplierData['account_title'] = '';
             $supplierData['account_no'] = '';
             $supplierData['ibn'] = '';
+            $supplierData['mark_as_customer'] = 1;
             $supplierData['status'] = 1;
 
             DB::Connection('mysql2')->table('supplier')->insertGetId($supplierData);
@@ -755,6 +757,7 @@ class SalesAddDetailControler extends Controller
         $data2['action'] = 'update';
         $data2['customer_type'] = $customer_type;
         $data2['terms_of_payment'] = Input::get('term') ?? 0;
+        $data2['mark_as_supplier'] = $mark_as_supplier;
         DB::table('customers')->where('id', $EditId)->update($data2);
 
         $AccUpdate['name'] = $customer_name;
@@ -862,6 +865,7 @@ class SalesAddDetailControler extends Controller
             $supplierData['account_title'] = '';
             $supplierData['account_no'] = '';
             $supplierData['ibn'] = '';
+            $supplierData['mark_as_customer'] = 1;
             $supplierData['status'] = 1;
 
             if ($existingSupplier) {

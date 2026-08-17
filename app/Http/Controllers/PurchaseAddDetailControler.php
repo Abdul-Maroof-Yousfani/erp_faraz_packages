@@ -579,6 +579,7 @@ class PurchaseAddDetailControler extends Controller
             'date' => date("Y-m-d"),
             'time' => date("H:i:s"),
             'action' => $existingCustomer ? 'update' : $action,
+            'mark_as_supplier' => 1,
             'status' => 1,
         );
 
@@ -760,6 +761,7 @@ class PurchaseAddDetailControler extends Controller
         $data2['account_title'] = $account_title;
         $data2['account_no'] = $account_no;
         $data2['ibn'] = $ibn;
+        $data2['mark_as_customer'] = (int) Input::get('mark_as_customer', 0);
 
 
 

@@ -8,8 +8,11 @@ $accType = Auth::user()->acc_type;
 //     $m = Auth::user()->company_id;
 // }
 $supplier = DB::connection('mysql2')->table('supplier')->where('id',$id)->first();
-$isMarkedAsCustomer = DB::connection('mysql2')->table('customers')
-    ->where('acc_id', $supplier->acc_id ?? 0)
+$isMarkedAsCustomer = ((int)($supplier->mark_as_customer ?? 0) === 1) || DB::connection('mysql2')->table('customers')
+    ->where(function($query) use ($supplier) {
+        $query->where('acc_id', $supplier->acc_id ?? 0)
+              ->orWhereRaw('LOWER(TRIM(name)) = ?', [strtolower(trim($supplier->name ?? ''))]);
+    })
     ->where('status', 1)
     ->exists();
 
