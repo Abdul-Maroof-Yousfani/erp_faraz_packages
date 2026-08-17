@@ -168,13 +168,52 @@ class PurchaseEditDetailControler extends Controller
         DB::table('accounts')->where('id',$acc_id)->update($acc_data);
 
         $existingCustomer = DB::table('customers')
-            ->where('acc_id', $acc_id)
+            ->whereRaw('LOWER(name) = ?', [strtolower($name)])
             ->where('status', 1)
             ->first();
 
+        if ($existingCustomer && (int)$existingCustomer->acc_id > 0) {
+            $custAccId = (int) $existingCustomer->acc_id;
+            DB::table('accounts')->where('id', $custAccId)->update([
+                'name' => strip_tags((string) $name),
+                'username' => Auth::user()->name,
+                'action' => 'update'
+            ]);
+        } else if ((int) Input::get('mark_as_customer', 0) === 1) {
+            $customer_account_head = '1-2-4';
+            $max_id = DB::Connection('mysql2')->selectOne('SELECT max(`id`) as id FROM `accounts` WHERE `parent_code` LIKE \'' . $customer_account_head . '\'')->id;
+            if ($max_id == '') {
+                $cust_code = $customer_account_head . '-1';
+            } else {
+                $max_code2 = DB::Connection('mysql2')->selectOne('SELECT `code` FROM `accounts` WHERE `id` LIKE \'' . $max_id . '\'')->code;
+                $max = explode('-', $max_code2);
+                $cust_code = $customer_account_head . '-' . (end($max) + 1);
+            }
+
+            $level_array = explode('-', $cust_code);
+            $counter = 1;
+            $custAccData = [];
+            foreach ($level_array as $level) {
+                $custAccData['level' . $counter] = strip_tags($level);
+                $counter++;
+            }
+            $custAccData['code'] = strip_tags($cust_code);
+            $custAccData['name'] = strip_tags((string) $name);
+            $custAccData['parent_code'] = strip_tags($customer_account_head);
+            $custAccData['username'] = Auth::user()->name;
+            $custAccData['date'] = date("Y-m-d");
+            $custAccData['time'] = date("H:i:s");
+            $custAccData['action'] = 'create';
+            $custAccData['type'] = 1;
+            $custAccData['operational'] = 1;
+            $custAccId = DB::Connection('mysql2')->table('accounts')->insertGetId($custAccData);
+        } else {
+            $custAccId = 0;
+        }
+
         if ($existingCustomer || (int) Input::get('mark_as_customer', 0) === 1) {
             $customerData = [
-                'acc_id' => (int) $acc_id,
+                'acc_id' => $custAccId,
                 'name' => strip_tags((string) $name),
                 'address' => strip_tags((string) ($address ?? '')),
                 'country' => strip_tags((string) ($country ?? '')),

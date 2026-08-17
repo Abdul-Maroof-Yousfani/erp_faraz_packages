@@ -492,19 +492,12 @@ class PurchaseAddDetailControler extends Controller
 
     protected function upsertCustomerFromSupplierData(array $supplierData, $action = 'create')
     {
-        $accId = (int) ($supplierData['acc_id'] ?? 0);
+        $supplierAccId = (int) ($supplierData['acc_id'] ?? 0);
         $name = strip_tags((string) ($supplierData['name'] ?? ''));
         $contact = strip_tags((string) ($supplierData['contact'] ?? ''));
 
         $existingCustomer = null;
-        if ($accId > 0) {
-            $existingCustomer = DB::Connection('mysql2')->table('customers')
-                ->where('acc_id', $accId)
-                ->where('status', 1)
-                ->first();
-        }
-
-        if (!$existingCustomer && $name !== '') {
+        if ($name !== '') {
             $query = DB::Connection('mysql2')->table('customers')
                 ->whereRaw('LOWER(name) = ?', [strtolower($name)])
                 ->where('status', 1);
@@ -516,8 +509,55 @@ class PurchaseAddDetailControler extends Controller
             $existingCustomer = $query->first();
         }
 
+        if ($existingCustomer && (int)$existingCustomer->acc_id > 0) {
+            $targetAccId = (int)$existingCustomer->acc_id;
+        } else {
+            // Create a separate Account entry for Customer under '1-2-4'
+            $customer_account_head = '1-2-4';
+            $max_id = DB::Connection('mysql2')->selectOne('SELECT max(`id`) as id FROM `accounts` WHERE `parent_code` LIKE \'' . $customer_account_head . '\'')->id;
+            if ($max_id == '') {
+                $cust_code = $customer_account_head . '-1';
+            } else {
+                $max_code2 = DB::Connection('mysql2')->selectOne('SELECT `code` FROM `accounts` WHERE `id` LIKE \'' . $max_id . '\'')->code;
+                $max = explode('-', $max_code2);
+                $cust_code = $customer_account_head . '-' . (end($max) + 1);
+            }
+
+            $level_array = explode('-', $cust_code);
+            $counter = 1;
+            $custAccData = [];
+            foreach ($level_array as $level) {
+                $custAccData['level' . $counter] = strip_tags($level);
+                $counter++;
+            }
+            $custAccData['code'] = strip_tags($cust_code);
+            $custAccData['name'] = $name;
+            $custAccData['parent_code'] = strip_tags($customer_account_head);
+            $custAccData['username'] = Auth::user()->name;
+            $custAccData['date'] = date("Y-m-d");
+            $custAccData['time'] = date("H:i:s");
+            $custAccData['action'] = 'create';
+            $custAccData['type'] = 1;
+            $custAccData['operational'] = 1;
+            $targetAccId = DB::Connection('mysql2')->table('accounts')->insertGetId($custAccData);
+
+            $financial_year = ReuseableCode::get_account_year_from_to(Session::get('run_company'));
+            $v_date = $financial_year[0] ?? date("Y-m-d");
+
+            $transData['acc_id'] = $targetAccId;
+            $transData['acc_code'] = $cust_code;
+            $transData['debit_credit'] = 1;
+            $transData['amount'] = 0.00;
+            $transData['opening_bal'] = 1;
+            $transData['username'] = Auth::user()->name;
+            $transData['date'] = date("Y-m-d");
+            $transData['v_date'] = $v_date;
+            $transData['action'] = 'create';
+            DB::Connection('mysql2')->table('transactions')->insert($transData);
+        }
+
         $customerData = array(
-            'acc_id' => $accId,
+            'acc_id' => $targetAccId,
             'name' => $name,
             'address' => strip_tags((string) ($supplierData['address'] ?? '')),
             'country' => strip_tags((string) ($supplierData['country'] ?? '')),

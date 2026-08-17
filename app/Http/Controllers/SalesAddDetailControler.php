@@ -555,41 +555,53 @@ class SalesAddDetailControler extends Controller
 
         if ($mark_as_supplier === 1) {
             $vendor_code = Supplier::UniqueNo();
-            // $supplier_account_head = '2-2-4';
-            // $supplierMaxId = DB::connection('mysql2')->selectOne(
-            //     'SELECT max(`id`) as id  FROM `accounts` WHERE `parent_code` LIKE \'' . $supplier_account_head . '\''
-            // )->id;
+            $supplier_account_head = '2-2-4';
+            $supplierMaxId = DB::connection('mysql2')->selectOne(
+                'SELECT max(`id`) as id FROM `accounts` WHERE `parent_code` LIKE \'' . $supplier_account_head . '\''
+            )->id;
 
-            // if ($supplierMaxId == '') {
-            //     $supplierCode = $supplier_account_head . '-1';
-            // } else {
-            //     $supplierMaxCode = DB::connection('mysql2')->selectOne(
-            //         'SELECT `code` FROM `accounts` WHERE `id` LIKE \'' . $supplierMaxId . '\''
-            //     )->code;
-            //     $supplierMaxParts = explode('-', $supplierMaxCode);
-            //     $supplierCode = $supplier_account_head . '-' . (end($supplierMaxParts) + 1);
-            // }
+            if ($supplierMaxId == '') {
+                $supplierCode = $supplier_account_head . '-1';
+            } else {
+                $supplierMaxCode = DB::connection('mysql2')->selectOne(
+                    'SELECT `code` FROM `accounts` WHERE `id` LIKE \'' . $supplierMaxId . '\''
+                )->code;
+                $supplierMaxParts = explode('-', $supplierMaxCode);
+                $supplierCode = $supplier_account_head . '-' . (end($supplierMaxParts) + 1);
+            }
 
-            // $supplierLevels = explode('-', $supplierCode);
-            // $supplierCounter = 1;
-            // $supplierAccData = [];
-            // foreach ($supplierLevels as $level) {
-            //     $supplierAccData['level' . $supplierCounter] = strip_tags($level);
-            //     $supplierCounter++;
-            // }
+            $supplierLevels = explode('-', $supplierCode);
+            $supplierCounter = 1;
+            $supplierAccData = [];
+            foreach ($supplierLevels as $level) {
+                $supplierAccData['level' . $supplierCounter] = strip_tags($level);
+                $supplierCounter++;
+            }
 
-            // $supplierAccData['code'] = strip_tags($supplierCode);
-            // $supplierAccData['name'] = strip_tags($customer_name);
-            // $supplierAccData['parent_code'] = strip_tags($supplier_account_head);
-            // $supplierAccData['username'] = Auth::user()->name;
-            // $supplierAccData['date'] = date("Y-m-d");
-            // $supplierAccData['time'] = date("H:i:s");
-            // $supplierAccData['action'] = 'create';
-            // $supplierAccData['type'] = 1;
-            // $supplierAccData['operational'] = 1;
-            // $supplierAccId = DB::Connection('mysql2')->table('accounts')->insertGetId($supplierAccData);
+            $supplierAccData['code'] = strip_tags($supplierCode);
+            $supplierAccData['name'] = strip_tags($customer_name);
+            $supplierAccData['parent_code'] = strip_tags($supplier_account_head);
+            $supplierAccData['username'] = Auth::user()->name;
+            $supplierAccData['date'] = date("Y-m-d");
+            $supplierAccData['time'] = date("H:i:s");
+            $supplierAccData['action'] = 'create';
+            $supplierAccData['type'] = 1;
+            $supplierAccData['operational'] = 1;
+            $supplierAccId = DB::Connection('mysql2')->table('accounts')->insertGetId($supplierAccData);
 
-            $supplierData['acc_id'] = $acc_id;
+            $transDataSupp['acc_id'] = $supplierAccId;
+            $transDataSupp['acc_code'] = $supplierCode;
+            $transDataSupp['debit_credit'] = 0;
+            $transDataSupp['amount'] = 0.00;
+            $transDataSupp['opening_bal'] = 1;
+            $transDataSupp['username'] = Auth::user()->name;
+            $transDataSupp['date'] = date("Y-m-d");
+            $transDataSupp['v_date'] = date("Y-m-d");
+            $transDataSupp['time'] = date("H:i:s");
+            $transDataSupp['action'] = 'create';
+            DB::Connection('mysql2')->table('transactions')->insert($transDataSupp);
+
+            $supplierData['acc_id'] = $supplierAccId;
             $supplierData['resgister_income_tax'] = 0;
             $supplierData['business_type'] = 0;
             $supplierData['cnic'] = $ntn ?? '';
@@ -753,12 +765,57 @@ class SalesAddDetailControler extends Controller
         DB::table('accounts')->where('id', $AccId)->update($AccUpdate);
 
         $existingSupplier = DB::Connection('mysql2')->table('supplier')
-            ->where('acc_id', $AccId)
+            ->whereRaw('LOWER(name) = ?', [strtolower($customer_name)])
             ->where('status', 1)
             ->first();
 
+        if ($existingSupplier && (int)$existingSupplier->acc_id > 0) {
+            $suppAccId = (int) $existingSupplier->acc_id;
+            DB::Connection('mysql2')->table('accounts')->where('id', $suppAccId)->update([
+                'name' => strip_tags((string) $customer_name),
+                'username' => Auth::user()->name,
+                'action' => 'update'
+            ]);
+        } else if ($mark_as_supplier === 1) {
+            $supplier_account_head = '2-2-4';
+            $supplierMaxId = DB::connection('mysql2')->selectOne(
+                'SELECT max(`id`) as id FROM `accounts` WHERE `parent_code` LIKE \'' . $supplier_account_head . '\''
+            )->id;
+
+            if ($supplierMaxId == '') {
+                $supplierCode = $supplier_account_head . '-1';
+            } else {
+                $supplierMaxCode = DB::connection('mysql2')->selectOne(
+                    'SELECT `code` FROM `accounts` WHERE `id` LIKE \'' . $supplierMaxId . '\''
+                )->code;
+                $supplierMaxParts = explode('-', $supplierMaxCode);
+                $supplierCode = $supplier_account_head . '-' . (end($supplierMaxParts) + 1);
+            }
+
+            $supplierLevels = explode('-', $supplierCode);
+            $supplierCounter = 1;
+            $supplierAccData = [];
+            foreach ($supplierLevels as $level) {
+                $supplierAccData['level' . $supplierCounter] = strip_tags($level);
+                $supplierCounter++;
+            }
+
+            $supplierAccData['code'] = strip_tags($supplierCode);
+            $supplierAccData['name'] = strip_tags($customer_name);
+            $supplierAccData['parent_code'] = strip_tags($supplier_account_head);
+            $supplierAccData['username'] = Auth::user()->name;
+            $supplierAccData['date'] = date("Y-m-d");
+            $supplierAccData['time'] = date("H:i:s");
+            $supplierAccData['action'] = 'create';
+            $supplierAccData['type'] = 1;
+            $supplierAccData['operational'] = 1;
+            $suppAccId = DB::Connection('mysql2')->table('accounts')->insertGetId($supplierAccData);
+        } else {
+            $suppAccId = 0;
+        }
+
         if ($existingSupplier || $mark_as_supplier === 1) {
-            $supplierData['acc_id'] = $AccId;
+            $supplierData['acc_id'] = $suppAccId;
             $supplierData['resgister_income_tax'] = 0;
             $supplierData['business_type'] = 0;
             $supplierData['cnic'] = $ntn ?? '';
