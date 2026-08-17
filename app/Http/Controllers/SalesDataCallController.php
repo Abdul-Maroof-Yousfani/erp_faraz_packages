@@ -278,7 +278,7 @@ class SalesDataCallController extends Controller
 
         CommonHelper::companyDatabaseConnection($_GET['m']);
 		$customers = DB::Connection('mysql2')->select('select c.*, s.id as supplier_id from customers c
-            left join supplier s on s.acc_id = c.acc_id and s.status = 1
+            left join supplier s on (s.acc_id = c.acc_id or (LOWER(TRIM(s.name)) = LOWER(TRIM(c.name)) and LOWER(TRIM(c.name)) != "")) and s.status = 1
             where c.status = 1');
         CommonHelper::reconnectMasterDatabase();
 		$counter = 1;
@@ -292,7 +292,7 @@ class SalesDataCallController extends Controller
                 <td class="text-center"><?php echo $row->address ?: 'N/A' ?></td>
                 <td class="text-center"><?php echo  $row->contact_person ?: 'N/A' ?></td>
                 <td class="text-center"><?php echo  $row->contact ?: 'N/A' ?></td>
-                <td class="text-center"><?php echo !empty($row->supplier_id) ? 'Yes' : 'No'; ?></td>
+                <td class="text-center"><?php echo (!empty($row->supplier_id) || (!empty($row->mark_as_supplier) && (int)$row->mark_as_supplier === 1)) ? 'Yes' : 'No'; ?></td>
                 <td class="text-center hidden-print printListBtn">
                     <div class="dropdown">
                         <button class="drop-bt dropdown-toggle"type="button" data-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-ellipsis-vertical"></i></button>
