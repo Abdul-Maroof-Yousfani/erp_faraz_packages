@@ -4,8 +4,8 @@ use App\Helpers\FinanceHelper;
 
 $from        = Input::get('fromDate');
 $to          = Input::get('toDate');
-$acc_id      = explode(',', Input::get('accountName'));
-$acc_id      = $acc_id[0];
+$acc_ids = array_values(array_filter(array_map('intval', explode(',', Input::get('accountName')))));
+$acc_id  = $acc_ids[0] ?? 0;
 $cost_center = Input::get('paid_to');
 $tax_mode    = Input::get('tax_mode', 'all');
 $tax_filter  = Input::get('tax_filter');
@@ -15,19 +15,16 @@ $clause = ($cost_center != 0)
     ? 'and sub_department_id="' . $cost_center . '"'
     : '';
 
-// Resolve supplier & customer names for this acc_id
-// NOTE: Using DB::Connection('mysql2') explicitly — do NOT call companyDatabaseConnection
-// here because it switches the default connection and breaks DB::table('company') calls
-// (used by headerPrintSectionInPrintView) which expect the master DB.
-
 $supplierRow = DB::Connection('mysql2')->table('supplier')
-    ->where('acc_id', $acc_id)->where('status', 1)
+    ->whereIn('acc_id', $acc_ids)->where('status', 1)
     ->select('name')->first();
 $customerRow = DB::Connection('mysql2')->table('customers')
-    ->where('acc_id', $acc_id)->where('status', 1)
+    ->whereIn('acc_id', $acc_ids)->where('status', 1)
     ->select('name')->first();
 
 $partyName = $supplierRow->name ?? ($customerRow->name ?? CommonHelper::get_account_name($acc_id));
+$accCodes = DB::Connection('mysql2')->table('accounts')->whereIn('id', $acc_ids)->pluck('code')->toArray();
+$accCodeDisplay = !empty($accCodes) ? implode(' / ', $accCodes) : CommonHelper::get_account_code($acc_id);
 
 // ── TAX FILTER ──────────────────────────────────────────────
 $gstTaxAccountIds = DB::Connection('mysql2')->table('gst')
@@ -57,7 +54,7 @@ if ($tax_mode === 'with_tax' || $tax_mode === 'non_tax') {
 
 // ── MAIN TRANSACTIONS QUERY ──────────────────────────────────
 $quarterQuery = DB::Connection('mysql2')->table('transactions')
-    ->where('acc_id', $acc_id)
+    ->whereIn('acc_id', $acc_ids)
     ->where('opening_bal', 0)
     ->where('status', 1)
     ->whereBetween('v_date', [$from, $to]);
@@ -214,7 +211,7 @@ if (!empty($quarterVoucherNos)) {
     </div>
     <div class="text-center" style="font-size:16px; margin-top:6px;">
         <b>
-            <?php echo CommonHelper::get_account_code($acc_id) . ' &mdash; ' . e($partyName); ?>
+            <?php echo e($accCodeDisplay) . ' &mdash; ' . e($partyName); ?>
         </b>
         &nbsp;
         <span class="cumulative-badge badge-purchase">As Supplier</span>
@@ -228,10 +225,11 @@ if (!empty($quarterVoucherNos)) {
         <?php
         // get_opening_ball queries DB::table('company') on default (master) connection first,
         // so we must NOT switch to company DB before calling it.
-        $acc_code = DB::Connection('mysql2')->table('accounts')->where('id', $acc_id)->value('code') ?? '';
-        // get_opening_ball internally calls companyDatabaseConnection + reconnectMasterDatabase itself
-        $amount   = CommonHelper::get_opening_ball($from, $to, $acc_id, $m, $acc_code, $clause);
-        // NOW switch to company DB for foreach row queries
+        $amount = 0;
+        foreach ($acc_ids as $s_acc_id) {
+            $s_acc_code = DB::Connection('mysql2')->table('accounts')->where('id', $s_acc_id)->value('code') ?? '';
+            $amount += CommonHelper::get_opening_ball($from, $to, $s_acc_id, $m, $s_acc_code, $clause);
+        }
         CommonHelper::companyDatabaseConnection($_GET['m']);
         $total_debit  = 0;
         $total_credit = 0;

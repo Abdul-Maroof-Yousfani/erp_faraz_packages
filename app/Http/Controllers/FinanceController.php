@@ -1302,35 +1302,102 @@ class FinanceController extends Controller
     public function viewCumulativeLedgerReport(){
         CommonHelper::companyDatabaseConnection($_GET['m']);
 
-        // Get acc_ids that exist in BOTH supplier AND customers tables
-        // These are entities marked as both supplier and customer (same acc_id)
-        $supplierAccIds = DB::Connection('mysql2')->table('supplier')
-                            ->where('status', 1)
-                            ->pluck('acc_id')
-                            ->toArray();
+        $suppliers = DB::Connection('mysql2')->table('supplier')
+            ->where('status', 1)
+            ->select('id', 'name', 'acc_id', 'mark_as_customer')
+            ->get();
 
-        $customerAccIds = DB::Connection('mysql2')->table('customers')
-                            ->where('status', 1)
-                            ->pluck('acc_id')
-                            ->toArray();
+        $customers = DB::Connection('mysql2')->table('customers')
+            ->where('status', 1)
+            ->select('id', 'name', 'acc_id', 'mark_as_supplier')
+            ->get();
 
-        // Only keep acc_ids present in BOTH tables
-        $cumulativeAccIds = array_values(array_intersect($supplierAccIds, $customerAccIds));
+        $accountsList = [];
+        $processedNames = [];
 
-        $accounts = Account::where('status', 1)
-                        ->whereIn('id', $cumulativeAccIds)
-                        ->select('id', 'code', 'name', 'type')
-                        ->orderBy('level1', 'ASC')
-                        ->orderBy('level2', 'ASC')
-                        ->orderBy('level3', 'ASC')
-                        ->orderBy('level4', 'ASC')
-                        ->orderBy('level5', 'ASC')
-                        ->orderBy('level6', 'ASC')
-                        ->orderBy('level7', 'ASC')
-                        ->get();
+        foreach ($suppliers as $supp) {
+            $suppName = strtolower(trim($supp->name ?? ''));
+            if (empty($suppName)) continue;
+
+            $matchingCust = $customers->first(function ($c) use ($supp, $suppName) {
+                $cName = strtolower(trim($c->name ?? ''));
+                if ((int)$supp->acc_id > 0 && (int)$supp->acc_id === (int)$c->acc_id) {
+                    return true;
+                }
+                if ($suppName !== '' && $cName === $suppName) {
+                    if ((int)($supp->mark_as_customer ?? 0) === 1 || (int)($c->mark_as_supplier ?? 0) === 1) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+
+            if ($matchingCust && !in_array($suppName, $processedNames)) {
+                $processedNames[] = $suppName;
+                
+                $accIds = array_values(array_unique(array_filter([$supp->acc_id, $matchingCust->acc_id])));
+                if (empty($accIds)) continue;
+
+                $codes = DB::Connection('mysql2')->table('accounts')
+                    ->whereIn('id', $accIds)
+                    ->pluck('code')
+                    ->toArray();
+
+                $codeStr = !empty($codes) ? implode(' / ', $codes) : '';
+                $valStr = implode(',', $accIds);
+
+                $accountsList[] = (object) [
+                    'id' => $valStr,
+                    'val' => $valStr,
+                    'code' => $codeStr,
+                    'name' => $supp->name,
+                    'label' => ($codeStr ? $codeStr . ' ---- ' : '') . $supp->name,
+                ];
+            }
+        }
+
+        foreach ($customers as $cust) {
+            $custName = strtolower(trim($cust->name ?? ''));
+            if (empty($custName) || in_array($custName, $processedNames)) continue;
+
+            if ((int)($cust->mark_as_supplier ?? 0) === 1) {
+                $matchingSupp = $suppliers->first(function ($s) use ($cust, $custName) {
+                    if ((int)$cust->acc_id > 0 && (int)$cust->acc_id === (int)$s->acc_id) {
+                        return true;
+                    }
+                    if ($custName !== '' && strtolower(trim($s->name ?? '')) === $custName) {
+                        return true;
+                    }
+                    return false;
+                });
+
+                if ($matchingSupp) {
+                    $processedNames[] = $custName;
+                    $accIds = array_values(array_unique(array_filter([$cust->acc_id, $matchingSupp->acc_id])));
+                    if (empty($accIds)) continue;
+
+                    $codes = DB::Connection('mysql2')->table('accounts')
+                        ->whereIn('id', $accIds)
+                        ->pluck('code')
+                        ->toArray();
+
+                    $codeStr = !empty($codes) ? implode(' / ', $codes) : '';
+                    $valStr = implode(',', $accIds);
+
+                    $accountsList[] = (object) [
+                        'id' => $valStr,
+                        'val' => $valStr,
+                        'code' => $codeStr,
+                        'name' => $cust->name,
+                        'label' => ($codeStr ? $codeStr . ' ---- ' : '') . $cust->name,
+                    ];
+                }
+            }
+        }
 
         CommonHelper::reconnectMasterDatabase();
         $companydepartments = Department::where([['status', '=', '1']])->select('id', 'department_name')->orderBy('id')->get();
+        $accounts = $accountsList;
 
         return view('Finance.viewCumulativeLedgerReport', compact('accounts', 'companydepartments'));
     }

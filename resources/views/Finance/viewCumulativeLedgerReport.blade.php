@@ -99,7 +99,7 @@ $All = session()->all();
                                                     <select class="form-control requiredField" name="account_id" id="account_id" onchange="">
                                                         <option value="">Select Account</option>
                                                         @foreach($accounts as $key => $y)
-                                                            <option value="{{ $y->id.','.$y->type}}" <?php if($AccId == $y->id):echo "selected";endif;?>>{{ $y->code .' ---- '. $y->name}}</option>
+                                                            <option value="{{ $y->val }}" <?php if(!empty($AccId) && $AccId == $y->val):echo "selected";endif;?>>{{ $y->label }}</option>
                                                         @endforeach
                                                     </select>
                                                 </div>
