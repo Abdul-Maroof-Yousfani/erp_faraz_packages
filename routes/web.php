@@ -338,6 +338,7 @@ Route::group(['prefix' => 'finance', 'middleware' => 'mysql2', 'before' => 'csrf
 
 
     Route::get('/viewLedgerReport', 'FinanceController@viewLedgerReport');
+    Route::get('/viewCumulativeLedgerReport', 'FinanceController@viewCumulativeLedgerReport');
     Route::get('/viewTrialBalanceReportAnotherPage', 'FinanceController@viewTrialBalanceReportAnotherPage');
 
     Route::get('/createPurchaseCashPaymentVoucherForm', 'FinanceController@createPurchaseCashPaymentVoucherForm');
@@ -371,7 +372,7 @@ Route::group(['prefix' => 'finance', 'middleware' => 'mysql2', 'before' => 'csrf
 
     Route::get('/viewOutstanding_bills_through_jvs', 'FinanceController@viewOutstanding_bills_through_jvs');
     //for sales receipt voucher
-    Route::post('/CreateReceiptVoucherForSales/{id?}', 'FinanceController@CreateReceiptVoucherForSales');
+    Route::match(['get', 'post'], '/CreateReceiptVoucherForSales/{id?}', 'FinanceController@CreateReceiptVoucherForSales');
 
     Route::get('/viewBookDay', 'FinanceController@viewBookDay');
     //end amir
@@ -399,7 +400,7 @@ Route::group(['prefix' => 'fad', 'middleware' => 'mysql2', 'before' => 'csrf'], 
     Route::post('/addTaxSectionDetail', 'FinanceAddDetailControler@addTaxSectionDetail');
     Route::post('/addPaidTo', 'FinanceAddDetailControler@addPaidTo');
     Route::post('/add_role', 'FinanceAddDetailControler@add_role');
-    Route::post('/addSalesReceipt', 'FinanceAddDetailControler@addSalesReceipt');
+    Route::match(['get', 'post'], '/addSalesReceipt', 'FinanceAddDetailControler@addSalesReceipt');
     Route::post('/addJournalVoucherDetail', 'FinanceAddDetailControler@addJournalVoucherDetail');
     Route::post('/updateJournalVoucherDetail', 'FinanceEditDetailControler@updateJournalVoucherDetail');
     //amir
@@ -564,6 +565,7 @@ Route::group(['prefix' => 'fdc', 'middleware' => 'mysql2', 'before' => 'csrf'], 
     Route::get('/filterCashReceiptVoucherList', 'FinanceDataCallController@filterCashReceiptVoucherList');
     Route::get('/filterBankReceiptVoucherList', 'FinanceDataCallController@filterBankReceiptVoucherList');
     Route::get('/loadFilterLedgerReport', 'FinanceDataCallController@loadFilterLedgerReport');
+    Route::get('/loadFilterCumulativeLedgerReport', 'FinanceDataCallController@loadFilterCumulativeLedgerReport');
     Route::get('/paidToExpenseReport', 'FinanceDataCallController@paidToExpenseReport');
     Route::get('/AuditTrialReport', 'FinanceDataCallController@AuditTrialReport');
 

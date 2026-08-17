@@ -2975,39 +2975,53 @@ class FinanceAddDetailControler extends Controller
 			$master_id = DB::Connection('mysql2')->table('new_rvs')->insertGetId($data);
 
 			$brig = $request->si_id;
+			if (empty($brig) || !is_array($brig)) {
+				return redirect()->to('sales/receiptVoucherList?m=' . $request->get('m', 1));
+			}
+
 			$net_amount = 0;
 			$tax_amount = 0;
 			$tax_acc_id = 0;
 			$total_amount = 0;
 			$discount_amount = 0;
 
+			$so_ids = $request->input('so_id', []);
+			$receive_amounts = $request->input('receive_amount', []);
+			$percents = $request->input('percent', []);
+			$tax_amounts = $request->input('tax_amount', []);
+			$discounts = $request->input('discount', []);
+			$net_amounts = $request->input('net_amount', []);
+
 			foreach ($brig as $key => $row):
+				$so_id_val = isset($so_ids[$key]) ? $so_ids[$key] : 0;
+				$rec_val = isset($receive_amounts[$key]) ? CommonHelper::check_str_replace($receive_amounts[$key]) : 0;
+				$pct_val = isset($percents[$key]) ? $percents[$key] : 0;
+				$tax_val = isset($tax_amounts[$key]) ? $tax_amounts[$key] : 0;
+				$disc_val = isset($discounts[$key]) ? $discounts[$key] : 0;
+				$net_val = isset($net_amounts[$key]) ? CommonHelper::check_str_replace($net_amounts[$key]) : 0;
+
 				$data1 = array
 				(
 					'si_id' => $row,
-					'so_id' => $request->input('so_id')[$key],
+					'so_id' => $so_id_val,
 					'rv_id' => $master_id,
 					'rv_no' => $rv_no,
-					'received_amount' => CommonHelper::check_str_replace($request->input('receive_amount')[$key]),
-					'tax_percent' => $request->input('percent')[$key],
-					'tax_amount' => $request->input('tax_amount')[$key],
-					'discount_amount' => $request->input('discount')[$key],
-					'net_amount' => CommonHelper::check_str_replace($request->input('net_amount')[$key]),
+					'received_amount' => $rec_val,
+					'tax_percent' => $pct_val,
+					'tax_amount' => $tax_val,
+					'discount_amount' => $disc_val,
+					'net_amount' => $net_val,
 				);
-				// if ($request->input('percent')[$key] != 0):
-				// 	$tax_acc_id = CommonHelper::generic('gst', array('percent' => $request->input('percent')[$key], 'id' => $request->input('tax_rate_id')[$key]), 'acc_id')->first()->acc_id;
-				// endif;
-				// dd($tax_acc_id);
 
-				$net_amount += CommonHelper::check_str_replace($request->input('receive_amount')[$key]);
-				$discount_amount += $request->input('discount')[$key];
+				$net_amount += $rec_val;
+				$discount_amount += $disc_val;
 
-				if ($request->input('percent')[$key] != 0):
-					$tax_amount += $request->input('tax_amount')[$key];
+				if ($pct_val != 0):
+					$tax_amount += $tax_val;
 				else:
 					$tax_amount += 0;
 				endif;
-				$total_amount += CommonHelper::check_str_replace($request->input('net_amount')[$key]);
+				$total_amount += $net_val;
 				DB::Connection('mysql2')->table('brige_table_sales_receipt')->insert($data1);
 
 				$received_paymet = array
@@ -3015,7 +3029,7 @@ class FinanceAddDetailControler extends Controller
 					'sales_tax_invoice_id' => $row,
 					'receipt_id' => $master_id,
 					'receipt_no' => $rv_no,
-					'received_amount' => CommonHelper::check_str_replace($request->input('receive_amount')[$key]),
+					'received_amount' => $rec_val,
 					'slip_no' => $request->cheque,
 					'status' => 1,
 				);
@@ -3058,7 +3072,8 @@ class FinanceAddDetailControler extends Controller
 			endif;
 
 			if ($discount_amount > 0):
-				$disc_acc_id = DB::Connection('mysql2')->table('accounts')->where('status', 1)->where('name', 'SALE DISCOUNT (LIABLITY)')->first()->id;
+				$disc_acc = DB::Connection('mysql2')->table('accounts')->where('status', 1)->where('name', 'like', '%SALE DISCOUNT%')->first();
+				$disc_acc_id = $disc_acc ? $disc_acc->id : 0;
 				$data6 = array
 				(
 					'master_id' => $master_id,

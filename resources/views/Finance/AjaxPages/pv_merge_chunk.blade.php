@@ -75,9 +75,8 @@ $supplier_id = $_GET['Supplier'];
 
                                                             $po_no='';
                                                             if ($row1->purchase_type==1):
-                                                                $po_no=$row1->description;
-                                                                $po_no=explode('||',$po_no);
-                                                                $po_no=$po_no[1];
+                                                                $po_parts=explode('||',$row1->description);
+                                                                $po_no=isset($po_parts[1]) ? $po_parts[1] : ($po_parts[0] ?? '');
                                                             endif;
 
                                                             if($PaymentAmount != "")
@@ -301,9 +300,8 @@ $supplier_id = $_GET['Supplier'];
 
                                                             $po_no='';
                                                             if ($row1->purchase_type==1):
-                                                                $po_no=$row1->description;
-                                                                $po_no=explode('||',$po_no);
-                                                                $po_no=$po_no[1];
+                                                                $po_parts=explode('||',$row1->description);
+                                                                $po_no=isset($po_parts[1]) ? $po_parts[1] : ($po_parts[0] ?? '');
                                                             endif;
 
                                                             

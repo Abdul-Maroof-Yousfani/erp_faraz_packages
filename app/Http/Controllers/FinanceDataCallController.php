@@ -1231,6 +1231,9 @@ class FinanceDataCallController extends Controller
 	public function loadFilterLedgerReport(){
         return view('Finance.AjaxPages.loadFilterLedgerReport');
     }
+    public function loadFilterCumulativeLedgerReport(){
+        return view('Finance.AjaxPages.loadFilterCumulativeLedgerReport');
+    }
     public function paidToExpenseReport(){
         return view('Finance.AjaxPages.paidToExpenseReport');
     }

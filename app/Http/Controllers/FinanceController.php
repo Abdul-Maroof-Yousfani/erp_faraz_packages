@@ -1299,6 +1299,42 @@ class FinanceController extends Controller
    		return view('Finance.viewLedgerReport',compact('accounts','companydepartments'));
 	}
 
+    public function viewCumulativeLedgerReport(){
+        CommonHelper::companyDatabaseConnection($_GET['m']);
+
+        // Get acc_ids that exist in BOTH supplier AND customers tables
+        // These are entities marked as both supplier and customer (same acc_id)
+        $supplierAccIds = DB::Connection('mysql2')->table('supplier')
+                            ->where('status', 1)
+                            ->pluck('acc_id')
+                            ->toArray();
+
+        $customerAccIds = DB::Connection('mysql2')->table('customers')
+                            ->where('status', 1)
+                            ->pluck('acc_id')
+                            ->toArray();
+
+        // Only keep acc_ids present in BOTH tables
+        $cumulativeAccIds = array_values(array_intersect($supplierAccIds, $customerAccIds));
+
+        $accounts = Account::where('status', 1)
+                        ->whereIn('id', $cumulativeAccIds)
+                        ->select('id', 'code', 'name', 'type')
+                        ->orderBy('level1', 'ASC')
+                        ->orderBy('level2', 'ASC')
+                        ->orderBy('level3', 'ASC')
+                        ->orderBy('level4', 'ASC')
+                        ->orderBy('level5', 'ASC')
+                        ->orderBy('level6', 'ASC')
+                        ->orderBy('level7', 'ASC')
+                        ->get();
+
+        CommonHelper::reconnectMasterDatabase();
+        $companydepartments = Department::where([['status', '=', '1']])->select('id', 'department_name')->orderBy('id')->get();
+
+        return view('Finance.viewCumulativeLedgerReport', compact('accounts', 'companydepartments'));
+    }
+
 	public function viewTrialBalanceReportAnotherPage(){
 		// CommonHelper::companyDatabaseConnection($_GET['m']);
 		// $accounts = new Account;
