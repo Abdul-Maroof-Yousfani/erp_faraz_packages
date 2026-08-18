@@ -1314,4 +1314,55 @@ table.sf-table-list{width:100% !important;border-collapse:separate !important;bo
 .select2-search--dropdown{padding:8px !important;}
 /* table ke andar wale select2 boxes full width lein taake dropdown bhi field jitna wide ho */
 td .select2-container{width:100% !important;}
+/* =====================================================================
+   GLOBAL SELECT2 FIX — width / z-index / dropdown clipping (hidden-parent bug)
+   Sab pages ke liye: jab koi select2 kisi hidden (display:none) container ke
+   andar init hota hai to woh apna width 0 le leta hai, isi wajah se dropdown
+   panel kahin aur ya bohat chhota / cut-off render hota hai
+   ("diamond" artifact jaisa screenshot mein tha).
+   Sirf existing classes / structural selectors use kiye hain — koi naya
+   class nahi, isliye 1000+ pages per bhi safe hai.
+   ===================================================================== */
+.select2-container{ z-index:2100 !important; }
+.select2-container--open{ z-index:2147483647 !important; }
+.select2-dropdown{ z-index:2147483647 !important; }
 
+.select2-container--default .select2-selection--single,
+.select2-container--default .select2-selection--multiple{ min-height:44px !important; }
+
+.select2-container--default .select2-selection--multiple{
+    border:1px solid var(--erp-border,#E4E7EC) !important;
+    border-radius:11px !important;
+    background:var(--erp-bg-soft,#F7F8FC) !important;
+    padding:4px 8px !important;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice{
+    background:#EAF1FF !important;
+    border:1px solid #D6E0F3 !important;
+    border-radius:8px !important;
+    color:#173CA7 !important;
+    font-weight:700 !important;
+    font-size:12.5px !important;
+    padding:3px 8px !important;
+    margin-top:6px !important;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove{
+    color:#173CA7 !important;
+    margin-right:6px !important;
+    cursor:pointer !important;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover{
+    color:#e04b4b !important;
+}
+
+/* select2 na hone wale plain <select class="form-control"> bhi hamesha visible rahein
+   (agar kahin select2 init karna bhool jayen to bhi box khaali/invisible nahi rahega) */
+select.form-control{
+    height:44px !important;
+    border:1px solid var(--erp-border,#E4E7EC) !important;
+    border-radius:11px !important;
+    background:var(--erp-bg-soft,#F7F8FC) !important;
+    color:var(--erp-text,#3b3f5c) !important;
+    font-weight:500 !important;
+    padding:10px 16px !important;
+}

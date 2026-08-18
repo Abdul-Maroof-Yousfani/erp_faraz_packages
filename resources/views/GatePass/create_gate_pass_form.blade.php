@@ -47,6 +47,17 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
 ?>
 @include('select2')
 
+<style>
+  /* ===== Page-scoped fix (sirf is form ke andar) — global CSS ko touch nahi kiya ===== */
+ #gatePassForm .select2-container--default .select2-selection--single{height:44px !important;display:flex !important;align-items:center !important;border:1px solid #E4E7EC !important;border-radius:11px !important;background:#F7F8FC !important;}
+#gatePassForm .select2-container--default .select2-selection--single .select2-selection__rendered{line-height:normal !important;padding-left:16px !important;color:#3b3f5c !important;font-weight:500 !important;}
+#gatePassForm .select2-container--default .select2-selection--single .select2-selection__arrow{height:42px !important;}
+#gatePassForm .select2-container{width:100% !important;}
+#gatePassForm select.form-control:not(.select2-hidden-accessible){height:44px !important;border:1px solid #E4E7EC !important;border-radius:11px !important;background:#F7F8FC !important;padding:10px 16px !important;}
+.table-responsive{height:auto !important;}
+
+</style>
+
 <div class="container-fluid">
     <div class="row well_N">
         <div class="col-lg-12">
@@ -73,20 +84,16 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
                         @endif
 
                         <div class="panel panel-default">
-                            {{-- <div class="panel-heading">
-                                <strong class="small text-uppercase">Gate Pass Source</strong>
-                            </div> --}}
                             <div class="panel-body">
                                 <div class="row">
                                     <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
                                         <label class="control-label small" for="gate_pass_type">Input Type</label>
-                                        <select class="form-control" id="gate_pass_type" name="gate_pass_type">
+                                        <select class="form-control gp-select2" id="gate_pass_type" name="gate_pass_type" style="width: 100%;">
                                             <option value="">Select input type</option>
                                             <option value="1" @if(($selectedGatePassType ?? '') === '1') selected @endif>Against Direct Sale Invoice</option>
                                             <option value="2" @if(($selectedGatePassType ?? '') === '2') selected @endif>Against Delivery Note</option>
                                             <option value="3" @if(($selectedGatePassType ?? '') === '3') selected @endif>Manual</option>
                                         </select>
-                                        {{-- <div class="help-block">Direct invoice and delivery note will load read-only items.</div> --}}
                                     </div>
                                     <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
                                         <label class="control-label small" for="gate_pass_date">Date</label>
@@ -96,9 +103,9 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
                                         <label class="control-label small" for="gate_pass_time">Time <span class="text-muted">optional</span></label>
                                         <input type="time" class="form-control" id="gate_pass_time" name="gate_pass_time" value="{{ $gatePassTime ?? $currentTime }}">
                                     </div>
-                                    <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12">
+                                    <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12" style="margin-top: 35px;">
                                         <label class="control-label small">&nbsp;</label>
-                                        <button type="button" id="btnAddManualRow" class="btn btn-primary btn-block" onclick="handleAddManualRowClick()">
+                                        <button type="button" id="btnAddManualRow" class="btn btn-primary" onclick="handleAddManualRowClick()">
                                             Add Row
                                         </button>
                                     </div>
@@ -108,7 +115,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
                                         <div class="panel panel-default" id="direct_sale_section" hidden>
                                             <div class="panel-body">
                                                 <label class="control-label small" for="sales_invoice_id">Select Invoice</label>
-                                                <select class="form-control select2" id="sales_invoice_id" name="sales_invoice_id[]" multiple  style="width: 100%;">
+                                                <select class="form-control gp-select2" id="sales_invoice_id" name="sales_invoice_id[]" multiple  style="width: 100%;">
                                                     @forelse($directSaleInvoices as $invoice)
                                                         <option value="{{ $invoice->id }}" @if(in_array((string) $invoice->id, array_map('strval', $selectedSalesInvoiceIds ?? []), true)) selected @elseif(!empty($invoice->gate_pass_status) && (int) $invoice->gate_pass_status === 1) disabled @endif>
                                                             {{ strtoupper($invoice->gi_no) }}
@@ -132,7 +139,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
                                         <div class="panel panel-default" id="delivery_note_section" hidden>
                                             <div class="panel-body">
                                                 <label class="control-label small" for="delivery_note_id">Select Delivery Note</label>
-                                                <select class="form-control select2" id="delivery_note_id" name="delivery_note_id[]" multiple style="width: 100%;">
+                                                <select class="form-control gp-select2" id="delivery_note_id" name="delivery_note_id[]" multiple style="width: 100%;">
                                                     @forelse($deliveryNotes as $note)
                                                         <option value="{{ $note->id }}" @if(in_array((string) $note->id, array_map('strval', $selectedDeliveryNoteIds ?? []), true)) selected @elseif(!empty($note->gate_pass_status) && (int) $note->gate_pass_status === 1) disabled @endif>
                                                             {{ strtoupper($note->gd_no) }}
@@ -254,7 +261,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
                         </div>
 
                         <div class="text-right">
-                            <button type="button" class="btn btn-default" onclick="resetGatePassForm()">Reset</button>
+                            <button type="button" class="btn btn-danger" onclick="resetGatePassForm()">Reset</button>
                             <button type="submit" class="btn btn-primary">Save Gate Pass</button>
                         </div>
                     </form>
@@ -283,6 +290,28 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
         return ['id' => $customer->id, 'name' => $customer->name];
     })->values());
     let gatePassItemsRequestToken = 0;
+
+    // ===== Common select2 options — hamesha explicit width + body-level dropdown =====
+    // (root fix: hidden parent ke andar init hone par select2 apna width 0 le leta tha,
+    //  isi wajah se dropdown "chhota/misplaced" render hota tha aur uske andar wale
+    //  remove(x) tags bhi click-able nahi rehte the)
+    const gpSelect2Opts = { width: '100%', dropdownParent: $('body') };
+
+    // Kuch shared layout/partial (select2 include) pehle se hi generic
+    // $('.select2').select2(); chala deta hai (bina width/dropdownParent ke).
+    // Ek dafa select2 init ho jaye to dobara .select2(options) call karne se
+    // kuch nahi hota (silently ignore ho jata hai) — isi liye pehle destroy
+    // kar ke apne sahi options ke sath dobara init karna zaroori hai.
+    function gpInitSelect2($el) {
+        if (typeof $.fn.select2 !== 'function') {
+            console.warn('Gate Pass: select2 plugin load nahi hua - check select2 include asset path.');
+            return;
+        }
+        if ($el.hasClass('select2-hidden-accessible')) {
+            $el.select2('destroy');
+        }
+        $el.select2(gpSelect2Opts);
+    }
 
     function formatNumber(value) {
         const num = parseFloat(value) || 0;
@@ -320,7 +349,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
                     <input type="text" name="manual_description[]" class="form-control" placeholder="Enter description" value="${escapeHtml(row.description)}">
                 </td>
                 <td>
-                    <select name="manual_party_id[]" class="form-control select2 manual-party-select">
+                    <select name="manual_party_id[]" class="form-control gp-select2 manual-party-select" style="width: 100%;">
                         ${customerHtml}
                     </select>
                 </td>
@@ -328,7 +357,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
                     <input type="number" name="manual_qty[]" class="form-control" step="any" min="0" placeholder="Enter Qty" value="${escapeHtml(row.qty)}">
                 </td>
                 <td>
-                    <select name="manual_uom_id[]" class="form-control select2 manual-uom-select" required style="width: 100%;">
+                    <select name="manual_uom_id[]" class="form-control gp-select2 manual-uom-select" required style="width: 100%;">
                         ${uomHtml}
                     </select>
                 </td>
@@ -339,7 +368,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
                     <input type="text" name="manual_purpose[]" class="form-control" placeholder="Enter purpose" value="${escapeHtml(row.purpose)}">
                 </td>
                 <td class="text-center">
-                    <button type="button" class="btn btn-xs btn-danger" onclick="removeGatePassManualRow(this)">Remove</button>
+                    <button type="button" class="btn btn-danger" onclick="removeGatePassManualRow(this)">Remove</button>
                 </td>
             </tr>
         `;
@@ -351,17 +380,13 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
 
     function initManualPartySelects() {
         $('#manualGatePassBody .manual-party-select').each(function () {
-            if (!$(this).data('select2')) {
-                $(this).select2({ width: '100%' });
-            }
+            gpInitSelect2($(this));
         });
     }
 
     function initManualUomSelects() {
         $('#manualGatePassBody .manual-uom-select').each(function () {
-            if (!$(this).data('select2')) {
-                $(this).select2({ width: '100%' });
-            }
+            gpInitSelect2($(this));
         });
     }
 
@@ -444,8 +469,10 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
         const typeSelect = document.getElementById('gate_pass_type');
 
         if (!typeSelect.value) {
-            typeSelect.value = '3';
-            setGatePassType('3');
+            // select2 active hai isliye value jQuery ke through set + change trigger karo
+            // taake dropdown ka display bhi sync ho jaye (sirf .value= karne se select2 ka
+            // visible box purana hi dikhta reh jata tha)
+            $('#gate_pass_type').val('3').trigger('change');
             return;
         }
 
@@ -458,6 +485,11 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
         const row = button.closest('tr');
 
         if (body.querySelectorAll('tr').length > 1) {
+            // row destroy hone se pehle uske andar wale select2 instances properly destroy
+            // karo — warna leftover select2 containers body ke end mein reh jate hain
+            $(row).find('.select2-hidden-accessible').each(function () {
+                $(this).select2('destroy');
+            });
             row.remove();
             return;
         }
@@ -465,6 +497,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
         row.querySelectorAll('input').forEach(function (input) {
             input.value = '';
         });
+        $(row).find('.manual-party-select, .manual-uom-select').val(null).trigger('change');
     }
 
     function renderGatePassItems(type, sourceId) {
@@ -585,7 +618,7 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
         document.getElementById('manualGatePassBody').innerHTML = '';
         $('#sales_invoice_id').val(null).trigger('change');
         $('#delivery_note_id').val(null).trigger('change');
-        setGatePassType('');
+        $('#gate_pass_type').val('').trigger('change');
     }
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -593,8 +626,21 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
         const salesInvoiceSelect = document.getElementById('sales_invoice_id');
         const deliveryNoteSelect = document.getElementById('delivery_note_id');
 
-        typeSelect.addEventListener('change', function () {
-            setGatePassType(this.value);
+        // NOTE: hum ".select2" generic class jaan-boojh kar use nahi kar rahe —
+        // is site ke kisi shared/global script ne ".select2" class dekh kar khud
+        // apne (bina width/dropdownParent ke) options se in fields ko already
+        // init kar rakha tha, aur baad mein wapas bhi kar deta tha (isi wajah se
+        // do select2-container ban rahe the — DevTools mein dikha tha).
+        // ".gp-select2" is page ke liye unique hai, koi doosra script ise touch
+        // nahi karega — sirf yehi init chalega.
+        $('.gp-select2').each(function () {
+            gpInitSelect2($(this));
+        });
+
+        // gate_pass_type ab select2 hai — jQuery 'change' se bind karo taake
+        // select2 ka trigger('change') bhi reliably pakda jaye
+        $(typeSelect).on('change', function () {
+            setGatePassType($(this).val());
         });
 
         $(salesInvoiceSelect).on('change select2:select select2:unselect', function () {
@@ -605,7 +651,6 @@ if (!empty($oldDescriptions) || !empty($oldPurposes) || !empty($oldQuantities) |
             renderGatePassItems(typeSelect.value, $(this).val() || []);
         });
 
-        $('.select2').select2();
         if (isGatePassEdit) {
             syncMultiSelectValues('#sales_invoice_id', selectedSalesInvoiceIds);
             syncMultiSelectValues('#delivery_note_id', selectedDeliveryNoteIds);
