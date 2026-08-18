@@ -3481,7 +3481,7 @@ class PurchaseAddDetailControler extends Controller
         $PurchaseReturnInsert['username'] = Auth::user()->name;
 
         $PurchaseReturnInsert['type'] = 2;
-        $PurchaseReturnInsert['is_official'] = (Auth::user()->official == '2') ? 2 : 1;
+        $PurchaseReturnInsert['is_official'] = CommonHelper::getOfficialValue();
         $master_id = DB::Connection('mysql2')->table('purchase_return')->insertGetId($PurchaseReturnInsert);
 
         $data = $request->enable_disable;
@@ -4063,7 +4063,7 @@ public function updatePurchaseReturnDetail(Request $request)
             'grn_date'            => $GrnDate,
             'remarks'             => $Remarks,
             'username'            => Auth::user()->name,
-            'is_official'         => (Auth::user()->official == '2') ? 2 : 1,
+            'is_official'         => CommonHelper::getOfficialValue(),
             // 'updated_date'        => now(),
         ]);
 

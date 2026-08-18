@@ -3694,6 +3694,7 @@ class CommonHelper
                 $trans1->date = date('Y-m-d');
                 $trans1->action = 1;
                 $trans1->username = Auth::user()->name;
+                $trans1->is_official = $row->is_official ?? CommonHelper::getOfficialValue();
                 $trans1->save();
 
             endforeach;
@@ -5293,6 +5294,14 @@ class CommonHelper
     {
         $val = Auth::user()->official ?? '1';
         return explode(',', $val);
+    }
+
+    /**
+     * Get user official single value for insert/update operations (1 or 2).
+     */
+    public static function getOfficialValue()
+    {
+        return (Auth::user()->official == '2') ? 2 : 1;
     }
 
 }

@@ -86,7 +86,9 @@ class FinanceController extends Controller
 	}
 
 	public function addPaymentVoucherAgainstPO(){
-		$getApprovedPOList = DB::connection('mysql2')->select('select * from purchase_request where payment_status = 1 and purchase_request_status = 2');
+		$scope = CommonHelper::getOfficialScopeArray();
+		$scopeStr = implode(',', $scope);
+		$getApprovedPOList = DB::connection('mysql2')->select('select * from purchase_request where is_official IN ('.$scopeStr.') and payment_status = 1 and purchase_request_status = 2');
 		return view('Finance.addPaymentVoucherAgainstPO',compact('getApprovedPOList'));
 	}
 
@@ -96,6 +98,8 @@ class FinanceController extends Controller
 	 	$agent=$request->agent;
 		$from=$request->from;
 		$to=$request->to;
+		$scope = CommonHelper::getOfficialScopeArray();
+		$scopeStr = implode(',', $scope);
 
 		 $agent_type=explode(',',$agent);
 		if ($agent_type[1]==1):
@@ -118,6 +122,7 @@ class FinanceController extends Controller
 		on
 		e.id=d.buyers_id
 		where a.status=1
+		and a.is_official IN ('.$scopeStr.')
 		'.$clause.'
 		and a.rv_date between "'.$from.'" and "'.$to.'"
  		and a.sales=1
@@ -181,7 +186,7 @@ class FinanceController extends Controller
 	{
 		$currentMonthStartDate = date('Y-m-01');
 		$currentMonthEndDate   = date('Y-m-t');
-		$Data = DB::Connection('mysql2')->table('new_pvv')->where('status',1)->whereBetween('pv_date',[$currentMonthStartDate,$currentMonthEndDate])->orderBy('id', 'DESC')->get();
+		$Data = DB::Connection('mysql2')->table('new_pvv')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->whereBetween('pv_date',[$currentMonthStartDate,$currentMonthEndDate])->orderBy('id', 'DESC')->get();
 		return view('Finance.new_pv_list',compact('Data'));
 	}
 
@@ -196,7 +201,7 @@ class FinanceController extends Controller
 	{
 
 		$Accounts = DB::Connection('mysql2')->table('accounts')->where('status',1)->get();
-		$SoNo = DB::Connection('mysql2')->table('sales_order')->where('status',1)->select('so_no')->get();
+		$SoNo = DB::Connection('mysql2')->table('sales_order')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->select('so_no')->get();
 		return view('Finance.expenseVoucherForm',compact('Accounts','SoNo'));
 	}
 
@@ -215,7 +220,7 @@ class FinanceController extends Controller
 
 	public function expenseVoucherList()
 	{
-		$ExpenseVoucher = DB::Connection('mysql2')->table('expense_voucher')->where('status',1)->get();
+		$ExpenseVoucher = DB::Connection('mysql2')->table('expense_voucher')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->get();
 		CommonHelper::reconnectMasterDatabase();
 		return view('Finance.expenseVoucherList',compact('ExpenseVoucher'));
 	}
@@ -592,7 +597,8 @@ class FinanceController extends Controller
             ->orderBy('level7', 'ASC')
             ->get();
         $jvs = new Jvs;
-        $jvs = $jvs::whereBetween('jv_date',[$currentMonthStartDate,$currentMonthEndDate])
+        $jvs = $jvs::whereIn('is_official', CommonHelper::getOfficialScopeArray())
+            ->whereBetween('jv_date',[$currentMonthStartDate,$currentMonthEndDate])
             ->where('voucherType','=','1')
             ->where('status','=','1')
             ->get();
@@ -616,7 +622,7 @@ class FinanceController extends Controller
 			->orderBy('level7', 'ASC')
 			->get();
 		$Jvs = new NewJvs();
-		$Jvs = $Jvs::where('status','=','1')->whereBetween('jv_date',[$currentMonthStartDate,$currentMonthEndDate])->orderBy('id', 'DESC')->get();
+		$Jvs = $Jvs::whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status','=','1')->whereBetween('jv_date',[$currentMonthStartDate,$currentMonthEndDate])->orderBy('id', 'DESC')->get();
 		CommonHelper::reconnectMasterDatabase();
 		return view('Finance.viewJournalVoucherNew',compact('accounts','Jvs'));
 	}
@@ -658,7 +664,7 @@ class FinanceController extends Controller
 			->orderBy('level7', 'ASC')
 			->get();
 		$Rvs = new NewRvs();
-		$Rvs = $Rvs::where('status','=','1')->where('rv_type','=',1)->where('sales','!=',1)->whereBetween('rv_date',[$currentMonthStartDate,$currentMonthEndDate])->orderBy('id', 'DESC')->get();
+		$Rvs = $Rvs::whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status','=','1')->where('rv_type','=',1)->where('sales','!=',1)->whereBetween('rv_date',[$currentMonthStartDate,$currentMonthEndDate])->orderBy('id', 'DESC')->get();
 		CommonHelper::reconnectMasterDatabase();
 		return view('Finance.viewBankRvNew',compact('accounts','Rvs'));
 	}
@@ -678,7 +684,7 @@ class FinanceController extends Controller
 			->orderBy('level7', 'ASC')
 			->get();
 		$Rvs = new NewRvs();
-		$Rvs = $Rvs::where('status','=','1')->where('sales','!=',1)->where('rv_type','=',2)->whereBetween('rv_date',[$currentMonthStartDate,$currentMonthEndDate])
+		$Rvs = $Rvs::whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status','=','1')->where('sales','!=',1)->where('rv_type','=',2)->whereBetween('rv_date',[$currentMonthStartDate,$currentMonthEndDate])
 			->orderBy('id', 'DESC')->get();
 		CommonHelper::reconnectMasterDatabase();
 		return view('Finance.viewCashRvNew',compact('accounts','Rvs'));
@@ -773,7 +779,7 @@ class FinanceController extends Controller
 			->orderBy('level7', 'ASC')
 			->get();
 		$pvs = new NewPv();
-		$pvs = $pvs::where('status','=','1')->where('payment_type','=','2')->where('type','=','1')->whereBetween('pv_date',[$currentMonthStartDate,$currentMonthEndDate])->orderBy('id', 'DESC')->get();
+		$pvs = $pvs::whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status','=','1')->where('payment_type','=','2')->where('type','=','1')->whereBetween('pv_date',[$currentMonthStartDate,$currentMonthEndDate])->orderBy('id', 'DESC')->get();
 		CommonHelper::reconnectMasterDatabase();
 		return view('Finance.viewCashPaymentVoucherList',compact('accounts','pvs'));
 	}
@@ -793,7 +799,7 @@ class FinanceController extends Controller
 			->orderBy('level7', 'ASC')
 			->get();
 		$pvs = new NewPv();
-		$pvs = $pvs::where('status','=','1')->where('type','=','2')->orderBy('id', 'DESC')->whereBetween('pv_date',[$currentMonthStartDate,$currentMonthEndDate])->get();
+		$pvs = $pvs::whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status','=','1')->where('type','=','2')->orderBy('id', 'DESC')->whereBetween('pv_date',[$currentMonthStartDate,$currentMonthEndDate])->get();
 		CommonHelper::reconnectMasterDatabase();
 		return view('Finance.viewOutstandingPaymentVoucherList',compact('accounts','pvs'));
 	}
@@ -805,6 +811,7 @@ class FinanceController extends Controller
 					->select('npd.paid_to_id as supplier_id', 'np.cheque_date', 'np.pv_no', 'npd.amount')
 					->join('new_pv_data as npd', 'np.id', '=', 'npd.master_id')
 					->join('accounts as a', 'a.id', '=', 'npd.acc_id')
+					->whereIn('np.is_official', CommonHelper::getOfficialScopeArray())
 					->whereIn('a.id', [138, 139, 63]);
 			if ($request->supplier) {
                 $npdData = $npdData->where('npd.paid_to_id', '=', $request->supplier);
@@ -889,7 +896,7 @@ class FinanceController extends Controller
 			->orderBy('level7', 'ASC')
 			->get();
 		$pvs = new NewPv();
-		$pvs = $pvs::where('status','=','1')->whereIn('type',[3,4])->orderBy('id', 'DESC')->whereBetween('pv_date',[$currentMonthStartDate,$currentMonthEndDate])->get();
+		$pvs = $pvs::whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status','=','1')->whereIn('type',[3,4])->orderBy('id', 'DESC')->whereBetween('pv_date',[$currentMonthStartDate,$currentMonthEndDate])->get();
 		CommonHelper::reconnectMasterDatabase();
 		return view('Finance.paymentVoucherListImport',compact('accounts','pvs'));
 	}
@@ -910,7 +917,7 @@ class FinanceController extends Controller
 			->orderBy('level7', 'ASC')
 			->get();
 		$pvs = new NewPv();
-		$pvs = $pvs::where('status','=','1993')->where('type','=','2')->orderBy('id', 'DESC')->whereBetween('pv_date',[$currentMonthStartDate,$currentMonthEndDate])->get();
+		$pvs = $pvs::whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status','=','1')->whereIn('type',[5,6])->orderBy('id', 'DESC')->whereBetween('pv_date',[$currentMonthStartDate,$currentMonthEndDate])->get();
 		CommonHelper::reconnectMasterDatabase();
 		return view('Finance.paymentVoucherReturnList',compact('accounts','pvs'));
 	}

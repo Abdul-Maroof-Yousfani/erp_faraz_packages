@@ -638,6 +638,7 @@ class FinanceAddDetailControler extends Controller
 		$data1['status'] 			= 1;
 		$data1['username'] 		= Auth::user()->name;
 		$data1['type'] 	= 3;
+		$data1['is_official'] = CommonHelper::getOfficialValue();
 
 		$master_id = DB::Connection('mysql2')->table('new_pv')->insertGetId($data1);
 
@@ -658,6 +659,7 @@ class FinanceAddDetailControler extends Controller
 			$data2['date'] 			= date('Y-m-d');
 			$data2['status'] 			= 1;
 			$data2['pv_status'] = 1;
+			$data2['is_official'] = CommonHelper::getOfficialValue();
 
 			DB::Connection('mysql2')->table('new_pv_data')->insert($data2);
 
@@ -675,6 +677,7 @@ class FinanceAddDetailControler extends Controller
 		$data3['date'] 			= date('Y-m-d');
 		$data3['status'] 			= 1;
 		$data3['pv_status'] = 1;
+		$data3['is_official'] = CommonHelper::getOfficialValue();
 
 		DB::Connection('mysql2')->table('new_pv_data')->insert($data3);
 
@@ -917,6 +920,7 @@ class FinanceAddDetailControler extends Controller
 			$data1['payment_type'] 			=Input::get('type');
 			$data1['btl_exempt']=Input::get('optradio');
 			$data1['exempt_code']=Input::get('VendorCode');
+			$data1['is_official'] = CommonHelper::getOfficialValue();
 
 			if (Input::get('type')==2)
 			{
@@ -1061,6 +1065,7 @@ class FinanceAddDetailControler extends Controller
 					$data2['date'] 			= date('Y-m-d');
 					$data2['time'] 			= date('H:i:s');
 					$data2['master_id']=$master_id;
+					$data2['is_official'] = CommonHelper::getOfficialValue();
 					if ($count==4 && $c_amount > 0):
 						$data2['srb']=1;
 					endif;
@@ -1246,6 +1251,7 @@ class FinanceAddDetailControler extends Controller
 			$data1['username'] 		= Auth::user()->name;
 			$data1['date'] 			= date('Y-m-d');
 			$data1['time'] 			= date('H:i:s');
+			$data1['is_official'] 	= CommonHelper::getOfficialValue();
 			$master_id=DB::table('rvs')->insertGetId($data1);
 			$rvsDataSection = Input::get('rvsDataSection_'.$row);
 			foreach($rvsDataSection as $row1){
@@ -1277,6 +1283,7 @@ class FinanceAddDetailControler extends Controller
 				$data2['date'] 			= date('Y-m-d');
 				$data2['time'] 			= date('H:i:s');
 				$data2['master_id'] 			= $master_id;
+				$data2['is_official'] 	= CommonHelper::getOfficialValue();
 
 				DB::table('rv_data')->insert($data2);
 
@@ -1293,6 +1300,7 @@ class FinanceAddDetailControler extends Controller
 				$data['time'] = date("H:i:s");
 				$data['master_id'] = $master_id;
 				$data['username'] = Auth::user()->name;
+				$data['is_official'] 	= CommonHelper::getOfficialValue();
 				DB::table('transactions')->insert($data);
 			}
 		}
@@ -1326,6 +1334,7 @@ class FinanceAddDetailControler extends Controller
 			$data1['username'] 		= Auth::user()->name;
 			$data1['date'] 			= date('Y-m-d');
 			$data1['time'] 			= date('H:i:s');
+			$data1['is_official'] 	= CommonHelper::getOfficialValue();
 			$data1['sales']=		Input::get('sales');
 			$data1['currency_id']=		Input::get('curren');
 			$data1['exchange_rate']=		Input::get('exchange_rate');
@@ -1432,6 +1441,7 @@ class FinanceAddDetailControler extends Controller
 				$data2['username'] 		= Auth::user()->name;
 				$data2['date'] 			= date('Y-m-d');
 				$data2['time'] 			= date('H:i:s');
+				$data2['is_official'] 	= CommonHelper::getOfficialValue();
 
 
 				DB::table('rv_data')->insert($data2);
@@ -1448,6 +1458,7 @@ class FinanceAddDetailControler extends Controller
 				$data['time'] = date("H:i:s");
 				$data['master_id'] = $master_id;
 				$data['username'] = Auth::user()->name;
+				$data['is_official'] 	= CommonHelper::getOfficialValue();
 				DB::table('transactions')->insert($data);
 			}
 		}
@@ -2571,6 +2582,7 @@ class FinanceAddDetailControler extends Controller
 			$data1['date'] 			= date('Y-m-d');
 			$data1['status'] 		= 1;
 			$data1['sales']			= Input::get('sales');
+			$data1['is_official'] 	= CommonHelper::getOfficialValue();
 			//$data1['currency_id']=		Input::get('curren');
 			//$data1['exchange_rate']=		Input::get('exchange_rate');
 			//$data1['foreign_currency']=		CommonHelper::check_str_replace(Input::get('exchange_amunt'));
@@ -2613,6 +2625,7 @@ class FinanceAddDetailControler extends Controller
 				$data2['paid_to_type']   = 5;
 				$data2['rv_status']   	= 1;
 				$data2['status']  		= 1;
+				$data2['is_official'] 	= CommonHelper::getOfficialValue();
 				DB::Connection('mysql2')->table('new_rv_data')->insert($data2);
 
 
@@ -2969,7 +2982,8 @@ class FinanceAddDetailControler extends Controller
 				'status' => 1,
 				'description' => $request->desc,
 				'bank' => $bank,
-				'pay_mode' => $pay_mode
+				'pay_mode' => $pay_mode,
+				'is_official' => CommonHelper::getOfficialValue()
 			);
 
 			$master_id = DB::Connection('mysql2')->table('new_rvs')->insertGetId($data);
@@ -3173,7 +3187,8 @@ class FinanceAddDetailControler extends Controller
 				'status'=>1,
 				'description'=>$request->desc,
 				'bank'=>$bank,
-				'pay_mode'=>$pay_mode
+				'pay_mode'=>$pay_mode,
+				'is_official' => CommonHelper::getOfficialValue()
 
 
 			);

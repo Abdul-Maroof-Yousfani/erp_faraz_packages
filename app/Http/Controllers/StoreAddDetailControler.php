@@ -145,7 +145,7 @@ class StoreAddDetailControler extends Controller
                 $data3['status']        = 1;
                 $data3['created_date']  = date("Y-m-d");
                 $data3['username']      = Auth::user()->name;
-                $data3['is_official']   = (Auth::user()->official == '2') ? 2 : 1;
+                $data3['is_official']   = CommonHelper::getOfficialValue();
                 DB::table('stock')->insert($data3);
 
                 // $data3['main_id']       = $store_challan_id;
@@ -299,7 +299,7 @@ class StoreAddDetailControler extends Controller
                 $data3['status']        = 1;
                 $data3['created_date']  = date("Y-m-d");
                 $data3['username']      = Auth::user()->name;
-                $data3['is_official']   = (Auth::user()->official == '2') ? 2 : 1;
+                $data3['is_official']   = CommonHelper::getOfficialValue();
                 DB::table('stock')->insert($data3);
 
                 // $data3['main_id']       = $store_challan_id;

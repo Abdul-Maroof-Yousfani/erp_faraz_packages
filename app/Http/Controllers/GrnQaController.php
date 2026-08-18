@@ -297,7 +297,7 @@ class GrnQaController extends Controller
                         'status' => 1,
                         'pv_status' => 2,
                         'date' => date('Y-m-d'),
-                        'is_official' => $goods_rece->is_official ?? ((Auth::user()->official == '2') ? 2 : 1),
+                        'is_official' => $goods_rece->is_official ?? CommonHelper::getOfficialValue(),
                     ];
                     
                     $master_id = DB::Connection('mysql2')->table('new_purchase_voucher')->insertGetId($data1);
@@ -381,7 +381,7 @@ class GrnQaController extends Controller
                             'username' => Auth::user()->name,
                             'date' => date('Y-m-d'),
                             'additional_exp' => 0,
-                            'is_official' => $goods_rece->is_official ?? ((Auth::user()->official == '2') ? 2 : 1),
+                            'is_official' => $goods_rece->is_official ?? CommonHelper::getOfficialValue(),
                         ];
                         
                         $pv_data_id = DB::Connection('mysql2')->table('new_purchase_voucher_data')->insertGetId($data2);
@@ -415,7 +415,7 @@ class GrnQaController extends Controller
                         'status' => 1,
                         'created_date' => date('Y-m-d'),
                         'username' => Auth::user()->name,
-                        'is_official' => $goods_rece->is_official ?? ((Auth::user()->official == '2') ? 2 : 1),
+                        'is_official' => $goods_rece->is_official ?? CommonHelper::getOfficialValue(),
                     ];
                     
                     DB::Connection('mysql2')->table('stock')->insert($stock);
@@ -445,7 +445,8 @@ class GrnQaController extends Controller
                         'date' => date('Y-m-d'),
                         'action' => 'insert',
                         'username' => Auth::user()->name,
-                        'status' => 1
+                        'status' => 1,
+                        'is_official' => $goods_rece->is_official ?? CommonHelper::getOfficialValue(),
                     ];
                     
                     DB::Connection('mysql2')->table('transactions')->insert($data4);
@@ -483,7 +484,8 @@ class GrnQaController extends Controller
                         'date' => date('Y-m-d'),
                         'action' => 'insert',
                         'username' => Auth::user()->name,
-                        'status' => 1
+                        'status' => 1,
+                        'is_official' => $goods_rece->is_official ?? CommonHelper::getOfficialValue(),
                     ];
                     
                     DB::Connection('mysql2')->table('transactions')->insert($data5);

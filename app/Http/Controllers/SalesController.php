@@ -107,6 +107,7 @@ class SalesController extends Controller
         // $salesOrdersListApprovedAndNotReceived = DB::Connection('mysql2')->table('sales_order')->where('so_status',4)->where('delivery_note_status',0)->where('amount_received_status',1)->get();
         $salesQuotationListApprovedAndNotReceived = DB::Connection('mysql2')->table('sales_order as so')
             ->join('customers as c', 'c.id', 'so.buyers_id')
+            ->whereIn('so.is_official', CommonHelper::getOfficialScopeArray())
             ->select('so.*', 'c.name')
             // ->where('sq.approved_status',1)
             ->get();
@@ -1730,7 +1731,7 @@ class SalesController extends Controller
     public function CreateReceiptVoucherList()
     {
         $Customer = DB::Connection('mysql2')->table('customers')->where('status', 1)->get();
-        $SiMaster = DB::Connection('mysql2')->table('sales_tax_invoice')->where('status', 1)->get();
+        $SiMaster = DB::Connection('mysql2')->table('sales_tax_invoice')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)->get();
 
         return view('Sales.CreateReceiptVoucherList', compact('Customer', 'SiMaster'));
     }
@@ -1751,7 +1752,7 @@ class SalesController extends Controller
 
         $NewRvs = new NewRvs();
         $NewRvs = $NewRvs->SetConnection('mysql2');
-        $NewRvs = $NewRvs->where('status', 1)->where('sales', 1)->whereBetween('rv_date', [$currentMonthStartDate, $currentMonthEndDate])->orderBy('id', 'DESC')->get();
+        $NewRvs = $NewRvs->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)->where('sales', 1)->whereBetween('rv_date', [$currentMonthStartDate, $currentMonthEndDate])->orderBy('id', 'DESC')->get();
         CommonHelper::reconnectMasterDatabase();
         return view('Sales.receiptVoucherList', compact('NewRvs', 'accounts'));
     }
@@ -1772,7 +1773,7 @@ class SalesController extends Controller
 
         $NewRvs = new NewRvs();
         $NewRvs = $NewRvs->SetConnection('mysql2');
-        $NewRvs = $NewRvs->where('status', 1)->where('sales', 1)->where('id', $id)->first();
+        $NewRvs = $NewRvs->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)->where('sales', 1)->where('id', $id)->first();
 
         $NewRvsData = DB::Connection('mysql2')->table('new_rv_data')->where('status', 1)->where('master_id', '=', $id)->get();
         $brige_table = DB::Connection('mysql2')->table('brige_table_sales_receipt')->where('status', 1)->where('rv_id', '=', $id)->get();

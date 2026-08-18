@@ -167,12 +167,16 @@ class FinanceDataCallController extends Controller
         if($VoucherStatus == ''){$Clause1 = '';}
         else{$Clause1 = 'AND a.jv_status = '.$VoucherStatus;}
 
+        $scope = CommonHelper::getOfficialScopeArray();
+        $scopeStr = implode(',', $scope);
+
         if($AccountId !=""):
 
            $NewJvs= DB::Connection('mysql2')->select('select a.* from new_jvs a
             inner join new_jv_data b ON a.id=b.master_id
             inner join accounts c ON b.acc_id=c.id
             where a.status=1
+            and a.is_official IN ('.$scopeStr.')
             and c.id="'.$AccountId.'"
             '.$Clause1.'
             and a.jv_date Between "'.$FromDate.'" and "'.$ToDate.'"
@@ -180,11 +184,11 @@ class FinanceDataCallController extends Controller
         else:
         if($VoucherStatus !="")
         {
-            $NewJvs=$NewJvs->where('status',1)->where('jv_status',$VoucherStatus)->whereBetween('jv_date',array($FromDate,$ToDate))->get();
+            $NewJvs=$NewJvs->whereIn('is_official', $scope)->where('status',1)->where('jv_status',$VoucherStatus)->whereBetween('jv_date',array($FromDate,$ToDate))->get();
         }
         else
         {
-            $NewJvs=$NewJvs->where('status',1)->whereBetween('jv_date',array($FromDate,$ToDate))->get();
+            $NewJvs=$NewJvs->whereIn('is_official', $scope)->where('status',1)->whereBetween('jv_date',array($FromDate,$ToDate))->get();
         }
 
         endif;
@@ -205,6 +209,8 @@ class FinanceDataCallController extends Controller
         $m = $request->m;
         $NewRvs=new NewRvs();
         $NewRvs=$NewRvs->SetConnection('mysql2');
+        $scope = CommonHelper::getOfficialScopeArray();
+        $scopeStr = implode(',', $scope);
         $VoucherStatus = $request->VoucherStatus;
         $Clause1 = '';
         if($VoucherStatus == ''){$Clause1 = '';}
@@ -216,6 +222,7 @@ class FinanceDataCallController extends Controller
             inner join new_rv_data b ON a.id=b.master_id
             inner join accounts c ON b.acc_id=c.id
             where a.status=1
+            and a.is_official IN ('.$scopeStr.')
             and c.id="'.$AccountId.'"
             '.$Clause1.'
             and a.rv_date Between "'.$FromDate.'" and "'.$ToDate.'"
@@ -224,11 +231,11 @@ class FinanceDataCallController extends Controller
         else:
         if($VoucherStatus !="")
         {
-            $NewRvs=$NewRvs->where('status',1)->where('rv_status',$VoucherStatus)->whereBetween('rv_date',array($FromDate,$ToDate))->where('sales',1)->get();
+            $NewRvs=$NewRvs->whereIn('is_official', $scope)->where('status',1)->where('rv_status',$VoucherStatus)->whereBetween('rv_date',array($FromDate,$ToDate))->where('sales',1)->get();
         }
         else
         {
-            $NewRvs=$NewRvs->where('status',1)->where('sales',1)->whereBetween('rv_date',array($FromDate,$ToDate))->get();
+            $NewRvs=$NewRvs->whereIn('is_official', $scope)->where('status',1)->where('sales',1)->whereBetween('rv_date',array($FromDate,$ToDate))->get();
         }
 
         endif;
@@ -253,12 +260,16 @@ class FinanceDataCallController extends Controller
         if($VoucherStatus == ''){$Clause1 = '';}
         else{$Clause1 = 'AND a.pv_status = '.$VoucherStatus;}
 
+        $scope = CommonHelper::getOfficialScopeArray();
+        $scopeStr = implode(',', $scope);
+
         if($AccountId !=""):
 
            $pvs= DB::Connection('mysql2')->select('select a.* from new_pv a
             inner join new_pv_data b ON a.id=b.master_id
             inner join accounts c ON b.acc_id=c.id
             where a.status=1
+            and a.is_official IN ('.$scopeStr.')
             '.$Clause1.'
             and a.payment_type = 1
             and a.type = 1
@@ -268,11 +279,11 @@ class FinanceDataCallController extends Controller
         else:
         if($VoucherStatus !="")
         {
-            $pvs=$pvs->where('status',1)->where('pv_status',$VoucherStatus)->where('payment_type',1)->where('type',1)->whereBetween('pv_date',array($FromDate,$ToDate))->get();
+            $pvs=$pvs->whereIn('is_official', $scope)->where('status',1)->where('pv_status',$VoucherStatus)->where('payment_type',1)->where('type',1)->whereBetween('pv_date',array($FromDate,$ToDate))->get();
         }
         else
         {
-            $pvs=$pvs->where('status',1)->where('payment_type',1)->where('type',1)->whereBetween('pv_date',array($FromDate,$ToDate))->get();
+            $pvs=$pvs->whereIn('is_official', $scope)->where('status',1)->where('payment_type',1)->where('type',1)->whereBetween('pv_date',array($FromDate,$ToDate))->get();
         }
 
         endif;
@@ -291,6 +302,8 @@ class FinanceDataCallController extends Controller
         $m = $request->m;
         $pvs=new NewPv();
         $pvs=$pvs->SetConnection('mysql2');
+        $scope = CommonHelper::getOfficialScopeArray();
+        $scopeStr = implode(',', $scope);
 
         $VoucherStatus = $request->VoucherStatus;
         $Clause1 = '';
@@ -304,6 +317,7 @@ class FinanceDataCallController extends Controller
             inner join new_pv_data b ON a.id=b.master_id
             inner join accounts c ON b.acc_id=c.id
             where a.status=1
+            and a.is_official IN ('.$scopeStr.')
             '.$Clause1.'
             and a.payment_type = 2
             and a.type = 1
@@ -313,11 +327,11 @@ class FinanceDataCallController extends Controller
         else:
         if($VoucherStatus !="")
         {
-            $pvs=$pvs->where('status',1)->where('pv_status',$VoucherStatus)->where('payment_type',2)->where('type',1)->whereBetween('pv_date',array($FromDate,$ToDate))->get();
+            $pvs=$pvs->whereIn('is_official', $scope)->where('status',1)->where('pv_status',$VoucherStatus)->where('payment_type',2)->where('type',1)->whereBetween('pv_date',array($FromDate,$ToDate))->get();
         }
         else
         {
-            $pvs=$pvs->where('status',1)->where('payment_type',2)->where('type',1)->whereBetween('pv_date',array($FromDate,$ToDate))->get();
+            $pvs=$pvs->whereIn('is_official', $scope)->where('status',1)->where('payment_type',2)->where('type',1)->whereBetween('pv_date',array($FromDate,$ToDate))->get();
         }
         endif;
 
@@ -335,6 +349,8 @@ class FinanceDataCallController extends Controller
         $m = $request->m;
         $NewRvs=new NewRvs();
         $NewRvs=$NewRvs->SetConnection('mysql2');
+        $scope = CommonHelper::getOfficialScopeArray();
+        $scopeStr = implode(',', $scope);
 
         $VoucherStatus = $request->VoucherStatus;
         $Clause1 = '';
@@ -347,6 +363,7 @@ class FinanceDataCallController extends Controller
             inner join new_rv_data b ON a.id=b.master_id
             inner join accounts c ON b.acc_id=c.id
             where a.status=1
+            and a.is_official IN ('.$scopeStr.')
             '.$Clause1.'
             and a.rv_type = 2
             and c.id="'.$AccountId.'"
@@ -355,11 +372,11 @@ class FinanceDataCallController extends Controller
         else:
         if($VoucherStatus != "")
         {
-            $NewRvs=$NewRvs->where('status',1)->where('rv_status',$VoucherStatus)->where('rv_type',2)->whereBetween('rv_date',array($FromDate,$ToDate))->get();
+            $NewRvs=$NewRvs->whereIn('is_official', $scope)->where('status',1)->where('rv_status',$VoucherStatus)->where('rv_type',2)->whereBetween('rv_date',array($FromDate,$ToDate))->get();
         }
         else
         {
-            $NewRvs=$NewRvs->where('status',1)->where('rv_type',2)->whereBetween('rv_date',array($FromDate,$ToDate))->get();
+            $NewRvs=$NewRvs->whereIn('is_official', $scope)->where('status',1)->where('rv_type',2)->whereBetween('rv_date',array($FromDate,$ToDate))->get();
         }
         endif;
 
@@ -377,6 +394,8 @@ class FinanceDataCallController extends Controller
         $m = $request->m;
         $NewRvs=new NewRvs();
         $NewRvs=$NewRvs->SetConnection('mysql2');
+        $scope = CommonHelper::getOfficialScopeArray();
+        $scopeStr = implode(',', $scope);
 
         $VoucherStatus = $request->VoucherStatus;
         $Clause1 = '';
@@ -390,6 +409,7 @@ class FinanceDataCallController extends Controller
             inner join new_rv_data b ON a.id=b.master_id
             inner join accounts c ON b.acc_id=c.id
             where a.status=1
+            and a.is_official IN ('.$scopeStr.')
             '.$Clause1.'
             and a.rv_type = 1
             and a.sales != 1
@@ -399,11 +419,11 @@ class FinanceDataCallController extends Controller
         else:
         if($VoucherStatus !="")
         {
-            $NewRvs=$NewRvs->where('status',1)->where('rv_status',$VoucherStatus)->where('rv_type',1)->where('sales','!=',1)->whereBetween('rv_date',array($FromDate,$ToDate))->get();
+            $NewRvs=$NewRvs->whereIn('is_official', $scope)->where('status',1)->where('rv_status',$VoucherStatus)->where('rv_type',1)->where('sales','!=',1)->whereBetween('rv_date',array($FromDate,$ToDate))->get();
         }
         else
         {
-            $NewRvs=$NewRvs->where('status',1)->where('rv_type',1)->where('sales','!=',1)->whereBetween('rv_date',array($FromDate,$ToDate))->get();
+            $NewRvs=$NewRvs->whereIn('is_official', $scope)->where('status',1)->where('rv_type',1)->where('sales','!=',1)->whereBetween('rv_date',array($FromDate,$ToDate))->get();
         }
         endif;
 

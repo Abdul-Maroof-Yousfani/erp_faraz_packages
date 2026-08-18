@@ -119,7 +119,7 @@ class StoreEditDetailControler extends Controller
         $data1['supplier_id'] = $supplier_id;
         $data1['date'] = date("Y-m-d");
         $data1['time'] = date("H:i:s");
-        $data1['is_official'] = (Auth::user()->official == '2') ? 2 : 1;
+        $data1['is_official'] = CommonHelper::getOfficialValue();
 
         DB::table('purchase_request')->where('purchase_request_no','=',$purchaseRequestNo)->update($data1);
         $seletedPurchaseRequestRow = Input::get('purchaseRequestDataSection');
@@ -142,7 +142,7 @@ class StoreEditDetailControler extends Controller
             $data2['sub_total'] = $purchase_request_sub_total;
             $data2['date'] = date("Y-m-d");
             $data2['time'] = date("H:i:s");
-            $data2['is_official'] = (Auth::user()->official == '2') ? 2 : 1;
+            $data2['is_official'] = CommonHelper::getOfficialValue();
 
             DB::table('purchase_request_data')->where('purchase_request_no','=',$purchaseRequestNo)->where('id','=',$recordId)->update($data2);
 

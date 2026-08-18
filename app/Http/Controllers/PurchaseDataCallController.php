@@ -531,55 +531,56 @@ class PurchaseDataCallController extends Controller
         $tab = $_GET['tab'];
         $m = $_GET['m'];
         $FinanceLable = '';
+        $officialScope = CommonHelper::getOfficialScopeArray();
 
         if($tab == 'jv' && $contion == 1)
         {
-            $MultiData = DB::Connection('mysql2')->table('new_jvs')->where('status',1)->where('jv_status',1)->get();
+            $MultiData = DB::Connection('mysql2')->table('new_jvs')->whereIn('is_official', $officialScope)->where('status',1)->where('jv_status',1)->get();
             $FinanceLable = 'Journal Voucher (Pending)';
         }
         elseif($tab == 'jv' && $contion == 2)
         {
-            $MultiData = DB::Connection('mysql2')->table('new_jvs')->where('status',1)->where('jv_status',2)->get();
+            $MultiData = DB::Connection('mysql2')->table('new_jvs')->whereIn('is_official', $officialScope)->where('status',1)->where('jv_status',2)->get();
             $FinanceLable = 'Journal Voucher (Approved)';
         }
         elseif($tab == 'bpv' && $contion == 1)
         {
-            $MultiData = DB::Connection('mysql2')->table('new_pv')->where('status',1)->where('pv_status',1)->where('payment_type',1)->get();
+            $MultiData = DB::Connection('mysql2')->table('new_pv')->whereIn('is_official', $officialScope)->where('status',1)->where('pv_status',1)->where('payment_type',1)->get();
             $FinanceLable = 'Bank Payment Voucher (Pending)';
         }
         elseif($tab == 'bpv' && $contion == 2)
         {
-            $MultiData = DB::Connection('mysql2')->table('new_pv')->where('status',1)->where('pv_status',2)->where('payment_type',1)->get();
+            $MultiData = DB::Connection('mysql2')->table('new_pv')->whereIn('is_official', $officialScope)->where('status',1)->where('pv_status',2)->where('payment_type',1)->get();
             $FinanceLable = 'Bank Payment Voucher (Approved)';
         }
         elseif($tab == 'cpv' && $contion == 1)
         {
-            $MultiData = DB::Connection('mysql2')->table('new_pv')->where('status',1)->where('pv_status',1)->where('payment_type',2)->get();
+            $MultiData = DB::Connection('mysql2')->table('new_pv')->whereIn('is_official', $officialScope)->where('status',1)->where('pv_status',1)->where('payment_type',2)->get();
             $FinanceLable = 'Cash Payment Voucher (Pending)';
         }
         elseif($tab == 'cpv' && $contion == 2)
         {
-            $MultiData = DB::Connection('mysql2')->table('new_pv')->where('status',1)->where('pv_status',2)->where('payment_type',2)->get();
+            $MultiData = DB::Connection('mysql2')->table('new_pv')->whereIn('is_official', $officialScope)->where('status',1)->where('pv_status',2)->where('payment_type',2)->get();
             $FinanceLable = 'Cash Payment Voucher (Approved)';
         }
         elseif($tab == 'brv' && $contion == 1)
         {
-            $MultiData = DB::Connection('mysql2')->table('new_rvs')->where('status',1)->where('rv_status',1)->where('rv_type',1)->where('sales','!=',1)->get();
+            $MultiData = DB::Connection('mysql2')->table('new_rvs')->whereIn('is_official', $officialScope)->where('status',1)->where('rv_status',1)->where('rv_type',1)->where('sales','!=',1)->get();
             $FinanceLable = 'Bank Receipt Voucher (Pending)';
         }
         elseif($tab == 'brv' && $contion == 2)
         {
-            $MultiData = DB::Connection('mysql2')->table('new_rvs')->where('status',1)->where('rv_status',2)->where('rv_type',1)->where('sales','!=',1)->get();
+            $MultiData = DB::Connection('mysql2')->table('new_rvs')->whereIn('is_official', $officialScope)->where('status',1)->where('rv_status',2)->where('rv_type',1)->where('sales','!=',1)->get();
             $FinanceLable = 'Bank Receipt Voucher (Approved)';
         }
         elseif($tab == 'crv' && $contion == 1)
         {
-            $MultiData = DB::Connection('mysql2')->table('new_rvs')->where('status',1)->where('rv_status',1)->where('rv_type',2)->where('sales','!=',1)->get();
+            $MultiData = DB::Connection('mysql2')->table('new_rvs')->whereIn('is_official', $officialScope)->where('status',1)->where('rv_status',1)->where('rv_type',2)->where('sales','!=',1)->get();
             $FinanceLable = 'Cash Receipt Voucher (Pending)';
         }
         elseif($tab == 'crv' && $contion == 2)
         {
-            $MultiData = DB::Connection('mysql2')->table('new_rvs')->where('status',1)->where('rv_status',2)->where('rv_type',2)->where('sales','!=',1)->get();
+            $MultiData = DB::Connection('mysql2')->table('new_rvs')->whereIn('is_official', $officialScope)->where('status',1)->where('rv_status',2)->where('rv_type',2)->where('sales','!=',1)->get();
             $FinanceLable = 'Cash Receipt Voucher (Approved)';
         }
 
@@ -5078,7 +5079,7 @@ echo "aa"; die;
                 'status' => 1,
                 'date' => date('Y-m-d'),
                 'time' => date('H:i:s'),
-                'is_official' => (Auth::user()->official == '2') ? 2 : 1,
+                'is_official' => CommonHelper::getOfficialValue(),
             ];
 
             if ($this->gatePassHasColumn('source_ids')) {
@@ -5109,7 +5110,7 @@ echo "aa"; die;
                     'status' => 1,
                     'date' => date('Y-m-d'),
                     'time' => date('H:i:s'),
-                    'is_official' => (Auth::user()->official == '2') ? 2 : 1,
+                    'is_official' => CommonHelper::getOfficialValue(),
                 ];
 
                 $uomName = trim((string) ($itemRow->uom_name ?? ''));

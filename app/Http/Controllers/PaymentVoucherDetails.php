@@ -65,6 +65,7 @@ class PaymentVoucherDetails extends Controller
                 $payment->status = 1;
                 $payment->username = Auth::user()->name;
                 $payment->pv_status = 1;
+                $payment->is_official = CommonHelper::getOfficialValue();
                 $payment->save();
                 $master_id = $payment->id;
 
@@ -185,6 +186,7 @@ class PaymentVoucherDetails extends Controller
 
                     $pv_data->status = 1;
                     $pv_data->pv_status = 1;
+                    $pv_data->is_official = CommonHelper::getOfficialValue();
 
 
                     $pv_data->save();
@@ -339,6 +341,7 @@ class PaymentVoucherDetails extends Controller
                 $payment->pv_status=1;
                 $payment->type=2;
                 $payment->username=Auth::user()->name;
+                $payment->is_official = CommonHelper::getOfficialValue();
                 $payment->save();
                 $master_id=$payment->id;
 
@@ -397,6 +400,7 @@ class PaymentVoucherDetails extends Controller
                         $pv_data->debit_credit=$debit_credit;
                         $pv_data->status=1;
                         $pv_data->pv_status=1;
+                        $pv_data->is_official = CommonHelper::getOfficialValue();
 
                         $pv_data->save();
 
@@ -495,6 +499,7 @@ class PaymentVoucherDetails extends Controller
 
             $pv_data->status=1;
             $pv_data->pv_status=1;
+            $pv_data->is_official = CommonHelper::getOfficialValue();
 
             $pv_data->save();
             $pv_data_id=$pv_data->id;
@@ -563,6 +568,7 @@ class PaymentVoucherDetails extends Controller
         $payment->date=date('Y-m-d');
         $payment->status=1;
         $payment->verified_by = '';
+        $payment->is_official = CommonHelper::getOfficialValue();
         //$payment->pv_status=1;
         $payment->save();
 
@@ -605,6 +611,7 @@ class PaymentVoucherDetails extends Controller
             $pv_data->debit_credit=$debit_credit;
             $pv_data->status=1;
             $pv_data->pv_status=2;
+            $pv_data->is_official = CommonHelper::getOfficialValue();
             $pv_data->save();
 
             $index++;
@@ -650,6 +657,7 @@ class PaymentVoucherDetails extends Controller
         $NewRvs->date=date('Y-m-d');
         $NewRvs->status=1;
         $NewRvs->verified_by = '';
+        $NewRvs->is_official = CommonHelper::getOfficialValue();
         //$payment->rv_status=1;
         $NewRvs->save();
 
@@ -691,6 +699,7 @@ class PaymentVoucherDetails extends Controller
             $NewRvData->debit_credit=$debit_credit;
             $NewRvData->status=1;
             $NewRvData->rv_status=1;
+            $NewRvData->is_official = CommonHelper::getOfficialValue();
             $NewRvData->save();
 
             $index++;
@@ -731,6 +740,7 @@ class PaymentVoucherDetails extends Controller
             $NewJvs->date = date('Y-m-d');
             $NewJvs->status = 1;
             $NewJvs->verified_by = '';
+            $NewJvs->is_official = CommonHelper::getOfficialValue();
             //$payment->rv_status=1;
             $NewJvs->save();
 
@@ -775,6 +785,7 @@ class PaymentVoucherDetails extends Controller
                 $NewJvData->debit_credit = $debit_credit;
                 $NewJvData->status = 1;
                 $NewJvData->jv_status = 1;
+                $NewJvData->is_official = CommonHelper::getOfficialValue();
                 $NewJvData->save();
 
                 $index++;
@@ -824,6 +835,7 @@ class PaymentVoucherDetails extends Controller
         $NewRvs->date=date('Y-m-d');
         $NewRvs->status=1;
         $NewRvs->verified_by = '';
+        $NewRvs->is_official = CommonHelper::getOfficialValue();
         //$payment->rv_status=1;
         $NewRvs->save();
 
@@ -866,6 +878,7 @@ class PaymentVoucherDetails extends Controller
             $NewRvData->debit_credit=$debit_credit;
             $NewRvData->status=1;
             $NewRvData->rv_status=1;
+            $NewRvData->is_official = CommonHelper::getOfficialValue();
             $NewRvData->save();
 
             $index++;
@@ -926,6 +939,7 @@ class PaymentVoucherDetails extends Controller
             $payment->description=$request->description_1;
             $payment->date=date('Y-m-d');
             $payment->status=1;
+            $payment->is_official = CommonHelper::getOfficialValue();
             // $payment->verified_by = '';
             //$payment->pv_status=1;
             $payment->save();
@@ -972,6 +986,7 @@ class PaymentVoucherDetails extends Controller
                 $pv_data->debit_credit=$debit_credit;
                 $pv_data->status=1;
                 $pv_data->pv_status=2;
+                $pv_data->is_official = CommonHelper::getOfficialValue();
                 $pv_data->save();
 
                 $index++;
@@ -1018,6 +1033,7 @@ class PaymentVoucherDetails extends Controller
         $payment->description=$request->description_1;
         $payment->date=date('Y-m-d');
         $payment->status=1;
+        $payment->is_official = CommonHelper::getOfficialValue();
        // $payment->verified_by = '';
         //$payment->pv_status=1;
         $payment->save();
@@ -1064,6 +1080,7 @@ class PaymentVoucherDetails extends Controller
             $pv_data->debit_credit=$debit_credit;
             $pv_data->status=1;
             $pv_data->pv_status=2;
+            $pv_data->is_official = CommonHelper::getOfficialValue();
             $pv_data->save();
 
             $index++;
@@ -1486,6 +1503,7 @@ class PaymentVoucherDetails extends Controller
             $Jvs->status = 1;
             $Jvs->jv_status = 1;
             $Jvs->username = Auth::user()->name;
+            $Jvs->is_official = CommonHelper::getOfficialValue();
             $Jvs->save();
             $master_id = $Jvs->id;
 
@@ -1532,6 +1550,7 @@ class PaymentVoucherDetails extends Controller
 
                 $JvData->status = 1;
                 $JvData->jv_status = 1;
+                $JvData->is_official = CommonHelper::getOfficialValue();
                 $JvData->save();
                 $pv_data_id = $JvData->id;
                 $index++;

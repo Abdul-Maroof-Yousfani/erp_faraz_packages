@@ -320,12 +320,14 @@
 
 		public static function get_un_approved_debit_credit($acc_id,$debit_credt)
 		{
+			$scopeStr = implode(',', CommonHelper::getOfficialScopeArray());
 			$jv=DB::Connection('mysql2')->selectOne('select sum(amount)amount from new_jvs a
 			inner join
 			new_jv_data b
 			on
 			a.id=b.master_id
 			where a.status=1
+			and a.is_official IN ('.$scopeStr.')
 			and a.jv_status=1
 			and debit_credit="'.$debit_credt.'"
 			and acc_id="'.$acc_id.'"')->amount;
@@ -338,6 +340,7 @@
 			on
 			a.id=b.master_id
 			where a.status=1
+			and a.is_official IN ('.$scopeStr.')
 			and a.pv_status=1
 			and debit_credit="'.$debit_credt.'"
 			and acc_id="'.$acc_id.'"')->amount;
@@ -348,6 +351,7 @@
 			on
 			a.id=b.master_id
 			where a.status=1
+			and a.is_official IN ('.$scopeStr.')
 			and a.rv_status=1
 			and debit_credit="'.$debit_credt.'"
 			and acc_id="'.$acc_id.'"')->amount;

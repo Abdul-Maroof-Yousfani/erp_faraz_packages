@@ -294,6 +294,7 @@ class SalesAddDetailControler extends Controller
         $data1['pay_mode'] = 2;
         $data1['buyer_id'] = $customerId;
         $data1['buyer_acc_id'] = $customerAccId;
+        $data1['is_official'] = CommonHelper::getOfficialValue();
 
         $master_id = DB::Connection('mysql2')->table('new_rvs')->insertGetId($data1);
 
@@ -312,6 +313,7 @@ class SalesAddDetailControler extends Controller
             $data2['description'] = $main_description;
             $data2['status'] = 1;
             $data2['rv_status'] = 1;
+            $data2['is_official'] = CommonHelper::getOfficialValue();
 
             DB::Connection('mysql2')->table('new_rv_data')->insert($data2);
 
@@ -327,6 +329,7 @@ class SalesAddDetailControler extends Controller
         $data3['description'] = $main_description;
         $data3['status'] = 1;
         $data3['rv_status'] = 1;
+        $data3['is_official'] = CommonHelper::getOfficialValue();
 
         DB::Connection('mysql2')->table('new_rv_data')->insert($data3);
 
