@@ -297,6 +297,7 @@
 				'action_date'=>date('Y-m-d'),
 				'username'=>Auth::user()->name,
 				'action_time'=>date('h:i:sa'),
+				'is_official' => CommonHelper::getOfficialValue(),
 			);
 
 			DB::Connection('mysql2')->table('audit_trail')->insert($data);

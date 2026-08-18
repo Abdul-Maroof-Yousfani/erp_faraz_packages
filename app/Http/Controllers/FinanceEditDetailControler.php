@@ -58,6 +58,7 @@ class FinanceEditDetailControler extends Controller
         $data1['jv_status'] = 1;
         $data1['date'] = date('Y-m-d');
         $data1['time'] = date('H:i:s');
+        $data1['is_official'] = CommonHelper::getOfficialValue();
 
         //  DB::table('jvs')->insert($data1);
 
@@ -94,6 +95,7 @@ class FinanceEditDetailControler extends Controller
                 $data2['date'] = date('Y-m-d');
                 $data2['time'] = date('H:i:s');
                 $data2['master_id'] = $id;
+                $data2['is_official'] = CommonHelper::getOfficialValue();
 
                 DB::table('jv_data')->insert($data2);
 
@@ -193,6 +195,7 @@ class FinanceEditDetailControler extends Controller
             $data3['date'] = date("Y-m-d");
             $data3['time'] = date("H:i:s");
             $data3['username'] = Auth::user()->name;
+            $data3['is_official'] = CommonHelper::getOfficialValue();
 
             DB::table('transactions')->insert($data3);
             FinanceHelper::reconnectMasterDatabase();
@@ -226,6 +229,7 @@ class FinanceEditDetailControler extends Controller
         $data1['pv_status']  	= 1;
         $data1['date'] 			= date('Y-m-d');
         $data1['time'] 			= date('H:i:s');
+        $data1['is_official'] 	= CommonHelper::getOfficialValue();
 
         DB::table('pvs')->insert($data1);
         DB::table('pvs')->where('id', $id)->update($data1);
@@ -261,6 +265,7 @@ class FinanceEditDetailControler extends Controller
             $data2['date'] 			= date('Y-m-d');
             $data2['time'] 			= date('H:i:s');
             $data2['master_id'] 			=$id;
+            $data2['is_official'] 	= CommonHelper::getOfficialValue();
 
             DB::table('pv_data')->insert($data2);
 
@@ -308,6 +313,7 @@ class FinanceEditDetailControler extends Controller
         $data1['pv_status']  	= 2;
         $data1['date'] 			= date('Y-m-d');
         $data1['time'] 			= date('H:i:s');
+        $data1['is_official'] 	= CommonHelper::getOfficialValue();
 
         DB::table('pvs')->insert($data1);
 
@@ -333,6 +339,7 @@ class FinanceEditDetailControler extends Controller
             $data2['status']  		= 1;
             $data2['date'] 			= date('Y-m-d');
             $data2['time'] 			= date('H:i:s');
+            $data2['is_official'] 	= CommonHelper::getOfficialValue();
 
             DB::table('pv_data')->insert($data2);
         }
@@ -359,6 +366,7 @@ class FinanceEditDetailControler extends Controller
             $data3['date'] = date("Y-m-d");
             $data3['time'] = date("H:i:s");
             $data3['username'] = Auth::user()->name;
+            $data3['is_official'] = CommonHelper::getOfficialValue();
 
             DB::table('transactions')->insert($data3);
             FinanceHelper::reconnectMasterDatabase();
@@ -567,6 +575,7 @@ class FinanceEditDetailControler extends Controller
         $data1['rv_status']  	= 1;
         $data1['date'] 			= date('Y-m-d');
         $data1['time'] 			= date('H:i:s');
+        $data1['is_official'] 	= CommonHelper::getOfficialValue();
 
         // DB::table('rvs')->insert($data1);
         DB::table('rvs')->where('id', $id)->update($data1);
@@ -604,6 +613,7 @@ class FinanceEditDetailControler extends Controller
             $data2['date'] 			= date('Y-m-d');
             $data2['time'] 			= date('H:i:s');
             $data2['master_id']         =$id;
+            $data2['is_official'] 	= CommonHelper::getOfficialValue();
 
             DB::table('rv_data')->insert($data2);
 
@@ -1590,6 +1600,7 @@ class FinanceEditDetailControler extends Controller
             $InsertData['date'] = date('Y-m-d');
             $InsertData['time'] = date('H:i:s');
             $InsertData['activity_type'] = 1;//Type 1 for Updated
+            $InsertData['is_official'] = CommonHelper::getOfficialValue();
             DB::Connection('mysql2')->table('jvs_activity')->insert($InsertData);
         }
 

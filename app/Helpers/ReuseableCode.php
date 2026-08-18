@@ -418,6 +418,7 @@ class ReuseableCode
             'amount' => $vendor_oprning_data->bal,
             'username' => 'Amir Murshad@',
             'status' => 1,
+            'is_official' => CommonHelper::getOfficialValue(),
         );
 
         if ($count > 0):
@@ -720,6 +721,7 @@ class ReuseableCode
                 'username' => 'Amir Murshad@',
                 'status' => 1,
                 'date' => date('Y-m-d'),
+                'is_official' => CommonHelper::getOfficialValue(),
             );
 
             if ($count > 0):

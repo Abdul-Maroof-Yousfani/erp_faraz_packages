@@ -251,6 +251,7 @@ class PaymentVoucherDetails extends Controller
                 $payment->payment_for=$request->payment_for;
                 $payment->username=Auth::user()->name;
                 $payment->pv_status=1;
+                $payment->is_official = CommonHelper::getOfficialValue();
                 $payment->save();
                 $master_id=$payment->id;
 
@@ -295,6 +296,7 @@ class PaymentVoucherDetails extends Controller
 
                     $pv_data->status=1;
                     $pv_data->pv_status=1;
+                    $pv_data->is_official = CommonHelper::getOfficialValue();
 
                     $pv_data->save();
                     $pv_data_id=$pv_data->id;
@@ -446,6 +448,7 @@ class PaymentVoucherDetails extends Controller
         $payment->status=1;
         $payment->username=Auth::user()->name;
         $payment->pv_status=1;
+        $payment->is_official = CommonHelper::getOfficialValue();
         $payment->save();
         $master_id=$payment->id;
 
@@ -1761,6 +1764,7 @@ class PaymentVoucherDetails extends Controller
         $Rvs->rv_status=1;
         $Rvs->rv_type=1;
         $Rvs->username    = Auth::user()->name;
+        $Rvs->is_official = CommonHelper::getOfficialValue();
         $Rvs->save();
         $master_id=$Rvs->id;
 
@@ -1882,6 +1886,7 @@ class PaymentVoucherDetails extends Controller
 
             $RvData->status = 1;
             $RvData->rv_status = 1;
+            $RvData->is_official = CommonHelper::getOfficialValue();
 
 
             $RvData->save();
@@ -2183,6 +2188,7 @@ class PaymentVoucherDetails extends Controller
             $trans1->date = date('Y-m-d');
             $trans1->action = 1;
             $trans1->username = Auth::user()->name;
+            $trans1->is_official = CommonHelper::getOfficialValue();
             $trans1->save();
 
          endforeach;
@@ -2764,6 +2770,7 @@ class PaymentVoucherDetails extends Controller
             $Master['pv_status'] = 1;
             $Master['username'] = Auth::user()->name;
             $Master['date'] = date('Y-m-d');
+            $Master['is_official'] = CommonHelper::getOfficialValue();
             $MasterId = DB::Connection('mysql2')->table('new_pvv')->insertGetId($Master);
 
             $Counta = 0;
@@ -2776,6 +2783,7 @@ class PaymentVoucherDetails extends Controller
             $Detail['qty'] = Input::get('qty')[$Counta];
             $Detail['rate'] = Input::get('rate')[$Counta];
             $Detail['amount'] = Input::get('amount')[$Counta];
+            $Detail['is_official'] = CommonHelper::getOfficialValue();
 
             $Counta ++;
             DB::Connection('mysql2')->table('new_pvv_data')->insert($Detail);
@@ -2818,6 +2826,7 @@ class PaymentVoucherDetails extends Controller
             $Master['pv_status'] = 1;
             $Master['username'] = Auth::user()->name;
             $Master['date'] = date('Y-m-d');
+            $Master['is_official'] = CommonHelper::getOfficialValue();
             DB::Connection('mysql2')->table('new_pvv')->where('id',$EditId)->update($Master);
             DB::Connection('mysql2')->table('new_pvv_data')->where('master_id',$request->EditId)->delete();
 
@@ -2831,6 +2840,7 @@ class PaymentVoucherDetails extends Controller
                 $Detail['qty'] = Input::get('qty')[$Counta];
                 $Detail['rate'] = Input::get('rate')[$Counta];
                 $Detail['amount'] = Input::get('amount')[$Counta];
+                $Detail['is_official'] = CommonHelper::getOfficialValue();
 
                 $Counta ++;
                 DB::Connection('mysql2')->table('new_pvv_data')->insert($Detail);
@@ -2867,7 +2877,8 @@ class PaymentVoucherDetails extends Controller
             $data1=array
                         (
                             'pv_status'=>2,
-                            'approve_username'=>Auth::user()->name
+                            'approve_username'=>Auth::user()->name,
+                            'is_official'=>CommonHelper::getOfficialValue()
                         );
             DB::Connection('mysql2')->table('new_pvv')->where('id', $id)->update($data1);
 
@@ -2889,6 +2900,7 @@ class PaymentVoucherDetails extends Controller
             $trans1->date = date('Y-m-d');
             $trans1->action = 1;
             $trans1->username = Auth::user()->name;
+            $trans1->is_official = CommonHelper::getOfficialValue();
             $trans1->save();
 
 
@@ -2909,6 +2921,7 @@ class PaymentVoucherDetails extends Controller
             $trans1->date = date('Y-m-d');
             $trans1->action = 1;
             $trans1->username = Auth::user()->name;
+            $trans1->is_official = CommonHelper::getOfficialValue();
             $trans1->save();
 
             $supp_acc_id=CommonHelper::get_supplier_acc_id($data->supplier_id);
@@ -2930,6 +2943,7 @@ class PaymentVoucherDetails extends Controller
             $trans1->date = date('Y-m-d');
             $trans1->action = 1;
             $trans1->username = Auth::user()->name;
+            $trans1->is_official = CommonHelper::getOfficialValue();
             $trans1->save();
 
             DB::Connection('mysql2')->commit();

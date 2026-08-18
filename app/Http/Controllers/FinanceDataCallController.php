@@ -617,6 +617,7 @@ class FinanceDataCallController extends Controller
         $InsertData['date'] = $DeleteDate;
         $InsertData['time'] = $DeleteTime;
         $InsertData['activity_type'] = $ActivityType;
+        $InsertData['is_official'] = CommonHelper::getOfficialValue();
 
         $transaction['status']=0;
         $breakup['status']=0;

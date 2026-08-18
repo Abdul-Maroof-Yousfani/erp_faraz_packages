@@ -558,11 +558,11 @@ class SalesDataCallController extends Controller
 
         if($ClientId !="")
         {
-            $Invoice = $Invoice->where('status',1)->where('buyers_id',$ClientId)->get();
+            $Invoice = $Invoice->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->where('buyers_id',$ClientId)->get();
         }
         else
         {
-            $Invoice = $Invoice->where('status',1)->get();
+            $Invoice = $Invoice->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->get();
         }
         $client = new Customer();
         $client = $client->SetConnection('mysql2');

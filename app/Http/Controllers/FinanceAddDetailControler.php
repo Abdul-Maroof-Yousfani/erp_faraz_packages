@@ -340,6 +340,7 @@ class FinanceAddDetailControler extends Controller
 			$data1['username'] 		= Auth::user()->name;
 			$data1['date'] 			= date('Y-m-d');
 			$data1['time'] 			= date('H:i:s');
+			$data1['is_official'] 	= CommonHelper::getOfficialValue();
 
 			// advance option
 			$payment_advnavce=$request->payment_id;
@@ -503,6 +504,7 @@ class FinanceAddDetailControler extends Controller
 				$data2['qty']   = $qty;
 				$data2['rate']   = $rate;
 				$data2['item_id']=$sub_item;
+				$data2['is_official'] 	= CommonHelper::getOfficialValue();
 
 				$other_id=DB::table('jv_data')->insertGetId($data2);
 
@@ -517,6 +519,7 @@ class FinanceAddDetailControler extends Controller
 				$data3['time'] = date("H:i:s");
 				$data3['master_id'] = $master_id;
 				$data3['username'] = Auth::user()->name;
+				$data3['is_official'] 	= CommonHelper::getOfficialValue();
 				DB::table('transactions')->insert($data3);
 
 
@@ -1111,6 +1114,7 @@ class FinanceAddDetailControler extends Controller
 					$data['time'] = date("H:i:s");
 					$data['master_id'] = $master_id;
 					$data['username'] = Auth::user()->name;
+					$data['is_official'] = CommonHelper::getOfficialValue();
 					DB::table('transactions')->insert($data);
 
 

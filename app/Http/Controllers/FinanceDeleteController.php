@@ -158,6 +158,7 @@ class FinanceDeleteController extends Controller
             $data['date'] = date("Y-m-d");
             $data['time'] = date("H:i:s");
             $data['username'] = Auth::user()->name;
+            $data['is_official'] = CommonHelper::getOfficialValue();
 
             DB::table('transactions')->insert($data);
             FinanceHelper::reconnectMasterDatabase();
