@@ -39,6 +39,14 @@
 												<option @if($Users->acc_type == 'user') selected @endif value="user">User</option>
 											</select>
 										</div>
+										<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+											<label>Official / Unofficial Scope</label>
+											<select name="official" id="official" class="form-control">
+												<option @if(($Users->official ?? '1') == '1') selected @endif value="1">Official Only (1)</option>
+												<option @if(($Users->official ?? '1') == '2') selected @endif value="2">Unofficial Only (2)</option>
+												<option @if(($Users->official ?? '1') == '1,2') selected @endif value="1,2">Both Official & Unofficial (1,2)</option>
+											</select>
+										</div>
 										<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 category hide">
 											<label>Categories</label>
 												<br>

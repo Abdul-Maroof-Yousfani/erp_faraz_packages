@@ -374,17 +374,16 @@ class PurchaseDataCallController extends Controller
         $from=$request->from;
         $to=$request->to;
         $VoucherType =  Input::get('VoucherType');
-
-
-
-
-
         $m = $request->m;
+        $scope = CommonHelper::getOfficialScopeArray();
+        $scopeStr = implode(',', $scope);
+
         if ($VoucherType=='work_order_in'):
 
             $StockData = DB::Connection('mysql2')->select('select voucher_no,voucher_date,sum(amount)amount from stock
            where status = 1 and opening = 0
           and voucher_type = 1
+          and is_official IN ('.$scopeStr.')
           and voucher_date between "'.$from.'" and "'.$to.'"
          and pos_status=4
          and transfer=0
@@ -396,19 +395,21 @@ class PurchaseDataCallController extends Controller
             $StockData = DB::Connection('mysql2')->select('select voucher_no,voucher_date,sum(amount)amount from stock
            where status = 1 and opening = 0
           and voucher_type = 5
+          and is_official IN ('.$scopeStr.')
           and voucher_date between "'.$from.'" and "'.$to.'"
          and pos_status=2
          and transfer=0
          and transfer_status=0
          group by voucher_no');
 
-            else:
-        $StockData = DB::Connection('mysql2')->select('select voucher_no,voucher_date,sum(amount)amount from stock where status = 1 and opening = 0 and voucher_type ="'.$VoucherType.'"
-        and voucher_date between "'.$from.'" and "'.$to.'"
-         and pos_status=0
-         and transfer=0
-         and transfer_status=0
-         group by voucher_no');
+        else:
+            $StockData = DB::Connection('mysql2')->select('select voucher_no,voucher_date,sum(amount)amount from stock where status = 1 and opening = 0 and voucher_type ="'.$VoucherType.'"
+            and is_official IN ('.$scopeStr.')
+            and voucher_date between "'.$from.'" and "'.$to.'"
+             and pos_status=0
+             and transfer=0
+             and transfer_status=0
+             group by voucher_no');
         endif;
         return view('Purchase.AjaxPages.getDetailReportAjax',compact('VoucherType','m','StockData'));
     }
@@ -420,69 +421,70 @@ class PurchaseDataCallController extends Controller
         $tab = $_GET['tab'];
         $m = $_GET['m'];
         $ApprovedPendingLable = '';
+        $officialScope = CommonHelper::getOfficialScopeArray();
         if($tab == 'pr' && $contion == 1)
         {
-            $MultiData = DB::Connection('mysql2')->table('demand')->where('status',1)->where('demand_status',1)->get();
+            $MultiData = DB::Connection('mysql2')->table('demand')->whereIn('is_official', $officialScope)->where('status',1)->where('demand_status',1)->get();
             $ApprovedPendingLable = 'Purchase Request Pending';
         }
         elseif($tab == 'pr' && $contion == 2)
         {
-            $MultiData = DB::Connection('mysql2')->table('demand')->where('status',1)->where('demand_status',2)->get();
+            $MultiData = DB::Connection('mysql2')->table('demand')->whereIn('is_official', $officialScope)->where('status',1)->where('demand_status',2)->get();
             $ApprovedPendingLable = 'Purchase Request Approved';
         }
         elseif($tab == 'po' && $contion == 1)
         {
-            $MultiData = DB::Connection('mysql2')->table('purchase_request')->where('status',1)->where('purchase_request_status', 1)->get();
+            $MultiData = DB::Connection('mysql2')->table('purchase_request')->whereIn('is_official', $officialScope)->where('status',1)->where('purchase_request_status', 1)->get();
             $ApprovedPendingLable = 'Purchase Order Pending';
         }
         elseif($tab == 'po' && $contion == 2)
         {
-            $MultiData = DB::Connection('mysql2')->table('purchase_request')->where('status',1)->whereIn('purchase_request_status', array(2, 3))->get();
+            $MultiData = DB::Connection('mysql2')->table('purchase_request')->whereIn('is_official', $officialScope)->where('status',1)->whereIn('purchase_request_status', array(2, 3))->get();
             $ApprovedPendingLable = 'Purchase Order Approved';
         }
         elseif($tab == 'po' && $contion == 3)
         {
-            $MultiData = DB::Connection('mysql2')->table('purchase_request')->where('status',1)->whereIn('purchase_request_status', array(3))->get();
+            $MultiData = DB::Connection('mysql2')->table('purchase_request')->whereIn('is_official', $officialScope)->where('status',1)->whereIn('purchase_request_status', array(3))->get();
             $ApprovedPendingLable = 'Purchase Order (GRN Created)';
         }
         elseif($tab == 'grn' && $contion == 1)
         {
-            $MultiData = DB::Connection('mysql2')->table('goods_receipt_note')->where('status',1)->where('grn_status', 1)->get();
+            $MultiData = DB::Connection('mysql2')->table('goods_receipt_note')->whereIn('is_official', $officialScope)->where('status',1)->where('grn_status', 1)->get();
             $ApprovedPendingLable = 'Goods Receipt Note Pending';
         }
         elseif($tab == 'grn' && $contion == 2)
         {
-            $MultiData = DB::Connection('mysql2')->table('goods_receipt_note')->where('status',1)->whereIn('grn_status', array(2, 3))->get();
+            $MultiData = DB::Connection('mysql2')->table('goods_receipt_note')->whereIn('is_official', $officialScope)->where('status',1)->whereIn('grn_status', array(2, 3))->get();
             $ApprovedPendingLable = 'Goods Receipt Note Approved';
         }
         elseif($tab == 'grn' && $contion == 3)
         {
-            $MultiData = DB::Connection('mysql2')->table('goods_receipt_note')->where('status',1)->whereIn('grn_status', array(3))->get();
+            $MultiData = DB::Connection('mysql2')->table('goods_receipt_note')->whereIn('is_official', $officialScope)->where('status',1)->whereIn('grn_status', array(3))->get();
             $ApprovedPendingLable = 'Goods Receipt Note (Invoice Created)';
         }
         elseif($tab == 'pi' && $contion == 1)
         {
-            $MultiData = DB::Connection('mysql2')->table('new_purchase_voucher')->where('status',1)->where('grn_no','!=','')->where('pv_status',1)->get();
+            $MultiData = DB::Connection('mysql2')->table('new_purchase_voucher')->whereIn('is_official', $officialScope)->where('status',1)->where('grn_no','!=','')->where('pv_status',1)->get();
             $ApprovedPendingLable = 'Purchase Invoice Pending';
         }
         elseif($tab == 'pi' && $contion == 2)
         {
-            $MultiData = DB::Connection('mysql2')->table('new_purchase_voucher')->where('status',1)->where('grn_no','!=','')->where('pv_status',2)->get();
+            $MultiData = DB::Connection('mysql2')->table('new_purchase_voucher')->whereIn('is_official', $officialScope)->where('status',1)->where('grn_no','!=','')->where('pv_status',2)->get();
             $ApprovedPendingLable = 'Purchase Invoice Approved';
         }
         elseif($tab == 'st' && $contion == 1)
         {
-            $MultiData = DB::Connection('mysql2')->table('stock_transfer')->where('status',1)->where('tr_status',1)->get();
+            $MultiData = DB::Connection('mysql2')->table('stock_transfer')->whereIn('is_official', $officialScope)->where('status',1)->where('tr_status',1)->get();
             $ApprovedPendingLable = 'Stock Transfer Pending';
         }
         elseif($tab == 'st' && $contion == 2)
         {
-            $MultiData = DB::Connection('mysql2')->table('stock_transfer')->where('status',1)->where('tr_status',2)->get();
+            $MultiData = DB::Connection('mysql2')->table('stock_transfer')->whereIn('is_official', $officialScope)->where('status',1)->where('tr_status',2)->get();
             $ApprovedPendingLable = 'Stock Transfer Approved';
         }
         elseif($tab == 'tdn' && $contion == 1)
         {
-            $MultiData = DB::Connection('mysql2')->table('purchase_return')->where('status',1)->get();
+            $MultiData = DB::Connection('mysql2')->table('purchase_return')->whereIn('is_official', $officialScope)->where('status',1)->get();
             $ApprovedPendingLable = 'Debit Note';
         }
         else{}
@@ -1167,8 +1169,9 @@ echo "aa"; die;
         $m = $_GET['m'];
         CommonHelper::companyDatabaseConnection($m);
         $grn_no = $request->GrnNo ;
+        $scope = CommonHelper::getOfficialScopeArray();
         if ($grn_no != ''):
-            $goodsReceiptNoteDetail= GoodsReceiptNote::where('grn_no', 'like', '%' . $grn_no . '%')
+            $goodsReceiptNoteDetail= GoodsReceiptNote::whereIn('is_official', $scope)->where('grn_no', 'like', '%' . $grn_no . '%')
                 ->where('status',1)->get();
             return view('Purchase.AjaxPages.get_grn_by_grn_no', compact('goodsReceiptNoteDetail'));
         else:
@@ -1183,6 +1186,8 @@ echo "aa"; die;
             if(!empty($selectSubDepartmentId)) $query_string_second_part[] = "  AND sub_department_id ='$selectSubDepartmentId'";
             if(!empty($selectSupplierId)) $query_string_second_part[] = "  AND supplier_id ='$selectSupplierId'";
         
+            $scopeStr = implode(',', $scope);
+            $query_string_second_part[] = " AND is_official IN ($scopeStr)";
             $query_string_second_part[] = " AND status = 1";
             $query_string_second_part[] = "AND grn_date BETWEEN '$fromDate' AND '$toDate'";
             $query_string_First_Part = "SELECT * FROM goods_receipt_note WHERE";
@@ -1207,7 +1212,7 @@ echo "aa"; die;
         $selectBranch = $_GET['selectBranch'];
         $selectBranchId = $_GET['selectBranchId'];
         CommonHelper::companyDatabaseConnection($m);
-        $goodsForwardOrderDetail = Demand::whereBetween('demand_date', [$fromDate, $toDate])->get();
+        $goodsForwardOrderDetail = Demand::whereIn('is_official', CommonHelper::getOfficialScopeArray())->whereBetween('demand_date', [$fromDate, $toDate])->get();
         CommonHelper::reconnectMasterDatabase();
         return view('Purchase.AjaxPages.filterGoodsForwardOrderVoucherList', compact('goodsForwardOrderDetail'));
     }
@@ -3632,6 +3637,7 @@ echo "aa"; die;
     {
         $query = DB::connection('mysql2')
             ->table('gate_pass as gp')
+            ->whereIn('gp.is_official', CommonHelper::getOfficialScopeArray())
             ->where('gp.company_id', $m)
             ->where('gp.status', 1);
 
@@ -5072,6 +5078,7 @@ echo "aa"; die;
                 'status' => 1,
                 'date' => date('Y-m-d'),
                 'time' => date('H:i:s'),
+                'is_official' => (Auth::user()->official == '2') ? 2 : 1,
             ];
 
             if ($this->gatePassHasColumn('source_ids')) {
@@ -5102,6 +5109,7 @@ echo "aa"; die;
                     'status' => 1,
                     'date' => date('Y-m-d'),
                     'time' => date('H:i:s'),
+                    'is_official' => (Auth::user()->official == '2') ? 2 : 1,
                 ];
 
                 $uomName = trim((string) ($itemRow->uom_name ?? ''));

@@ -297,6 +297,7 @@ class GrnQaController extends Controller
                         'status' => 1,
                         'pv_status' => 2,
                         'date' => date('Y-m-d'),
+                        'is_official' => $goods_rece->is_official ?? ((Auth::user()->official == '2') ? 2 : 1),
                     ];
                     
                     $master_id = DB::Connection('mysql2')->table('new_purchase_voucher')->insertGetId($data1);
@@ -379,7 +380,8 @@ class GrnQaController extends Controller
                             'pv_status' => 2,
                             'username' => Auth::user()->name,
                             'date' => date('Y-m-d'),
-                            'additional_exp' => 0
+                            'additional_exp' => 0,
+                            'is_official' => $goods_rece->is_official ?? ((Auth::user()->official == '2') ? 2 : 1),
                         ];
                         
                         $pv_data_id = DB::Connection('mysql2')->table('new_purchase_voucher_data')->insertGetId($data2);
@@ -413,6 +415,7 @@ class GrnQaController extends Controller
                         'status' => 1,
                         'created_date' => date('Y-m-d'),
                         'username' => Auth::user()->name,
+                        'is_official' => $goods_rece->is_official ?? ((Auth::user()->official == '2') ? 2 : 1),
                     ];
                     
                     DB::Connection('mysql2')->table('stock')->insert($stock);

@@ -55,22 +55,23 @@ class StoreDataCallController extends Controller
         $selectSubDepartmentId = $_GET['selectSubDepartmentId'];
 echo "aaa"; die;
         CommonHelper::companyDatabaseConnection($m);
+        $scope = CommonHelper::getOfficialScopeArray();
         if($selectVoucherStatus == '0' && empty($selectSubDepartmentId)){
-            $demandDetail = Demand::whereBetween('demand_date',[$fromDate,$toDate])->orderBy('id','desc')->get();
+            $demandDetail = Demand::whereIn('is_official', $scope)->whereBetween('demand_date',[$fromDate,$toDate])->orderBy('id','desc')->get();
         }else if($selectVoucherStatus == '0' && !empty($selectSubDepartmentId)){
-            $demandDetail = Demand::whereBetween('demand_date',[$fromDate,$toDate])->whereIn('status', array(1, 2))->where('sub_department_id','=',$selectSubDepartmentId)->orderBy('id','desc')->get();
+            $demandDetail = Demand::whereIn('is_official', $scope)->whereBetween('demand_date',[$fromDate,$toDate])->whereIn('status', array(1, 2))->where('sub_department_id','=',$selectSubDepartmentId)->orderBy('id','desc')->get();
         }else if($selectVoucherStatus == '1' && !empty($selectSubDepartmentId)){
-            $demandDetail = Demand::whereBetween('demand_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_status','=','1')->where('sub_department_id','=',$selectSubDepartmentId)->orderBy('id','desc')->get();
+            $demandDetail = Demand::whereIn('is_official', $scope)->whereBetween('demand_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_status','=','1')->where('sub_department_id','=',$selectSubDepartmentId)->orderBy('id','desc')->get();
         }else if($selectVoucherStatus == '2' && !empty($selectSubDepartmentId)){
-            $demandDetail = Demand::whereBetween('demand_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_status','=','2')->where('sub_department_id','=',$selectSubDepartmentId)->orderBy('id','desc')->get();
+            $demandDetail = Demand::whereIn('is_official', $scope)->whereBetween('demand_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_status','=','2')->where('sub_department_id','=',$selectSubDepartmentId)->orderBy('id','desc')->get();
         }else if($selectVoucherStatus == '3' && !empty($selectSubDepartmentId)){
-            $demandDetail = Demand::whereBetween('demand_date',[$fromDate,$toDate])->where('status','=','2')->where('sub_department_id','=',$selectSubDepartmentId)->orderBy('id','desc')->get();
+            $demandDetail = Demand::whereIn('is_official', $scope)->whereBetween('demand_date',[$fromDate,$toDate])->where('status','=','2')->where('sub_department_id','=',$selectSubDepartmentId)->orderBy('id','desc')->get();
         }else if($selectVoucherStatus == '1' && empty($selectSubDepartmentId)){
-            $demandDetail = Demand::whereBetween('demand_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_status','=','1')->orderBy('id','desc')->get();
+            $demandDetail = Demand::whereIn('is_official', $scope)->whereBetween('demand_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_status','=','1')->orderBy('id','desc')->get();
         }else if($selectVoucherStatus == '2' && empty($selectSubDepartmentId)){
-            $demandDetail = Demand::whereBetween('demand_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_status','=','2')->orderBy('id','desc')->get();
+            $demandDetail = Demand::whereIn('is_official', $scope)->whereBetween('demand_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_status','=','2')->orderBy('id','desc')->get();
         }else if($selectVoucherStatus == '3' && empty($selectSubDepartmentId)){
-            $demandDetail = Demand::whereBetween('demand_date',[$fromDate,$toDate])->where('status','=','2')->orderBy('id','desc')->get();
+            $demandDetail = Demand::whereIn('is_official', $scope)->whereBetween('demand_date',[$fromDate,$toDate])->where('status','=','2')->orderBy('id','desc')->get();
         }
 
 
@@ -131,22 +132,23 @@ echo "aaa"; die;
         $selectSubDepartmentId = $_GET['selectSubDepartmentId'];
 
         CommonHelper::companyDatabaseConnection($m);
+        $scope = CommonHelper::getOfficialScopeArray();
         if($selectVoucherStatus == '0' && empty($selectSubDepartmentId)){
-            $storeChallanDetail = StoreChallan::whereBetween('store_challan_date',[$fromDate,$toDate])->get();
+            $storeChallanDetail = StoreChallan::whereIn('is_official', $scope)->whereBetween('store_challan_date',[$fromDate,$toDate])->get();
         }else if($selectVoucherStatus == '0' && !empty($selectSubDepartmentId)){
-            $storeChallanDetail = StoreChallan::whereBetween('store_challan_date',[$fromDate,$toDate])->whereIn('status', array(1, 2))->where('sub_department_id','=',$selectSubDepartmentId)->get();
+            $storeChallanDetail = StoreChallan::whereIn('is_official', $scope)->whereBetween('store_challan_date',[$fromDate,$toDate])->whereIn('status', array(1, 2))->where('sub_department_id','=',$selectSubDepartmentId)->get();
         }else if($selectVoucherStatus == '1' && !empty($selectSubDepartmentId)){
-            $storeChallanDetail = StoreChallan::whereBetween('store_challan_date',[$fromDate,$toDate])->where('status','=','1')->where('store_challan_status','=','1')->where('sub_department_id','=',$selectSubDepartmentId)->get();
+            $storeChallanDetail = StoreChallan::whereIn('is_official', $scope)->whereBetween('store_challan_date',[$fromDate,$toDate])->where('status','=','1')->where('store_challan_status','=','1')->where('sub_department_id','=',$selectSubDepartmentId)->get();
         }else if($selectVoucherStatus == '2' && !empty($selectSubDepartmentId)){
-            $storeChallanDetail = StoreChallan::whereBetween('store_challan_date',[$fromDate,$toDate])->where('status','=','1')->where('store_challan_status','=','2')->where('sub_department_id','=',$selectSubDepartmentId)->get();
+            $storeChallanDetail = StoreChallan::whereIn('is_official', $scope)->whereBetween('store_challan_date',[$fromDate,$toDate])->where('status','=','1')->where('store_challan_status','=','2')->where('sub_department_id','=',$selectSubDepartmentId)->get();
         }else if($selectVoucherStatus == '3' && !empty($selectSubDepartmentId)){
-            $storeChallanDetail = StoreChallan::whereBetween('store_challan_date',[$fromDate,$toDate])->where('status','=','2')->where('sub_department_id','=',$selectSubDepartmentId)->get();
+            $storeChallanDetail = StoreChallan::whereIn('is_official', $scope)->whereBetween('store_challan_date',[$fromDate,$toDate])->where('status','=','2')->where('sub_department_id','=',$selectSubDepartmentId)->get();
         }else if($selectVoucherStatus == '1' && empty($selectSubDepartmentId)){
-            $storeChallanDetail = StoreChallan::whereBetween('store_challan_date',[$fromDate,$toDate])->where('status','=','1')->where('store_challan_status','=','1')->get();
+            $storeChallanDetail = StoreChallan::whereIn('is_official', $scope)->whereBetween('store_challan_date',[$fromDate,$toDate])->where('status','=','1')->where('store_challan_status','=','1')->get();
         }else if($selectVoucherStatus == '2' && empty($selectSubDepartmentId)){
-            $storeChallanDetail = StoreChallan::whereBetween('store_challan_date',[$fromDate,$toDate])->where('status','=','1')->where('store_challan_status','=','2')->get();
+            $storeChallanDetail = StoreChallan::whereIn('is_official', $scope)->whereBetween('store_challan_date',[$fromDate,$toDate])->where('status','=','1')->where('store_challan_status','=','2')->get();
         }else if($selectVoucherStatus == '3' && empty($selectSubDepartmentId)){
-            $storeChallanDetail = StoreChallan::whereBetween('store_challan_date',[$fromDate,$toDate])->where('status','=','2')->get();
+            $storeChallanDetail = StoreChallan::whereIn('is_official', $scope)->whereBetween('store_challan_date',[$fromDate,$toDate])->where('status','=','2')->get();
         }
 
         //$storeChallanDetail = StoreChallan::whereBetween('store_challan_date',[$fromDate,$toDate])->where('status','=','1')->get();
@@ -206,73 +208,75 @@ echo "aaa"; die;
         CommonHelper::companyDatabaseConnection($m);
         $selectVoucherStatus;
 
+        $scope = CommonHelper::getOfficialScopeArray();
+
         if($selectVoucherStatus == '0' && empty($selectSubDepartmentId) && empty($selectSupplierId)){
 
 
             //return 'One';
-            $purchaseRequestDetail = PurchaseRequest::whereBetween('purchase_request_date',[$fromDate,$toDate])->where('demand_type','=','1')->where('status','=','1')->where('purchase_request_status','!=','4')->orderBy('id','desc')->get();
+            $purchaseRequestDetail = PurchaseRequest::whereIn('is_official', $scope)->whereBetween('purchase_request_date',[$fromDate,$toDate])->where('demand_type','=','1')->where('status','=','1')->where('purchase_request_status','!=','4')->orderBy('id','desc')->get();
         }else if($selectVoucherStatus == '0' && !empty($selectSubDepartmentId) && empty($selectSupplierId)){
             //return 'Two';
-            $purchaseRequestDetail = PurchaseRequest::whereBetween('purchase_request_date',[$fromDate,$toDate])->whereIn('status', array(1, 2))->where('demand_type','=','1')->where('sub_department_id','=',$selectSubDepartmentId)->where('purchase_request_status','!=','4')->get();
+            $purchaseRequestDetail = PurchaseRequest::whereIn('is_official', $scope)->whereBetween('purchase_request_date',[$fromDate,$toDate])->whereIn('status', array(1, 2))->where('demand_type','=','1')->where('sub_department_id','=',$selectSubDepartmentId)->where('purchase_request_status','!=','4')->get();
         }else if($selectVoucherStatus == '0' && empty($selectSubDepartmentId) && !empty($selectSupplierId)){
             //return 'Three';
-            $purchaseRequestDetail = PurchaseRequest::whereBetween('purchase_request_date',[$fromDate,$toDate])->whereIn('status', array(1, 2))->where('demand_type','=','1')->where('supplier_id','=',$selectSupplierId)->where('purchase_request_status','!=','4')->get();
+            $purchaseRequestDetail = PurchaseRequest::whereIn('is_official', $scope)->whereBetween('purchase_request_date',[$fromDate,$toDate])->whereIn('status', array(1, 2))->where('demand_type','=','1')->where('supplier_id','=',$selectSupplierId)->where('purchase_request_status','!=','4')->get();
         }else if($selectVoucherStatus == '1' && !empty($selectSubDepartmentId) && empty($selectSupplierId)){
             //return 'Four';
-            $purchaseRequestDetail = PurchaseRequest::whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('purchase_request_status','=','1')->where('sub_department_id','=',$selectSubDepartmentId)->get();
+            $purchaseRequestDetail = PurchaseRequest::whereIn('is_official', $scope)->whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('purchase_request_status','=','1')->where('sub_department_id','=',$selectSubDepartmentId)->get();
         }else if($selectVoucherStatus == '2' && !empty($selectSubDepartmentId) && empty($selectSupplierId)){
             //return 'Five';
-            $purchaseRequestDetail = PurchaseRequest::whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('purchase_request_status','=','2')->where('sub_department_id','=',$selectSubDepartmentId)->get();
+            $purchaseRequestDetail = PurchaseRequest::whereIn('is_official', $scope)->whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('purchase_request_status','=','2')->where('sub_department_id','=',$selectSubDepartmentId)->get();
         }else if($selectVoucherStatus == '3' && !empty($selectSubDepartmentId) && empty($selectSupplierId)){
             //return 'Six';
-            $purchaseRequestDetail = PurchaseRequest::whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','2')->where('demand_type','=','1')->where('sub_department_id','=',$selectSubDepartmentId)->where('purchase_request_status','!=','4')->get();
+            $purchaseRequestDetail = PurchaseRequest::whereIn('is_official', $scope)->whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','2')->where('demand_type','=','1')->where('sub_department_id','=',$selectSubDepartmentId)->where('purchase_request_status','!=','4')->get();
         }else if($selectVoucherStatus == '1' && empty($selectSubDepartmentId) && empty($selectSupplierId)){
             //return 'Seven';
-            $purchaseRequestDetail = PurchaseRequest::whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('purchase_request_status','=','1')->get();
+            $purchaseRequestDetail = PurchaseRequest::whereIn('is_official', $scope)->whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('purchase_request_status','=','1')->get();
         }else if($selectVoucherStatus == '2' && empty($selectSubDepartmentId) && empty($selectSupplierId)){
             //return 'Eight';
-            $purchaseRequestDetail = PurchaseRequest::whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('purchase_request_status','=','2')->get();
+            $purchaseRequestDetail = PurchaseRequest::whereIn('is_official', $scope)->whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('purchase_request_status','=','2')->get();
         }else if($selectVoucherStatus == '3' && empty($selectSubDepartmentId) && empty($selectSupplierId)){
             //return 'Nine';
-            $purchaseRequestDetail = PurchaseRequest::whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','2')->where('demand_type','=','1')->where('purchase_request_status','!=','4')->get();
+            $purchaseRequestDetail = PurchaseRequest::whereIn('is_official', $scope)->whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','2')->where('demand_type','=','1')->where('purchase_request_status','!=','4')->get();
         }
         else if($selectVoucherStatus == '4' && empty($selectSubDepartmentId) && empty($selectSupplierId)){
             //return 'Nine';
-            $purchaseRequestDetail = PurchaseRequest::whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('purchase_request_status','=','3')->get();
+            $purchaseRequestDetail = PurchaseRequest::whereIn('is_official', $scope)->whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('purchase_request_status','=','3')->get();
         }
         else if($selectVoucherStatus == '1' && empty($selectSubDepartmentId) && !empty($selectSupplierId)){
             //return 'Ten';
-            $purchaseRequestDetail = PurchaseRequest::whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('purchase_request_status','=','1')->where('supplier_id','=',$selectSupplierId)->get();
+            $purchaseRequestDetail = PurchaseRequest::whereIn('is_official', $scope)->whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('purchase_request_status','=','1')->where('supplier_id','=',$selectSupplierId)->get();
         }else if($selectVoucherStatus == '2' && empty($selectSubDepartmentId) && !empty($selectSupplierId)){
             //return 'Eleven';
-            $purchaseRequestDetail = PurchaseRequest::whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('purchase_request_status','=','2')->where('supplier_id','=',$selectSupplierId)->get();
+            $purchaseRequestDetail = PurchaseRequest::whereIn('is_official', $scope)->whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('purchase_request_status','=','2')->where('supplier_id','=',$selectSupplierId)->get();
         } else if($selectVoucherStatus == '3' && empty($selectSubDepartmentId) && !empty($selectSupplierId)){
             //return 'Twelve';
-            $purchaseRequestDetail = PurchaseRequest::whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','2')->where('demand_type','=','1')->where('supplier_id','=',$selectSupplierId)->where('purchase_request_status','!=','4')->get();
+            $purchaseRequestDetail = PurchaseRequest::whereIn('is_official', $scope)->whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','2')->where('demand_type','=','1')->where('supplier_id','=',$selectSupplierId)->where('purchase_request_status','!=','4')->get();
         } else if($selectVoucherStatus == '0' && !empty($selectSubDepartmentId) && !empty($selectSupplierId)){
             //return 'Thirteen';
-            $purchaseRequestDetail = PurchaseRequest::whereBetween('purchase_request_date',[$fromDate,$toDate])->where('supplier_id','=',$selectSupplierId)->where('demand_type','=','1')->where('sub_department_id','=',$selectSubDepartmentId)->where('purchase_request_status','!=','4')->get();
+            $purchaseRequestDetail = PurchaseRequest::whereIn('is_official', $scope)->whereBetween('purchase_request_date',[$fromDate,$toDate])->where('supplier_id','=',$selectSupplierId)->where('demand_type','=','1')->where('sub_department_id','=',$selectSubDepartmentId)->where('purchase_request_status','!=','4')->get();
         } else if($selectVoucherStatus == '1' && !empty($selectSubDepartmentId) && !empty($selectSupplierId)){
             //return 'Fourteen';
-            $purchaseRequestDetail = PurchaseRequest::whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('purchase_request_status','=','1')->where('supplier_id','=',$selectSupplierId)->where('sub_department_id','=',$selectSubDepartmentId)->get();
+            $purchaseRequestDetail = PurchaseRequest::whereIn('is_official', $scope)->whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('purchase_request_status','=','1')->where('supplier_id','=',$selectSupplierId)->where('sub_department_id','=',$selectSubDepartmentId)->get();
         } else if($selectVoucherStatus == '2' && !empty($selectSubDepartmentId) && !empty($selectSupplierId)){
             //return 'Fifteen';
-            $purchaseRequestDetail = PurchaseRequest::whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('purchase_request_status','=','2')->where('supplier_id','=',$selectSupplierId)->where('sub_department_id','=',$selectSubDepartmentId)->get();
+            $purchaseRequestDetail = PurchaseRequest::whereIn('is_official', $scope)->whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('purchase_request_status','=','2')->where('supplier_id','=',$selectSupplierId)->where('sub_department_id','=',$selectSubDepartmentId)->get();
         } else if($selectVoucherStatus == '3' && !empty($selectSubDepartmentId) && !empty($selectSupplierId)){
             //return 'Sixteen';
-            $purchaseRequestDetail = PurchaseRequest::whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','2')->where('demand_type','=','1')->where('supplier_id','=',$selectSupplierId)->where('sub_department_id','=',$selectSubDepartmentId)->where('purchase_request_status','!=','4')->get();
+            $purchaseRequestDetail = PurchaseRequest::whereIn('is_official', $scope)->whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','2')->where('demand_type','=','1')->where('supplier_id','=',$selectSupplierId)->where('sub_department_id','=',$selectSubDepartmentId)->where('purchase_request_status','!=','4')->get();
         } else if($selectVoucherStatus == '5' && !empty($selectSubDepartmentId) && !empty($selectSupplierId)){
             //return 'Sixteen';
-            $purchaseRequestDetail = PurchaseRequest::whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('supplier_id','=',$selectSupplierId)->where('sub_department_id','=',$selectSubDepartmentId)->where('purchase_request_status','=','4')->get();
+            $purchaseRequestDetail = PurchaseRequest::whereIn('is_official', $scope)->whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('supplier_id','=',$selectSupplierId)->where('sub_department_id','=',$selectSubDepartmentId)->where('purchase_request_status','=','4')->get();
         } else if($selectVoucherStatus == '5' && empty($selectSubDepartmentId) && !empty($selectSupplierId)){
             //return 'Sixteen';
-            $purchaseRequestDetail = PurchaseRequest::whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('supplier_id','=',$selectSupplierId)->where('purchase_request_status','=','4')->get();
+            $purchaseRequestDetail = PurchaseRequest::whereIn('is_official', $scope)->whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('supplier_id','=',$selectSupplierId)->where('purchase_request_status','=','4')->get();
         } else if($selectVoucherStatus == '5' && !empty($selectSubDepartmentId) && empty($selectSupplierId)){
             //return 'Sixteen';
-            $purchaseRequestDetail = PurchaseRequest::whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('purchase_request_status','=','4')->where('sub_department_id','=',$selectSubDepartmentId)->get();
+            $purchaseRequestDetail = PurchaseRequest::whereIn('is_official', $scope)->whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('purchase_request_status','=','4')->where('sub_department_id','=',$selectSubDepartmentId)->get();
         } else if($selectVoucherStatus == '5' && empty($selectSubDepartmentId) && empty($selectSupplierId)){
             //return 'Sixteen';
-            $purchaseRequestDetail = PurchaseRequest::whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('purchase_request_status','=','4')->get();
+            $purchaseRequestDetail = PurchaseRequest::whereIn('is_official', $scope)->whereBetween('purchase_request_date',[$fromDate,$toDate])->where('status','=','1')->where('demand_type','=','1')->where('purchase_request_status','=','4')->get();
         }
         CommonHelper::reconnectMasterDatabase();
         return view('Store.AjaxPages.filterPurchaseRequestVoucherList',compact('purchaseRequestDetail'));
@@ -1015,7 +1019,7 @@ echo "aaa"; die;
     {
         $PoNo = $request->PoNo;
         $m = $request->m;
-        $purchaseRequestDetail = DB::Connection('mysql2')->table('purchase_request')->where('status',1)->where('purchase_request_no','like', '%' . $PoNo . '%')->get();
+        $purchaseRequestDetail = DB::Connection('mysql2')->table('purchase_request')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->where('purchase_request_no','like', '%' . $PoNo . '%')->get();
         return view('Store.AjaxPages.getPoDataPoNoWise', compact('purchaseRequestDetail','m'));
     }
 

@@ -250,6 +250,7 @@ class UsersAddDetailController extends Controller
             'password' => $request->password,  
             'categories_id' => $category,
             'dashboard_access' => $dashboard_access,
+            'official' => $request->official ?? '1',
             'company_id' => 1,            
             'emp_id' => 1,            
             'emp_code' => User::UniqueNo(),            
@@ -296,6 +297,7 @@ class UsersAddDetailController extends Controller
                 'acc_type' => $request->acc_type,
                 'categories_id' => $category,
                 'dashboard_access' => $dashboard_access,
+                'official' => $request->official ?? '1',
                 'company_id' => 1,
                 'emp_id' => 1,
             ]);

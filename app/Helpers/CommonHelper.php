@@ -1464,7 +1464,7 @@ class CommonHelper
 
             CommonHelper::companyDatabaseConnection($m);
             $opening_data = DB::table('transactions')->where('opening_bal', 1)->where('acc_id', $acc_id)->
-                where('status', 1)->first();
+                where('status', 1)->whereIn('is_official', CommonHelper::getOfficialScopeArray())->first();
 
             CommonHelper::reconnectMasterDatabase();
 
@@ -1488,10 +1488,11 @@ class CommonHelper
 
 
             CommonHelper::companyDatabaseConnection($m);
-            $debit = DB::selectOne('select sum(amount)amount from transactions where status=1  and acc_id="' . $acc_id . '"
+            $scopeStr = implode(',', CommonHelper::getOfficialScopeArray());
+            $debit = DB::selectOne('select sum(amount)amount from transactions where status=1 and is_official in (' . $scopeStr . ') and acc_id="' . $acc_id . '"
 		    	and v_date between "' . $new_from . '" and "' . $new_to . '"  and debit_credit=1')->amount;
 
-            $credit = DB::selectOne('select sum(amount)amount from transactions where status=1  and acc_id="' . $acc_id . '"
+            $credit = DB::selectOne('select sum(amount)amount from transactions where status=1 and is_official in (' . $scopeStr . ') and acc_id="' . $acc_id . '"
 			    and v_date between "' . $new_from . '" and "' . $new_to . '"  and debit_credit=0')->amount;
 
 
@@ -5285,6 +5286,16 @@ class CommonHelper
         return $totalQty > 0 ? round($totalValue / $totalQty, 3) : 0;
     }
 
+    /**
+     * Get user official scope array: returns [1], [2], or [1, 2].
+     */
+    public static function getOfficialScopeArray()
+    {
+        $val = Auth::user()->official ?? '1';
+        return explode(',', $val);
+    }
+
 }
 
 ?>
+

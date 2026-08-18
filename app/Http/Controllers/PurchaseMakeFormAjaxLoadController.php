@@ -848,7 +848,7 @@ function addDirectgrn()
 
         $purchaseRequest = new PurchaseRequest();
         $purchaseRequest=$purchaseRequest->SetCOnnection('mysql2');
-        $purchaseRequest =$purchaseRequest->where('status',1)->where('supplier_id',$id)->where('purchase_request_status',2)->select('id','purchase_request_no','purchase_request_date')->get();
+        $purchaseRequest =$purchaseRequest->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->where('supplier_id',$id)->where('purchase_request_status',2)->select('id','purchase_request_no','purchase_request_date')->get();
 
         foreach($purchaseRequest as $row){
     ?>
@@ -864,7 +864,7 @@ function addDirectgrn()
 
         $GoodsReceiptNote = new GoodsReceiptNote();
         $GoodsReceiptNote=$GoodsReceiptNote->SetCOnnection('mysql2');
-        $GoodsReceiptNote =$GoodsReceiptNote->where('status',1)->where('supplier_id',$id)->whereIn('grn_status',[2,3])->select('id','grn_no','grn_date')->get();
+        $GoodsReceiptNote =$GoodsReceiptNote->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->where('supplier_id',$id)->whereIn('grn_status',[2,3])->select('id','grn_no','grn_date')->get();
 
         foreach($GoodsReceiptNote as $row){
             ?>
@@ -878,6 +878,7 @@ function addDirectgrn()
         echo '<option value="">Select GRN No</option>';
 
         $rows = DB::connection('mysql2')->table('goods_receipt_note')
+            ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
             ->where('status', 1)
             ->where('supplier_id', $id)
             ->whereIn('grn_status', [2, 3])

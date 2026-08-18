@@ -1073,6 +1073,7 @@ class PurchaseEditDetailControler extends Controller
                 // Redirect or return a response as needed
             }
             $data1['file_path'] = $filePath;
+            $data1['is_official'] = (Auth::user()->official == '2') ? 2 : 1;
 //            echo "<pre>";
 //            print_r($data1);
 //            die();
@@ -1175,6 +1176,7 @@ class PurchaseEditDetailControler extends Controller
                 $data2['date'] = date("Y-m-d");
                 $data2['time'] = date("H:i:s");
                 $data2['username'] = Auth::user()->name;
+                $data2['is_official'] = (Auth::user()->official == '2') ? 2 : 1;
                 $grn_data_id= DB::table('grn_data')->insertGetId($data2);
             }
 

@@ -672,7 +672,7 @@ class PurchaseController extends Controller
     {
         CommonHelper::companyDatabaseConnection($_GET['m']);
         $PurchaseRequestData = new PurchaseRequestData;
-        $PurchaseRequestDatas = $PurchaseRequestData::distinct()->where('grn_status', '=', '1')->where('purchase_request_status', '=', '2')->get(['purchase_request_no', 'purchase_request_date']);
+        $PurchaseRequestDatas = $PurchaseRequestData::distinct()->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('grn_status', '=', '1')->where('purchase_request_status', '=', '2')->get(['purchase_request_no', 'purchase_request_date']);
         $accounts = new Account;
         $accounts = $accounts::orderBy('level1', 'ASC')
             ->orderBy('level2', 'ASC')

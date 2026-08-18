@@ -34,6 +34,7 @@ $gstTaxAccountIds = DB::Connection('mysql2')->table('gst')
 $taxVouchers = [];
 if ($tax_mode === 'with_tax' || $tax_mode === 'non_tax') {
     $taxVoucherQuery = DB::Connection('mysql2')->table('transactions')
+        ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
         ->where('status', 1)->whereBetween('v_date', [$from, $to]);
 
     if ($tax_mode === 'with_tax') {
@@ -54,6 +55,7 @@ if ($tax_mode === 'with_tax' || $tax_mode === 'non_tax') {
 
 // ── MAIN TRANSACTIONS QUERY ──────────────────────────────────
 $quarterQuery = DB::Connection('mysql2')->table('transactions')
+    ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
     ->whereIn('acc_id', $acc_ids)
     ->where('opening_bal', 0)
     ->where('status', 1)
