@@ -2729,8 +2729,9 @@ class SalesAddDetailControler extends Controller
                     'created_date' => date('Y-m-d'),
                     'opening' => 0,
                     'so_data_id' => '',
+                    'is_official' => CommonHelper::getOfficialValue(),
                 );
-                // DB::Connection('mysql2')->table('stock')->insert($stock);
+                DB::Connection('mysql2')->table('stock')->insert($stock);
             }
 
                $cogs = DB::Connection('mysql2')->table('sales_tax_invoice as a')
@@ -2770,6 +2771,7 @@ class SalesAddDetailControler extends Controller
                $transaction->username=Auth::user()->name;;
                $transaction->status=100;
                $transaction->voucher_type=8;
+               $transaction->is_official=CommonHelper::getOfficialValue();
                $transaction->save();
 
             //    cost of good sold pipe 
@@ -2787,6 +2789,7 @@ class SalesAddDetailControler extends Controller
                $transaction->username=Auth::user()->name;;
                $transaction->status=100;
                $transaction->voucher_type=8;
+               $transaction->is_official=CommonHelper::getOfficialValue();
                $transaction->save();
             //    $cogs_total+=$total_average_amount;
   
@@ -3391,6 +3394,7 @@ class SalesAddDetailControler extends Controller
             $detail->status        = 1;
             $detail->date          = now()->toDateString();
             $detail->username      = Auth::user()->name;
+            $detail->is_official   = CommonHelper::getOfficialValue();
 
             $detail->save();
 
@@ -3417,6 +3421,7 @@ class SalesAddDetailControler extends Controller
                     'created_date' => date('Y-m-d'),
                     'opening' => 0,
                     'so_data_id' => '',
+                    'is_official' => CommonHelper::getOfficialValue(),
                 );
                 DB::Connection('mysql2')->table('stock')->insert($stock);
 
@@ -3461,6 +3466,7 @@ class SalesAddDetailControler extends Controller
                $transaction->username=Auth::user()->name;;
                $transaction->status=100;
                $transaction->voucher_type=8;
+               $transaction->is_official=CommonHelper::getOfficialValue();
                $transaction->save();
 
             //    cost of good sold pipe 
@@ -3478,6 +3484,7 @@ class SalesAddDetailControler extends Controller
                $transaction->username=Auth::user()->name;;
                $transaction->status=100;
                $transaction->voucher_type=8;
+               $transaction->is_official=CommonHelper::getOfficialValue();
                $transaction->save();
             //    $cogs_total+=$total_average_amount;
   
