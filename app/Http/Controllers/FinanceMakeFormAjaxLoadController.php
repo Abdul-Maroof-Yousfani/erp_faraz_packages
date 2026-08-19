@@ -117,8 +117,9 @@ class FinanceMakeFormAjaxLoadController extends Controller
 		$makeGetValue = explode('*',$_GET['poDetail']);
 		$poNo = $makeGetValue[0];
         $poDate = $makeGetValue[1];
-		$purchaseOrderDetail = DB::connection('mysql2')->selectOne('SELECT sum(b.net_amount) as totalAmount,a.* FROM `purchase_request` as a INNER JOIN purchase_request_data b ON a.purchase_request_no = b.purchase_request_no where a.purchase_request_no = "'.$poNo.'"');
-		$purchaseOrderDataDetail = DB::connection('mysql2')->select('select * from purchase_request where purchase_request_no = "'.$poNo.'"');
+		$scopeStr = implode(',', CommonHelper::getOfficialScopeArray());
+		$purchaseOrderDetail = DB::connection('mysql2')->selectOne('SELECT sum(b.net_amount) as totalAmount,a.* FROM `purchase_request` as a INNER JOIN purchase_request_data b ON a.purchase_request_no = b.purchase_request_no where a.is_official IN ('.$scopeStr.') and a.purchase_request_no = "'.$poNo.'"');
+		$purchaseOrderDataDetail = DB::connection('mysql2')->select('select * from purchase_request where is_official IN ('.$scopeStr.') and purchase_request_no = "'.$poNo.'"');
 		CommonHelper::companyDatabaseConnection($m);
 		$accounts = new Account;
 		$accounts = $accounts::orderBy('level1', 'ASC')
