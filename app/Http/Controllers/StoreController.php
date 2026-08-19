@@ -71,7 +71,7 @@ class StoreController extends Controller
     }
 
     public  function itemWiseOpening(){
-        $OpeningItemWise = DB::Connection('mysql2')->table('stock')->where('opening',1)->where('status',1)->where('voucher_type',1)->where('amount','>',0)->where('warehouse_id','!=',0)->get();
+        $OpeningItemWise = DB::Connection('mysql2')->table('stock')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('opening',1)->where('status',1)->where('voucher_type',1)->where('amount','>',0)->where('warehouse_id','!=',0)->get();
         return view('Store.itemWiseOpening',compact('OpeningItemWise'));
     }
 
@@ -494,6 +494,7 @@ class StoreController extends Controller
 
        
         $stock = DB::connection('mysql2')->table('stock')
+        ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
         ->where([
             ['voucher_no' , $store_challan_id->store_challan_no ] ,
             ['voucher_date' , $store_challan_id->store_challan_date ] ,
@@ -527,6 +528,7 @@ class StoreController extends Controller
         ->join('subitem', 'subitem.id', '=', 'stock.sub_item_id')
         ->join('supplier', 'supplier.id', '=', 'stock.supplier_id')
         ->join(config('database.connections.mysql.database').'.uom as uom_subitem', 'uom_subitem.id', '=', 'subitem.uom')
+        ->whereIn('stock.is_official', CommonHelper::getOfficialScopeArray())
         ->where(['stock.sub_item_id'=>$request->item_id,'stock.batch_code'=>$request->batch_code])
         ->first();
         // dd($stock, $batchDetail);

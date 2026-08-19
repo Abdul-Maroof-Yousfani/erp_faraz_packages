@@ -3561,7 +3561,7 @@ class PurchaseAddDetailControler extends Controller
                 'net_amount' => $amount - $dicount_amount,
                 'return_qty' => $requestedReturnQty,
                 'status' => 1,
-                'is_official' => (Auth::user()->official == '2') ? 2 : 1,
+                'is_official' => CommonHelper::getOfficialValue(),
             );
             $net_amount = $amount - $dicount_amount;
             $total += $net_amount;
@@ -4157,7 +4157,7 @@ public function updatePurchaseReturnDetail(Request $request)
                 'net_amount'         => $net_amount,
                 'return_qty'         => $requestedReturnQty,
                 'status'             => 1,
-                'is_official'        => (Auth::user()->official == '2') ? 2 : 1,
+                'is_official'        => CommonHelper::getOfficialValue(),
             ]);
 
             $total += $net_amount;
@@ -4263,6 +4263,7 @@ public function updatePurchaseReturnDetail(Request $request)
                 $trans->username       = Auth::user()->name;
                 $trans->status         = 1;
                 $trans->voucher_type   = 5;
+                $trans->is_official    = CommonHelper::getOfficialValue();
                 $trans->save();
 
                 $debit_amount += $returnSalesTaxAmount;
@@ -4278,7 +4279,8 @@ public function updatePurchaseReturnDetail(Request $request)
             $trans->particulars    = $Remarks;
             $trans->debit_credit   = 1;   // Credit
             $trans->amount         = $debit_amount;
-            $trans->username       = Auth::user()->name;
+            $trans->username       = Auth::user()->name; 
+            $trans->is_official    = CommonHelper::getOfficialValue();
             $trans->status         = 1;
             $trans->voucher_type   = 5;
             $trans->save();

@@ -385,6 +385,7 @@ class SalesHelper
                 ->join('delivery_note_data as b', 'a.id', '=', 'b.master_id')
                 ->select('b.id', 'b.master_id', 'b.qty', 'b.rate', 'b.amount', 'b.tax', 'b.tax_amount', 'b.item_id', 'a.sales_tax_invoice_id')
                 ->where('a.status', 1)
+                ->whereIn('a.is_official', CommonHelper::getOfficialScopeArray())
                 ->where('b.master_id', $master_id)
                 ->get();
         else:
@@ -570,6 +571,7 @@ class SalesHelper
         }
 
         $invoice = DB::Connection('mysql2')->table('sales_tax_invoice')
+            ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
             ->where('gi_no', $detail->voucher_no)
             ->select('so_id', 'so_no')
             ->first();
@@ -591,6 +593,7 @@ class SalesHelper
         }
 
         $deliveryNoteSoNo = DB::Connection('mysql2')->table('delivery_note')
+            ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
             ->where('gd_no', $detail->voucher_no)
             ->value('so_no');
 
