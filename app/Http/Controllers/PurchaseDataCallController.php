@@ -3240,7 +3240,7 @@ echo "aa"; die;
     
         // dd($request->all());
         if ($bacth_code == ''):
-            $in = DB::Connection('mysql2')->table('stock')->where('status', 1)
+            $in = DB::Connection('mysql2')->table('stock')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)
                 ->where('sub_item_id', $item)
                 // ->where('warehouse_id', $warehouse)
                 ->where('batch_code', '!=', '')
@@ -3260,7 +3260,7 @@ echo "aa"; die;
                 <?php
             endif;
         else:
-            $in = DB::Connection('mysql2')->table('stock')->where('status', 1)
+            $in = DB::Connection('mysql2')->table('stock')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)
                 ->whereIn('voucher_type', [1, 4, 6, 10, 11])
                 ->where('sub_item_id', $item)
                 ->where('warehouse_id', $warehouse)
@@ -3268,7 +3268,7 @@ echo "aa"; die;
                 ->select('stock.*', DB::raw('SUM(qty) As qty'), DB::raw('SUM(amount) As amount'))
                 ->first();
 
-            $out = DB::Connection('mysql2')->table('stock')->where('status', 1)
+            $out = DB::Connection('mysql2')->table('stock')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)
                 ->whereIn('voucher_type', [2,3, 5, 9, 8])
                 ->where('sub_item_id', $item)
                 ->where('warehouse_id', $warehouse)
@@ -3300,7 +3300,7 @@ echo "aa"; die;
     
         // dd($request);
         if ($bacth_code == ''):
-            $in = DB::Connection('mysql2')->table('stock')->where('status', 1)
+            $in = DB::Connection('mysql2')->table('stock')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)
                 ->where('sub_item_id', $item)
                 ->where('warehouse_id', $warehouse)
                 ->where('batch_code', '!=', '')
@@ -3311,7 +3311,7 @@ echo "aa"; die;
                 ->get();
             return $in;
         else:
-            $in = DB::Connection('mysql2')->table('stock')->where('status', 1)
+            $in = DB::Connection('mysql2')->table('stock')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)
                 ->whereIn('voucher_type', [1, 4, 6, 3, 10, 11])
                 ->where('sub_item_id', $item)
                 ->where('warehouse_id', $warehouse)
@@ -3319,7 +3319,7 @@ echo "aa"; die;
                 ->select('stock.*', DB::raw('SUM(qty) As qty'), DB::raw('SUM(amount) As amount'))
                 ->first();
 
-            $out = DB::Connection('mysql2')->table('stock')->where('status', 1)
+            $out = DB::Connection('mysql2')->table('stock')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)
                 ->whereIn('voucher_type', [2, 5, 9, 8])
                 ->where('sub_item_id', $item)
                 ->where('warehouse_id', $warehouse)

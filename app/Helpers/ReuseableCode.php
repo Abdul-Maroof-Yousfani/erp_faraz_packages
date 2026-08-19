@@ -230,7 +230,7 @@ class ReuseableCode
         $warehouse= $warehouse_id;
         $item= $item_id;
 
-         $in= DB::Connection('mysql2')->table('stock')->whereIn('status',array(1,3))
+         $in= DB::Connection('mysql2')->table('stock')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->whereIn('status',array(1,3))
             ->whereIn('voucher_type',[1,4,6,10,11])
             ->where('sub_item_id',$item)
             // ->where('warehouse_id',$warehouse)
@@ -238,7 +238,7 @@ class ReuseableCode
             ->select(DB::raw('SUM(qty) As qty'),DB::raw('SUM(amount) As amount'))
             ->first();
 
-        $oout=  DB::Connection('mysql2')->table('stock')->whereIn('status',array(1,3))
+        $oout=  DB::Connection('mysql2')->table('stock')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->whereIn('status',array(1,3))
             ->whereIn('voucher_type',[2,5,3,9])
             ->where('sub_item_id',$item)
             // ->where('batch_code',$batch_code)
@@ -258,6 +258,7 @@ class ReuseableCode
         // STOCK IN
         $in = DB::connection('mysql2')->table('stock')
             ->leftJoin('subitem', 'subitem.id', '=', 'stock.sub_item_id')
+            ->whereIn('stock.is_official', CommonHelper::getOfficialScopeArray())
             ->whereIn('stock.status', [1, 3])
             ->whereIn('stock.voucher_type', [1, 4, 6, 10, 11])
             ->where('stock.sub_item_id', $item)
@@ -277,6 +278,7 @@ class ReuseableCode
         // STOCK OUT
         $oout = DB::connection('mysql2')->table('stock')
             ->leftJoin('subitem', 'subitem.id', '=', 'stock.sub_item_id')
+            ->whereIn('stock.is_official', CommonHelper::getOfficialScopeArray())
             ->whereIn('stock.status', [1, 3])
             ->whereIn('stock.voucher_type', [2, 5, 3, 9])
             ->where('stock.sub_item_id', $item)
@@ -1352,6 +1354,7 @@ class ReuseableCode
             'username' => Auth::user()->username,
             'created_date' => date('Y-m-d'),
             'opening' => 0,
+            'is_official' => CommonHelper::getOfficialValue(),
         );
 
 
