@@ -14,6 +14,7 @@
     <tbody>
     <?php
     $count=1;
+    $officialScopeStr = implode(',', CommonHelper::getOfficialScopeArray());
     $data=DB::Connection('mysql2')->select('select * from mould_usage_report as a
     inner join
     production_plane b
@@ -21,6 +22,7 @@
     a.production_plan_id=b.id
     where a.status=1
     and b.status=1
+    and b.is_official in ('.$officialScopeStr.')
     and b.order_date between "'.$from.'" and "'.$to.'"
     group by a.mould_id,a.batch_code_id');
 

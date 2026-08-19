@@ -1443,6 +1443,7 @@ class FinanceController extends Controller
 			$company_id = $request->m;
 
 			$transactions = transactions::whereBetween('v_date',[$from ,$to])
+			->whereIn('is_official', CommonHelper::getOfficialScopeArray())
 			->where('status', 1)
 			->where('voucher_type', '>', 0);
 			
@@ -1534,6 +1535,7 @@ class FinanceController extends Controller
 				['status','=',1] ,
 				['account_id','=',$request->accountName]
 				])
+				->whereIn('is_official', CommonHelper::getOfficialScopeArray())
 				->where(function($query) use ($fromDate, $toDate) {
 					$query->whereBetween('from_date', [$fromDate, $toDate])
 						  ->orWhereBetween('to_date', [$fromDate, $toDate]);
@@ -1566,6 +1568,7 @@ class FinanceController extends Controller
 			
 			
 			$BankReconciliation = BankReconciliation::where('status', 1)
+									->whereIn('is_official', CommonHelper::getOfficialScopeArray())
 									->where('from_date', '>=', $from_date)
 									->where('to_date', '<=', $to_date);
 
@@ -1590,7 +1593,7 @@ class FinanceController extends Controller
 		$BankReconciliation = BankReconciliation::where([
 			['status','=',1] ,
 			['id','=',$request->id]
-			])->first();
+			])->whereIn('is_official', CommonHelper::getOfficialScopeArray())->first();
 
 			if(!$BankReconciliation)
 			{
@@ -1662,6 +1665,7 @@ class FinanceController extends Controller
 
 				$BankReconciliation->status = 1;
 				$BankReconciliation->username = Auth::user()->name;
+				$BankReconciliation->is_official = CommonHelper::getOfficialValue();
 				$BankReconciliation->save();
 				$bank_reconciliation_id = $BankReconciliation->id;
 
@@ -1681,6 +1685,7 @@ class FinanceController extends Controller
 					$BankReconciliationData->check_type = $request->input('check_type' . $value);
 					$BankReconciliationData->status = 1;
 					$BankReconciliationData->username = Auth::user()->name;
+					$BankReconciliationData->is_official = CommonHelper::getOfficialValue();
 					$BankReconciliationData->save();
 				}
 

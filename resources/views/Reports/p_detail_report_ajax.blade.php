@@ -3,8 +3,9 @@ use App\Helpers\CommonHelper;
     //print_r($supplier);
 
 foreach($supplier as $val){
+        $officialScopeStr = implode(',', CommonHelper::getOfficialScopeArray());
         $grn_datas =	DB::Connection('mysql2')->select('select g.id,g.grn_date, g.supplier_invoice_no, d.* from grn_data as d inner join goods_receipt_note g on g.grn_no=d.grn_no
-                      where g.supplier_id="'.$val->id.'" and g.status=1 and d.status=1 and g.grn_date between "'.$from_date.'" and "'.$to_date.'" ');
+                      where g.supplier_id="'.$val->id.'" and g.status=1 and g.is_official in ('.$officialScopeStr.') and d.status=1 and g.grn_date between "'.$from_date.'" and "'.$to_date.'" ');
    // print_r($grn_datas);
     ?>
 <h3>{{$val->name}}</h3>

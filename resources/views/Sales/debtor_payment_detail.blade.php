@@ -243,6 +243,7 @@ $export=ReuseableCode::check_rights(244);
 
                         <?php
 
+                        $officialScopeStr = implode(',', CommonHelper::getOfficialScopeArray());
                         $vendor_data=DB::Connection('mysql2')->select('select a.id,a.gi_no,a.gi_date,a.order_no,(sum(b.amount)+a.sales_tax)total
                             from sales_tax_invoice a
                             inner join
@@ -250,6 +251,7 @@ $export=ReuseableCode::check_rights(244);
                             on
                             a.id=b.master_id
                             where a.status=1
+                            and a.is_official in ('.$officialScopeStr.')
                             and a.buyers_id="'.$row->id.'"
                             group by a.id');
                         ?>

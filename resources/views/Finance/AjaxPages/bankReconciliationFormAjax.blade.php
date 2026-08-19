@@ -108,8 +108,9 @@ $m=Input::get('m');
     <table class="table table-bordered sf-table-th sf-table-list" id="table_export1" >
         <?php
         CommonHelper::companyDatabaseConnection($_GET['m']);
+        $officialScopeStr = implode(',', CommonHelper::getOfficialScopeArray());
         $quarter = DB::select("SELECT * from  transactions
-  											WHERE acc_id = ".$acc_id." and opening_bal=0  AND status=1 $clause AND v_date
+  											WHERE acc_id = ".$acc_id." and opening_bal=0  AND status=1 and is_official in (".$officialScopeStr.") $clause AND v_date
   											 between '".$from."' and '".$to."'  ORDER BY v_date");
 
         CommonHelper::reconnectMasterDatabase();

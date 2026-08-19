@@ -2596,7 +2596,7 @@ class ProductionController extends Controller
 
     public function get_production_detail_report(Request $request)
     {
-        $data = DB::Connection('mysql2')->table('production_plane')->where('status', 1)->where('id', $request->ppc_no)->first();
+        $data = DB::Connection('mysql2')->table('production_plane')->where('status', 1)->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('id', $request->ppc_no)->first();
         $master_data = DB::Connection('mysql2')->table('production_plane_data')->where('status', 1)->where('master_id', $request->ppc_no)->get();
         return view('Production.get_production_detail_report', compact('master_data', 'data'));
     }
@@ -2609,9 +2609,8 @@ class ProductionController extends Controller
 
     public function get_finish_goods_data(Request $request)
     {
-        $data = DB::Connection('mysql2')->table('production_plane')->where('status', 1)->where('id', $request->ppc_no)->first();
+        $data = DB::Connection('mysql2')->table('production_plane')->where('status', 1)->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('id', $request->ppc_no)->first();
         $master_data = DB::Connection('mysql2')->table('production_plane_data')->where('status', 1)->where('master_id', $request->ppc_no)->get();
-
 
         return view('Production.production_costing_report.get_finish_goods_data', compact('data', 'master_data'));
     }
@@ -2819,8 +2818,10 @@ class ProductionController extends Controller
         $finish_good = $request->finish_goods;
         $costing_data = DB::Connection('mysql2')->table('costing_data as a')
             ->join('production_plane_data as b', 'a.production_plan_data_id', '=', 'b.id')
+            ->join('production_plane as c', 'b.master_id', '=', 'c.id')
             ->select('a.*', 'b.planned_qty')
             ->where('a.status', 1)
+            ->whereIn('c.is_official', CommonHelper::getOfficialScopeArray())
             ->where('b.finish_goods_id', $finish_good)
             ->orderBy('a.id', 'DESC')
             ->first();

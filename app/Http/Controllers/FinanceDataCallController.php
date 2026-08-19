@@ -1961,6 +1961,7 @@ public function trialBalanceData()
                                     <tbody>
                         <?php
                                 CommonHelper::companyDatabaseConnection($CompanyId);
+                                $officialScopeStr = implode(',', CommonHelper::getOfficialScopeArray());
                                 $trial=  DB::select('select a.* from accounts a
                                         inner join
                                         transactions b
@@ -1968,6 +1969,7 @@ public function trialBalanceData()
                                         a.id=b.acc_id
                                         where a.status=1
                                         and b.amount>0
+                                        and b.is_official in ('.$officialScopeStr.')
                                         '.$clause.' group by a.id order by a.level1,a.level2,a.level3,a.level4,a.level5,a.level6,a.level7');
 
                                 $Counter=1;
@@ -1994,11 +1996,11 @@ public function trialBalanceData()
                                     $tr_debit=0;
                                     $tx_credit=0;
                                     $tr_debit=DB::selectOne('select sum(amount)amount from transactions where acc_id="'.$row->id.'" and status=1 and opening_bal=0
-                                                and debit_credit=1
+                                                and debit_credit=1 and is_official in ('.$officialScopeStr.')
                                                 and v_date between "'.$from.'" and "'.$to.'" and status=1');
 
                                     $tr_credit=DB::selectOne('select sum(amount)amount from transactions where acc_id="'.$row->id.'" and status=1 and opening_bal=0
-                                            and debit_credit=0
+                                            and debit_credit=0 and is_official in ('.$officialScopeStr.')
                                             and v_date between "'.$from.'" and "'.$to.'" and status=1');
 
                                     $total_check=0.1;
@@ -2063,7 +2065,7 @@ public function trialBalanceData()
             <?php
                         $open=0;
                         $open_data = DB::selectOne('select amount,debit_credit  from transactions where acc_code="'.$row->code.'" and status=1 and opening_bal=1
-                                and status=1');
+                                and is_official in ('.$officialScopeStr.') and status=1');
                         if (!empty($open_data)):
                             if ($open_data->debit_credit==1):
                                 $open=$open_data->amount;
@@ -2073,10 +2075,10 @@ public function trialBalanceData()
                         endif;
 
                         $open_debit=DB::selectOne('select sum(amount)amount from transactions where acc_code="'.$row->code.'" and status=1 and opening_bal=0
-                                and status=1 and v_date between "'.$acc_year_from.'" and "'.$newdate.'" and debit_credit=1')->amount;
+                                and is_official in ('.$officialScopeStr.') and status=1 and v_date between "'.$acc_year_from.'" and "'.$newdate.'" and debit_credit=1')->amount;
 
                         $open_credit=DB::selectOne('select sum(amount)amount from transactions where acc_code="'.$row->code.'" and status=1 and opening_bal=0
-                                and status=1 and v_date between "'.$acc_year_from.'" and "'.$newdate.'" and debit_credit=0')->amount;
+                                and is_official in ('.$officialScopeStr.') and status=1 and v_date between "'.$acc_year_from.'" and "'.$newdate.'" and debit_credit=0')->amount;
 
                         $total=$open_debit-$open_credit;
                         $open= $open+$total;
@@ -2484,10 +2486,11 @@ public function TrialBalanceChartAjax(Request $request)
     }
 
     CommonHelper::companyDatabaseConnection($CompanyId);
+    $officialScopeStr = implode(',', CommonHelper::getOfficialScopeArray());
 
     $trial = DB::select('select a.* from accounts a
             inner join transactions b on a.id = b.acc_id
-            where a.status = 1 and b.amount > 0
+            where a.status = 1 and b.amount > 0 and b.is_official in ('.$officialScopeStr.')
             group by a.id
             order by a.level1,a.level2,a.level3,a.level4,a.level5,a.level6,a.level7');
 
@@ -2499,28 +2502,28 @@ public function TrialBalanceChartAjax(Request $request)
         // opening balance (same logic as trialBalanceData)
         $open = 0;
         $open_data = DB::selectOne('select amount, debit_credit from transactions
-                where acc_code="'.$row->code.'" and status=1 and opening_bal=1');
+                where acc_code="'.$row->code.'" and status=1 and opening_bal=1 and is_official in ('.$officialScopeStr.')');
         if (!empty($open_data)) {
             $open = $open_data->debit_credit == 1 ? $open_data->amount : $open_data->amount * -1;
         }
 
         $open_debit = DB::selectOne('select sum(amount) amount from transactions
-                where acc_code="'.$row->code.'" and status=1 and opening_bal=0
+                where acc_code="'.$row->code.'" and status=1 and opening_bal=0 and is_official in ('.$officialScopeStr.')
                 and v_date between "'.$acc_year_from.'" and "'.$newdate.'" and debit_credit=1')->amount;
 
         $open_credit = DB::selectOne('select sum(amount) amount from transactions
-                where acc_code="'.$row->code.'" and status=1 and opening_bal=0
+                where acc_code="'.$row->code.'" and status=1 and opening_bal=0 and is_official in ('.$officialScopeStr.')
                 and v_date between "'.$acc_year_from.'" and "'.$newdate.'" and debit_credit=0')->amount;
 
         $open = $open + ($open_debit - $open_credit);
 
         // period transactions (same From/To submitted by user)
         $tr_debit = DB::selectOne('select sum(amount) amount from transactions
-                where acc_id="'.$row->id.'" and status=1 and opening_bal=0
+                where acc_id="'.$row->id.'" and status=1 and opening_bal=0 and is_official in ('.$officialScopeStr.')
                 and debit_credit=1 and v_date between "'.$from.'" and "'.$to.'"')->amount;
 
         $tr_credit = DB::selectOne('select sum(amount) amount from transactions
-                where acc_id="'.$row->id.'" and status=1 and opening_bal=0
+                where acc_id="'.$row->id.'" and status=1 and opening_bal=0 and is_official in ('.$officialScopeStr.')
                 and debit_credit=0 and v_date between "'.$from.'" and "'.$to.'"')->amount;
 
         $debit  = $open > 0 ? $open : 0;
@@ -6564,6 +6567,7 @@ function vendor_summery(Request $request)
 			->join('accounts', 'transactions.acc_id', '=', 'accounts.id')
 			->where('supplier.status','=',1)
 			->where('transactions.status','=',1)
+			->whereIn('transactions.is_official', CommonHelper::getOfficialScopeArray())
 		//	->where('accounts.parent_code','=','2-2-1')
 
 			->groupBy('transactions.acc_id')
@@ -6584,6 +6588,7 @@ function vendor_summery(Request $request)
 			->join('transactions', 'transactions.acc_id', '=', 'supplier.acc_id')
 			->where('supplier.status','=',1)
 			->where('transactions.status','=',1)
+			->whereIn('transactions.is_official', CommonHelper::getOfficialScopeArray())
 
 			->groupBy('transactions.acc_id')
 			->get();

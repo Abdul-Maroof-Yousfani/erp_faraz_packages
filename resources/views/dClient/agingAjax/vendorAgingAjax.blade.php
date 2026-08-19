@@ -92,9 +92,10 @@ $TotNotYet = 0;
 
 
 
-   $debit=   DB::Connection('mysql2')->selectOne('select sum(amount)amount from transactions where status=1 and debit_credit=0 and acc_id="'.$Sfil->acc_id.'"
+   $officialScopeStr = implode(',', CommonHelper::getOfficialScopeArray());
+   $debit=   DB::Connection('mysql2')->selectOne('select sum(amount)amount from transactions where status=1 and is_official in ('.$officialScopeStr.') and debit_credit=0 and acc_id="'.$Sfil->acc_id.'"
    and v_date between "'.$from.'" and "'.$to.'"')->amount;
-    $credit=   DB::Connection('mysql2')->selectOne('select sum(amount)amount from transactions where status=1 and debit_credit=1 and acc_id="'.$Sfil->acc_id.'"
+    $credit=   DB::Connection('mysql2')->selectOne('select sum(amount)amount from transactions where status=1 and is_official in ('.$officialScopeStr.') and debit_credit=1 and acc_id="'.$Sfil->acc_id.'"
    and   v_date between "'.$from.'" and "'.$to.'"')->amount;
 
  $amount=$debit-$credit;

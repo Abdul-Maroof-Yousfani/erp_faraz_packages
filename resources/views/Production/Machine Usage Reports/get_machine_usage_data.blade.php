@@ -22,6 +22,7 @@
         ->where('b.status',1)
         ->where('f.voucher_type',19)
         ->where('f.status',1)
+        ->whereIn('f.is_official', CommonHelper::getOfficialScopeArray())
         ->whereBetween('e.order_date', [$from, $to])
         ->select('a.id','a.machine_name','a.code','a.life','a.dep_cost','b.master_id', DB::raw('SUM(d.planned_qty) As total_planned'))
         ->groupBy('a.id')

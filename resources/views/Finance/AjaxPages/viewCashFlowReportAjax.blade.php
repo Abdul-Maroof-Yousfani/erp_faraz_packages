@@ -80,6 +80,7 @@ $count = 1;
                             @php
                                 $transactions =  DB::connection('mysql2')
                                 ->table('transactions')
+                                ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                                 ->whereBetween('v_date',[$from ,$to]);
                                 if($acc_id)
                                 {
@@ -143,6 +144,7 @@ $count = 1;
                                 @php
                                 $transactions =  DB::connection('mysql2')
                                 ->table('transactions')
+                                ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                                 ->whereBetween('v_date',[$from ,$to]);
                                 if($acc_id)
                                 {
@@ -205,6 +207,7 @@ $count = 1;
                             @php
                                 $debit_bank_amount =  DB::connection('mysql2')
                                 ->table('transactions')
+                                ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                                 ->whereBetween('v_date',[$from ,$to])
                                 ->where('debit_credit' , 1)
                                 ->where('acc_id',$value3)
@@ -216,6 +219,7 @@ $count = 1;
 
                                 $credit_bank_amount =  DB::connection('mysql2')
                                 ->table('transactions')
+                                ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                                 ->whereBetween('v_date',[$from ,$to])
                                 ->where('debit_credit' , 0)
                                 ->where('acc_id',$value3)

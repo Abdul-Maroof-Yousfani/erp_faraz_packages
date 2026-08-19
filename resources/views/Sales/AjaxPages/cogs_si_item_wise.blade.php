@@ -9,11 +9,13 @@ $count=1;
 
         $grand_total=0;
         $grand_profit=0;
+$officialScopeStr = implode(',', CommonHelper::getOfficialScopeArray());
 $data=  DB::Connection('mysql2')->select('select a.gi_date,a.gi_no,b.*,a.buyers_id,a.id,dn_data_ids from sales_tax_invoice a
                 INNER JOIN sales_tax_invoice_data b
                 ON
                 b.master_id = a.id
                 WHERE  a.status = 1
+                AND a.is_official IN ('.$officialScopeStr.')
                 AND a.gi_date BETWEEN "'.$from.'" and "'.$to.'"
                 and a.so_type=0
                 group by b.dn_data_ids');
@@ -52,6 +54,7 @@ $data=  DB::Connection('mysql2')->select('select a.gi_date,a.gi_no,b.*,a.buyers_
                     on
                     a.id=b.master_id
                     where a.status=1
+                    and a.is_official in ('.$officialScopeStr.')
                     and a.id in ("'.$row->dn_data_ids.'")
 
                     ');

@@ -138,12 +138,14 @@ $view=ReuseableCode::check_rights(37);
                                 $clause='and a.id='.$vendor.'';
 
                                 endif;
+                                $officialScopeStr = implode(',', CommonHelper::getOfficialScopeArray());
                                 $data=DB::Connection('mysql2')->select('select a.id,a.name from supplier as  a
                                  inner join
                                  new_purchase_voucher as b
                                  on
                                  a.id=supplier
                                  where b.status=1
+                                 and b.is_official in ('.$officialScopeStr.')
                                  and b.pv_date between "'.$from.'" and "'.$to.'"
                                  '.$clause.'
                                  group by a.id');
@@ -189,6 +191,7 @@ $view=ReuseableCode::check_rights(37);
 
                                         $data1=DB::Connection('mysql2')->select('select * from new_purchase_voucher
                                 where supplier="'.$row->id.'"
+                                and is_official in ('.$officialScopeStr.')
                                 and pv_date between "'.$from.'" and "'.$to.'"
                                 and status=1');
                                         ?>

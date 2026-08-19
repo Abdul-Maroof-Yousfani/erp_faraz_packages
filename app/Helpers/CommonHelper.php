@@ -1430,6 +1430,7 @@ class CommonHelper
         $transactions = new Transactions();
         $transactions = $transactions->SetConnection('mysql2');
         $transactions = $transactions->where('status', 1)
+            ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
             // ->whereBetween('v_date',[$from ,$to])
             ->whereIn('acc_id', $ids)->where('opening_bal', 1)->select(DB::raw('SUM(amount) as amount'));
         // dd($transactions->count() , $transactions->value('amount'));
@@ -2840,12 +2841,10 @@ class CommonHelper
 
     public static function get_amount_from_stock($voucher_type, $item, $warehouse, $batch_code = null)
     {
-
-
+        $scopeStr = implode(',', static::getOfficialScopeArray());
         $data = $stock = DB::Connection('mysql2')->selectOne('select sum(qty)qty from stock
-        where status in (1,3) and voucher_type="' . $voucher_type . '" and sub_item_id="' . $item . '" and warehouse_id="' . $warehouse . '"  group by sub_item_id');
+        where status in (1,3) and is_official in (' . $scopeStr . ') and voucher_type="' . $voucher_type . '" and sub_item_id="' . $item . '" and warehouse_id="' . $warehouse . '"  group by sub_item_id');
         if (!empty($data->qty)):
-
             return $data->qty;
         else:
             return 0;
@@ -2854,12 +2853,10 @@ class CommonHelper
 
     public static function get_value_stock($voucher_type, $item, $warehouse)
     {
-
-
+        $scopeStr = implode(',', static::getOfficialScopeArray());
         $data = $stock = DB::Connection('mysql2')->selectOne('select sum(amount)amount from stock
-        where status in (1,3) and voucher_type="' . $voucher_type . '" and sub_item_id="' . $item . '" and warehouse_id="' . $warehouse . '"  group by sub_item_id');
+        where status in (1,3) and is_official in (' . $scopeStr . ') and voucher_type="' . $voucher_type . '" and sub_item_id="' . $item . '" and warehouse_id="' . $warehouse . '"  group by sub_item_id');
         if (!empty($data->amount)):
-
             return $data->amount;
         else:
             return 0;
@@ -2870,6 +2867,7 @@ class CommonHelper
     {
         $in = DB::Connection('mysql2')->table('stock')
             ->whereIn('status', [1, 3])
+            ->whereIn('is_official', static::getOfficialScopeArray())
             ->whereIn('voucher_type', [1, 4, 6, 3, 10, 11])
             ->where('sub_item_id', $item)
             ->select(DB::raw('COALESCE(SUM(qty), 0) as qty'))
@@ -2877,6 +2875,7 @@ class CommonHelper
 
         $out = DB::Connection('mysql2')->table('stock')
             ->whereIn('status', [1, 3])
+            ->whereIn('is_official', static::getOfficialScopeArray())
             ->whereIn('voucher_type', [2, 5, 9, 8])
             ->where('sub_item_id', $item)
             ->select(DB::raw('COALESCE(SUM(qty), 0) as qty'))
@@ -2887,14 +2886,12 @@ class CommonHelper
 
     public static function get_amount_from_stock_batch_wise($voucher_type, $item, $warehouse, $batch_code)
     {
-
-
+        $scopeStr = implode(',', static::getOfficialScopeArray());
         $data = $stock = DB::Connection('mysql2')->selectOne('select sum(qty)qty from stock
-        where status=1  and voucher_type="' . $voucher_type . '" and sub_item_id="' . $item . '" and warehouse_id="' . $warehouse . '"
+        where status=1 and is_official in (' . $scopeStr . ') and voucher_type="' . $voucher_type . '" and sub_item_id="' . $item . '" and warehouse_id="' . $warehouse . '"
           and batch_code="' . $batch_code . '"
           group by sub_item_id');
         if (!empty($data->qty)):
-
             return $data->qty;
         else:
             return 0;
@@ -3310,12 +3307,20 @@ class CommonHelper
 
     public static function PaymentDebtorAmountCheck($si_id)
     {
-        return DB::Connection('mysql2')->table('received_paymet')
-            ->select(DB::raw('SUM(received_amount) as total_amount'))
-            ->where('sales_tax_invoice_id', $si_id)
-            ->where('status', 1)
-            ->groupBy('sales_tax_invoice_id')
-            ->value('total_amount');
+        $scopeStr = implode(',', static::getOfficialScopeArray());
+        $data = DB::Connection('mysql2')->selectOne('select sum(a.received_amount) as total_amount
+        from brige_table_sales_receipt a
+        inner join
+        new_rvs b
+        on
+        a.rv_id=b.id
+        where a.si_id="' . $si_id . '"
+        and a.status=1
+        and b.status=1
+        and b.is_official in (' . $scopeStr . ')
+        group by a.si_id');
+
+        return !empty($data->total_amount) ? $data->total_amount : 0;
     }
 
 
@@ -3328,6 +3333,7 @@ class CommonHelper
             ->where('a.new_purchase_voucher_id', $new_purchase_voucher_id)
             ->where('a.status', 1)
             ->where('b.status', 1)
+            ->whereIn('b.is_official', static::getOfficialScopeArray())
             ->where('b.pv_status', 2)
             ->whereBetween('b.pv_date', [$from, $to])
             ->groupBy('a.new_purchase_voucher_id')
@@ -3341,6 +3347,7 @@ class CommonHelper
             ->where('a.new_purchase_voucher_id', $new_purchase_voucher_id)
             ->where('a.status', 1)
             ->where('b.status', 1)
+            ->whereIn('b.is_official', static::getOfficialScopeArray())
             ->where('b.pv_status', 2)
             ->groupBy('a.new_purchase_voucher_id')
             ->value('total_amount');
@@ -3493,9 +3500,9 @@ class CommonHelper
     //zamzama income statement
     public static function get_ledger_amount($code, $databse, $nature_of_debit_credit, $nature_of_debit_credit_other, $from, $to)
     {
-
         static::companyDatabaseConnection($databse);
-        $debit = DB::selectOne('select sum(amount)amount from transactions where status=1 and debit_credit="' . $nature_of_debit_credit . '" and acc_code = "' . $code . '"
+        $scopeStr = implode(',', static::getOfficialScopeArray());
+        $debit = DB::selectOne('select sum(amount)amount from transactions where status=1 and is_official in (' . $scopeStr . ') and debit_credit="' . $nature_of_debit_credit . '" and acc_code = "' . $code . '"
          and v_date between "' . $from . '" and "' . $to . '"')->amount;
         if (!empty($debit)):
             $debit = $debit;
@@ -3503,7 +3510,7 @@ class CommonHelper
             $debit = 0;
         endif;
 
-        $credit = DB::selectOne('select sum(amount)amount from transactions where status=1 and debit_credit="' . $nature_of_debit_credit_other . '" and acc_code = "' . $code . '"
+        $credit = DB::selectOne('select sum(amount)amount from transactions where status=1 and is_official in (' . $scopeStr . ') and debit_credit="' . $nature_of_debit_credit_other . '" and acc_code = "' . $code . '"
         and v_date between "' . $from . '" and "' . $to . '"')->amount;
         if (!empty($credit)):
             $credit = $credit;
@@ -3545,20 +3552,17 @@ class CommonHelper
 
     public static function get_parent_and_account_amount($m, $from_date, $to_date, $code, $operation, $debit_credit_nature, $debit_credit_nature_)
     {
-
-
         $array = explode('-', $code);
         $level = count($array);
-        //       echo  'select sum(amount) as amount from transactions where status=1
-//    and  v_date BETWEEN "'.$from_date.'" and "'.$to_date.'" and substring_index(acc_code,"-","'.$level.'") = "'.$code.'"
-//    and debit_credit=1';
-//        echo '</br>';
+        $scopeStr = implode(',', static::getOfficialScopeArray());
+
         $debit = DB::Connection('mysql2')->selectOne('select sum(amount) as amount from transactions where status =1
+			 and is_official in (' . $scopeStr . ')
 			 and  v_date BETWEEN "' . $from_date . '" and "' . $to_date . '" and substring_index(acc_code,"-","' . $level . '") = "' . $code . '"
 			 and debit_credit="' . $debit_credit_nature . '"')->amount;
 
-
         $credit = DB::Connection('mysql2')->selectOne('select sum(amount) as amount from transactions where status=1
+			 and is_official in (' . $scopeStr . ')
 			 and  v_date BETWEEN "' . $from_date . '" and "' . $to_date . '" and substring_index(`acc_code`,"-","' . $level . '") = "' . $code . '"
 			 and debit_credit="' . $debit_credit_nature_ . '"')->amount;
 
@@ -3566,20 +3570,17 @@ class CommonHelper
     }
     public static function get_parent_and_account_amount_copy($m, $from_date, $to_date, $code, $operation, $debit_credit_nature, $debit_credit_nature_)
     {
-
-
         $array = explode('-', $code);
         $level = count($array);
-        //       echo  'select sum(amount) as amount from transactions where status=1
-//    and  v_date BETWEEN "'.$from_date.'" and "'.$to_date.'" and substring_index(acc_code,"-","'.$level.'") = "'.$code.'"
-//    and debit_credit=1';
-//        echo '</br>';
+        $scopeStr = implode(',', static::getOfficialScopeArray());
+
         $debit = DB::Connection('mysql2')->selectOne('select sum(amount) as amount from transactions where status in (1,1993)
+			 and is_official in (' . $scopeStr . ')
 			 and  v_date BETWEEN "' . $from_date . '" and "' . $to_date . '" and substring_index(acc_code,"-","' . $level . '") = "' . $code . '"
 			 and debit_credit="' . $debit_credit_nature . '"')->amount;
 
-
         $credit = DB::Connection('mysql2')->selectOne('select sum(amount) as amount from transactions where status in (1,1993)
+			 and is_official in (' . $scopeStr . ')
 			 and  v_date BETWEEN "' . $from_date . '" and "' . $to_date . '" and substring_index(`acc_code`,"-","' . $level . '") = "' . $code . '"
 			 and debit_credit="' . $debit_credit_nature_ . '"')->amount;
 
@@ -3588,8 +3589,8 @@ class CommonHelper
 
     public static function get_debit_credit_amount($code, $nature_of_debit_credit, $nature_of_debit_credit_other, $from, $to)
     {
-
-        $debit = DB::Connection('mysql2')->selectOne('select sum(amount)amount from transactions where status=1 and debit_credit="' . $nature_of_debit_credit . '" and acc_code= "' . $code . '"
+        $scopeStr = implode(',', static::getOfficialScopeArray());
+        $debit = DB::Connection('mysql2')->selectOne('select sum(amount)amount from transactions where status=1 and is_official in (' . $scopeStr . ') and debit_credit="' . $nature_of_debit_credit . '" and acc_code= "' . $code . '"
             and v_date between "' . $from . '" and "' . $to . '"')->amount;
         if (!empty($debit)):
             $debit = $debit;
@@ -3597,7 +3598,7 @@ class CommonHelper
             $debit = 0;
         endif;
 
-        $credit = DB::Connection('mysql2')->selectOne('select sum(amount)amount from transactions where status=1 and debit_credit="' . $nature_of_debit_credit_other . '" and acc_code = "' . $code . '"
+        $credit = DB::Connection('mysql2')->selectOne('select sum(amount)amount from transactions where status=1 and is_official in (' . $scopeStr . ') and debit_credit="' . $nature_of_debit_credit_other . '" and acc_code = "' . $code . '"
               and v_date between "' . $from . '" and "' . $to . '"')->amount;
         if (!empty($credit)):
             $credit = $credit;
@@ -3611,20 +3612,17 @@ class CommonHelper
 
     public static function get_parent_and_account_amount_flow($m, $from_date, $to_date, $code, $operation, $debit_credit_nature, $debit_credit_nature_)
     {
-
-
         $array = explode('-', $code);
         $level = count($array);
-        //       echo  'select sum(amount) as amount from transactions where status=1
-//    and  v_date BETWEEN "'.$from_date.'" and "'.$to_date.'" and substring_index(acc_code,"-","'.$level.'") = "'.$code.'"
-//    and debit_credit=1';
-//        echo '</br>';
+        $scopeStr = implode(',', static::getOfficialScopeArray());
+
         $debit = DB::Connection('mysql2')->selectOne('select sum(amount) as amount from transactions where status =1
+			 and is_official in (' . $scopeStr . ')
 			 and  v_date BETWEEN "' . $from_date . '" and "' . $to_date . '" and substring_index(acc_code,"-","' . $level . '") = "' . $code . '"
 			 and debit_credit="' . $debit_credit_nature . '" and opening_bal=0')->amount;
 
-
         $credit = DB::Connection('mysql2')->selectOne('select sum(amount) as amount from transactions where status=1
+			 and is_official in (' . $scopeStr . ')
 			 and  v_date BETWEEN "' . $from_date . '" and "' . $to_date . '" and substring_index(`acc_code`,"-","' . $level . '") = "' . $code . '"
 			 and debit_credit="' . $debit_credit_nature_ . '" and opening_bal=0')->amount;
 
@@ -3634,18 +3632,15 @@ class CommonHelper
 
     public static function get_advance($id, $nature1, $nature2)
     {
-
-        $debit = DB::Connection('mysql2')->selectOne('select sum(amount)amount from transactions where status=1 and debit_credit="' . $nature1 . '" and acc_id= "' . $id . '"')->amount;
+        $scopeStr = implode(',', static::getOfficialScopeArray());
+        $debit = DB::Connection('mysql2')->selectOne('select sum(amount)amount from transactions where status=1 and is_official in (' . $scopeStr . ') and debit_credit="' . $nature1 . '" and acc_id= "' . $id . '"')->amount;
         if (!empty($debit)):
             $debit = $debit;
         else:
             $debit = 0;
         endif;
 
-
-
-        $credit = DB::Connection('mysql2')->selectOne('select sum(amount)amount from transactions where status=1 and debit_credit="' . $nature2 . '" and acc_id = "' . $id . '"
-             ')->amount;
+        $credit = DB::Connection('mysql2')->selectOne('select sum(amount)amount from transactions where status=1 and is_official in (' . $scopeStr . ') and debit_credit="' . $nature2 . '" and acc_id = "' . $id . '"')->amount;
         if (!empty($credit)):
             $credit = $credit;
         else:
@@ -4224,14 +4219,14 @@ class CommonHelper
     public static function stock_in_hand($item)
     {
         $in = DB::Connection('mysql2')->table('stock')->where('status', 1)
+            ->whereIn('is_official', static::getOfficialScopeArray())
             ->where('voucher_type', 1)
             ->where('sub_item_id', $item)
             ->select(DB::raw('SUM(qty) As qty'), DB::raw('SUM(amount) As amount'))
             ->first();
 
-
-
         $oout = DB::Connection('mysql2')->table('stock')->where('status', 1)
+            ->whereIn('is_official', static::getOfficialScopeArray())
             ->whereIn('voucher_type', [2, 3, 5])
             ->where('sub_item_id', $item)
             ->select(DB::raw('SUM(qty) As qty'), DB::raw('SUM(amount) As amount'))
@@ -4456,7 +4451,7 @@ class CommonHelper
 
     public static function bearkup_receievd($SalesTaxInvoiceId, $from, $to)
     {
-
+        $scopeStr = implode(',', static::getOfficialScopeArray());
         $data = DB::Connection('mysql2')->selectOne('select sum(a.received_amount) as total_amount
         from brige_table_sales_receipt a
         inner join
@@ -4466,6 +4461,7 @@ class CommonHelper
         where a.si_id="' . $SalesTaxInvoiceId . '"
         and a.status=1
         and b.status=1
+        and b.is_official in (' . $scopeStr . ')
         and b.rv_status=2
         and b.rv_date between "' . $from . '" and "' . $to . '"
         group by a.si_id');
@@ -4481,7 +4477,7 @@ class CommonHelper
 
     public static function bearkup_receievd_approved($SalesTaxInvoiceId, $from, $to)
     {
-
+        $scopeStr = implode(',', static::getOfficialScopeArray());
         $data = DB::Connection('mysql2')->selectOne('select sum(a.received_amount) as total_amount
         from brige_table_sales_receipt a
         inner join
@@ -4491,6 +4487,7 @@ class CommonHelper
         where a.si_id="' . $SalesTaxInvoiceId . '"
         and a.status=1
         and b.status=1
+        and b.is_official in (' . $scopeStr . ')
         and b.rv_status=2
         and b.rv_date between "' . $from . '" and "' . $to . '"
         group by a.si_id');
@@ -4505,7 +4502,7 @@ class CommonHelper
     }
     public static function bearkup_receievd_use_for_balance($SalesTaxInvoiceId)
     {
-
+        $scopeStr = implode(',', static::getOfficialScopeArray());
         $data = DB::Connection('mysql2')->selectOne('select sum(a.received_amount) as total_amount
         from brige_table_sales_receipt a
         inner join
@@ -4515,6 +4512,7 @@ class CommonHelper
         where a.si_id="' . $SalesTaxInvoiceId . '"
         and a.status=1
         and b.status=1
+        and b.is_official in (' . $scopeStr . ')
         group by a.si_id');
 
         if (!empty($data->total_amount)):

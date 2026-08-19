@@ -422,7 +422,8 @@ echo "aaa"; die;
     {
         $from_date  = $_GET['from_date'];
         $to_date    = $_GET['to_date'];
-        $supplier = DB::Connection('mysql2')->select('SELECT s.id,s.name,s.company_name FROM supplier s INNER JOIN goods_receipt_note g ON s.id = g.supplier_id WHERE g.status=1 GROUP BY s.id');
+        $officialScopeStr = implode(',', CommonHelper::getOfficialScopeArray());
+        $supplier = DB::Connection('mysql2')->select('SELECT s.id,s.name,s.company_name FROM supplier s INNER JOIN goods_receipt_note g ON s.id = g.supplier_id WHERE g.status=1 AND g.is_official IN ('.$officialScopeStr.') GROUP BY s.id');
         return view('Reports.p_detail_report_ajax', compact('supplier','from_date','to_date'));
     }
 

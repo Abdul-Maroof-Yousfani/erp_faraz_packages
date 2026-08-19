@@ -2647,6 +2647,7 @@ echo "aa"; die;
             ' . $item_join . '
             where b.status=1
             and a.status in (1,3)
+            and a.is_official in ('.implode(',', CommonHelper::getOfficialScopeArray()).')
            ' . $category_clause . '
             ' . $item_clause . '
             ' . $location_caluse . '
@@ -2659,6 +2660,7 @@ echo "aa"; die;
             ->join('subitem as c', 'a.sub_item_id', '=', 'c.id')
             ->where('c.type', '!=', 2)
             ->where('b.status', 1)
+            ->whereIn('b.is_official', CommonHelper::getOfficialScopeArray())
             ->where('b.grn_status', 1);
 
         if ($category_id != 'select'):
@@ -2709,6 +2711,7 @@ echo "aa"; die;
 
         where b.status=1
         and a.status in (1,3)
+        and a.is_official in ('.implode(',', CommonHelper::getOfficialScopeArray()).')
         '.$sub_item_clause.'
         group by a.sub_item_id, a.warehouse_id');
 
@@ -2727,6 +2730,7 @@ echo "aa"; die;
         $category = DB::Connection('mysql2')->select('select * from stock where
         sub_item_id = '.$item_des.'
         and status=1
+        and is_official in ('.implode(',', CommonHelper::getOfficialScopeArray()).')
         group by batch_code,sub_item_id,warehouse_id');
         return view('Store.AjaxPages.stock_report_batch_wise', compact('category'));
 
@@ -2736,8 +2740,8 @@ echo "aa"; die;
     {
         $item=$request->subitemid;
         $region=$request->region;
-        $grn_data =  DB::Connection('mysql2')->table('stock')->where('sub_item_id',$item)->where('status',1)->where('region_id',$region)->whereIn('voucher_type',[1,3])->sum('qty');
-        $issuence =  DB::Connection('mysql2')->table('stock')->where('sub_item_id',$item)->where('region_id',$region)->where('status',1)->where('voucher_type',2)->sum('qty');
+        $grn_data =  DB::Connection('mysql2')->table('stock')->where('sub_item_id',$item)->where('status',1)->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('region_id',$region)->whereIn('voucher_type',[1,3])->sum('qty');
+        $issuence =  DB::Connection('mysql2')->table('stock')->where('sub_item_id',$item)->where('region_id',$region)->where('status',1)->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('voucher_type',2)->sum('qty');
 
         //$grn_data=  DB::Connection('mysql2')->table('grn_data')->where('sub_item_id',$item)->where('region',$region)->sum('purchase_approved_qty');
         //$issuence=  DB::Connection('mysql2')->table('issuance_data')->where('sub_item_id',$item)->where('region',$region)->sum('qty');

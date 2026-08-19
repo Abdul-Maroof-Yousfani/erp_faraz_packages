@@ -72,6 +72,7 @@ $m=Input::get('m');
         $taxVouchers = [];
         if ($tax_mode === 'with_tax' || $tax_mode === 'non_tax') {
             $taxVoucherQuery = DB::Connection('mysql2')->table('transactions')
+                ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                 ->where('status', 1)
                 ->whereBetween('v_date', [$from, $to]);
 
@@ -95,6 +96,7 @@ $m=Input::get('m');
         }
 
         $quarterQuery = DB::Connection('mysql2')->table('transactions')
+            ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
             ->where('acc_id', $acc_id)
             ->where('opening_bal', 0)
             ->where('status', 1)

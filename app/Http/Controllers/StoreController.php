@@ -605,11 +605,10 @@ class StoreController extends Controller
        $category= DB::Connection('mysql2')->table('stock as a')
         ->join('subitem as b','a.sub_item_id','=','b.id')
        ->join('category as c','c.id','=','b.main_ic_id')
-
         ->select('c.id','c.main_ic')
            ->where('a.status',1)
+           ->whereIn('a.is_official', CommonHelper::getOfficialScopeArray())
            ->groupBy('c.id')
-
        ->get();
 
 
@@ -622,16 +621,16 @@ class StoreController extends Controller
         $category= DB::Connection('mysql2')->table('stock as a')
             ->join('subitem as b','a.sub_item_id','=','b.id')
             ->join('category as c','c.id','=','b.main_ic_id')
-
             ->select('c.id','c.main_ic')
             ->where('a.status',1)
+            ->whereIn('a.is_official', CommonHelper::getOfficialScopeArray())
             ->groupBy('c.id')
-
             ->get();
 
         $batch_code= DB::Connection('mysql2')->table('stock as a')
             ->select('a.batch_code')
             ->where('a.status',1)
+            ->whereIn('a.is_official', CommonHelper::getOfficialScopeArray())
             ->groupBy('a.batch_code')
             ->get();
 
@@ -692,6 +691,7 @@ class StoreController extends Controller
                                                //   INNER JOIN grn_data gd ON gd.grn_no = s.voucher_no
                                                 //  WHERE s.status=1 AND s.voucher_type=1 AND s.voucher_date BETWEEN "'.$from_date.'" AND "'.$to_date.'" ');
 
+        $officialScopeStr = implode(',', CommonHelper::getOfficialScopeArray());
         $stock = DB::Connection('mysql2')->select('select b.sub_item_id,a.supplier_id,a.grn_no,a.grn_date,a.type,b.region,b.region_to,b.purchase_recived_qty,b.purchase_recived_qty,b.amount,b.rate
         from goods_receipt_note a
          inner join grn_data b
@@ -699,6 +699,7 @@ class StoreController extends Controller
          a.id=b.master_id
          where a.grn_date BETWEEN  "'.$from_date.'" and "'.$to_date.'"
          and a.status=1
+         and a.is_official in ('.$officialScopeStr.')
          and a.grn_status in (2,3)');
 
 
@@ -709,6 +710,7 @@ class StoreController extends Controller
         a.id=b.master_id
         where a.iss_date BETWEEN "'.$from_date.'" and "'.$to_date.'"
         and a.status=1
+        and a.is_official in ('.$officialScopeStr.')
         and a.issuance_status=2
         Order by b.sub_item_id
         ');
@@ -722,6 +724,7 @@ class StoreController extends Controller
         a.stock_return_id=b.stock_return_id
         where a.issuance_date BETWEEN "'.$from_date.'" and "'.$to_date.'"
         and a.status=1
+        and a.is_official in ('.$officialScopeStr.')
         and a.return_status=2');
 
         return view('Store.AjaxPages.InventoryStockReportAjax', compact('stock','from_date','to_date','issuence','return'));

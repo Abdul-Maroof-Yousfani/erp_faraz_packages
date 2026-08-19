@@ -3,11 +3,13 @@
 use App\Helpers\CommonHelper;
 use App\Helpers\SalesHelper;
 
+$officialScopeStr = implode(',', CommonHelper::getOfficialScopeArray());
 if($ClientId !=""):
     $CustomerData = DB::Connection('mysql2')->select('select a.* from customers a
                                                       INNER JOIN sales_tax_invoice b ON b.buyers_id = a.id
                                                       where a.status = 1
                                                       and b.status = 1
+                                                      and b.is_official in ('.$officialScopeStr.')
                                                       and b.buyers_id = '.$ClientId.'
                                                       and (b.gi_date between "'.$FromDate.'" and "'.$ToDate.'" or b.so_type=1)
                                                       group by b.buyers_id');
@@ -16,6 +18,7 @@ else:
                                                       INNER JOIN sales_tax_invoice b ON b.buyers_id = a.id
                                                       where a.status = 1
                                                       and b.status = 1
+                                                      and b.is_official in ('.$officialScopeStr.')
                                                       and (b.gi_date between "'.$FromDate.'" and "'.$ToDate.'" or b.so_type=1)
                                                       group by b.buyers_id');
 endif;
@@ -58,6 +61,7 @@ foreach($CustomerData as $CustFil):
 
 $Invoice = DB::Connection('mysql2')->select('select * from sales_tax_invoice
         where status=1
+        and is_official in ('.$officialScopeStr.')
         and buyers_id="'.$CustFil->id.'"
         and (gi_date between "'.$FromDate.'" and "'.$ToDate.'" or so_type=1)');
 

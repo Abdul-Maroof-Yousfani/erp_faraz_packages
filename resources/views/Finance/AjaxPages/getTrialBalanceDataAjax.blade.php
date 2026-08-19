@@ -331,14 +331,17 @@ table.sf-report-print-table tbody tr.text-right td{background:#FFF4E5 !important
                     elseif($nature ==05){echo $a='REVENUE';}
                     elseif($nature ==06){echo $a='Cost Of Sales';}
                     $len = strlen($code);
-$bal = 0;
+                    $bal = 0;
+                    $officialScopeStr = implode(',', CommonHelper::getOfficialScopeArray());
 
                     $bal = DB::Connection('mysql2')->select("select coalesce(sum(`amount`),0)-(select coalesce(sum(`amount`),0)
 							from `transactions`
 							where substring_index(`acc_code`,'-',$level) = '$code' and `debit_credit` = 0
+							AND is_official IN ($officialScopeStr)
 							AND `status` = 1 AND `v_date` between '$from' and '$to') as bal
 							from `transactions`
 							where substring_index(`acc_code`,'-',$level) = '$code' and `debit_credit` = 1
+							AND is_official IN ($officialScopeStr)
 							AND `status` = 1 AND `v_date` between '$from' and '$to'");
 
                         //$bal = $bal->bal;
@@ -355,14 +358,14 @@ $bal = 0;
                         $clause="";
                     endif;
 
-                    $debit=DB::Connection('mysql2')->selectOne("select sum(amount)amount from transactions where status=1 and v_date between '$from' and '$to'
+                    $debit=DB::Connection('mysql2')->selectOne("select sum(amount)amount from transactions where status=1 and is_official IN ($officialScopeStr) and v_date between '$from' and '$to'
 							and substring_index(`acc_code`,'-',$level) = '$code' and debit_credit=1 ".$clause."")->amount;
 
 
 
 
 
-                    $creditt=DB::Connection('mysql2')->selectOne("select sum(amount)amount from transactions where status=1 and v_date between '$from' and '$to'
+                    $creditt=DB::Connection('mysql2')->selectOne("select sum(amount)amount from transactions where status=1 and is_official IN ($officialScopeStr) and v_date between '$from' and '$to'
 							and substring_index(`acc_code`,'-',$level) = '$code' and debit_credit=0 ".$clause."")->amount;
 
                     $newdate = strtotime('-1 day', strtotime($from));
@@ -383,9 +386,11 @@ $bal = 0;
                             $cl_bal = DB::Connection('mysql2')->selectOne("select coalesce(sum(`amount`),0)-(select coalesce(sum(`amount`),0)
 							from `transactions`
 							where substring_index(`acc_code`,'-',$level) = '$code' and `debit_credit` = 0
+							AND is_official IN ($officialScopeStr)
 							AND  `status` = 1 and opening_bal=1) as bal
 							from `transactions`
 							where substring_index(`acc_code`,'-',$level) = '$code' and `debit_credit` = 1
+							AND is_official IN ($officialScopeStr)
 							 AND `status` = 1 and opening_bal=1")->bal;
 
                         endif;
@@ -393,9 +398,11 @@ $bal = 0;
                         $cl_bal = DB::Connection('mysql2')->selectOne("select coalesce(sum(`amount`),0)-(select coalesce(sum(`amount`),0)
 							from `transactions`
 							where substring_index(`acc_code`,'-',$level) = '$code' and `debit_credit` = 0
+							AND is_official IN ($officialScopeStr)
 							AND  `status` = 1 AND `v_date` between '$acc_year_from' and '$newdate') as bal
 							from `transactions`
 							where substring_index(`acc_code`,'-',$level) = '$code' and `debit_credit` = 1
+							AND is_official IN ($officialScopeStr)
 						 AND `status` = 1 AND `v_date` between '$acc_year_from' and '$newdate'")->bal;
 
                     endif;

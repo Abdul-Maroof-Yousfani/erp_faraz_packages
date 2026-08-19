@@ -28,7 +28,6 @@ $TotNotYetDueEnd = 0;
 </style>
 <?php endif;?>
 
-
 <script !src="">
     var n = 0;
 </script>
@@ -37,9 +36,11 @@ if($_GET['SupplierId'] == 'all')
 {$Clause = '';}
 else{$Clause = 'and b.supplier="'.$_GET['SupplierId'].'"';}
 
+$officialScopeStr = implode(',', CommonHelper::getOfficialScopeArray());
 $Supp = DB::Connection('mysql2')->select('select a.id,a.name,a.acc_id from supplier a
                                           INNER JOIN new_purchase_voucher b ON b.supplier = a.id
                                           WHERE b.status = 1
+                                          and b.is_official in ('.$officialScopeStr.')
                                           '.$Clause.'
 
                                          and(b.pv_date between "'.$from.'" and "'.$to.'" or grn_id=0)
@@ -59,6 +60,7 @@ $vendor_data=DB::Connection('mysql2')->select('select a.id,a.due_date,a.pv_no,a.
                 a.id=b.master_id
 
                 where a.status=1
+                and a.is_official in ('.$officialScopeStr.')
 
                 and(a.pv_date between "'.$from.'" and "'.$to.'"  or grn_id=0 and work_order_id=0)
 

@@ -89,6 +89,7 @@ if (!empty($quarterVoucherNos)) {
     // Stock items
     $ledgerItems = DB::Connection('mysql2')->table('stock as s')
         ->join('subitem as si', 'si.id', '=', 's.sub_item_id')
+        ->whereIn('s.is_official', CommonHelper::getOfficialScopeArray())
         ->whereIn('s.status', [1, 3])
         ->whereIn('s.voucher_no', $quarterVoucherNos)
         ->select('s.voucher_no', 'si.sub_ic', 's.rate',
@@ -104,6 +105,7 @@ if (!empty($quarterVoucherNos)) {
     $salesItems = DB::Connection('mysql2')->table('sales_tax_invoice_data as stid')
         ->join('sales_tax_invoice as sti', 'sti.id', '=', 'stid.master_id')
         ->join('subitem as si', 'si.id', '=', 'stid.item_id')
+        ->whereIn('sti.is_official', CommonHelper::getOfficialScopeArray())
         ->where('stid.status', 1)->where('sti.status', 1)
         ->whereIn('sti.gi_no', $quarterVoucherNos)
         ->select('sti.gi_no as voucher_no', 'si.sub_ic', 'stid.rate',
@@ -128,6 +130,7 @@ if (!empty($quarterVoucherNos)) {
     $pvItems = DB::Connection('mysql2')->table('new_purchase_voucher_data as npvd')
         ->join('new_purchase_voucher as npv', 'npv.id', '=', 'npvd.master_id')
         ->join('subitem as si', 'si.id', '=', 'npvd.sub_item')
+        ->whereIn('npv.is_official', CommonHelper::getOfficialScopeArray())
         ->where('npvd.staus', 1)->where('npv.status', 1)
         ->whereIn('npv.pv_no', $quarterVoucherNos)
         ->select('npv.pv_no as voucher_no', 'si.sub_ic', 'npvd.rate',
@@ -343,7 +346,7 @@ if (!empty($quarterVoucherNos)) {
                     $PageTitle = 'Invoice';
                     $typeLabel = 'Sales Inv.';
                     $typeBadge = 'badge-sale';
-                    $so_data   = DB::Connection('mysql2')->table('sales_tax_invoice')->where('status', 1)->where('gi_no', $trow->voucher_no)->select('id', 'so_no')->first();
+                    $so_data   = DB::Connection('mysql2')->table('sales_tax_invoice')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)->where('gi_no', $trow->voucher_no)->select('id', 'so_no')->first();
                     $description = $so_data->so_no ?? '';
                     break;
 

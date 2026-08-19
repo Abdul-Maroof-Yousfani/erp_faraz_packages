@@ -72,12 +72,14 @@ $count=1;
                         a.id=b.master_id
 
                         where a.status=1
+                        and a.is_official in ('.implode(',', CommonHelper::getOfficialScopeArray()).')
                         and (a.gi_date between "'.$from.'" and "'.$as_on.'" or b.so_type=1)
                         and a.buyers_id  = '.$Cfil->id.'
                         group by a.id');
 
-            $debit=   DB::Connection('mysql2')->selectOne('select sum(amount)amount from transactions where status=1 and debit_credit=1 and acc_id="'.$Cfil->acc_id.'"')->amount;
-            $credit=   DB::Connection('mysql2')->selectOne('select sum(amount)amount from transactions where status=1 and debit_credit=0 and acc_id="'.$Cfil->acc_id.'"')->amount;
+            $officialScopeStr = implode(',', CommonHelper::getOfficialScopeArray());
+            $debit=   DB::Connection('mysql2')->selectOne('select sum(amount)amount from transactions where status=1 and is_official in ('.$officialScopeStr.') and debit_credit=1 and acc_id="'.$Cfil->acc_id.'"')->amount;
+            $credit=   DB::Connection('mysql2')->selectOne('select sum(amount)amount from transactions where status=1 and is_official in ('.$officialScopeStr.') and debit_credit=0 and acc_id="'.$Cfil->acc_id.'"')->amount;
 
             $amount=$debit-$credit;
 

@@ -48,6 +48,7 @@ $vendor_data=DB::Connection('mysql2')->select('select a.id,a.model_terms_of_paym
                 a.id=b.master_id
 
                 where a.status=1
+                and a.is_official in ('.$scopeStr.')
                and (a.gi_date between "'.$from.'" and "'.$as_on.'" or a.so_type=1)
                 and a.buyers_id  = '.$Cfil->id.'
                 group by a.id');

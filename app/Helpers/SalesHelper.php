@@ -914,9 +914,11 @@ public static function sale_order_qty($id)
 {
   $response =  FacadesDB::connection('mysql2')
     ->table('sales_order_data')
+    ->join('sales_order', 'sales_order.id', '=', 'sales_order_data.master_id')
     ->leftJoin('delivery_note_data', function ($join) {
         $join->on('delivery_note_data.so_data_id', '=', 'sales_order_data.id');
     })
+    ->whereIn('sales_order.is_official', \App\Helpers\CommonHelper::getOfficialScopeArray())
     ->select('sales_order_data.item_id', 
     FacadesDB::raw('SUM(sales_order_data.qty) - IFNULL(SUM(delivery_note_data.qty), 0) as quantity_difference'))
     ->groupBy('sales_order_data.item_id')

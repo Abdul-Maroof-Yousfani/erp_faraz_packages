@@ -5,11 +5,13 @@ use App\Helpers\CommonHelper;
 use App\Helpers\SalesHelper;
 $count=1;
 
+$officialScopeStr = implode(',', CommonHelper::getOfficialScopeArray());
 $data=  DB::Connection('mysql2')->select('select a.gi_date,a.gi_no,b.*,a.buyers_id,a.id from sales_tax_invoice a
                 INNER JOIN sales_tax_invoice_data b
                 ON
                 b.master_id = a.id
                 WHERE  a.status = 1
+                AND a.is_official IN ('.$officialScopeStr.')
                 AND a.gi_date BETWEEN "'.$from.'" and "'.$to.'"
                 and a.so_type=0
                 
@@ -54,6 +56,7 @@ $data=  DB::Connection('mysql2')->select('select a.gi_date,a.gi_no,b.*,a.buyers_
             $on_si=DB::Connection('mysql2')->table('transactions')
                     ->where('voucher_no',$row->gi_no)
                     ->where('voucher_type',8)
+                    ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                     ->where('acc_id',97)
                     ->where('status',1)
                     ->sum('amount');

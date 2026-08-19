@@ -16,12 +16,14 @@
     <?php
     $count=1;
   //  $data=DB::Connection('mysql2')->select('select * from die_usage_report where status=1 group by die_id,batch_code_id');
+    $officialScopeStr = implode(',', CommonHelper::getOfficialScopeArray());
     $data=DB::Connection('mysql2')->select('select * from die_usage_report as a
     inner join
     production_plane b
     on
     a.production_plan_id=b.id
     where a.status=1
+    and b.is_official in ('.$officialScopeStr.')
     and b.order_date between "'.$from.'" and "'.$to.'"
     group by a.die_id,a.batch_code_id');
     $total_dep=0;
