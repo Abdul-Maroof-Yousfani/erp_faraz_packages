@@ -3054,6 +3054,7 @@ class PurchaseAddDetailControler extends Controller
             $NewPurchaseVoucher->status = 1;
             $NewPurchaseVoucher->pv_status = 1;                    // adjust as per your logic
             $NewPurchaseVoucher->date = date('Y-m-d');
+            $NewPurchaseVoucher->is_official = CommonHelper::getOfficialValue();
 
             // Optional fields you may want to store
             // $NewPurchaseVoucher->po_no = $request->input('po_no');
@@ -3137,6 +3138,7 @@ class PurchaseAddDetailControler extends Controller
                 $detail->pv_status = 2;
                 $detail->username = Auth::user()->name;
                 $detail->date = date('Y-m-d');
+                $detail->is_official = CommonHelper::getOfficialValue();
 
                 $detail->save();
                 $savedDetails++;
@@ -3161,6 +3163,7 @@ class PurchaseAddDetailControler extends Controller
                         'username' => Auth::user()->name,
                         'voucher_type' => 1,                   // adjust code for direct purchase
                         'voucher_date' => $purchase_date,
+                        'is_official' => CommonHelper::getOfficialValue(),
                     ]);
                 }
             }
@@ -4181,6 +4184,7 @@ public function updatePurchaseReturnDetail(Request $request)
                 'username'               => Auth::user()->username,
                 'created_date'           => date('Y-m-d'),
                 'opening'                => 0,
+                'is_official'            => CommonHelper::getOfficialValue(),
             ]);
         }
 
@@ -4368,6 +4372,7 @@ public function updatePurchaseReturnDetail(Request $request)
                     'created_date' => date('Y-m-d'),
                     'created_date' => date('Y-m-d'),
                     'opening' => 0,
+                    'is_official' => CommonHelper::getOfficialValue(),
                 );
                 DB::Connection('mysql2')->table('stock')->insert($stock);
 
@@ -4394,6 +4399,7 @@ public function updatePurchaseReturnDetail(Request $request)
                     'created_date' => date('Y-m-d'),
                     'created_date' => date('Y-m-d'),
                     'opening' => 0,
+                    'is_official' => CommonHelper::getOfficialValue(),
                 );
                 DB::Connection('mysql2')->table('stock')->insert($stock1);
 
@@ -4664,8 +4670,8 @@ public function updatePurchaseReturnDetail(Request $request)
             $currencyInput = (string) $request->input('curren', '');
             $currencyParts = $currencyInput !== '' ? explode(',', $currencyInput) : [];
             $currencyId = $currencyParts[0] ?? null;
-            NewPurchaseVoucherData::where('pv_no', $pv_no)->delete();
-            NewPurchaseVoucher::where('pv_no', $pv_no)->delete();
+            NewPurchaseVoucherData::whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('pv_no', $pv_no)->delete();
+            NewPurchaseVoucher::whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('pv_no', $pv_no)->delete();
             $SalesTaxAccId = 0;
             $SalesTaxAmount = 0;
             $supplier_id = explode('@#', $request->input('supplier_id'))[0];
@@ -4707,6 +4713,7 @@ public function updatePurchaseReturnDetail(Request $request)
             $NewPurchaseVoucher->pv_status = 1;
             $NewPurchaseVoucher->date = date('Y-m-d');
             $NewPurchaseVoucher->currency = $currencyId;
+            $NewPurchaseVoucher->is_official = CommonHelper::getOfficialValue();
             $NewPurchaseVoucher->save();
             $master_id = $NewPurchaseVoucher->id;
 
@@ -4744,6 +4751,7 @@ public function updatePurchaseReturnDetail(Request $request)
                 $NewPurchaseVoucherData->pv_status = 2;
                 $NewPurchaseVoucherData->username = Auth::user()->name;
                 $NewPurchaseVoucherData->date = date('Y-m-d');
+                $NewPurchaseVoucherData->is_official = CommonHelper::getOfficialValue();
                 $NewPurchaseVoucherData->save();
             endforeach;
             // NotificationHelper::send_email('Purchase Invoice', 'Create', $dept_id, $voucher_no, $subject, $p_type);

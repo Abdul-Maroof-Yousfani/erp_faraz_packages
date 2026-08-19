@@ -2155,7 +2155,7 @@ class FinanceController extends Controller
 
 		$NewPurchaseVoucher = new NewPurchaseVoucher();
 		$NewPurchaseVoucher = $NewPurchaseVoucher->SetConnection('mysql2');
-		$NewPurchaseVoucher = $NewPurchaseVoucher->where('id',$id)->first();
+		$NewPurchaseVoucher = $NewPurchaseVoucher->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('id',$id)->first();
 
 		$NewPurchaseVoucherData = new NewPurchaseVoucherData();
 		$NewPurchaseVoucherData = $NewPurchaseVoucherData->SetConnection('mysql2');

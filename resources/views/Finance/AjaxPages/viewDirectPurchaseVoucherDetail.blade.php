@@ -20,7 +20,7 @@ else{
 }
 $currentDate = date('Y-m-d');
 FinanceHelper::companyDatabaseConnection($m);
-$PurchaseVoucher = DB::table('new_purchase_voucher')->where('id','=',$id)->get();
+$PurchaseVoucher = DB::table('new_purchase_voucher')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('id','=',$id)->get();
 FinanceHelper::reconnectMasterDatabase();
 foreach ($PurchaseVoucher as $row) {
 $username=$row->username;

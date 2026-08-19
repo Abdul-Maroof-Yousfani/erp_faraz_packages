@@ -574,6 +574,7 @@ class FarazProductionController extends Controller
 
         $openingInQuery = DB::connection('mysql2')->table('stock as s')
             ->join('subitem as si', 'si.id', '=', 's.sub_item_id')
+            ->whereIn('s.is_official', CommonHelper::getOfficialScopeArray())
             ->whereIn('s.status', [1, 3])
             ->where('si.status', 1)
             ->where('si.main_ic_id', 7)
@@ -591,6 +592,7 @@ class FarazProductionController extends Controller
 
         $openingOutQuery = DB::connection('mysql2')->table('stock as s')
             ->join('subitem as si', 'si.id', '=', 's.sub_item_id')
+            ->whereIn('s.is_official', CommonHelper::getOfficialScopeArray())
             ->whereIn('s.status', [1, 3])
             ->where('si.status', 1)
             ->where('si.main_ic_id', 7)
@@ -608,6 +610,7 @@ class FarazProductionController extends Controller
 
         $purchaseQuery = DB::connection('mysql2')->table('stock as s')
             ->join('subitem as si', 'si.id', '=', 's.sub_item_id')
+            ->whereIn('s.is_official', CommonHelper::getOfficialScopeArray())
             ->whereIn('s.status', [1, 3])
             ->where('si.status', 1)
             ->where('si.main_ic_id', 7)
@@ -625,6 +628,7 @@ class FarazProductionController extends Controller
 
         $consumeQuery = DB::connection('mysql2')->table('stock as s')
             ->join('subitem as si', 'si.id', '=', 's.sub_item_id')
+            ->whereIn('s.is_official', CommonHelper::getOfficialScopeArray())
             ->whereIn('s.status', [1, 3])
             ->where('si.status', 1)
             ->where('si.main_ic_id', 7)
@@ -713,6 +717,7 @@ class FarazProductionController extends Controller
             ->leftJoin('subitem as si', 'si.id', '=', 'pp.item_id')
             ->leftJoin('machine as mac', 'mac.id', '=', 'pp.machine_id')
             ->leftJoin('operators as op', 'op.id', '=', 'pp.operator_id')
+            ->whereIn('pp.is_official', CommonHelper::getOfficialScopeArray())
             ->where('pp.status', 1)
             ->whereBetween('pp.date', [$from, $to])
             ->orderBy('pp.date')
@@ -731,6 +736,7 @@ class FarazProductionController extends Controller
 
         // Previous balance for packing (before each day)
         $packingPrev = DB::connection('mysql2')->table('production_packing as pp')
+            ->whereIn('pp.is_official', CommonHelper::getOfficialScopeArray())
             ->where('pp.status', 1)
             ->whereDate('pp.date', '<', $from)
             ->select(
@@ -742,6 +748,7 @@ class FarazProductionController extends Controller
         // Dana operator (from production_mixture: produced_item_id, qty in KG, machine = mixture_machine_id, name = username)
         $danaRows = DB::connection('mysql2')->table('production_mixture as pm')
             ->leftJoin('subitem as si', 'si.id', '=', 'pm.produced_item_id')
+            ->whereIn('pm.is_official', CommonHelper::getOfficialScopeArray())
             ->where('pm.status', 1)
             ->whereBetween('pm.date', [$from, $to])
             ->orderBy('pm.date')
@@ -767,6 +774,7 @@ class FarazProductionController extends Controller
 
         $danaPrev = DB::connection('mysql2')->table('production_mixture as pm')
             ->leftJoin('subitem as si', 'si.id', '=', 'pm.produced_item_id')
+            ->whereIn('pm.is_official', CommonHelper::getOfficialScopeArray())
             ->where('pm.status', 1)
             ->whereDate('pm.date', '<', $from)
             ->select(
@@ -780,6 +788,7 @@ class FarazProductionController extends Controller
         $printingRows = DB::connection('mysql2')->table('production_roll_printing as prp')
             ->leftJoin('subitem as si', 'si.id', '=', 'prp.item_id')
             ->leftJoin('operators as op', 'op.id', '=', 'prp.operator_id')
+            ->whereIn('prp.is_official', CommonHelper::getOfficialScopeArray())
             ->where('prp.status', 1)
             ->whereBetween('prp.date', [$from, $to])
             ->orderBy('prp.date')
@@ -797,6 +806,7 @@ class FarazProductionController extends Controller
             ->get();
 
         $printingPrev = DB::connection('mysql2')->table('production_roll_printing as prp')
+            ->whereIn('prp.is_official', CommonHelper::getOfficialScopeArray())
             ->where('prp.status', 1)
             ->whereDate('prp.date', '<', $from)
             ->select(
@@ -1069,6 +1079,7 @@ class FarazProductionController extends Controller
             'galaCutting',
             'packing'
         )
+            ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
             ->where('status', '=', 1)
             ->orderByDesc('id')
             ->get();
@@ -1082,6 +1093,7 @@ class FarazProductionController extends Controller
             'cuttingAndSealing.printedRoll.productionRoll.productionOrder',
             'galaCutting.cuttingAndSealing.printedRoll.productionRoll.productionOrder',
         ])
+            ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
             ->where('status', 1)
             ->orderByDesc('id')
             ->get();
@@ -1094,6 +1106,7 @@ class FarazProductionController extends Controller
     {
         $productionOrders = DB::connection('mysql2')
             ->table('production_request')
+            ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
             ->where('status', 1)
             ->select('id', 'pr_no', 'request_date', 'ref_no')
             ->orderBy('id', 'desc')
@@ -1123,6 +1136,7 @@ class FarazProductionController extends Controller
         $wastageList = DB::connection('mysql2')
             ->table('wastage as w')
             ->leftJoin('production_request as pr', 'w.production_order_id', '=', 'pr.id')
+            ->whereIn('w.is_official', CommonHelper::getOfficialScopeArray())
             ->where('w.status', 1)
             ->select(
                 'w.*',
@@ -1167,6 +1181,7 @@ class FarazProductionController extends Controller
 
         $productionOrders = DB::connection('mysql2')
             ->table('production_request')
+            ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
             ->where('status', 1)
             ->select('id', 'pr_no', 'request_date', 'ref_no')
             ->orderBy('id', 'desc')
@@ -1197,6 +1212,7 @@ class FarazProductionController extends Controller
     {
         $order = DB::connection('mysql2')
             ->table('production_request')
+            ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
             ->where('id', $request->production_order_id)
             ->where('status', 1)
             ->select('id', 'pr_no', 'request_date', 'ref_no', 'description', 'curr_status')
@@ -1241,6 +1257,7 @@ class FarazProductionController extends Controller
         return DB::connection('mysql2')
             ->table('wastage as w')
             ->leftJoin('production_request as pr', 'w.production_order_id', '=', 'pr.id')
+            ->whereIn('w.is_official', CommonHelper::getOfficialScopeArray())
             ->where('w.id', $id)
             ->where('w.status', 1)
             ->select(
@@ -1275,6 +1292,7 @@ class FarazProductionController extends Controller
             'cuttingAndSealing.printedRoll.productionRoll.productionOrder',
             'packing'
         )
+            ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
             ->where('status', '=', 1)->get();
         $m = $this->m;
         return view('FarazPackagesProduction.ProductionMixture.viewProductionGalaCutting', compact('galaCuttingList', 'm'));
@@ -1503,6 +1521,8 @@ class FarazProductionController extends Controller
                 's.sub_ic',
                 'u.uom_name'
             )
+            ->whereIn('pr.is_official', CommonHelper::getOfficialScopeArray())
+            ->whereIn('prp.is_official', CommonHelper::getOfficialScopeArray())
             ->where('pr.production_order_id', $production_order_id)
             ->where('prp.no_of_roll', '>', 0)
             ->orderBy('s.item_code')
@@ -1567,6 +1587,9 @@ class FarazProductionController extends Controller
                 's.sub_ic',
                 'u.uom_name'
             )
+            ->whereIn('pr.is_official', CommonHelper::getOfficialScopeArray())
+            ->whereIn('prp.is_official', CommonHelper::getOfficialScopeArray())
+            ->whereIn('pcs.is_official', CommonHelper::getOfficialScopeArray())
             ->where('pr.production_order_id', $production_order_id)
             ->where('pcs.qty', '>', 0)
             ->whereRaw('COALESCE(pcs.qty,0) > COALESCE(pcs.used_qty,0)')
@@ -1617,6 +1640,7 @@ class FarazProductionController extends Controller
         }
 
         $rollingRows = ProductionRolling::with('subItem.subCategory')
+            ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
             ->where('status', 1)
             ->where('production_order_id', $productionOrderId)
             ->where('roll_qty', '>', 0)
@@ -1717,6 +1741,9 @@ class FarazProductionController extends Controller
                     'u.uom_name',
                     DB::raw("'cutting and sealing' as cutting_type")
                 )
+                ->whereIn('pr.is_official', CommonHelper::getOfficialScopeArray())
+                ->whereIn('prp.is_official', CommonHelper::getOfficialScopeArray())
+                ->whereIn('pcs.is_official', CommonHelper::getOfficialScopeArray())
                 ->where('pr.production_order_id', $production_order_id)
                 ->where('pcs.qty', '>', 0)
                 ->whereRaw('COALESCE(pcs.qty,0) > COALESCE(pcs.used_qty,0)')
@@ -1747,6 +1774,10 @@ class FarazProductionController extends Controller
                     'u.uom_name',
                     DB::raw("'gala' as cutting_type")
                 )
+                ->whereIn('pr.is_official', CommonHelper::getOfficialScopeArray())
+                ->whereIn('prp.is_official', CommonHelper::getOfficialScopeArray())
+                ->whereIn('pcs.is_official', CommonHelper::getOfficialScopeArray())
+                ->whereIn('pgs.is_official', CommonHelper::getOfficialScopeArray())
                 ->where('pr.production_order_id', $production_order_id)
                 ->where('pgs.gala_qty', '>', 0)
                 ->whereRaw('COALESCE(pgs.gala_qty,0) > COALESCE(pgs.used_qty,0)')
@@ -1765,6 +1796,9 @@ class FarazProductionController extends Controller
                 ->join('production_cutting_and_sealing as pcs', 'prp.id', '=', 'pcs.printed_rolling_id')
                 ->join('subitem as s', 'pcs.item_id', '=', 's.id')
                 ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
+                ->whereIn('pr.is_official', CommonHelper::getOfficialScopeArray())
+                ->whereIn('prp.is_official', CommonHelper::getOfficialScopeArray())
+                ->whereIn('pcs.is_official', CommonHelper::getOfficialScopeArray())
                 ->where('pr.production_order_id', $production_order_id);
 
             // ── Simple cut & seal items ───────────────────────────
@@ -1876,12 +1910,14 @@ class FarazProductionController extends Controller
                 'item_id',
                 'id'
             )
+            ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
             ->where('id', $request->id)
             ->first();
 
         // Detail items
         $out_source_productions_details = DB::connection('mysql2')
             ->table('production_roll_printing')
+            ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
             ->where('id', $request->id)
             ->get();
 
@@ -1935,7 +1971,9 @@ class FarazProductionController extends Controller
         $id = $request->id;
 
         $production_order = DB::connection('mysql2')
-            ->table('production_request')->where('status', 1)->get();
+            ->table('production_request')
+            ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
+            ->where('status', 1)->get();
 
         // Totals
         if ($id) {
@@ -1948,10 +1986,12 @@ class FarazProductionController extends Controller
                     'item_id',
                     'id'
                 )
+                ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                 ->where('no_of_roll', '>', 0)
                 ->whereIn('production_rolling_id', function ($query) use ($id) {
                     $query->select('id')
                         ->from('production_rolling')
+                        ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                         ->where('production_order_id', $id);
                 })
                 ->get();
@@ -2027,12 +2067,14 @@ class FarazProductionController extends Controller
                 'item_id',
                 'id'
             )
+            ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
             ->where('id', $request->id)
             ->first();
 
         // Detail items
         $out_source_productions_details = DB::connection('mysql2')
             ->table('production_cutting_and_sealing')
+            ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
             ->where('id', $request->id)
             ->get();
 
@@ -2097,7 +2139,9 @@ class FarazProductionController extends Controller
         $id = $request->id;
 
         $production_order = DB::connection('mysql2')
-            ->table('production_request')->where('status', 1)->get();
+            ->table('production_request')
+            ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
+            ->where('status', 1)->get();
 
         // Totals
         if ($id) {
@@ -2110,6 +2154,7 @@ class FarazProductionController extends Controller
                     'item_id',
                     'id'
                 )
+                ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                 ->where('roll_qty', '>', 0)
                 ->where('production_order_id', $id)
                 ->get();
@@ -2175,7 +2220,9 @@ class FarazProductionController extends Controller
         $id = $request->id;
 
         $production_order = DB::connection('mysql2')
-            ->table('production_request')->where('status', 1)->get();
+            ->table('production_request')
+            ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
+            ->where('status', 1)->get();
 
         // Totals
         if ($id) {
@@ -2188,6 +2235,7 @@ class FarazProductionController extends Controller
                     'item_id',
                     'id'
                 )
+                ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                 ->where('roll_qty', '>', 0)
                 ->where('production_order_id', $id)
                 ->get();
@@ -2260,12 +2308,14 @@ class FarazProductionController extends Controller
                     'item_id',
                     'id'
                 )
+                ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                 ->where('id', $request->id)
                 ->first();
 
             // Detail items
             $out_source_productions_details = DB::connection('mysql2')
                 ->table('production_cutting_and_sealing')
+                ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                 ->where('id', $request->id)
                 ->get();
         } else {
@@ -2278,12 +2328,14 @@ class FarazProductionController extends Controller
                     'item_id',
                     'id'
                 )
+                ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                 ->where('id', $request->id)
                 ->first();
 
             // Detail items
             $out_source_productions_details = DB::connection('mysql2')
                 ->table('production_gala_cutting')
+                ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                 ->where('id', $request->id)
                 ->get();
         }

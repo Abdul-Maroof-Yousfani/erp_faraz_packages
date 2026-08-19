@@ -2410,7 +2410,8 @@ echo "aa"; die;
                     'date'=>date('Y-m-d'),
                     'action'=>'insert',
                     'username'=>Auth::user()->name,
-                    'status'=>1
+                    'status'=>1,
+                    'is_official'=>CommonHelper::getOfficialValue(),
                 );
                 DB::Connection('mysql2')->table('transactions')->insertGetId($data4);
                 $total_amount+=$row->net_amount;
@@ -2433,7 +2434,8 @@ echo "aa"; die;
                 'date'=>date('Y-m-d'),
                 'action'=>'insert',
                 'username'=>Auth::user()->name,
-                'status'=>1
+                'status'=>1,
+                'is_official'=>CommonHelper::getOfficialValue(),
             );
             DB::Connection('mysql2')->table('transactions')->insertGetId($data5);
 

@@ -1519,6 +1519,7 @@ class FarazProductionAddDetailController extends Controller
                     'date' => $request->date[$key] ?? now(),
                     'status' => 1,
                     'username' => Auth::user()->name,
+                    'is_official' => CommonHelper::getOfficialValue(),
                 ];
                 // dd($data2);
                 $csId = DB::connection('mysql2')
@@ -1566,6 +1567,7 @@ class FarazProductionAddDetailController extends Controller
             // update used qty in printing
             DB::connection('mysql2')
                 ->table('production_roll_printing')
+                ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                 ->where('id', $request->roll_id)
                 ->update([
                     'used_no_of_roll' => $request->used_qty_total,
@@ -1636,18 +1638,20 @@ class FarazProductionAddDetailController extends Controller
 
             // Get the production_rolling_id from the first roll_printing record
             $firstRollPrint = $firstRollPrintId
-                ? DB::connection('mysql2')->table('production_roll_printing')->where('id', $firstRollPrintId)->first()
+                ? DB::connection('mysql2')->table('production_roll_printing')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('id', $firstRollPrintId)->first()
                 : null;
 
             $pro_no = null;
             if ($firstRollPrint && $firstRollPrint->production_rolling_id) {
                 $sourceRoll = DB::connection('mysql2')
                     ->table('production_rolling')
+                    ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                     ->where('id', $firstRollPrint->production_rolling_id)
                     ->first();
                 if ($sourceRoll) {
                     $pro_no = DB::connection('mysql2')
                         ->table('production_request')
+                        ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                         ->where('id', $sourceRoll->production_order_id)
                         ->value('pr_no');
                 }
@@ -1692,6 +1696,7 @@ class FarazProductionAddDetailController extends Controller
                     'date'               => $request->date[$key] ?? now(),
                     'status'             => 1,
                     'username'           => Auth::user()->name,
+                    'is_official'        => CommonHelper::getOfficialValue(),
                 ];
                 $csId = DB::connection('mysql2')
                     ->table('production_cutting_and_sealing')
@@ -1883,6 +1888,7 @@ class FarazProductionAddDetailController extends Controller
                     'date' => $request->date[$key] ?? now(),
                     'status' => 1,
                     'username' => Auth::user()->name,
+                    'is_official' => CommonHelper::getOfficialValue(),
                 ];
 
                 $galaId = DB::connection('mysql2')
@@ -1928,6 +1934,7 @@ class FarazProductionAddDetailController extends Controller
                 $remainingConsumeQty = (float) $csQty;
                 $cuttingRows = DB::connection('mysql2')
                     ->table('production_cutting_and_sealing')
+                    ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                     ->whereIn('id', $rollIds)
                     ->select('id', 'qty', DB::raw('ROUND(COALESCE(used_qty,0),2) as used_qty'))
                     ->orderBy('date')
@@ -2069,6 +2076,7 @@ class FarazProductionAddDetailController extends Controller
                     'date' => $request->date[$key] ?? now(),
                     'status' => 1,
                     'username' => Auth::user()->name,
+                    'is_official' => CommonHelper::getOfficialValue(),
                 ]);
 
                 $packingId = DB::connection('mysql2')
@@ -2116,6 +2124,7 @@ class FarazProductionAddDetailController extends Controller
 
                 $sourceRows = DB::connection('mysql2')
                     ->table($sourceTable)
+                    ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                     ->whereIn('id', $rollIds)
                     ->select('id', $sourceQtyColumn . ' as source_qty', DB::raw('ROUND(COALESCE(used_qty,0),2) as used_qty'))
                     ->orderBy('date')
@@ -2248,10 +2257,12 @@ class FarazProductionAddDetailController extends Controller
                 'username' => Auth::user()->name,
                 'status' => 1,
                 'date' => date('Y-m-d'),
+                'is_official' => CommonHelper::getOfficialValue(),
             ]);
 
             foreach ($detailRows as $row) {
                 $row['master_id'] = $masterId;
+                $row['is_official'] = CommonHelper::getOfficialValue();
                 DB::connection('mysql2')->table('wastage_data')->insert($row);
             }
 
@@ -2315,6 +2326,7 @@ class FarazProductionAddDetailController extends Controller
             }
 
             DB::connection('mysql2')->table('wastage')
+                ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                 ->where('id', $request->id)
                 ->update([
                     'production_order_id' => $request->production_order_id,
@@ -2330,6 +2342,7 @@ class FarazProductionAddDetailController extends Controller
             DB::connection('mysql2')->table('wastage_data')->where('master_id', $request->id)->delete();
 
             foreach ($detailRows as $row) {
+                $row['is_official'] = CommonHelper::getOfficialValue();
                 DB::connection('mysql2')->table('wastage_data')->insert($row);
             }
 
@@ -2352,6 +2365,7 @@ class FarazProductionAddDetailController extends Controller
     public function deleteProductionWastage(Request $request)
     {
         DB::connection('mysql2')->table('wastage')
+            ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
             ->where('id', $request->id)
             ->update([
                 'status' => 0,
@@ -2462,6 +2476,7 @@ class FarazProductionAddDetailController extends Controller
             'username' => Auth::user()->name,
             'status' => 1,
             'date' => date('Y-m-d'),
+            'is_official' => CommonHelper::getOfficialValue(),
         ]);
 
         DB::connection('mysql2')->table('wastage_data')->insert([
@@ -2469,6 +2484,7 @@ class FarazProductionAddDetailController extends Controller
             'item_id' => $itemId,
             'qty' => $qty,
             'ppc' => $remarks,
+            'is_official' => CommonHelper::getOfficialValue(),
         ]);
 
         return $masterId;
