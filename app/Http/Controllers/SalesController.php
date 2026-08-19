@@ -227,7 +227,7 @@ class SalesController extends Controller
 
     public function soTrackingPage()
     {
-        $SoNo = DB::Connection('mysql2')->table('sales_order')->where('status', 1)->select('so_no', 'id')->get();
+        $SoNo = DB::Connection('mysql2')->table('sales_order')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)->select('so_no', 'id')->get();
         return view('Sales.soTrackingPage', compact('SoNo'));
     }
 
@@ -1628,7 +1628,7 @@ class SalesController extends Controller
         $id = Input::get('id');
         $sales_tax_invoice = new SalesTaxInvoice();
         $sales_tax_invoice = $sales_tax_invoice->SetConnection('mysql2');
-        $sales_tax_invoice = $sales_tax_invoice->where('id', $id)->first();
+        $sales_tax_invoice = $sales_tax_invoice->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('id', $id)->first();
 
         //        $sales_tax_invoice_data=new SalesTaxInvoiceData();
 //        $sales_tax_invoice_data=$sales_tax_invoice_data->SetConnection('mysql2');
@@ -1662,7 +1662,7 @@ class SalesController extends Controller
         $id = Input::get('id');
         $sales_tax_invoice = new SalesTaxInvoice();
         $sales_tax_invoice = $sales_tax_invoice->SetConnection('mysql2');
-        $sales_tax_invoice = $sales_tax_invoice->where('id', $id)->first();
+        $sales_tax_invoice = $sales_tax_invoice->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('id', $id)->first();
 
         //        $sales_tax_invoice_data=new SalesTaxInvoiceData();
 //        $sales_tax_invoice_data=$sales_tax_invoice_data->SetConnection('mysql2');
@@ -1807,7 +1807,7 @@ class SalesController extends Controller
     {
         $sales_tax_invoice = new SalesTaxInvoice();
         $sales_tax_invoice = $sales_tax_invoice->SetConnection('mysql2');
-        $sales_tax_invoice = $sales_tax_invoice->where('status', 1)->get();
+        $sales_tax_invoice = $sales_tax_invoice->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)->get();
         $customers = DB::Connection('mysql2')->table('customers')
             ->where('status', 1)
             ->orderBy('name')
@@ -1828,6 +1828,7 @@ class SalesController extends Controller
         if ($type === 1) {
             $invoice = DB::Connection('mysql2')->table('delivery_note as a')
                 ->leftJoin('sales_order as b', 'a.master_id', '=', 'b.id')
+                ->whereIn('a.is_official', CommonHelper::getOfficialScopeArray())
                 ->where('a.status', 1)
                 ->where('b.status', 1)
                 ->where('b.buyers_id', $customerId)
@@ -1846,6 +1847,7 @@ class SalesController extends Controller
         } else {
             $invoice = (new SalesTaxInvoice())
                 ->setConnection('mysql2')
+                ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                 ->where('status', 1)
                 ->where('buyers_id', $customerId)
                 ->where(function ($query) use ($invoiceNo) {
@@ -2512,7 +2514,7 @@ class SalesController extends Controller
         $approve_user = '';
         $approve = '';
         $send_behavior = '';
-        $so_data = DB::Connection('mysql2')->table('sales_order')->where('id', $id)->first();
+        $so_data = DB::Connection('mysql2')->table('sales_order')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('id', $id)->first();
         $so_no = $so_data->so_no;
         $dept_id = $so_data->department;
         $p_type = $so_data->p_type;
@@ -2555,7 +2557,7 @@ class SalesController extends Controller
             $id = $request->id;
             $approve = '';
             $behavior = '';
-            $si_data = DB::Connection('mysql2')->table('sales_tax_invoice')->where('id', $id)->first();
+            $si_data = DB::Connection('mysql2')->table('sales_tax_invoice')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('id', $id)->first();
 
             if (empty($si_data)) {
                 DB::Connection('mysql2')->rollBack();

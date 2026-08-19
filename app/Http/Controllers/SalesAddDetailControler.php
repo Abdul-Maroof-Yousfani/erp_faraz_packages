@@ -7925,7 +7925,7 @@ class SalesAddDetailControler extends Controller
 
     function set_cost(Request $request)
     {
-
+        $scopeStr = implode(',', CommonHelper::getOfficialScopeArray());
         if ($request->type == 1):
             $data = DB::Connection('mysql2')->select('select sum(a.amount)amount,b.buyers_id from sales_tax_invoice_data a
         inner join
@@ -7934,6 +7934,7 @@ class SalesAddDetailControler extends Controller
         a.master_id=b.id
         where b.status=1
         and b.so_type=0
+        and b.is_official IN ('.$scopeStr.')
         group by b.buyers_id');
 
             foreach ($data as $row):
@@ -7960,6 +7961,7 @@ class SalesAddDetailControler extends Controller
         and a.status=1
         and a.voucher_type=8
         and a.debit_credit=1
+        and b.is_official IN ('.$scopeStr.')
         group by b.buyers_id');
 
             foreach ($data as $row):
@@ -7985,6 +7987,7 @@ class SalesAddDetailControler extends Controller
         and a.status=1
         and a.voucher_type=9
         and a.debit_credit=1
+        and b.is_official IN ('.$scopeStr.')
         group by b.buyer_id');
 
             foreach ($data as $row):
