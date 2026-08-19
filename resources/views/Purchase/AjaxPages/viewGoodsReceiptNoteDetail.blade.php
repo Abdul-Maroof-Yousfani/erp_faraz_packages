@@ -11,7 +11,7 @@ $id = $_GET['id'];
 $m = Session::get('m');
 $currentDate = date('Y-m-d');
 CommonHelper::companyDatabaseConnection($m);
-$goodsReceiptNoteDetail = DB::table('goods_receipt_note')->where('grn_no','=',$id)->get();
+$goodsReceiptNoteDetail = DB::table('goods_receipt_note')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('grn_no','=',$id)->get();
 $AddionalExpense = DB::table('addional_expense')->where('voucher_no','=',$id);
 $grnDataDetailSimple = DB::table('grn_data')->where('grn_no', '=', $id)->get();
 

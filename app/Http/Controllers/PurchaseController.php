@@ -879,7 +879,8 @@ class PurchaseController extends Controller
         $last_day_this_month = date('Y-m-t');
         $purchase_voucher = new NewPurchaseVoucher();
         $purchase_voucher = $purchase_voucher->SetConnection('mysql2');
-        $purchase_voucher = $purchase_voucher->where('status', 1)
+        $purchase_voucher = $purchase_voucher->whereIn('is_official', CommonHelper::getOfficialScopeArray())
+            ->where('status', 1)
             ->whereBetween('pv_date', [$first_day_this_month, $last_day_this_month])
             ->where('grn_id', '!=', 0)
             ->orderBy('pv_date', 'DCS')->get();
@@ -896,7 +897,8 @@ class PurchaseController extends Controller
         $last_day_this_month = date('Y-m-t');
         $purchase_voucher = new NewPurchaseVoucher();
         $purchase_voucher = $purchase_voucher->SetConnection('mysql2');
-        $purchase_voucher = $purchase_voucher->where('status', 1)
+        $purchase_voucher = $purchase_voucher->whereIn('is_official', CommonHelper::getOfficialScopeArray())
+            ->where('status', 1)
             ->whereBetween('pv_date', [$first_day_this_month, $last_day_this_month])
             ->where('grn_id', '=', 0)
 

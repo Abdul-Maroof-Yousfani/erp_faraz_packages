@@ -1448,6 +1448,7 @@ class PurchaseAddDetailControler extends Controller
             $data1['date'] = date("Y-m-d");
             $data1['time'] = date("H:i:s");
             $data1['username'] = Auth::user()->name;
+            $data1['is_official'] = CommonHelper::getOfficialValue();
             //            echo "<pre>";
 //            print_r($data1);
 //            die();
@@ -1558,6 +1559,7 @@ class PurchaseAddDetailControler extends Controller
                 $data2['date'] = date("Y-m-d");
                 $data2['time'] = date("H:i:s");
                 $data2['username'] = Auth::user()->name;
+                $data2['is_official'] = CommonHelper::getOfficialValue();
                 $grn_data_id = DB::table('grn_data')->insertGetId($data2);
             }
 
@@ -2663,6 +2665,7 @@ class PurchaseAddDetailControler extends Controller
         $data1['time'] = date("H:i:s");
         $data1['type'] = 2;
         $data1['username'] = Auth::user()->name;
+        $data1['is_official'] = CommonHelper::getOfficialValue();
 
         $master_id = DB::table('goods_receipt_note')->insertGetId($data1);
 
@@ -2711,6 +2714,7 @@ class PurchaseAddDetailControler extends Controller
             $data2['date'] = date("Y-m-d");
             $data2['time'] = date("H:i:s");
             $data2['username'] = Auth::user()->name;
+            $data2['is_official'] = CommonHelper::getOfficialValue();
             $data2['region'] = $region;
 
             DB::table('grn_data')->insert($data2);
@@ -2751,6 +2755,7 @@ class PurchaseAddDetailControler extends Controller
         $data1['time'] = date("H:i:s");
         $data1['type'] = 2;
         $data1['username'] = Auth::user()->name;
+        $data1['is_official'] = CommonHelper::getOfficialValue();
         DB::table('goods_receipt_note')->where('id', $grn_id)->update($data1);
 
         DB::table('grn_data')->where('master_id', '=', $grn_id)->delete();
@@ -2793,6 +2798,7 @@ class PurchaseAddDetailControler extends Controller
             $data2['date'] = date("Y-m-d");
             $data2['time'] = date("H:i:s");
             $data2['username'] = Auth::user()->name;
+            $data2['is_official'] = CommonHelper::getOfficialValue();
             $data2['region'] = $region;
             DB::table('grn_data')->insert($data2);
 
@@ -3583,10 +3589,10 @@ class PurchaseAddDetailControler extends Controller
                 'status' => 1,
                 'warehouse_id' => $warehouseId,
                 'description' => $itemDescription,
-                'username' => Auth::user()->username,
-                'created_date' => date('Y-m-d'),
+                'username' => Auth::user()->name,
                 'created_date' => date('Y-m-d'),
                 'opening' => 0,
+                'is_official' => CommonHelper::getOfficialValue(),
             );
 
 

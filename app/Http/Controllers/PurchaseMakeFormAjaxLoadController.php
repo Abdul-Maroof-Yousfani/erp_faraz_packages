@@ -758,7 +758,7 @@ function addDirectgrn()
 
         CommonHelper::companyDatabaseConnection($m);
 
-        $purchaseRequestDetail = PurchaseRequest::where('status','=','1')->where('purchase_request_no','=',$prNo)->first();
+        $purchaseRequestDetail = PurchaseRequest::whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status','=','1')->where('purchase_request_no','=',$prNo)->first();
         $purchaseRequestDataDetail = PurchaseRequestData::where('status','=','1')->where('purchase_request_no','=',$prNo)->get();
         CommonHelper::reconnectMasterDatabase();
         $po_type=$purchaseRequestDetail->po_type;
@@ -776,7 +776,7 @@ function addDirectgrn()
 
         CommonHelper::companyDatabaseConnection($m);
 
-        $purchaseRequestDetail = PurchaseRequest::where('status','=','1')->where('purchase_request_no','=',$prNo)->first();
+        $purchaseRequestDetail = PurchaseRequest::whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status','=','1')->where('purchase_request_no','=',$prNo)->first();
         $purchaseRequestDataDetail = PurchaseRequestData::where('status','=','1')->where('purchase_request_no','=',$prNo)->get();
         if ($purchaseRequestDetail) { 
             $prDate = $purchaseRequestDetail->purchase_request_date;
@@ -903,6 +903,7 @@ function addDirectgrn()
         CommonHelper::companyDatabaseConnection($m);
 
         $DataMaster = DB::connection('mysql2')->table('goods_receipt_note')
+            ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
             ->where('status', 1)
             ->where('id', $GrnId)
             ->first();
@@ -967,6 +968,7 @@ function addDirectgrn()
         echo '<option value="">Select Purchase Invoice</option>';
 
         $purchaseInvoicesQuery = DB::connection('mysql2')->table('new_purchase_voucher as npv')
+            ->whereIn('npv.is_official', CommonHelper::getOfficialScopeArray())
             ->where('npv.status', 1)
             ->where('npv.pv_status', 2)
             ->where('npv.supplier', $id);
@@ -1055,6 +1057,7 @@ function addDirectgrn()
         CommonHelper::companyDatabaseConnection($m);
 
         $DataMaster = DB::connection('mysql2')->table('new_purchase_voucher')
+            ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
             ->where('status', 1)
             ->where('id', $InvoiceId)
             ->first();

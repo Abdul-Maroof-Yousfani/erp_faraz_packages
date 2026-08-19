@@ -6,7 +6,7 @@ $id = $_GET['id'];
 $m = $_GET['m'];
 $currentDate = date('Y-m-d');
 CommonHelper::companyDatabaseConnection($m);
-$goodsReceiptNoteDetail = DB::table('goods_receipt_note')->where('grn_no','=',$id)->get();
+$goodsReceiptNoteDetail = DB::table('goods_receipt_note')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('grn_no','=',$id)->get();
 $grnDataDetailSimple = DB::table('grn_data')->where('grn_no', '=', $id)->get();
 CommonHelper::reconnectMasterDatabase();
 foreach ($goodsReceiptNoteDetail as $row) {

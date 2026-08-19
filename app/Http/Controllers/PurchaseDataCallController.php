@@ -1923,7 +1923,8 @@ echo "aa"; die;
 
         $purchase_voucher=new NewPurchaseVoucher();
         $purchase_voucher=$purchase_voucher->SetConnection('mysql2');
-        $purchase_voucher=$purchase_voucher->where('status',1)
+        $purchase_voucher=$purchase_voucher->whereIn('is_official', CommonHelper::getOfficialScopeArray())
+        ->where('status',1)
         ->whereBetween('pv_date', [$fromDate, $to])
         ->when($SupplierId!='all',function ($query) use ($SupplierId){
             $query->where('supplier',$SupplierId);
@@ -2264,6 +2265,7 @@ echo "aa"; die;
                     $stock['status']=1;
                     $stock['created_date']=date('Y-m-d');
                     $stock['username']=Auth::user()->name;
+                    $stock['is_official']=CommonHelper::getOfficialValue();
                     DB::Connection('mysql2')->table('stock')->insert($stock);
                 }
             endforeach;
@@ -2296,6 +2298,7 @@ echo "aa"; die;
                 'status'=>1,
                 'pv_status'=>2,
                 'date'=>date('Y-m-d'),
+                'is_official'=>CommonHelper::getOfficialValue(),
             );
 
             $master_id=DB::Connection('mysql2')->table('new_purchase_voucher')->insertGetId($data1);
@@ -2348,7 +2351,8 @@ echo "aa"; die;
                         'pv_status'=>2,
                         'username'=>Auth::user()->name,
                         'date'=>date('Y-m-d'),
-                        'additional_exp'=>0
+                        'additional_exp'=>0,
+                        'is_official'=>CommonHelper::getOfficialValue(),
                     );
                     DB::Connection('mysql2')->table('new_purchase_voucher_data')->insertGetId($data2);
                 }
@@ -3523,6 +3527,7 @@ echo "aa"; die;
                 $stock['status']=$status;
                 $stock['created_date']=date('Y-m-d');
                 $stock['username']=Auth::user()->name;
+                $stock['is_official']=CommonHelper::getOfficialValue();
                 DB::Connection('mysql2')->table('stock')->insert($stock);
 
                 $po_data_id = $row->po_data_id;
@@ -3881,6 +3886,7 @@ echo "aa"; die;
                 ->leftJoin(env('DB_DATABASE') . '.uom as u', 'si.uom', '=', 'u.id')
                 ->where('a.status', 1)
                 ->whereIn('a.master_id', $sourceIds)
+                ->whereIn('sti.is_official', CommonHelper::getOfficialScopeArray())
                 ->select(
                     'a.master_id',
                     'a.master_id as source_id',
@@ -3908,6 +3914,7 @@ echo "aa"; die;
             ->leftJoin(env('DB_DATABASE') . '.uom as u', 'si.uom', '=', 'u.id')
             ->where('a.status', 1)
             ->whereIn('a.master_id', $sourceIds)
+            ->whereIn('dn.is_official', CommonHelper::getOfficialScopeArray())
             ->select(
                 'a.master_id',
                 'a.master_id as source_id',
@@ -4115,6 +4122,7 @@ echo "aa"; die;
             ->table('sales_tax_invoice as sti')
             ->leftJoin('customers as c', 'c.id', '=', 'sti.buyers_id')
             ->where('sti.status', 1)
+            ->whereIn('sti.is_official', CommonHelper::getOfficialScopeArray())
             ->where(function ($query) {
                 $query->whereNull('sti.so_no')
                     ->orWhere('sti.so_no', '')
@@ -4135,6 +4143,7 @@ echo "aa"; die;
             ->table('delivery_note as dn')
             ->leftJoin('customers as c', 'c.id', '=', 'dn.buyers_id')
             ->where('dn.status', 1)
+            ->whereIn('dn.is_official', CommonHelper::getOfficialScopeArray())
             ->select(
             'dn.id',
             'dn.gd_no',
@@ -4402,6 +4411,7 @@ echo "aa"; die;
 
         $query = DB::connection('mysql2')
             ->table('gate_pass as gp')
+            ->whereIn('gp.is_official', CommonHelper::getOfficialScopeArray())
             ->where('gp.company_id', $m)
             ->where('gp.status', 1)
             ->where('gp.gate_pass_type', 3)
@@ -4445,6 +4455,7 @@ echo "aa"; die;
 
         $query = DB::connection('mysql2')
             ->table('gate_pass as gp')
+            ->whereIn('gp.is_official', CommonHelper::getOfficialScopeArray())
             ->where('gp.company_id', $m)
             ->where('gp.status', 1)
             ->where('gp.gate_pass_type', 3)
@@ -4640,6 +4651,7 @@ echo "aa"; die;
             ->table('sales_tax_invoice as sti')
             ->leftJoin('customers as c', 'c.id', '=', 'sti.buyers_id')
             ->where('sti.status', 1)
+            ->whereIn('sti.is_official', CommonHelper::getOfficialScopeArray())
             ->where(function ($query) {
                 $query->whereNull('sti.so_no')
                     ->orWhere('sti.so_no', '')
@@ -4653,6 +4665,7 @@ echo "aa"; die;
             ->table('delivery_note as dn')
             ->leftJoin('customers as c', 'c.id', '=', 'dn.buyers_id')
             ->where('dn.status', 1)
+            ->whereIn('dn.is_official', CommonHelper::getOfficialScopeArray())
             ->select('dn.id', 'dn.gd_no', 'dn.gd_date', 'dn.buyers_id', 'dn.gate_pass_status', 'c.name as customer_name')
             ->orderBy('dn.id', 'DESC')
             ->get();
@@ -4765,6 +4778,7 @@ echo "aa"; die;
 
         $gatePassQuery = DB::connection('mysql2')
             ->table('gate_pass as gp')
+            ->whereIn('gp.is_official', CommonHelper::getOfficialScopeArray())
             ->where('gp.company_id', $m)
             ->where('gp.status', 1)
             ->select(
@@ -4804,6 +4818,7 @@ echo "aa"; die;
 
         $summaryQuery = DB::connection('mysql2')
             ->table('gate_pass as gp')
+            ->whereIn('gp.is_official', CommonHelper::getOfficialScopeArray())
             ->where('gp.company_id', $m)
             ->where('gp.status', 1);
 
@@ -4990,6 +5005,7 @@ echo "aa"; die;
                 $sourceIdsText = implode(',', $sourceIds);
                 $sources = DB::connection('mysql2')->table('sales_tax_invoice')
                     ->whereIn('id', $sourceIds)
+                    ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                     ->get(['id', 'gi_no', 'gate_pass_status']);
 
                 if ($sources->count() !== count($sourceIds)) {
@@ -5015,6 +5031,7 @@ echo "aa"; die;
               $sourceIdsText = implode(',', $sourceIds);
                 $sources = DB::connection('mysql2')->table('delivery_note')
                     ->whereIn('id', $sourceIds)
+                    ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                     ->get(['id', 'gd_no', 'gate_pass_status']);
 
                 if ($sources->count() !== count($sourceIds)) {
@@ -5215,6 +5232,7 @@ echo "aa"; die;
                 $sourceIdsText = implode(',', $sourceIds);
                 $sources = DB::connection('mysql2')->table('sales_tax_invoice')
                     ->whereIn('id', $sourceIds)
+                    ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                     ->get(['id', 'gi_no', 'gate_pass_status']);
 
                 if ($sources->count() !== count($sourceIds)) {
@@ -5239,6 +5257,7 @@ echo "aa"; die;
                   $sourceIdsText = implode(',', $sourceIds);
                 $sources = DB::connection('mysql2')->table('delivery_note')
                     ->whereIn('id', $sourceIds)
+                    ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                     ->get(['id', 'gd_no', 'gate_pass_status']);
 
                 if ($sources->count() !== count($sourceIds)) {
@@ -5303,6 +5322,7 @@ echo "aa"; die;
                 'status' => 1,
                 'date' => date('Y-m-d'),
                 'time' => date('H:i:s'),
+                'is_official' => CommonHelper::getOfficialValue(),
             ];
 
             if ($this->gatePassHasColumn('source_ids')) {
@@ -5333,6 +5353,7 @@ echo "aa"; die;
                     'status' => 1,
                     'date' => date('Y-m-d'),
                     'time' => date('H:i:s'),
+                    'is_official' => CommonHelper::getOfficialValue(),
                 ];
 
                 $uomName = trim((string) ($itemRow->uom_name ?? ''));

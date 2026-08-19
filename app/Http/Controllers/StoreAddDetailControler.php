@@ -442,6 +442,7 @@ class StoreAddDetailControler extends Controller
             $data1['purchase_request_status'] = 1;
             $data1['s_order_no'] = $s_order_no;
             $data1['p_type'] = Input::get('p_type_id');
+            $data1['is_official'] = CommonHelper::getOfficialValue();
             
             // Add no_of_days if payment term is Credit (3)
             if($terms_of_paym == '3') {
@@ -490,6 +491,7 @@ class StoreAddDetailControler extends Controller
                     'discount_percent' => $discount_percent,
                     'discount_amount' => $discount_amount,
                     'net_amount' => $net_amount,
+                    'is_official' => CommonHelper::getOfficialValue(),
                 ];
                 $TotAmount+=$net_amount;
 
@@ -543,6 +545,7 @@ class StoreAddDetailControler extends Controller
         $data1['date'] = date("Y-m-d");
         $data1['time'] = date("H:i:s");
         $data1['purchase_request_status'] = 1;
+        $data1['is_official'] = CommonHelper::getOfficialValue();
 
         DB::table('purchase_request')->insert($data1);
 
@@ -574,6 +577,7 @@ class StoreAddDetailControler extends Controller
             $data2['date'] = date("Y-m-d");
             $data2['time'] = date("H:i:s");
             $data2['purchase_request_status'] = 1;
+            $data2['is_official'] = CommonHelper::getOfficialValue();
 
             DB::table('purchase_request_data')->insert($data2);
         }
@@ -771,6 +775,7 @@ class StoreAddDetailControler extends Controller
             $purchase_request->date =date('Y-m-d');
             $purchase_request->username =Auth::user()->name;
             $purchase_request->type =2;
+            $purchase_request->is_official = CommonHelper::getOfficialValue();
             $purchase_request->save();
 
 
@@ -817,6 +822,7 @@ class StoreAddDetailControler extends Controller
                 $purch_request_data->status=1;
                 $purch_request_data->date=date('Y-m-d');
                 $purch_request_data->username=Auth::user()->name;
+                $purch_request_data->is_official = CommonHelper::getOfficialValue();
                 $doNo = trim((string) ($request->input('do_no')[$key] ?? ''));
                 $godownNo = trim((string) ($request->input('godown_no')[$key] ?? ''));
                 $purch_request_data->do_no = $doNo !== '' ? $doNo : null;
