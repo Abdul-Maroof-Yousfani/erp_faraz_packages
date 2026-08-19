@@ -23,9 +23,10 @@ $as_on=Request::get('as_on');
 if($_GET['CustomerId'] == 'all')
 {$Clause = '';}
 else{$Clause = 'and b.buyers_id="'.$_GET['CustomerId'].'"';}
+$scopeStr = implode(',', CommonHelper::getOfficialScopeArray());
         $Cust = DB::Connection('mysql2')->select('select a.id,a.name from customers a
                                           INNER JOIN sales_tax_invoice b ON b.buyers_id = a.id
-                                          WHERE b.status = 1
+                                          WHERE b.status = 1 AND b.is_official IN ('.$scopeStr.')
                                           '.$Clause.'
                                           and (b.gi_date between "'.$from.'" and "'.$as_on.'" or b.so_type=1)
                                           GROUP BY b.buyers_id Order by a.name');

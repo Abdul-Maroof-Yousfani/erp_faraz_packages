@@ -426,7 +426,7 @@ class SalesController extends Controller
 
         $sales_order = new Sales_Order();
         $sales_order = $sales_order->SetConnection('mysql2');
-        $sales_order = $sales_order->where('id', $id)->first();
+        $sales_order = $sales_order->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('id', $id)->first();
         $sales_order_id = $id;
 
         //        $sales_order_data=new Sales_Order_Data();
@@ -489,7 +489,7 @@ class SalesController extends Controller
         $currentMonthEndDate = date('Y-m-t');
         $sale_order = new Sales_Order();
         $sale_order = $sale_order->SetConnection('mysql2');
-        $sale_order = $sale_order->where('status', 1)->whereBetween('so_date', [$currentMonthStartDate, $currentMonthEndDate])->orderBy('id', 'DESC')->get();
+        $sale_order = $sale_order->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)->whereBetween('so_date', [$currentMonthStartDate, $currentMonthEndDate])->orderBy('id', 'DESC')->get();
         $Customer = DB::Connection('mysql2')->table('customers')->where('status', 1)->get();
         return view('Sales.viewSalesOrderList', compact('sale_order', 'Customer'));
     }
@@ -498,7 +498,7 @@ class SalesController extends Controller
         $id = Input::get('id');
         $sales_order = new Sales_Order();
         $sales_order = $sales_order->SetConnection('mysql2');
-        $sales_order = $sales_order->where('id', $id)->first();
+        $sales_order = $sales_order->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('id', $id)->first();
 
 
         $sales_order_data = new Sales_Order_Data();
@@ -515,7 +515,7 @@ class SalesController extends Controller
         $currentMonthStartDate = date('Y-m-01');
         $currentMonthEndDate = date('Y-m-t');
 
-        $sale_order = $this->applyPendingDeliveryNoteScope(Sales_Order::where('status', 1))
+        $sale_order = $this->applyPendingDeliveryNoteScope(Sales_Order::whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1))
             ->whereIn('so_status', [1, 2, 3, 4])
             ->whereBetween('so_date', [$currentMonthStartDate, $currentMonthEndDate])
             ->get();
@@ -558,7 +558,7 @@ class SalesController extends Controller
 
         $delivery_note = new DeliveryNote();
         $delivery_note = $delivery_note->SetConnection('mysql2');
-        $delivery_note = $delivery_note->where('id', $id)->where('status', 1)->first();
+        $delivery_note = $delivery_note->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('id', $id)->where('status', 1)->first();
 
         // $delivery_note_data = DB::Connection('mysql2')->select('select a.id,a.master_id,a.so_data_id,a.qty,a.rate,a.amount,a.bundles_id,a.warehouse_id,a.batch_code,
         // a.item_id,a.groupby, a.tax, a.tax_amount, b.product_name,b.rate as bundle_rate,b.amount as bundle_amount
@@ -626,7 +626,7 @@ class SalesController extends Controller
     {
         $id = Input::get('id');
         $sales_order = $this->applyPendingDeliveryNoteScope(
-            DB::connection('mysql2')->table('sales_order')->where('id', $id)->where('status', 1)
+            DB::connection('mysql2')->table('sales_order')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('id', $id)->where('status', 1)
         )->first();
 
         $sale_order_data = DB::connection('mysql2')
@@ -982,7 +982,7 @@ class SalesController extends Controller
 
         $CreditNote = new CreditNote();
         $CreditNote = $CreditNote->SetConnection('mysql2');
-        $CreditNote = $CreditNote->where('id', $id)->where('status', 1)->first();
+        $CreditNote = $CreditNote->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('id', $id)->where('status', 1)->first();
 
         $CreditNoteData = new CreditNoteData();
         $CreditNoteData = $CreditNoteData->SetConnection('mysql2');
@@ -1009,7 +1009,7 @@ class SalesController extends Controller
         $currentMonthEndDate = date('Y-m-t');
         $delivery_note = new DeliveryNote();
         $delivery_note = $delivery_note->SetConnection('mysql2');
-        $delivery_note = $delivery_note->where('status', 1)->whereBetween('gd_date', [$currentMonthStartDate, $currentMonthEndDate])->orderBy('id', 'DESC')->get();
+        $delivery_note = $delivery_note->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)->whereBetween('gd_date', [$currentMonthStartDate, $currentMonthEndDate])->orderBy('id', 'DESC')->get();
         $Customer = DB::Connection('mysql2')->table('customers')->where('status', 1)->get();
 
         return view('Sales.viewDeliveryNoteList', compact('delivery_note', 'Customer'));
@@ -1021,7 +1021,7 @@ class SalesController extends Controller
         $currentMonthEndDate = date('Y-m-t');
         $delivery_note = new DeliveryNote();
         $delivery_note = $delivery_note->SetConnection('mysql2');
-        $delivery_note = $delivery_note->where('status', 1)
+        $delivery_note = $delivery_note->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)
             ->whereBetween('gd_date', [$currentMonthStartDate, $currentMonthEndDate])
             ->orderBy('id', 'DESC')->get();
         $Customer = DB::Connection('mysql2')->table('customers')->where('status', 1)->get();
@@ -1056,7 +1056,7 @@ class SalesController extends Controller
     {
         $delivery_note = new DeliveryNote();
         $delivery_note = $delivery_note->SetConnection('mysql2');
-        $delivery_note = $delivery_note->where('status', 1)->get();
+        $delivery_note = $delivery_note->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)->get();
 
         return view('Sales.viewDeliveryNoteListOther', compact('delivery_note'));
     }
@@ -1066,7 +1066,7 @@ class SalesController extends Controller
     {
         $delivery_note = new DeliveryNote();
         $delivery_note = $delivery_note->SetConnection('mysql2');
-        $delivery_note = $delivery_note->where('id', $id)->first();
+        $delivery_note = $delivery_note->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('id', $id)->first();
 
         $delivery_note_data_other = DB::connection('mysql2')
             ->table('delivery_note_data as dnd')
@@ -1191,7 +1191,7 @@ class SalesController extends Controller
     {
         $delivery_note = new DeliveryNote();
         $delivery_note = $delivery_note->SetConnection('mysql2');
-        $delivery_note = $delivery_note->where('status', 1)->where('sales_tax_invoice', 0)->orderBy('id', 'DESC')->get();
+        $delivery_note = $delivery_note->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)->where('sales_tax_invoice', 0)->orderBy('id', 'DESC')->get();
         $Customers = DB::Connection('mysql2')->table('customers')->where('status', 1)->get();
         return view('Sales.CreateSalesTaxInvoiceList', compact('delivery_note', 'Customers'));
     }
@@ -1460,7 +1460,7 @@ class SalesController extends Controller
         // $id = Input::get('sales_order_id');
         $sales_tax_invoice = new SalesTaxInvoice();
         $sales_tax_invoice = $sales_tax_invoice->SetConnection('mysql2');
-        $sales_tax_invoice = $sales_tax_invoice->where('id', $id)->first();
+        $sales_tax_invoice = $sales_tax_invoice->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('id', $id)->first();
 
         $sales_tax_invoice_data = new SalesTaxInvoiceData();
         $sales_tax_invoice_data = $sales_tax_invoice_data->SetConnection('mysql2');
@@ -1477,7 +1477,7 @@ class SalesController extends Controller
 
         $sales_tax_invoice = new SalesTaxInvoice();
         $sales_tax_invoice = $sales_tax_invoice->SetConnection('mysql2');
-        $sales_tax_invoice = $sales_tax_invoice->where('status', 1)
+        $sales_tax_invoice = $sales_tax_invoice->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)
             // ->whereBetween('gi_date',[$currentMonthStartDate,$currentMonthEndDate])
             ->get();
         $Customer = DB::Connection('mysql2')->table('customers')->where('status', 1)->get();
@@ -1893,7 +1893,7 @@ class SalesController extends Controller
 
         $credit_note = new CreditNote();
         $credit_note = $credit_note->SetConnection('mysql2');
-        $credit_note = $credit_note->where('status', 1)->whereBetween('cr_date', [$currentMonthStartDate, $currentMonthEndDate])->orderBy('id', 'DESC')->get();
+        $credit_note = $credit_note->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)->whereBetween('cr_date', [$currentMonthStartDate, $currentMonthEndDate])->orderBy('id', 'DESC')->get();
         return view('Sales.viewCustomerCreditNoteList', compact('credit_note'));
     }
 
@@ -2102,6 +2102,7 @@ class SalesController extends Controller
                             $data3['v_date'] = '2023-07-01';
                             $data3['time'] = date("H:i:s");
                             $data3['action'] = 'create';
+                            $data3['is_official'] = CommonHelper::getOfficialValue();
                             DB::table('transactions')->insert($data3);
 
                             $contact_person_more = Input::get('contact_person_more');
@@ -2454,11 +2455,12 @@ class SalesController extends Controller
     public function CreateSalesTaxInvoiceBySO(Request $request)
     {
         $so_no = $request->so_no;
-        $so_no = Sales_Order::where('id', $so_no)->first()->so_no;
+        $so_no = Sales_Order::whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('id', $so_no)->first()->so_no;
         $delivery_note = new DeliveryNote();
         $delivery_note = $delivery_note->SetConnection('mysql2');
         $delivery_note = $delivery_note
             // ->join('dispatches as dp', 'delivery_note.id', 'dp.dc_id')
+            ->whereIn('delivery_note.is_official', CommonHelper::getOfficialScopeArray())
             ->select('delivery_note.*')
             ->where('delivery_note.status', 1)
             ->where('delivery_note.sales_tax_invoice', 0)
@@ -2652,7 +2654,7 @@ class SalesController extends Controller
 
     public function editDirectSalesTaxInvoice($id)
     {
-        $sale_tax_invoice = DB::Connection('mysql2')->table('sales_tax_invoice')->where('id', $id)->first();
+        $sale_tax_invoice = DB::Connection('mysql2')->table('sales_tax_invoice')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('id', $id)->first();
 
         if ($sale_tax_invoice->si_status == 3):
             dd('Approved Voucher Can not be Edit');

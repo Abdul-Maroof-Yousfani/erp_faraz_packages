@@ -123,17 +123,20 @@ class SalesDataCallController extends Controller
         $ItemId = $request->subItems;
         $CustomerId = $request->CustomerId;
 
+        $scopeStr = implode(',', CommonHelper::getOfficialScopeArray());
         $SalesTaxInvoice = DB::Connection('mysql2')->select('select a.id,a.gi_no,a.gi_date,b.amount from sales_tax_invoice a
                                           INNER JOIN sales_tax_invoice_data b ON b.master_id = a.id
                                           where a.buyers_id = '.$CustomerId.'
                                           and b.item_id = '.$ItemId.'
                                           and a.status = 1
+                                          and a.is_official IN ('.$scopeStr.')
                                           order by b.id desc limit 0,5');
         $SalesReturn = DB::Connection('mysql2')->select('select a.id,a.cr_no,a.cr_date,b.amount from credit_note a
                                           INNER JOIN credit_note_data b ON b.master_id = a.id
                                           where a.buyer_id = '.$CustomerId.'
                                           and b.item = '.$ItemId.'
                                           and a.status = 1
+                                          and a.is_official IN ('.$scopeStr.')
                                           order by b.id desc limit 0,5');
         $AccId = DB::Connection('mysql2')->table('customers')->where('id',$CustomerId)->select('acc_id')->first();
         $ReceiptVoucher = DB::Connection('mysql2')->select('select a.id,a.rv_no,a.rv_date,b.amount from new_rvs a
@@ -141,6 +144,7 @@ class SalesDataCallController extends Controller
                                           where b.acc_id = '.$AccId->acc_id.'
                                           and a.sales = 1
                                           and a.status = 1
+                                          and a.is_official IN ('.$scopeStr.')
                                           order by b.id desc limit 0,5');
 
         return view('Sales.AjaxPages.getTopFiveSalesReport',compact('SalesTaxInvoice','SalesReturn','ReceiptVoucher'));
@@ -230,7 +234,7 @@ class SalesDataCallController extends Controller
     public function getSobyCustomer(Request $request)
     {
         $customer_id = $request->customer_id;
-        $Data = DB::Connection('mysql2')->table('sales_order')->where('status',1)->where('buyers_id',$customer_id)->get();
+        $Data = DB::Connection('mysql2')->table('sales_order')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->where('buyers_id',$customer_id)->get();
         echo '<option value="">Select</option>';
         foreach($Data as $value):
             echo "<option value='$value->id'> $value->so_no </option>";
@@ -1124,6 +1128,7 @@ class SalesDataCallController extends Controller
 
             $dataa = DB::Connection('mysql2')->table('delivery_note as a')
                 ->leftJoin('sales_order as b', 'a.master_id', '=', 'b.id')
+                ->whereIn('a.is_official', CommonHelper::getOfficialScopeArray())
                 ->where('a.status',1)
                 ->where('b.status',1)
                 ->where(function ($query) use ($so) {
@@ -1138,7 +1143,7 @@ class SalesDataCallController extends Controller
 
             $dataa=new SalesTaxInvoice();
             $dataa=$dataa->SetConnection('mysql2');
-            $dataa=$dataa->where('status',1)->where(function ($query) use ($so) {
+            $dataa=$dataa->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->where(function ($query) use ($so) {
                 $query->where('so_no', $so)
                       ->orWhere('gi_no', $so);
             })->select('id','gi_no','gi_date','buyers_id')->get();
@@ -1163,6 +1168,7 @@ class SalesDataCallController extends Controller
         if (empty($type) || $type == 1) {
             $deliveryNotes = DB::Connection('mysql2')->table('delivery_note as a')
                 ->leftJoin('sales_order as b', 'a.master_id', '=', 'b.id')
+                ->whereIn('a.is_official', CommonHelper::getOfficialScopeArray())
                 ->where('a.status', 1)
                 ->where('b.status', 1)
                 ->where('b.buyers_id', $customerId)
@@ -1176,6 +1182,7 @@ class SalesDataCallController extends Controller
 
         if (empty($type) || $type == 2) {
             $salesTaxInvoices = DB::Connection('mysql2')->table('sales_tax_invoice')
+                ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                 ->where('status', 1)
                 ->where('buyers_id', $customerId)
                 ->select('gi_no as voucher_no', 'gi_date as voucher_date', DB::raw('2 as type'))
@@ -2328,11 +2335,11 @@ class SalesDataCallController extends Controller
         {
             if($radioValue == 1 && $SearchText !="")
             {
-                $delivery_note = DB::Connection('mysql2')->table('delivery_note')->where('status',1)->where('so_no','like', '%' . $SearchText . '%')->orderBy('id', 'DESC')->get();
+                $delivery_note = DB::Connection('mysql2')->table('delivery_note')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->where('so_no','like', '%' . $SearchText . '%')->orderBy('id', 'DESC')->get();
             }
             elseif($radioValue == 2 && $SearchText !="")
             {
-                $delivery_note = DB::Connection('mysql2')->table('delivery_note')->where('status',1)->where('gd_no','like', '%' . $SearchText . '%')->orderBy('id', 'DESC')->get();
+                $delivery_note = DB::Connection('mysql2')->table('delivery_note')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->where('gd_no','like', '%' . $SearchText . '%')->orderBy('id', 'DESC')->get();
             }
             else
             {
@@ -2343,7 +2350,7 @@ class SalesDataCallController extends Controller
         {
             if($BuyerId !="")
             {
-                $delivery_note = DB::Connection('mysql2')->table('delivery_note')->where('status',1)->where('buyers_id',$BuyerId)->orderBy('id', 'DESC')->get();
+                $delivery_note = DB::Connection('mysql2')->table('delivery_note')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->where('buyers_id',$BuyerId)->orderBy('id', 'DESC')->get();
             }
             else
             {
@@ -2353,7 +2360,7 @@ class SalesDataCallController extends Controller
         else
         {
 
-            $delivery_note = DB::Connection('mysql2')->table('delivery_note')->where('status',1)->whereBetween('gd_date',[$fromDate,$to])->orderBy('id', 'DESC')->get();
+            $delivery_note = DB::Connection('mysql2')->table('delivery_note')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->whereBetween('gd_date',[$fromDate,$to])->orderBy('id', 'DESC')->get();
 
         }
 
@@ -2376,11 +2383,11 @@ class SalesDataCallController extends Controller
         {
             if($radioValue == 1 && $SearchText !="")
             {
-                $delivery_note = DB::Connection('mysql2')->table('delivery_note')->where('status',1)->where('so_no','like', '%' . $SearchText . '%')->get();
+                $delivery_note = DB::Connection('mysql2')->table('delivery_note')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->where('so_no','like', '%' . $SearchText . '%')->get();
             }
             elseif($radioValue == 2 && $SearchText !="")
             {
-                $delivery_note = DB::Connection('mysql2')->table('delivery_note')->where('status',1)->where('gd_no','like', '%' . $SearchText . '%')->get();
+                $delivery_note = DB::Connection('mysql2')->table('delivery_note')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->where('gd_no','like', '%' . $SearchText . '%')->get();
             }
             else
             {
@@ -2391,7 +2398,7 @@ class SalesDataCallController extends Controller
         {
             if($BuyerId !="")
             {
-                $delivery_note = DB::Connection('mysql2')->table('delivery_note')->where('status',1)->where('buyers_id',$BuyerId)->get();
+                $delivery_note = DB::Connection('mysql2')->table('delivery_note')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->where('buyers_id',$BuyerId)->get();
             }
             else
             {
@@ -2401,7 +2408,7 @@ class SalesDataCallController extends Controller
         else
         {
 
-            $delivery_note = DB::Connection('mysql2')->table('delivery_note')->where('status',1)->whereBetween('gd_date',[$fromDate,$to])->get();
+            $delivery_note = DB::Connection('mysql2')->table('delivery_note')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->whereBetween('gd_date',[$fromDate,$to])->get();
 
         }
 
@@ -2423,11 +2430,11 @@ class SalesDataCallController extends Controller
         {
             if($radioValue == 1 && $SearchText !="")
             {
-                $sales_tax_invoice  = DB::Connection('mysql2')->table('sales_tax_invoice')->where('status',1)->where('so_no','like', '%' . $SearchText . '%')->get();
+                $sales_tax_invoice  = DB::Connection('mysql2')->table('sales_tax_invoice')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->where('so_no','like', '%' . $SearchText . '%')->get();
             }
             elseif($radioValue == 2 && $SearchText !="")
             {
-                $sales_tax_invoice= DB::Connection('mysql2')->table('sales_tax_invoice')->where('status',1)->where('gi_no','like', '%' . $SearchText . '%')->get();
+                $sales_tax_invoice= DB::Connection('mysql2')->table('sales_tax_invoice')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->where('gi_no','like', '%' . $SearchText . '%')->get();
             }
             else
             {
@@ -2438,7 +2445,7 @@ class SalesDataCallController extends Controller
         {
             if($BuyerId !="")
             {
-                $sales_tax_invoice = DB::Connection('mysql2')->table('sales_tax_invoice')->where('status',1)->where('buyers_id',$BuyerId)->get();
+                $sales_tax_invoice = DB::Connection('mysql2')->table('sales_tax_invoice')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->where('buyers_id',$BuyerId)->get();
             }
             else
             {
@@ -2450,6 +2457,7 @@ class SalesDataCallController extends Controller
             if($request->TaxFilterType == 1)
             {
                 $sales_tax_invoice = DB::Connection('mysql2')->table('sales_tax_invoice')
+                    ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                     ->where('status',1)
                     ->whereRaw('(IFNULL(sales_tax,0) + IFNULL(sales_tax_further,0) + IFNULL(advance_tax_amount,0)) > 0')
                     ->get();
@@ -2457,6 +2465,7 @@ class SalesDataCallController extends Controller
             elseif($request->TaxFilterType == 2)
             {
                 $sales_tax_invoice = DB::Connection('mysql2')->table('sales_tax_invoice')
+                    ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                     ->where('status',1)
                     ->whereRaw('(IFNULL(sales_tax,0) + IFNULL(sales_tax_further,0) + IFNULL(advance_tax_amount,0)) = 0')
                     ->get();
@@ -2468,7 +2477,7 @@ class SalesDataCallController extends Controller
         }
         else
         {
-            $sales_tax_invoice = DB::Connection('mysql2')->table('sales_tax_invoice')->where('status',1)->whereBetween('gi_date',[$fromDate,$to])->get();
+            $sales_tax_invoice = DB::Connection('mysql2')->table('sales_tax_invoice')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->whereBetween('gi_date',[$fromDate,$to])->get();
         }
 
         return view('Sales.AjaxPages.getSalesTaxInvoiceeFilterWise',compact('sales_tax_invoice','m','radio'));
@@ -2492,7 +2501,7 @@ class SalesDataCallController extends Controller
             {
                 $sale_order=new Sales_Order();
                 $sale_order=$sale_order->SetConnection('mysql2');
-                $sale_order=$sale_order->where('status',1)->where('so_no','like', '%' . $SoNo . '%')->get();
+                $sale_order=$sale_order->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->where('so_no','like', '%' . $SoNo . '%')->get();
             }
             else
             {
@@ -2506,7 +2515,7 @@ class SalesDataCallController extends Controller
             {
                 $sale_order=new Sales_Order();
                 $sale_order=$sale_order->SetConnection('mysql2');
-                $sale_order=$sale_order->where('status',1)->where('buyers_id',$BuyerId)->get();
+                $sale_order=$sale_order->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->where('buyers_id',$BuyerId)->get();
             }
             else
             {
@@ -2518,7 +2527,7 @@ class SalesDataCallController extends Controller
         {
             $sale_order=new Sales_Order();
             $sale_order=$sale_order->SetConnection('mysql2');
-            $sale_order=$sale_order->where('status',1)->whereBetween('so_date',[$FromDate,$ToDate])->orderBy('so_date','ASC')->get();
+            $sale_order=$sale_order->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->whereBetween('so_date',[$FromDate,$ToDate])->orderBy('so_date','ASC')->get();
         }
 
         return view('Sales.AjaxPages.getSalesOrderDateWise',compact('sale_order','m','radio'));
@@ -2538,7 +2547,7 @@ class SalesDataCallController extends Controller
                 $sale_order = new Sales_Order();
                 $sale_order = $sale_order->SetConnection('mysql2');
                 $sale_order = self::applyPendingDeliveryNoteScope(
-                    $sale_order->where('status', 1)->where('so_no', 'like', '%' . $SoNo . '%')
+                    $sale_order->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)->where('so_no', 'like', '%' . $SoNo . '%')
                 )->get();
             } else {
                 echo '<tr class="text-center"><td class="text-danger" colspan="11" style="font-size: 18px;"><strong>Please Enter So No</strong></td></tr>';
@@ -2549,7 +2558,7 @@ class SalesDataCallController extends Controller
                 $sale_order = new Sales_Order();
                 $sale_order = $sale_order->SetConnection('mysql2');
                 $sale_order = self::applyPendingDeliveryNoteScope(
-                    $sale_order->where('status', 1)->where('buyers_id', $BuyerId)
+                    $sale_order->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)->where('buyers_id', $BuyerId)
                 )->get();
             } else {
                 echo '<tr class="text-center"><td class="text-danger" colspan="11" style="font-size: 18px;"><strong>Please Select Buyer</strong></td></tr>';
@@ -2558,7 +2567,7 @@ class SalesDataCallController extends Controller
             $sale_order = new Sales_Order();
             $sale_order = $sale_order->SetConnection('mysql2');
             $sale_order = self::applyPendingDeliveryNoteScope(
-                $sale_order->where('status', 1)->whereBetween('so_date', [$FromDate, $ToDate])
+                $sale_order->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)->whereBetween('so_date', [$FromDate, $ToDate])
             )->orderBy('so_date', 'ASC')->get();
         }
 
@@ -2923,8 +2932,11 @@ class SalesDataCallController extends Controller
         $FromDate = $request->FromDate;
         $ToDate = $request->ToDate;
         $m = $request->m;
-        $SoData = DB::Connection('mysql2')->select('select a.sales_tax,a.buyers_id,a.so_date,b.* from sales_order a Inner join sales_order_data b on b.master_id = a.id
-        where a.status = 1
+        $scopeStr = implode(',', CommonHelper::getOfficialScopeArray());
+        $hasSalesTax = \Schema::connection('mysql2')->hasColumn('sales_order', 'sales_tax');
+        $salesTaxCol = $hasSalesTax ? 'a.sales_tax' : '0 as sales_tax';
+        $SoData = DB::Connection('mysql2')->select('select '.$salesTaxCol.',a.buyers_id,a.so_date,b.* from sales_order a Inner join sales_order_data b on b.master_id = a.id
+        where a.status = 1 and a.is_official IN ('.$scopeStr.')
         and a.so_date between "'.$FromDate.'" and "'.$ToDate.'"');
 
         return view('Sales.AjaxPages.getSoDetailDateWise',compact('SoData','m'));
@@ -2935,9 +2947,10 @@ class SalesDataCallController extends Controller
         $FromDate = $request->FromDate;
         $ToDate = $request->ToDate;
         $m = $request->m;
+        $scopeStr = implode(',', CommonHelper::getOfficialScopeArray());
         $DnData = DB::Connection('mysql2')->select('select sum(b.amount) net_amount,b.so_id,a.id dn_id,a.* from delivery_note a
                                                     INNER JOIN delivery_note_data b ON b.master_id = a.id
-                                                    WHERE a.status = 1
+                                                    WHERE a.status = 1 AND a.is_official IN ('.$scopeStr.')
                                                     and a.gd_date between "'.$FromDate.'" and "'.$ToDate.'"
                                                     GROUP BY a.id');
 
@@ -2952,7 +2965,7 @@ class SalesDataCallController extends Controller
 
         $credit_note=new CreditNote();
         $credit_note=$credit_note->SetConnection('mysql2');
-        $credit_note=$credit_note->where('status',1)->whereBetween('cr_date',[$FromDate,$ToDate])->get();
+        $credit_note=$credit_note->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status',1)->whereBetween('cr_date',[$FromDate,$ToDate])->get();
         return view('Sales.AjaxPages.getCustomerCreditNoteData',compact('credit_note','m'));
     }
 

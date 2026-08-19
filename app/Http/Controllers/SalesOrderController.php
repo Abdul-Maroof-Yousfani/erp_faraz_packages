@@ -312,7 +312,7 @@ class SalesOrderController extends Controller
      */
     public function edit($id)
     {
-        $sale_orders = DB::Connection('mysql2')->table('sales_order')->find($id);
+        $sale_orders = DB::Connection('mysql2')->table('sales_order')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('id', $id)->first();
 
         $sales_order_data = DB::Connection('mysql2')->table('sales_order_data')
             ->join('subitem', 'subitem.id', 'sales_order_data.item_id')
@@ -399,6 +399,7 @@ class SalesOrderController extends Controller
             $sales_order->cartage_amount = $request->cartage_amount;
             $sales_order->priority = $request->priority;
             $sales_order->buyers_id = $request->customer;
+            $sales_order->is_official = CommonHelper::getOfficialValue();
             $sales_order->save();
 
             // foreach ($request->sale_order_data_id as $key => $value) {
@@ -467,6 +468,7 @@ class SalesOrderController extends Controller
                 $sales_order_data->status = 1;
                 $sales_order_data->date = date('Y-m-d');
                 $sales_order_data->username = Auth::user()->name;
+                $sales_order_data->is_official = CommonHelper::getOfficialValue();
                 $sales_order_data->groupby = $count;
                 $sales_order_data->save();
                 $grand_amount += $request->total[$key];

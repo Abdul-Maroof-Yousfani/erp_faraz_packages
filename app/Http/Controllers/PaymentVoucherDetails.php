@@ -2634,8 +2634,8 @@ class PaymentVoucherDetails extends Controller
             $sales_order->sales_tax=$sales_tax;
             $sales_order->sales_tax_further=$sales_tax_further;
             $sales_order->sales_tax_further=$sales_tax_further;
-            $sales_order->p_type=$request->v_type;
             $sales_order->department=$request->department;
+            $sales_order->is_official=CommonHelper::getOfficialValue();
             $sales_order->save();
             $data=$request->item_id;
             $count=1;
@@ -2676,6 +2676,7 @@ class PaymentVoucherDetails extends Controller
                     $sales_order->status=1;
                     $sales_order->date=date('Y-m-d');
                     $sales_order->username=Auth::user()->name;
+                    $sales_order->is_official=CommonHelper::getOfficialValue();
                     $sales_order->groupby=$count;
                     $sales_order->save();
 

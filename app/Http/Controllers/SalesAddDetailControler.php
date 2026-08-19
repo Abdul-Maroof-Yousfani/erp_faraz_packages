@@ -228,7 +228,7 @@ class SalesAddDetailControler extends Controller
                                 'action' => 'create',
                                 'username' => Auth::user()->name . ' - Upload',
                                 'status' => 1,
-
+                                'is_official' => CommonHelper::getOfficialValue(),
                             );
                             if (!empty($checkOpeningBalance)) {
                                 DB::Connection('mysql2')->table('transactions')->where('opening_bal', '=', 1)->where('acc_id', '=', $checkCustomerAccount->acc_id)->update($insertData);
@@ -421,6 +421,7 @@ class SalesAddDetailControler extends Controller
         $data3['v_date'] = date("Y-m-d");
         $data3['time'] = date("H:i:s");
         $data3['action'] = 'create';
+        $data3['is_official'] = CommonHelper::getOfficialValue();
         DB::table('transactions')->insert($data3);
 
         CommonHelper::reconnectMasterDatabase();
@@ -555,6 +556,7 @@ class SalesAddDetailControler extends Controller
         $data3['v_date'] = '2023-07-01';
         $data3['time'] = date("H:i:s");
         $data3['action'] = 'create';
+        $data3['is_official'] = CommonHelper::getOfficialValue();
         DB::table('transactions')->insert($data3);
 
         if ($mark_as_supplier === 1) {
@@ -1260,6 +1262,7 @@ class SalesAddDetailControler extends Controller
             $sales_order->sales_tax = $sales_tax;
             $sales_order->sales_tax_further = $sales_tax_further;
             $sales_order->total_amount = $request->total_after_sales_tax;
+            $sales_order->is_official = CommonHelper::getOfficialValue();
             $sales_order->save();
             if ($master_id == ''):
                 $master_id = $sales_order->id;
@@ -1295,6 +1298,7 @@ class SalesAddDetailControler extends Controller
                 $sales_order->status = 1;
                 $sales_order->date = date('Y-m-d');
                 $sales_order->username = Auth::user()->name;
+                $sales_order->is_official = CommonHelper::getOfficialValue();
                 $sales_order->groupby = $count;
                 $sales_order->save();
                 $count++;
@@ -1376,6 +1380,7 @@ class SalesAddDetailControler extends Controller
 
             $sales_order['sales_tax'] = $sales_tax;
             $sales_order['sales_tax_further'] = $sales_tax_further;
+            $sales_order['is_official'] = CommonHelper::getOfficialValue();
 
             DB::table('sales_order')->where('id', '=', $EditId)->update($sales_order);
             DB::table('sales_order_data')->where('master_id', $EditId)->delete();
@@ -1403,6 +1408,7 @@ class SalesAddDetailControler extends Controller
                 $sales_order_data->status = 1;
                 $sales_order_data->date = date('Y-m-d');
                 $sales_order_data->username = Auth::user()->name;
+                $sales_order_data->is_official = CommonHelper::getOfficialValue();
                 $sales_order_data->save();
             endfor;
 
@@ -1489,6 +1495,7 @@ class SalesAddDetailControler extends Controller
             $delivery_note->status = 1;
             $delivery_note->date = date('Y-m-d');
             $delivery_note->username = Auth::user()->name;
+            $delivery_note->is_official = CommonHelper::getOfficialValue();
 
             $delivery_note->save();
 
@@ -1548,7 +1555,7 @@ class SalesAddDetailControler extends Controller
                     //     ->value('net_qty');
 
 
-                            $in = DB::Connection('mysql2')->table('stock')->where('status', 1)
+                            $in = DB::Connection('mysql2')->table('stock')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)
                             ->whereIn('voucher_type', [1, 4, 6, 3, 10, 11])
                             ->where('sub_item_id', $item_id)
                             ->where('warehouse_id', $warehouse_id)
@@ -1556,7 +1563,7 @@ class SalesAddDetailControler extends Controller
                             ->select('stock.*', DB::raw('SUM(qty) As qty'), DB::raw('SUM(amount) As amount'))
                             ->first();
 
-                        $out = DB::Connection('mysql2')->table('stock')->where('status', 1)
+                        $out = DB::Connection('mysql2')->table('stock')->whereIn('is_official', CommonHelper::getOfficialScopeArray())->where('status', 1)
                             ->whereIn('voucher_type', [2, 5, 9, 8])
                             ->where('sub_item_id', $item_id)
                             ->where('warehouse_id', $warehouse_id)
@@ -1603,6 +1610,7 @@ class SalesAddDetailControler extends Controller
                     'created_date' => date('Y-m-d'),
                     'opening' => 0,
                     'so_data_id' => $data_id,
+                    'is_official' => CommonHelper::getOfficialValue(),
                 ];
 
                 // Create detail line (DeliveryNoteData)
@@ -1640,6 +1648,7 @@ class SalesAddDetailControler extends Controller
                 $detail->status = 1;
                 $detail->date = date('Y-m-d');
                 $detail->username = Auth::user()->name;
+                $detail->is_official = CommonHelper::getOfficialValue();
 
                 $detail->save();
 
@@ -2178,6 +2187,7 @@ class SalesAddDetailControler extends Controller
             ;
             $transaction->status = 1;
             $transaction->voucher_type = 7;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
             $total_amount += $row->amount;
         endforeach;
@@ -2198,6 +2208,7 @@ class SalesAddDetailControler extends Controller
             ;
             $transaction->status = 1;
             $transaction->voucher_type = 7;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
         endif;
 
@@ -2228,6 +2239,7 @@ class SalesAddDetailControler extends Controller
             ;
             $transaction->status = 1;
             $transaction->voucher_type = 7;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
             $total_amount += $row->amount;
         endforeach;
@@ -2248,6 +2260,7 @@ class SalesAddDetailControler extends Controller
             ;
             $transaction->status = 1;
             $transaction->voucher_type = 7;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
         endif;
 
@@ -2642,6 +2655,7 @@ class SalesAddDetailControler extends Controller
             $sales_tax_invoice->acc_id = '';//$request->acc_id ?? '';
             $sales_tax_invoice->currency = $request->curren;
             $sales_tax_invoice->currency_rate = $request->currency_rate;
+            $sales_tax_invoice->is_official = CommonHelper::getOfficialValue();
             $sales_tax_invoice->save();
             $id = $sales_tax_invoice->id;
 
@@ -2687,6 +2701,7 @@ class SalesAddDetailControler extends Controller
                 $sales_tax_invoice_data->status = 1;
                 $sales_tax_invoice_data->date = date('Y-m-d');
                 $sales_tax_invoice_data->username = Auth::user()->name;
+                $sales_tax_invoice_data->is_official = CommonHelper::getOfficialValue();
                 $sales_tax_invoice_data->save();
                 $total_amount += $qty * $rate;
                 $total_commission_amount += $commission_amount;
@@ -2917,6 +2932,7 @@ class SalesAddDetailControler extends Controller
             $transaction->username = Auth::user()->name;
             $transaction->status = 100;
             $transaction->voucher_type = 6;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
             }
@@ -2936,6 +2952,7 @@ class SalesAddDetailControler extends Controller
             $transaction->username = Auth::user()->name;
             $transaction->status = 100;
             $transaction->voucher_type = 6;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
 
@@ -2952,6 +2969,7 @@ class SalesAddDetailControler extends Controller
             $transaction->username = Auth::user()->name;
             $transaction->status = 100;
             $transaction->voucher_type = 6;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
      
@@ -3626,6 +3644,7 @@ class SalesAddDetailControler extends Controller
             $transaction->username = Auth::user()->name;
             $transaction->status = 100;
             $transaction->voucher_type = 6;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
             }
@@ -3645,6 +3664,7 @@ class SalesAddDetailControler extends Controller
             $transaction->username = Auth::user()->name;
             $transaction->status = 100;
             $transaction->voucher_type = 6;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
 
@@ -3661,6 +3681,7 @@ class SalesAddDetailControler extends Controller
             $transaction->username = Auth::user()->name;
             $transaction->status = 100;
             $transaction->voucher_type = 6;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
      
@@ -3760,6 +3781,7 @@ class SalesAddDetailControler extends Controller
             $sales_tax_invoice->sales_tax = $selectedDeliveryNoteLineTotals->sales_tax_amount ?? CommonHelper::check_str_replace($request->sales_tax);
             $sales_tax_invoice->sales_tax_further = $selectedDeliveryNoteLineTotals->sales_tax_further ?? CommonHelper::check_str_replace($request->sales_tax_further);
             $sales_tax_invoice->acc_id = $request->acc_id;
+            $sales_tax_invoice->is_official = CommonHelper::getOfficialValue();
             // model_terms_of_payment
             $sales_tax_invoice->save();
             $id = $sales_tax_invoice->id;
@@ -3831,6 +3853,7 @@ class SalesAddDetailControler extends Controller
                 $sales_tax_invoice_data->status = 1;
                 $sales_tax_invoice_data->date = date('Y-m-d');
                 $sales_tax_invoice_data->username = Auth::user()->name;
+                $sales_tax_invoice_data->is_official = CommonHelper::getOfficialValue();
                 $sales_tax_invoice_data->save();
                 $total_amount += $amount;
             endfor;
@@ -3885,6 +3908,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->status = 100;
                 $transaction->voucher_type = 6;
                 $transaction->date = date('Y-m-d');
+                $transaction->is_official = CommonHelper::getOfficialValue();
                 $transaction->save();
             endforeach;
 
@@ -3914,6 +3938,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->status = 100;
                 $transaction->voucher_type = 6;
                 $transaction->date = date('Y-m-d');
+                $transaction->is_official = CommonHelper::getOfficialValue();
                 $transaction->save();
                 $total_amount += $sales_tax;
 
@@ -3936,6 +3961,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->status = 100;
                 $transaction->voucher_type = 6;
                 $transaction->date = date('Y-m-d');
+                $transaction->is_official = CommonHelper::getOfficialValue();
                 $transaction->save();
                 $total_amount += $sales_tax_further;
 
@@ -3959,6 +3985,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->status = 100;
                 $transaction->voucher_type = 6;
                 $transaction->date = date('Y-m-d');
+                $transaction->is_official = CommonHelper::getOfficialValue();
                 $transaction->save();
                 $total_amount += $advanceTaxAmount;
             endif;
@@ -3981,6 +4008,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->status = 100;
                 $transaction->voucher_type = 6;
                 $transaction->date = date('Y-m-d');
+                $transaction->is_official = CommonHelper::getOfficialValue();
                 $transaction->save();
                 $total_amount += $cartageAmount;
             endif;
@@ -4013,6 +4041,7 @@ class SalesAddDetailControler extends Controller
                     $transaction->status = 100;
                     $transaction->voucher_type = 6;
                     $transaction->date = date('Y-m-d');
+                    $transaction->is_official = CommonHelper::getOfficialValue();
                     $transaction->save();
                     $total_amount += Input::get('expense_amount')[$Counta];
                     $Counta++;
@@ -4035,6 +4064,7 @@ class SalesAddDetailControler extends Controller
             $transaction->status = 100;
             $transaction->voucher_type = 6;
             $transaction->date = date('Y-m-d');
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
             $data2['sales_tax_invoice'] = 2;
@@ -4068,6 +4098,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->status = 100;
                 $transaction->voucher_type = 8;
                 $transaction->date = date('Y-m-d');
+                $transaction->is_official = CommonHelper::getOfficialValue();
                 $transaction->save();
                 $cogs_total += $row->amount;
 
@@ -4087,6 +4118,7 @@ class SalesAddDetailControler extends Controller
                     $transaction->status = 100;
                     $transaction->voucher_type = 8;
                     $transaction->date = date('Y-m-d');
+                    $transaction->is_official = CommonHelper::getOfficialValue();
                     $transaction->save();
                 endif;
             endforeach;
@@ -4291,6 +4323,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->username = Auth::user()->name;
                 $transaction->status = 100;
                 $transaction->voucher_type = 6;
+                $transaction->is_official = CommonHelper::getOfficialValue();
                 $transaction->save();
             endforeach;
 
@@ -4320,6 +4353,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->username = Auth::user()->name;
                 $transaction->status = 100;
                 $transaction->voucher_type = 6;
+                $transaction->is_official = CommonHelper::getOfficialValue();
                 $transaction->save();
                 $total_amount += $sales_tax;
 
@@ -4343,6 +4377,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->username = Auth::user()->name;
                 $transaction->status = 100;
                 $transaction->voucher_type = 6;
+                $transaction->is_official = CommonHelper::getOfficialValue();
                 $transaction->save();
                 $total_amount += $sales_tax_further;
 
@@ -4365,6 +4400,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->username = Auth::user()->name;
                 $transaction->status = 100;
                 $transaction->voucher_type = 6;
+                $transaction->is_official = CommonHelper::getOfficialValue();
                 $transaction->save();
                 $total_amount += $advanceTaxAmount;
             endif;
@@ -4386,6 +4422,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->username = Auth::user()->name;
                 $transaction->status = 100;
                 $transaction->voucher_type = 6;
+                $transaction->is_official = CommonHelper::getOfficialValue();
                 $transaction->save();
                 $total_amount += $cartageAmount;
             endif;
@@ -4418,6 +4455,7 @@ class SalesAddDetailControler extends Controller
                     $transaction->username = Auth::user()->name;
                     $transaction->status = 100;
                     $transaction->voucher_type = 6;
+                    $transaction->is_official = CommonHelper::getOfficialValue();
                     $transaction->save();
                     $total_amount += Input::get('expense_amount')[$Counta];
                     $Counta++;
@@ -4439,6 +4477,7 @@ class SalesAddDetailControler extends Controller
             $transaction->username = Auth::user()->name;
             $transaction->status = 100;
             $transaction->voucher_type = 6;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
             $data2['sales_tax_invoice'] = 2;
@@ -4470,6 +4509,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->username = Auth::user()->name;
                 $transaction->status = 100;
                 $transaction->voucher_type = 8;
+                $transaction->is_official = CommonHelper::getOfficialValue();
                 $transaction->save();
                 $cogs_total += $row->amount;
 
@@ -4488,6 +4528,7 @@ class SalesAddDetailControler extends Controller
                     $transaction->username = Auth::user()->name;
                     $transaction->status = 100;
                     $transaction->voucher_type = 8;
+                    $transaction->is_official = CommonHelper::getOfficialValue();
                     $transaction->save();
                 endif;
             endforeach;
@@ -5101,6 +5142,7 @@ class SalesAddDetailControler extends Controller
         $credit_note->status       = 1;
         $credit_note->type         = $request->type;
         $credit_note->username     = Auth::user()->name;
+        $credit_note->is_official  = CommonHelper::getOfficialValue();
         $credit_note->save();
 
         $master_id = $credit_note->id;
@@ -5193,6 +5235,7 @@ class SalesAddDetailControler extends Controller
             $credit_note_data->type             = $request->type;
             $credit_note_data->status           = 1;
             $credit_note_data->username         = Auth::user()->name;
+            $credit_note_data->is_official      = CommonHelper::getOfficialValue();
 
             // Extra fields (set to 0 or null if not coming from form)
             $credit_note_data->discount_percent = 0;
@@ -5222,6 +5265,7 @@ class SalesAddDetailControler extends Controller
                 'username'       => Auth::user()->username ?? Auth::user()->name,
                 'created_date'   => date('Y-m-d'),
                 'opening'        => 0,
+                'is_official'    => CommonHelper::getOfficialValue(),
             ];
 
             DB::connection('mysql2')->table('stock')->insert($stock);
@@ -5268,6 +5312,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->username     = Auth::user()->name;
                 $transaction->status       = 1;
                 $transaction->voucher_type = 7;
+                $transaction->is_official  = CommonHelper::getOfficialValue();
                 $transaction->save();
 
                 $total_transaction_amount += $row->amount;
@@ -5289,6 +5334,7 @@ class SalesAddDetailControler extends Controller
             $transaction->username     = Auth::user()->name;
             $transaction->status       = 1;
             $transaction->voucher_type = 7;
+            $transaction->is_official  = CommonHelper::getOfficialValue();
             $transaction->save();
         }
 
@@ -5464,6 +5510,7 @@ class SalesAddDetailControler extends Controller
                     $transaction->username = Auth::user()->name;
                     $transaction->status = 1;
                     $transaction->voucher_type = 7;
+                    $transaction->is_official = CommonHelper::getOfficialValue();
                     $transaction->save();
                     $total_amount += $row->amount;
                 }
@@ -5482,6 +5529,7 @@ class SalesAddDetailControler extends Controller
                 $transaction->username = Auth::user()->name;
                 $transaction->status = 1;
                 $transaction->voucher_type = 7;
+                $transaction->is_official = CommonHelper::getOfficialValue();
                 $transaction->save();
             }
 
@@ -7751,8 +7799,8 @@ class SalesAddDetailControler extends Controller
                     'warehouse_id' => $request->input('warehouse_id')[$i],
                     'username' => Auth::user()->username,
                     'created_date' => date('Y-m-d'),
-                    'created_date' => date('Y-m-d'),
                     'opening' => 0,
+                    'is_official' => CommonHelper::getOfficialValue(),
                 );
                 $cost = $qty * $stock_rate;
                 $total_cost_amount += $cost;
@@ -7777,6 +7825,7 @@ class SalesAddDetailControler extends Controller
             ;
             $transaction->status = 1;
             $transaction->voucher_type = 7;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
 
@@ -7802,6 +7851,7 @@ class SalesAddDetailControler extends Controller
             ;
             $transaction->status = 1;
             $transaction->voucher_type = 7;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
 
@@ -7828,6 +7878,7 @@ class SalesAddDetailControler extends Controller
             ;
             $transaction->status = 1;
             $transaction->voucher_type = 9;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
 
@@ -7845,6 +7896,7 @@ class SalesAddDetailControler extends Controller
             ;
             $transaction->status = 1;
             $transaction->voucher_type = 9;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
 

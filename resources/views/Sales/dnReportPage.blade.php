@@ -15,9 +15,10 @@ $current_date = date('Y-m-d');
 $currentMonthStartDate = date('Y-m-01');
 $currentMonthEndDate   = date('Y-m-t');
 
+        $scopeStr = implode(',', CommonHelper::getOfficialScopeArray());
         $DeliveryNote = DB::Connection('mysql2')->select('select sum(b.amount) net_amount,b.so_id,a.id dn_id,a.* from delivery_note a
                                           INNER JOIN delivery_note_data b ON b.master_id = a.id
-                                          WHERE a.status = 1
+                                          WHERE a.status = 1 AND a.is_official IN ('.$scopeStr.')
                                           GROUP BY a.id');
 ?>
 

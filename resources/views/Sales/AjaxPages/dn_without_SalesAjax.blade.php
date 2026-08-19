@@ -6,11 +6,13 @@ use App\Helpers\SalesHelper;
 ?>
 
     <?php
+    $scopeStr = implode(',', CommonHelper::getOfficialScopeArray());
     $dataa= DB::Connection('mysql2')->select('SELECT t1.id FROM delivery_note t1
                                               LEFT JOIN sales_tax_invoice t2 ON t1.so_no = t2.so_no
                                               WHERE t2.id IS NULL
                                               and t1.gd_date BETWEEN "'.$FromDate.'" and "'.$ToDate.'"
-                                              and t1.status=1');
+                                              and t1.status=1
+                                              and t1.is_official IN ('.$scopeStr.')');
 
     ?>
                 <table class="table table-bordered sf-table-list" id="EmpExitInterviewList">
