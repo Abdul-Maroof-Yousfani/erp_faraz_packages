@@ -1839,7 +1839,7 @@ class SalesDataCallController extends Controller
                 ->select('c.acc_id as prduct_acc_id','a.description','b.inv_no','b.sales_tax_acc_id','d.acc_id as client_acc_id',
                     'a.amount','a.id','b.inv_date','b.sales_tax_amount','b.discount_amount','b.advance_from_customer','a.branch_id',
                     'f.net_value','f.discount_amount as dis_am','f.advance_amount as adv_am','f.discount_percntage as dis_per','f.discount_amount_tax',
-                    'f.advance_amount','f.advance_amount_tax','f.advance_percntage','b.bill_to_client_id','f.advance_amount_after_tax')
+                    'f.advance_amount','f.advance_amount_tax','f.advance_percntage','b.bill_to_client_id','f.advance_amount_after_tax', 'b.is_official')
                 ->join('invoice as b', 'b.id', '=', 'a.master_id')
                 ->join('invoice_data_totals as f', 'f.master_id', '=', 'b.id')
                 ->join('product as c', 'c.product_id', '=', 'a.product_id')
@@ -1884,6 +1884,7 @@ class SalesDataCallController extends Controller
                     $trans1->action = 1;
                     $trans1->status = 1;
                     $trans1->username = Auth::user()->name;
+                    $trans1->is_official = $row->is_official ?? CommonHelper::getOfficialValue();
                     $trans1->save();
 
 
@@ -1913,6 +1914,7 @@ class SalesDataCallController extends Controller
                         $trans1->action = 1;
                         $trans1->status = 1;
                         $trans1->username = Auth::user()->name;
+                        $trans1->is_official = $row->is_official ?? CommonHelper::getOfficialValue();
                         $trans1->save();
 
 
@@ -1947,6 +1949,7 @@ class SalesDataCallController extends Controller
                                 $trans1->action = 1;
                                 $trans1->status = 1;
                                 $trans1->username = Auth::user()->name;
+                                $trans1->is_official = $row->is_official ?? CommonHelper::getOfficialValue();
                                 $trans1->save();
                             endforeach;
                         endif;
@@ -1984,6 +1987,7 @@ class SalesDataCallController extends Controller
                         $trans1->action = 1;
                         $trans1->status = 1;
                         $trans1->username = Auth::user()->name;
+                        $trans1->is_official = $row->is_official ?? CommonHelper::getOfficialValue();
                         $trans1->save();
 
 
@@ -2016,6 +2020,7 @@ class SalesDataCallController extends Controller
                                 $trans1->action = 1;
                                 $trans1->status = 1;
                                 $trans1->username = Auth::user()->name;
+                                $trans1->is_official = $row->is_official ?? CommonHelper::getOfficialValue();
                                 $trans1->save();
                             endforeach;
                         endif;
@@ -2044,6 +2049,7 @@ class SalesDataCallController extends Controller
                     $trans1->action = 1;
                     $trans1->status = 1;
                     $trans1->username = Auth::user()->name;
+                    $trans1->is_official = $row->is_official ?? CommonHelper::getOfficialValue();
                     $trans1->save();
                 endif;
 
@@ -2081,6 +2087,7 @@ class SalesDataCallController extends Controller
                     $trans1->action = 1;
                     $trans1->status = 1;
                     $trans1->username = Auth::user()->name;
+                    $trans1->is_official = $row->is_official ?? CommonHelper::getOfficialValue();
                     $trans1->save();
                 endif;
             endforeach;
@@ -2143,7 +2150,9 @@ class SalesDataCallController extends Controller
         try {
             $dispatch_datas = DB::connection('mysql2')->table('dispatch_datas as dpd')
             ->join('dispatches as dp' , 'dp.id' , 'dpd.dispatch_id')
-            ->where('dpd.dispatch_id' , $id)->get();
+            ->where('dpd.dispatch_id' , $id)
+            ->select('dpd.*', 'dp.dispatch_no', 'dp.dispatch_date', 'dp.customer_id', 'dp.is_official')
+            ->get();
             foreach ($dispatch_datas as $key => $value) {
 
                 $average_cost=ReuseableCode::average_cost_sales($request->item_id,$request->warehouse_id,$request->batch_code);
@@ -2168,8 +2177,8 @@ class SalesDataCallController extends Controller
                     'warehouse_id'=>$value->warehouse_id,
                     'username'=>Auth::user()->username,
                     'created_date'=>date('Y-m-d'),
-                    'created_date'=>date('Y-m-d'),
                     'opening'=>0,
+                    'is_official'=>$value->is_official ?? CommonHelper::getOfficialValue(),
                     // 'so_data_id'=>$request->input('data_id' . $i)
                 );
                 $amount =$value->qty*$average_cost;

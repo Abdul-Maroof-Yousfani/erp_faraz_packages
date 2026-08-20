@@ -138,7 +138,8 @@ $currentMonthEndDate   = date('Y-m-t');
                 success: function (response)
                 {
                     $('.'+id).html('Approve');
-                    $('#showDetailModelOneParamerter').modal('toggle');
+                    $('#showDetailModelOneParamerter').modal('hide');
+                    get_grn();
                 }
             });
         }

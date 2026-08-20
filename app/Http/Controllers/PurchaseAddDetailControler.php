@@ -2863,6 +2863,7 @@ class PurchaseAddDetailControler extends Controller
             $NewPurchaseVoucher->status = 1;
             $NewPurchaseVoucher->pv_status = 1;
             $NewPurchaseVoucher->date = date('Y-m-d');
+            $NewPurchaseVoucher->is_official = CommonHelper::getOfficialValue();
             $NewPurchaseVoucher->save();
             $master_id = $NewPurchaseVoucher->id;
 
@@ -2939,6 +2940,7 @@ class PurchaseAddDetailControler extends Controller
                 $NewPurchaseVoucherData->pv_status = 2;
                 $NewPurchaseVoucherData->username = Auth::user()->name;
                 $NewPurchaseVoucherData->date = date('Y-m-d');
+                $NewPurchaseVoucherData->is_official = CommonHelper::getOfficialValue();
                 $NewPurchaseVoucherData->save();
             endforeach;
 
@@ -2955,6 +2957,7 @@ class PurchaseAddDetailControler extends Controller
                     $InsertData['status'] = 1;
                     $InsertData['username'] = $PvFil->username;
                     $InsertData['voucher_type'] = 1;
+                    $InsertData['is_official'] = CommonHelper::getOfficialValue();
                     DB::Connection('mysql2')->table('transaction_supply_chain')->insert($InsertData);
                 endif;
             }
@@ -2972,6 +2975,7 @@ class PurchaseAddDetailControler extends Controller
                     $purchase_voucher_data->staus = 1;
                     $purchase_voucher_data->pv_status = 2;
                     $purchase_voucher_data->username = Auth::user()->name;
+                    $purchase_voucher_data->is_official = CommonHelper::getOfficialValue();
                     $purchase_voucher_data->save();
                 endforeach;
             endif;

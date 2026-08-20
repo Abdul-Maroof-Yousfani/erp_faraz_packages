@@ -2574,6 +2574,8 @@ class SalesController extends Controller
                 return 'Approved';
             }
 
+            $officialVal = $si_data->is_official ?? CommonHelper::getOfficialValue();
+
             DB::Connection('mysql2')->table('sales_tax_invoice')
                 ->where('id', $id)
                 ->update([
@@ -2585,7 +2587,7 @@ class SalesController extends Controller
             DB::Connection('mysql2')->table('transactions')
                 ->where('voucher_no', $gi_no)
                 ->where('status', 100)
-                ->update(['status' => 1]);
+                ->update(['status' => 1, 'is_official' => $officialVal]);
             $approve = 'Approved';
             $behavior = 'Approve';
 
@@ -2625,9 +2627,9 @@ class SalesController extends Controller
                         'warehouse_id' => $row->warehouse_id,
                         'username' => Auth::user()->username,
                         'created_date' => date('Y-m-d'),
-                        'created_date' => date('Y-m-d'),
                         'opening' => 0,
                         'so_data_id' => '',
+                        'is_official' => $si_data->is_official ?? CommonHelper::getOfficialValue(),
                     );
                     DB::Connection('mysql2')->table('stock')->insert($stock);
 

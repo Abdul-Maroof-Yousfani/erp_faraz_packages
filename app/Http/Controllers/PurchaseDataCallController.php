@@ -2192,7 +2192,7 @@ echo "aa"; die;
         try
         {
             $id = $_GET['id'];
-            $data['grn_status'] = 3;
+            $data['grn_status'] = 2;
             $data['approve_username'] = Auth::user()->name;
 
             $grn=DB::Connection('mysql2')->table('grn_data')
@@ -2304,8 +2304,8 @@ echo "aa"; die;
             $master_id=DB::Connection('mysql2')->table('new_purchase_voucher')->insertGetId($data1);
 
             $poNo = $goods_rece->po_no;
-            $getPurchaseRequestDetail = DB::Connection('mysql2')->table('purchase_request')->where('purchase_request_no', $poNo)->first();
-            if($getPurchaseRequestDetail->advanced_paid_amount == 2){
+            $getPurchaseRequestDetail = !empty($poNo) ? DB::Connection('mysql2')->table('purchase_request')->where('purchase_request_no', $poNo)->first() : null;
+            if(!empty($getPurchaseRequestDetail) && isset($getPurchaseRequestDetail->advanced_paid_amount) && $getPurchaseRequestDetail->advanced_paid_amount == 2){
                 $getAdvancedPaidVouchers = DB::Connection('mysql2')->table('new_pv')->where('po_id',$getPurchaseRequestDetail->id)->get();
                 foreach($getAdvancedPaidVouchers as $gapvRow){
                     $gapvData['new_purchase_voucher_id'] = $master_id;
@@ -2359,24 +2359,25 @@ echo "aa"; die;
             endforeach;
 
 
-            $additional_exp= DB::Connection('mysql2')->table('addional_expense')->where('main_id',$id);
+            $salesTaxAmount = (float) ($goods_rece->sales_tax_amount ?? 0);
+            $salesTaxAccId = (int) ($goods_rece->sales_tax_acc_id ?? 0);
 
-            if ($additional_exp->count()>0):
+            if ($salesTaxAccId > 0 && $salesTaxAmount > 0):
 
                 $data3=array
                 (
                     'master_id'=>$master_id,
                     'pv_no'=>$pv_no,
                     'slip_no'=>'',
-                    'grn_data_id'=>$row->id,
-                    'category_id'=>$additional_exp->first()->acc_id,
+                    'grn_data_id'=>0,
+                    'category_id'=>$salesTaxAccId,
                     'sub_item'=>0,
                     'uom'=>0,
                     'qty'=>0,
                     'rate'=>0,
-                    'amount'=>$additional_exp->first()->amount,
+                    'amount'=>$salesTaxAmount,
                     'discount_amount'=>0,
-                    'net_amount'=>$additional_exp->first()->amount,
+                    'net_amount'=>$salesTaxAmount,
                     'staus'=>1,
                     'pv_status'=>2,
                     'username'=>Auth::user()->name,
@@ -2419,7 +2420,7 @@ echo "aa"; die;
 
             $data5=array
             (
-                'master_id'=>$row->id,
+                'master_id'=>$master_id,
                 'acc_id'=>$supp_acc_id,
                 'acc_code'=>FinanceHelper::getAccountCodeByAccId($supp_acc_id),
                 'paid_to'=>0,
@@ -2441,14 +2442,13 @@ echo "aa"; die;
 
 
 
-            // DB::Connection('mysql2')->commit();
+            DB::Connection('mysql2')->commit();
+            echo "Approved";
         }
-        catch ( Exception $ex )
+        catch ( \Exception $ex )
         {
-
-
-            DB::rollBack();
-
+            DB::Connection('mysql2')->rollBack();
+            echo $ex->getMessage();
         }
     }
 

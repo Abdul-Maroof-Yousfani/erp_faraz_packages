@@ -753,7 +753,7 @@ class FinanceDataCallController extends Controller
                 ->join('new_purchase_voucher as b', 'a.master_id', '=', 'b.id')
                 ->join('subitem as c','c.id','a.sub_item')
                 ->where('a.master_id',$id)
-                ->select('a.*', 'b.supplier','b.pv_date','b.bill_date','c.type','b.warehouse','b.description','b.sales_tax_acc_id','b.sales_tax_amount','b.pv_no','b.sub_department_id')
+                ->select('a.*', 'b.supplier','b.pv_date','b.bill_date','c.type','b.warehouse','b.description','b.sales_tax_acc_id','b.sales_tax_amount','b.pv_no','b.sub_department_id', 'b.is_official')
                 ->get();
          $cr_acc_id = $grn[0]->sub_department_id;
          $sales_tax_acc_id = $grn[0]->sales_tax_acc_id;
@@ -764,6 +764,7 @@ class FinanceDataCallController extends Controller
          $desc = $grn[0]->description;
          $pv_no = $grn[0]->pv_no;
          $pv_date = $grn[0]->pv_date;
+         $officialValue = CommonHelper::getOfficialValue();
          $exp_amount= DB::Connection('mysql2')->table('new_purchase_voucher_data')->where('master_id','=',$id)->where('additional_exp',1)->sum('net_amount');
          $item_amount= DB::Connection('mysql2')->table('new_purchase_voucher_data')->where('master_id','=',$id)->where('additional_exp',0)->sum('net_amount');
 
@@ -813,6 +814,7 @@ class FinanceDataCallController extends Controller
                 $stock['description']=$row->description;
                 $stock['batch_code']=0;
                 $stock['status']=$status;
+                $stock['is_official']=$officialValue;
                 $stock['created_date']=date('Y-m-d');
                 $stock['username']=Auth::user()->name;
                 DB::Connection('mysql2')->table('stock')->insert($stock);
@@ -846,6 +848,7 @@ class FinanceDataCallController extends Controller
                     'date'=>date('Y-m-d'),
                     'action'=>'insert',
                     'username'=>Auth::user()->name,
+                    'is_official'=>$officialValue,
                     'status'=>1
                 );
                 DB::Connection('mysql2')->table('transactions')->insertGetId($data4);
@@ -877,6 +880,7 @@ class FinanceDataCallController extends Controller
                         'date'=>date('Y-m-d'),
                         'action'=>'insert',
                         'username'=>Auth::user()->name,
+                        'is_official'=>$officialValue,
                         'status'=>1
                     );
                     DB::Connection('mysql2')->table('transactions')->insertGetId($data5);
@@ -899,6 +903,7 @@ class FinanceDataCallController extends Controller
                 $transaction->date=date('Y-m-d');
                 $transaction->action='insert';
                 $transaction->username=Auth::user()->name;;
+                $transaction->is_official=$officialValue;
                 $transaction->status=1;
                 $transaction->voucher_type=4;
                 $transaction->save();
@@ -921,6 +926,7 @@ class FinanceDataCallController extends Controller
                 $transaction->action='insert';
                 $transaction->username=Auth::user()->name;;
                 $transaction->voucher_type=4;
+                $transaction->is_official=$officialValue;
                 $transaction->status=1;
                 $transaction->save();
 
@@ -1022,6 +1028,7 @@ class FinanceDataCallController extends Controller
             $purchase_voucher=$purchase_voucher->SetConnection('mysql2');
             $purchase_voucher=$purchase_voucher->where('id',$master_id)->first();
 
+            $pv_is_official = $purchase_voucher->is_official ?? CommonHelper::getOfficialValue();
             $pv_no = $purchase_voucher->pv_no;
             $purchase_date = $purchase_voucher->pv_date;
             $desc = $purchase_voucher->description;
@@ -1040,7 +1047,7 @@ class FinanceDataCallController extends Controller
 
             $credit_amount=0;
             $status=2;
-                // $data = DB::Connection('mysql2')->selectRaw('select net_amount,category_id ,sub_item from new_purchase_voucher_data
+                // is_offi $data = DB::Connection('mysql2')->selectRaw('select net_amount,category_id ,sub_item from new_purchase_voucher_data
                 // where master_id="'.$master_id.'" and additional_exp=0 ');
                 $data = DB::connection('mysql2')->table('new_purchase_voucher_data')->where([['master_id',$master_id],['additional_exp', 0 ]])->get();
                 $itemAccountMap = DB::connection('mysql2')->table('subitem as s')
@@ -1094,6 +1101,7 @@ class FinanceDataCallController extends Controller
                     $transaction->action='insert';
                     $transaction->username=Auth::user()->name;;
                     $transaction->status=1;
+                    $transaction->is_official=$pv_is_official;
                     $transaction->voucher_type=4;
                     $transaction->save();
 
@@ -1118,6 +1126,7 @@ class FinanceDataCallController extends Controller
                     $transaction->action='insert';
                     $transaction->username=Auth::user()->name;;
                     $transaction->status=1;
+                    $transaction->is_official=$pv_is_official;
                     $transaction->voucher_type=4;
                     $transaction->save();
                     $credit_amount+=$sales_tax_amount;
@@ -1146,6 +1155,7 @@ class FinanceDataCallController extends Controller
                     $transaction->action='insert';
                     $transaction->username=Auth::user()->name;;
                     $transaction->status=1;
+                    $transaction->is_official=$pv_is_official;
                     $transaction->voucher_type=4;
                     $transaction->save();
                     $credit_amount+=$this->cleanVoucherNumber($exp->net_amount);
@@ -1170,6 +1180,7 @@ class FinanceDataCallController extends Controller
                 $transaction->username=Auth::user()->name;;
                 $transaction->voucher_type=4;
                 $transaction->status=1;
+                $transaction->is_official=$pv_is_official;
                 $transaction->save();
 
 
