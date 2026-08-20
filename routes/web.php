@@ -133,6 +133,7 @@ Route::get('run-is-official-migration', function () {
         'packing_datas',
         'gate_pass',
         'gate_pass_data',
+        'transaction_supply_chain'
     ];
 
     $connections = array_filter(['mysql', 'mysql2'], function($conn) {
@@ -141,6 +142,7 @@ Route::get('run-is-official-migration', function () {
 
     $added = [];
     $skipped = [];
+    $notFound = [];
 
     foreach ($connections as $conn) {
         foreach ($tables as $table) {
@@ -153,15 +155,18 @@ Route::get('run-is-official-migration', function () {
                 } else {
                     $skipped[] = "{$conn}.{$table}";
                 }
+            } else {
+                $notFound[] = "{$conn}.{$table}";
             }
         }
     }
 
     return response()->json([
         'status' => 'success',
-        'message' => 'is_official column added where missing successfully.',
+        'message' => 'is_official column check & addition process completed.',
         'added_tables' => $added,
         'skipped_already_exists' => $skipped,
+        'not_found_tables' => $notFound,
     ]);
 });
 
