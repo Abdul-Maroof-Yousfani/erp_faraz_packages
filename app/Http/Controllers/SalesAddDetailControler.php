@@ -1316,6 +1316,7 @@ class SalesAddDetailControler extends Controller
                     $total_amount += Input::get('expense_amount')[$Counta];
                     $ExpData['created_date'] = date('Y-m-d');
                     $ExpData['username'] = Auth::user()->name;
+                    $ExpData['is_official'] = CommonHelper::getOfficialValue();
                     $Counta++;
                     DB::Connection('mysql2')->table('addional_expense_sales_order')->insert($ExpData);
                 }

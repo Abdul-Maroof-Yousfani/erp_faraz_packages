@@ -40,6 +40,7 @@ class SalesOrderController extends Controller
         if ($request->ajax()) {
             $sale_orders = DB::Connection('mysql2')->table('sales_order')
                 ->join('customers', 'sales_order.buyers_id', 'customers.id')
+                ->whereIn('sales_order.is_official', CommonHelper::getOfficialScopeArray())
                 ->where('sales_order.status', 1)
                 ->select(
                     'sales_order.*',
@@ -107,6 +108,7 @@ class SalesOrderController extends Controller
             ->join(env('DB_DATABASE') . '.uom as u', 's.uom', '=', 'u.id')
             // ->join('packaging_type AS pt' ,'pt.id','=', 's.primary_pack_type')
             ->select('sales_order_data.id as sale_order_data_id', 's.item_code', 'u.uom_name', 'sales_order_data.*', 'sales_order.*', 'customers.name AS customer_name','s.pack_size','s.primary_pack_type','s.color','s.id', 's.sub_ic', 's.uom', 's.item_code',)
+            ->whereIn('sales_order.is_official', CommonHelper::getOfficialScopeArray())
             ->where('sales_order.id', $request->id)
             ->where('sales_order_data.status', 1)
             // ->where('sales_order.status', 1)
@@ -174,6 +176,7 @@ class SalesOrderController extends Controller
             $sales_order->username = Auth::user()->name;
             $sales_order->date = date('Y-m-d');
             $sales_order->buyers_id = $byers_id;
+            $sales_order->is_official = CommonHelper::getOfficialValue();
             $sales_order->save();
 
             $master_id = $sales_order->id;
@@ -232,6 +235,7 @@ class SalesOrderController extends Controller
                 $sales_order_data->date = date('Y-m-d');
                 $sales_order_data->username = Auth::user()->name;
                 $sales_order_data->groupby = $count;
+                $sales_order_data->is_official = CommonHelper::getOfficialValue();
 
                 $sales_order_data->save();
 
@@ -516,6 +520,7 @@ class SalesOrderController extends Controller
             ->join('sub_category', 'sub_category.id', 'subitem.sub_category_id')
             ->join('uom', 'uom.id', 'subitem.uom')
             ->select('sales_order_data.id as sale_order_data_id', 'subitem.item_code', 'uom.uom_name', 'sales_order_data.*', 'sales_order.*', 'customers.name AS customer_name', 'sub_category.sub_category_name')
+            ->whereIn('sales_order.is_official', CommonHelper::getOfficialScopeArray())
             ->where('sales_order.id', $id)
             ->where('sales_order_data.status', 1)
             ->where('sales_order.status', 1)
