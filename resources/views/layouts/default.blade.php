@@ -2267,98 +2267,9 @@ function DeletePvActivity(pv_id,pv_no,pv_date,pv_amount)
 
 }
 
-// dropdown
-
-/* =====================================================================
-   FIX: Dropdown menu clipping/mispositioning inside .table-responsive
-   getBoundingClientRect() use kiya (viewport-relative) kyunki
-   position:fixed bhi viewport-relative hota hai — .offset() (jQuery,
-   document-relative) galat position deta tha jab row scroll ho.
-   right:'auto' isliye zaroori hai kyunki original CSS mein
-   .dropdown-menu pe right:0 pehle se laga hai — ye stretch kar deta
-   tha jab tak explicitly override na karo.
-   ===================================================================== */
-(function () {
-    function closeMenu($menu) {
-        var $orig = $menu.data('erp-orig-parent');
-        $menu.removeClass('open')
-             .css({ position: '', top: '', left: '', right: '', zIndex: '', display: '' })
-             .removeAttr('data-erp-floated');
-        if ($orig && $orig.length) {
-            $orig.append($menu);
-        }
-        $menu.closest('.dropdown, .btn-group').removeClass('open');
-    }
-
-    function closeAllMenus() {
-        $('.dropdown-menu[data-erp-floated]').each(function () {
-            closeMenu($(this));
-        });
-    }
-
-    $(document).on('click', '.table-responsive [data-toggle="dropdown"]', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        var $toggle = $(e.currentTarget);
-        var $menu   = $toggle.closest('.dropdown, .btn-group').find('.dropdown-menu').first();
-        if (!$menu.length) return;
-
-        var alreadyOpen = $menu.attr('data-erp-floated') === '1';
-        closeAllMenus();
-        if (alreadyOpen) return;
-
-        $menu.data('erp-orig-parent', $menu.parent());
-
-        // getBoundingClientRect = viewport ke against, position:fixed ke liye sahi
-        var rect = $toggle[0].getBoundingClientRect();
-
-        $menu.appendTo('body')
-             .addClass('open')
-             .attr('data-erp-floated', '1')
-             .css({ position: 'fixed', display: 'block', visibility: 'hidden', top: 0, left: 0, right: 'auto', zIndex: 99999 });
-
-        var menuWidth  = $menu.outerWidth();
-        var menuHeight = $menu.outerHeight();
-
-        var top  = rect.bottom + 4;
-        var left = rect.right - menuWidth;
-
-        if (top + menuHeight > window.innerHeight) {
-            top = rect.top - menuHeight - 4;
-        }
-        if (left < 4) left = rect.left;
-
-        // right edge se bahar na jaye
-        if (left + menuWidth > window.innerWidth - 4) {
-            left = window.innerWidth - menuWidth - 4;
-        }
-
-        $menu.css({ top: top, left: left, right: 'auto', visibility: 'visible' });
-        $toggle.closest('.dropdown, .btn-group').addClass('open');
-    });
-
-    $(document).on('click', function (e) {
-        if ($(e.target).closest('.dropdown-menu[data-erp-floated]').length) return;
-        if ($(e.target).closest('[data-toggle="dropdown"]').length) return;
-        closeAllMenus();
-    });
-
-    $(window).on('scroll resize', closeAllMenus);
-})();
-
-
-
-/* =========================================================================
-   FIX v2: Dropdown position galat aa rahi thi kyunke kisi parent per
-   CSS "transform" laga hua hai — jo position:fixed ka containing block
-   badal deta hai (viewport ki jagah us parent se relative ho jata hai).
-
-   Solution: dropdown-menu ko open hote waqt <body> mein move kar do
-   (appendTo), position:fixed lagao, aur close hone par wapas
-   original jagah (original parent + original next-sibling se pehle)
-   restore kar do.
-   ========================================================================= */
+// dropdown - final clean version (sirf EK system, purana IIFE hata diya
+// kyunke wo Bootstrap ke shown/hidden events ke sath conflict kar raha tha
+// aur isi wajah se stacking + width + position sab issues ho rahe the)
 
 $(document).on('shown.bs.dropdown', '.dropdown, .btn-group', function () {
     var $wrapper = $(this);
@@ -2367,45 +2278,42 @@ $(document).on('shown.bs.dropdown', '.dropdown, .btn-group', function () {
 
     if (!$toggle.length || !$menu.length) return;
 
-    // Original location yaad rakho taake close per wapas laga sakein
     $menu.data('erp-original-parent', $menu.parent());
     $menu.data('erp-original-next', $menu.next());
-    $menu.data('erp-original-style', $menu.attr('style') || '');
 
-    // Body mein move kar do — transform wale parent ka asar khatam
     $menu.appendTo('body');
 
-    var toggleOffset = $toggle.offset();
-    var toggleHeight = $toggle.outerHeight();
-    var toggleWidth = $toggle.outerWidth();
-    var scrollTop = $(window).scrollTop();
-    var scrollLeft = $(window).scrollLeft();
+    var rect = $toggle[0].getBoundingClientRect();
 
-    // offset() document-relative hai, fixed viewport-relative hota hai —
-    // isliye scroll subtract karna zaroori hai
-    var toggleTop = toggleOffset.top - scrollTop;
-    var toggleLeft = toggleOffset.left - scrollLeft;
-
-    $menu.css({ position: 'fixed', visibility: 'hidden', display: 'block', top: '0px', left: '0px' });
+    $menu.css({ position: 'fixed', visibility: 'hidden', display: 'block', width: 'auto', right: 'auto' });
     var menuWidth = $menu.outerWidth();
     var menuHeight = $menu.outerHeight();
 
-    var winWidth = $(window).width();
     var winHeight = $(window).height();
+    var winWidth = $(window).width();
 
-    var top = toggleTop + toggleHeight + 4;
-    var left = toggleLeft + toggleWidth - menuWidth;
+    var top = rect.bottom + 4;
+    var left = rect.right - menuWidth;
 
-    if (left < 8) left = toggleLeft;
-    if (left + menuWidth > winWidth - 8) left = winWidth - menuWidth - 8;
-    if (top + menuHeight > winHeight - 8) top = toggleTop - menuHeight - 4;
+    // Agar neeche screen se bahar ja raha ho to upar khol do
+    if (top + menuHeight > winHeight - 8) {
+        top = rect.top - menuHeight - 4;
+    }
+    // Agar left se bahar ja raha ho
+    if (left < 8) {
+        left = rect.left;
+    }
+    // Agar right se bahar ja raha ho
+    if (left + menuWidth > winWidth - 8) {
+        left = winWidth - menuWidth - 8;
+    }
 
     $menu.css({
         position: 'fixed',
         top: top + 'px',
         left: left + 'px',
         right: 'auto',
-        bottom: 'auto',
+        width: 'auto',
         margin: 0,
         visibility: 'visible',
         zIndex: 99999
@@ -2413,14 +2321,13 @@ $(document).on('shown.bs.dropdown', '.dropdown, .btn-group', function () {
 });
 
 $(document).on('hidden.bs.dropdown', '.dropdown, .btn-group', function () {
-    var $wrapper = $(this);
-    var $menu = $wrapper.find('.dropdown-menu').first();
+    var $menu = $(this).find('.dropdown-menu').first();
+    if (!$menu.length) $menu = $('body > .dropdown-menu[style]');
     if (!$menu.length) return;
 
     var $origParent = $menu.data('erp-original-parent');
     var $origNext = $menu.data('erp-original-next');
 
-    // Body se wapas original jagah per le aao
     if ($origParent && $origParent.length) {
         if ($origNext && $origNext.length) {
             $menu.insertBefore($origNext);
@@ -2428,23 +2335,26 @@ $(document).on('hidden.bs.dropdown', '.dropdown, .btn-group', function () {
             $menu.appendTo($origParent);
         }
     }
+    $menu.removeAttr('style');
+});
 
-    var original = $menu.data('erp-original-style');
-    if (original !== undefined) {
-        $menu.attr('style', original);
-    } else {
-        $menu.removeAttr('style');
+// Scroll hote hi (window ya kisi bhi table-responsive container ka
+// internal scroll) dropdown ko close kar do — warna position fixed
+// hone ki wajah se menu apni purani jagah per hi reh jata hai jabke
+// button apni jagah se hat chuka hota hai
+document.addEventListener('scroll', function (e) {
+    var $openDropdown = $('.dropdown.open, .btn-group.open');
+    if ($openDropdown.length) {
+        $openDropdown.find('[data-toggle="dropdown"]').first().dropdown('toggle');
+    }
+}, true); // capture:true zaroori hai taake table-responsive ka internal scroll bhi pakda jaye
+
+$(window).on('resize', function () {
+    var $openDropdown = $('.dropdown.open, .btn-group.open');
+    if ($openDropdown.length) {
+        $openDropdown.find('[data-toggle="dropdown"]').first().dropdown('toggle');
     }
 });
-
-// Scroll/resize per reposition
-$(window).on('scroll resize', function () {
-    $('body > .dropdown-menu[style*="position: fixed"]').each(function () {
-        // Reposition logic yahan tabhi chalao agar aapko scroll ke dauran
-        // bhi menu open rakhna ho — warna Bootstrap default per close ho jayega
-    });
-});
-
 </script>
 
 </body>

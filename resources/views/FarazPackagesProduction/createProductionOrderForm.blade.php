@@ -4,6 +4,12 @@ use App\Helpers\PurchaseHelper;
 use App\Helpers\CommonHelper;
 use App\Helpers\NotificationHelper;
 ?>
+<style>
+ .userlittab.sf-table-list td .form-control{width:100% !important;}
+.table-responsive{height:auto !important;}
+
+</style>
+
 @extends('layouts.default')
 @section('content')
 @include('select2')
@@ -110,13 +116,10 @@ use App\Helpers\NotificationHelper;
                                                     name="quantity[]" id="quantity1">
                                             </td> --}}
                                             <td>
-                                                <input type="text" class="form-control" name="purpose[]"
-                                                    id="purpose1">
+                                                <input type="text" class="form-control" style="width: 100% !important;" name="purpose[]"id="purpose1">
                                             </td>
                                             <td>
-                                                <input type="date"
-                                                    class="form-control" name="required_date[]"
-                                                    id="required_date1">
+                                                <input type="date"class="form-control" style="width: 100% !important;" name="required_date[]"id="required_date1">
                                             </td>
                                             {{-- <td class="text-center"><input onclick="view_history(1)"
                                                     type="checkbox" id="view_history1">
@@ -171,14 +174,11 @@ use App\Helpers\NotificationHelper;
                     <input type="text" class="form-control requiredField"
                         name="quantity[]" id="quantity${Counter}">
                 </td> --}}
-                <td>
-                    <input type="text" class="form-control" name="purpose[]"
-                        id="purpose${Counter}">
+               <td>
+                    <input type="text" class="form-control" style="width: 100% !important;" name="purpose[]" id="purpose${Counter}">
                 </td>
                 <td>
-                    <input type="date"
-                        class="form-control" name="required_date[]"
-                        id="required_date${Counter}">
+                    <input type="date"class="form-control" style="width: 100% !important;" name="required_date[]"id="required_date${Counter}">
                 </td>
                 {{-- <td class="text-center"><input onclick="view_history(1)"
                         type="checkbox" id="view_history${Counter}">
