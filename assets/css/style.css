@@ -791,7 +791,7 @@ div#showDetailModelOneParamerter .modalWidth{width:95% !important;}
 .bg-blck td{background-color:#000;color:#f00 !important;}
 .mm-tabb tbody > tr > td{border:solid 1px #000 !important;}
 .mm-tabb thead > tr > th{border:solid 1px #000 !important;}
-.table-responsive{scrollbar-width:thin;scrollbar-color:#333 #ccc;overflow:auto;height:600px;}
+.table-responsive{scrollbar-width:thin;scrollbar-color:#333 #ccc;overflow:auto;height:auto;}
 .max-ww{min-width:349px;}
 .max-ww1{min-width:147px;}
 .max-ww2{min-width:177px;}
