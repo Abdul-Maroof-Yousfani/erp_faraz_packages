@@ -462,6 +462,7 @@ class FinanceAddDetailControler extends Controller
 						$breakup_data['main_id']=$main_id[1];
 
 					endif;
+					$breakup_data['is_official'] = CommonHelper::getOfficialValue();
 					DB::Connection('mysql2')->table('breakup_data')->insert($breakup_data);
 
 					DB::Connection('mysql2')->table('jvs')->where('id', $master_id)->update($jvs);
@@ -715,6 +716,7 @@ class FinanceAddDetailControler extends Controller
 			$data1['date'] 			= date('Y-m-d');
 			$data1['time'] 			= date('H:i:s');
 			$data1['bill_date']   = Input::get('bill_date');
+			$data1['is_official'] 	= CommonHelper::getOfficialValue();
 			$master_id = DB::table('pvs')->insertGetId($data1);
 			$pvsDataSection = Input::get('pvsDataSection_'.$row);
 			$count=1;
@@ -758,7 +760,7 @@ class FinanceAddDetailControler extends Controller
 					$data2['qty']   = $qty;
 					$data2['rate']   = $rate;
 					$data2['sub_item']   = $sub_item;
-
+					$data2['is_official'] 	= CommonHelper::getOfficialValue();
 
 					//	DB::table('pv_data')->insert($data2);
 					$other_id = DB::table('pv_data')->insertGetId($data2);
@@ -775,6 +777,7 @@ class FinanceAddDetailControler extends Controller
 					$data['time'] = date("H:i:s");
 					$data['master_id'] = $master_id;
 					$data['username'] = Auth::user()->name;
+					$data['is_official'] 	= CommonHelper::getOfficialValue();
 					//	DB::table('transactions')->insert($data);
 
 
@@ -1036,6 +1039,7 @@ class FinanceAddDetailControler extends Controller
 							$breakup_data['voucher_type']=2;
 							$breakup_data['slip_no']=$slip_no;
 							$breakup_data['amount']=CommonHelper::check_str_replace($breakup_amount);
+							$breakup_data['is_official'] = CommonHelper::getOfficialValue();
 							DB::Connection('mysql2')->table('breakup_data')->insert($breakup_data);
 						endif;
 					endif;
@@ -1411,6 +1415,7 @@ class FinanceAddDetailControler extends Controller
 						$breakup_data['main_id']=$main_id[1];
 
 					endif;
+					$breakup_data['is_official'] = CommonHelper::getOfficialValue();
 					DB::Connection('mysql2')->table('breakup_data')->insert($breakup_data);
 					endif;
 					// end breakup
@@ -1485,6 +1490,7 @@ class FinanceAddDetailControler extends Controller
 				$amount =   CommonHelper::check_str_replace(Input::get('amount')[$count]);
 				$data3['received_amount']=$amount;
 				$data3['slip_no']=$row;
+				$data3['is_official'] = CommonHelper::getOfficialValue();
 				$count++;
 				DB::Connection('mysql2')->table('received_paymet')->insert($data3);
 			endforeach;
@@ -2666,6 +2672,7 @@ class FinanceAddDetailControler extends Controller
 				$amount =   CommonHelper::check_str_replace(Input::get('amount')[$count]);
 				$data3['received_amount']=$amount;
 				$data3['slip_no']=$row;
+				$data3['is_official'] = CommonHelper::getOfficialValue();
 				$count++;
 				DB::Connection('mysql2')->table('received_paymet')->insert($data3);
 			endforeach;
@@ -2733,6 +2740,7 @@ class FinanceAddDetailControler extends Controller
 
 		$NewPurchaseVoucher->username = Auth::user()->name;
 		$NewPurchaseVoucher->date = date('Y-m-d');
+		$NewPurchaseVoucher->is_official = CommonHelper::getOfficialValue();
 		$NewPurchaseVoucher->save();
 		$master_id = $NewPurchaseVoucher->id;
 
@@ -2764,6 +2772,7 @@ class FinanceAddDetailControler extends Controller
 
 			$NewPurchaseVoucherData->username = Auth::user()->name;
 			$NewPurchaseVoucherData->date = date('Y-m-d');
+			$NewPurchaseVoucherData->is_official = CommonHelper::getOfficialValue();
 //			$purchase_voucher->pv_no = $pv_no;
 			$NewPurchaseVoucherData->save();
 //			$other_id = $purchase_voucher_data->id;

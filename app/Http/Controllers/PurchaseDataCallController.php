@@ -3240,7 +3240,7 @@ echo "aa"; die;
     }
     public function get_stock_location_wise(Request $request)
     {
-        $warehouse = 1;
+        $warehouse = $request->warehouse ?: 1;
         $item = $request->item;
         $bacth_code = $request->batch_code;
     
