@@ -89,7 +89,7 @@ input.searchInput{outline:none;}
 .dropdown-menu > li > a:hover,.dropdown-menu > li > a:focus{text-decoration:none;background-color:#dfe9f3 !important;/* color:#fff !important;*/
  transition:0.5s all;}
 .open > ul.bko.dropdown-menu{left:auto;}
-.dropdown-menu{position:absolute;top:100%;right:0;z-index:1000;display:none;float:left;min-width:130px;padding:5px 0 !important;margin:2px 0 0 !important;font-size:14px;text-align:left;list-style:none;background-color:#fff;-webkit-background-clip:padding-box;background-clip:padding-box;border:1px solid rgb(255 255 255);border-radius:14px;box-shadow:0 6px 12px rgba(0,0,0,.175);padding:8px 8px !important;}
+.dropdown-menu{position:absolute;top:100%;right:0;z-index:0 !important;display:none;float:left;min-width:130px;padding:5px 0 !important;margin:2px 0 0 !important;font-size:14px;text-align:left;list-style:none;background-color:#fff;-webkit-background-clip:padding-box;background-clip:padding-box;border:1px solid rgb(255 255 255);border-radius:14px;box-shadow:0 6px 12px rgba(0,0,0,.175);padding:8px 8px !important;}
 .dropdown-menu > li > a i{padding-right:7px;}
 .dropdown-menu > li > a{color:#000000;font-weight:500;font-size:15px;padding:8px 19px;cursor:pointer;white-space:nowrap;border-radius:9px;margin:0;}
 .open > .dropdown-menu_sale_order_list{right:56px !important;}
@@ -195,7 +195,7 @@ input[type="checkbox"]{width:20px !important;height:20px !important;cursor:point
 .ser{position:relative;}
 .mb-20{margin-bottom:20px;}
 .mp-20{padding-bottom:20px;}
-tbody#AppnedHtml input{margin-bottom:0;width: 100px;}
+tbody#AppnedHtml input{margin-bottom:0;width:100px;}
 .ser input{width:700px;/* border-radius:10px;*/
  border:1px solid #dbdddf;background:#eaeff5;padding:10px 50px 10px 10px;}
 .ser button{position:absolute;right:10px;background:transparent;border:navajowhite;font-size:21px;bottom:0;top:0;margin:auto;color:#adaaaa;}
@@ -993,7 +993,7 @@ input[type="radio"]:hover,input[type="checkbox"]:hover{border-color:var(--erp-na
 /* tfoot / total rows — colorful modern totals bar,works automatically wherever a <tfoot> is used,no class needed to mark a row as "total" */
 .table-bordered tfoot td,.userlittab tfoot td,.sale_older_tab tfoot td,.Balance_Sheet tfoot td,.Profit_Loss tfoot td,.home_table tfoot td{background:linear-gradient(90deg,#EAF1FF 0%,#F1F9F4 100%) !important;font-weight:500 !important;font-size:13.5px !important;color:var(--erp-navy-2) !important;border-top:2px solid var(--erp-navy-1) !important;padding-top:13px !important;padding-bottom:13px !important;}
 .table-bordered tfoot tr:first-child td,.userlittab tfoot tr:first-child td,.home_table tfoot tr:first-child td{position:relative !important;}
-.table-bordered tfoot tr:first-child td:first-child::before,.userlittab tfoot tr:first-child td:first-child::before,.home_table tfoot tr:first-child td:first-child::before{content:"" !important;position:absolute !important;left:0 !important;top:0 !important;bottom:0 !important;width:4px !important;background:linear-gradient(180deg,var(--erp-navy-1),var(--erp-green)) !important;}
+.table-bordered tfoot tr:first-child td:first-child::before,.userlittab tfoot tr:first-child td:first-child::before,.home_table tfoot tr:first-child td:first-child::before{content:"" !important;position:absolute !important;left:0 !important;top:0 !important;bottom:0 !important;width:4px !important;}
 /* colorful "grouped" header row — reports jinke thead mein 2 rows hoti hain (jaise Opening Balance / Transactions / Closing Balance colspan row + neeche Sr.No/Acc.Code/Account labels). Sirf structural:first-child selector se pehli header-row ko target kiya hai,koi naya class nahi. Alternating soft tints se columns groups aasani se scan hote hain. */
 .table-bordered thead tr:first-child th,.userlittab thead tr:first-child th,.home_table thead tr:first-child th{text-align:left !important;font-size:11.5px !important;}
 /* ===== Body cells - normal black/dark text,koi random color nahi ===== */
@@ -1089,7 +1089,7 @@ thead.bgBlueofTd tr th{background:linear-gradient(90deg,var(--erp-navy) 0%,var(-
 /* Safety net — agar backdrop kisi wajah se stuck reh jaye to clicks block na ho */
 .modal-backdrop:not(.in){display:none !important;pointer-events:none !important;}
 /* Modal box — centered,rounded,floating card */
-#showDetailModelTwoParamerter .modal-dialog,.modal-dialog.modalWidth,.modal-dialog.modalWidth2{width:100% !important;max-width:1100px !important;height:auto !important;max-height:inherit !important;margin:0 auto !important;align-items:center !important;}
+#showDetailModelTwoParamerter .modal-dialog,.modal-dialog.modalWidth,.modal-dialog.modalWidth2{width:100% !important;max-width:1380px !important;height:auto !important;max-height:inherit !important;margin:0 auto !important;align-items:center !important;}
 #showDetailModelTwoParamerter .modal-content,.model-n{width:100% !important;max-height:88vh !important;margin:0 !important;border:none !important;border-radius:22px !important;box-shadow:0 25px 60px rgba(20,26,46,0.35) !important;display:flex !important;flex-direction:column !important;overflow:hidden !important;background:#fff !important;}
 /* Header — clean,no harsh gradient,soft border */
 .model-logo{position:sticky !important;top:0 !important;z-index:10 !important;background:#fff !important;border-bottom:1px solid #EEF1F8 !important;padding:24px 32px !important;margin:0 !important;display:flex !important;align-items:center !important;justify-content:space-between !important;}
@@ -1216,7 +1216,8 @@ input[type="button"].btn-sm.btn-primary:hover{transform:translateY(-1px) !import
 /* Amount columns */
 .tb-table tbody td.text-right{text-align:right !important;font-variant-numeric:tabular-nums !important;font-weight:700 !important;}
 /* ---------- Sticky footer total row ---------- */
-/* .tb-table tfoot{position:sticky !important;bottom:0 !important;z-index:5 !important;} */
+/* .tb-table tfoot{position:sticky !important;bottom:0 !important;z-index:5 !important;}
+*/
 .tb-table tfoot td{background:linear-gradient(90deg,#EAF1FF 0%,#F1F9F4 100%) !important;font-weight:500 !important;font-size:13.5px !important;color:var(--erp-navy-2,#0B1F59) !important;border-top:2px solid var(--erp-navy-1,#173CA7) !important;padding:13px 14px !important;}
 /* ---------- Footer action (Customise button) ---------- */
 .tb-footer-action{padding:20px 32px !important;text-align:right !important;border-top:1px solid #EEF1F8 !important;}
@@ -1307,62 +1308,21 @@ table.sf-table-list{width:100% !important;border-collapse:separate !important;bo
 #paid_to:empty,#paid_to .select2-container:has(option:only-child[value=""]){display:none !important;}
 .select2-container{width:100% !important;}
 /* ===== SELECT2 DROPDOWN FIX (table-responsive escape + z-index) ===== */
-/* .select2-container{z-index:99999 !important;} */
+/* .select2-container{z-index:99999 !important;}
+*/
 .select2-container--open{z-index:100000 !important;}
 .select2-dropdown{z-index:100000 !important;min-width:220px !important;border:1px solid var(--erp-border,#E4E7EC) !important;border-radius:11px !important;box-shadow:0 12px 30px rgba(20,38,92,0.16) !important;}
 .select2-results__options{max-height:240px !important;overflow-y:auto !important;}
 .select2-search--dropdown{padding:8px !important;}
 /* table ke andar wale select2 boxes full width lein taake dropdown bhi field jitna wide ho */
 td .select2-container{width:100% !important;}
-/* =====================================================================
-   GLOBAL SELECT2 FIX — width / z-index / dropdown clipping (hidden-parent bug)
-   Sab pages ke liye: jab koi select2 kisi hidden (display:none) container ke
-   andar init hota hai to woh apna width 0 le leta hai, isi wajah se dropdown
-   panel kahin aur ya bohat chhota / cut-off render hota hai
-   ("diamond" artifact jaisa screenshot mein tha).
-   Sirf existing classes / structural selectors use kiye hain — koi naya
-   class nahi, isliye 1000+ pages per bhi safe hai.
-   ===================================================================== */
-.select2-container{ z-index:2100 !important; }
-.select2-container--open{ z-index:2147483647 !important; }
-.select2-dropdown{ z-index:2147483647 !important; }
-
-.select2-container--default .select2-selection--single,
-.select2-container--default .select2-selection--multiple{ min-height:44px !important; }
-
-.select2-container--default .select2-selection--multiple{
-    border:1px solid var(--erp-border,#E4E7EC) !important;
-    border-radius:11px !important;
-    background:var(--erp-bg-soft,#F7F8FC) !important;
-    padding:4px 8px !important;
-}
-.select2-container--default .select2-selection--multiple .select2-selection__choice{
-    background:#EAF1FF !important;
-    border:1px solid #D6E0F3 !important;
-    border-radius:8px !important;
-    color:#173CA7 !important;
-    font-weight:700 !important;
-    font-size:12.5px !important;
-    padding:3px 8px !important;
-    margin-top:6px !important;
-}
-.select2-container--default .select2-selection--multiple .select2-selection__choice__remove{
-    color:#173CA7 !important;
-    margin-right:6px !important;
-    cursor:pointer !important;
-}
-.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover{
-    color:#e04b4b !important;
-}
-
-/* select2 na hone wale plain <select class="form-control"> bhi hamesha visible rahein
-   (agar kahin select2 init karna bhool jayen to bhi box khaali/invisible nahi rahega) */
-select.form-control{
-    height:44px !important;
-    border:1px solid var(--erp-border,#E4E7EC) !important;
-    border-radius:11px !important;
-    background:var(--erp-bg-soft,#F7F8FC) !important;
-    color:var(--erp-text,#3b3f5c) !important;
-    font-weight:500 !important;
-    padding:10px 16px !important;
-}
+/* ===================================================================== GLOBAL SELECT2 FIX — width / z-index / dropdown clipping (hidden-parent bug) Sab pages ke liye:jab koi select2 kisi hidden (display:none) container ke andar init hota hai to woh apna width 0 le leta hai,isi wajah se dropdown panel kahin aur ya bohat chhota / cut-off render hota hai ("diamond" artifact jaisa screenshot mein tha). Sirf existing classes / structural selectors use kiye hain — koi naya class nahi,isliye 1000+ pages per bhi safe hai. ===================================================================== */
+.select2-container--open{z-index:2147483647 !important;}
+.select2-dropdown{z-index:2147483647 !important;}
+.select2-container--default .select2-selection--single,.select2-container--default .select2-selection--multiple{min-height:44px !important;}
+.select2-container--default .select2-selection--multiple{border:1px solid var(--erp-border,#E4E7EC) !important;border-radius:11px !important;background:var(--erp-bg-soft,#F7F8FC) !important;padding:4px 8px !important;}
+.select2-container--default .select2-selection--multiple .select2-selection__choice{background:#EAF1FF !important;border:1px solid #D6E0F3 !important;border-radius:8px !important;color:#173CA7 !important;font-weight:700 !important;font-size:12.5px !important;padding:3px 8px !important;margin-top:6px !important;}
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove{color:#173CA7 !important;margin-right:6px !important;cursor:pointer !important;}
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover{color:#e04b4b !important;}
+/* select2 na hone wale plain <select class="form-control"> bhi hamesha visible rahein (agar kahin select2 init karna bhool jayen to bhi box khaali/invisible nahi rahega) */
+select.form-control{height:44px !important;border:1px solid var(--erp-border,#E4E7EC) !important;border-radius:11px !important;background:var(--erp-bg-soft,#F7F8FC) !important;color:var(--erp-text,#3b3f5c) !important;font-weight:500 !important;padding:10px 16px !important;}
