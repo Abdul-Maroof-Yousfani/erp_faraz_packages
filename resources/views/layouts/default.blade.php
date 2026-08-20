@@ -2350,21 +2350,14 @@ function DeletePvActivity(pv_id,pv_no,pv_date,pv_amount)
 
 
 /* =========================================================================
-   FIX: Dropdown menu (3-dot action menu) cut ho raha tha kyunke
-   .table-responsive per overflow:auto set hai, jo table ke bahar
-   nikalne wale kisi bhi absolutely-positioned element ko clip kar deta hai.
+   FIX v2: Dropdown position galat aa rahi thi kyunke kisi parent per
+   CSS "transform" laga hua hai — jo position:fixed ka containing block
+   badal deta hai (viewport ki jagah us parent se relative ho jata hai).
 
-   Solution: jab bhi koi Bootstrap dropdown open ho, uske .dropdown-menu
-   ko JS se temporarily "position:fixed" kar do (based on button ki
-   screen position) — is se wo table-responsive ke overflow clipping
-   se bilkul bahar nikal ke, poora visible reh jayega.
-
-   Ye kisi bhi dropdown per kaam karega jo Bootstrap 3 ke standard
-   pattern (.dropdown > [data-toggle="dropdown"] + .dropdown-menu)
-   se bana hua hai — including .dropdown-menu_sale_order_list wala.
-
-   Is file ko kisi bhi already-loaded <script> ke baad include kar dein,
-   ya customMainFunction.js ke end mein paste kar dein.
+   Solution: dropdown-menu ko open hote waqt <body> mein move kar do
+   (appendTo), position:fixed lagao, aur close hone par wapas
+   original jagah (original parent + original next-sibling se pehle)
+   restore kar do.
    ========================================================================= */
 
 $(document).on('shown.bs.dropdown', '.dropdown, .btn-group', function () {
@@ -2374,14 +2367,25 @@ $(document).on('shown.bs.dropdown', '.dropdown, .btn-group', function () {
 
     if (!$toggle.length || !$menu.length) return;
 
-    // Original position/size save kar lo taake close hone par restore ho sake
+    // Original location yaad rakho taake close per wapas laga sakein
+    $menu.data('erp-original-parent', $menu.parent());
+    $menu.data('erp-original-next', $menu.next());
     $menu.data('erp-original-style', $menu.attr('style') || '');
+
+    // Body mein move kar do — transform wale parent ka asar khatam
+    $menu.appendTo('body');
 
     var toggleOffset = $toggle.offset();
     var toggleHeight = $toggle.outerHeight();
     var toggleWidth = $toggle.outerWidth();
+    var scrollTop = $(window).scrollTop();
+    var scrollLeft = $(window).scrollLeft();
 
-    // Pehle menu ko dikha kar uski width naapo
+    // offset() document-relative hai, fixed viewport-relative hota hai —
+    // isliye scroll subtract karna zaroori hai
+    var toggleTop = toggleOffset.top - scrollTop;
+    var toggleLeft = toggleOffset.left - scrollLeft;
+
     $menu.css({ position: 'fixed', visibility: 'hidden', display: 'block', top: '0px', left: '0px' });
     var menuWidth = $menu.outerWidth();
     var menuHeight = $menu.outerHeight();
@@ -2389,24 +2393,12 @@ $(document).on('shown.bs.dropdown', '.dropdown, .btn-group', function () {
     var winWidth = $(window).width();
     var winHeight = $(window).height();
 
-    // Default: toggle button ke right-aligned niche
-    var top = toggleOffset.top + toggleHeight + 4;
-    var left = toggleOffset.left + toggleWidth - menuWidth;
+    var top = toggleTop + toggleHeight + 4;
+    var left = toggleLeft + toggleWidth - menuWidth;
 
-    // Agar left se bahar ja raha ho to left align kar do
-    if (left < 8) {
-        left = toggleOffset.left;
-    }
-
-    // Agar screen ke right se bahar ja raha ho
-    if (left + menuWidth > winWidth - 8) {
-        left = winWidth - menuWidth - 8;
-    }
-
-    // Agar neeche screen se bahar ja raha ho, to upar khol do
-    if (top + menuHeight > winHeight - 8) {
-        top = toggleOffset.top - menuHeight - 4;
-    }
+    if (left < 8) left = toggleLeft;
+    if (left + menuWidth > winWidth - 8) left = winWidth - menuWidth - 8;
+    if (top + menuHeight > winHeight - 8) top = toggleTop - menuHeight - 4;
 
     $menu.css({
         position: 'fixed',
@@ -2421,8 +2413,21 @@ $(document).on('shown.bs.dropdown', '.dropdown, .btn-group', function () {
 });
 
 $(document).on('hidden.bs.dropdown', '.dropdown, .btn-group', function () {
-    var $menu = $(this).find('.dropdown-menu').first();
+    var $wrapper = $(this);
+    var $menu = $wrapper.find('.dropdown-menu').first();
     if (!$menu.length) return;
+
+    var $origParent = $menu.data('erp-original-parent');
+    var $origNext = $menu.data('erp-original-next');
+
+    // Body se wapas original jagah per le aao
+    if ($origParent && $origParent.length) {
+        if ($origNext && $origNext.length) {
+            $menu.insertBefore($origNext);
+        } else {
+            $menu.appendTo($origParent);
+        }
+    }
 
     var original = $menu.data('erp-original-style');
     if (original !== undefined) {
@@ -2432,26 +2437,11 @@ $(document).on('hidden.bs.dropdown', '.dropdown, .btn-group', function () {
     }
 });
 
-// Scroll/resize hone par open dropdown ko reposition kar do (warna position purani reh jayegi)
+// Scroll/resize per reposition
 $(window).on('scroll resize', function () {
-    $('.dropdown.open .dropdown-menu, .btn-group.open .dropdown-menu').each(function () {
-        var $menu = $(this);
-        var $wrapper = $menu.closest('.dropdown, .btn-group');
-        var $toggle = $wrapper.find('[data-toggle="dropdown"]').first();
-        if (!$toggle.length) return;
-
-        var toggleOffset = $toggle.offset();
-        var toggleHeight = $toggle.outerHeight();
-        var toggleWidth = $toggle.outerWidth();
-        var menuWidth = $menu.outerWidth();
-
-        var left = toggleOffset.left + toggleWidth - menuWidth;
-        if (left < 8) left = toggleOffset.left;
-
-        $menu.css({
-            top: (toggleOffset.top + toggleHeight + 4) + 'px',
-            left: left + 'px'
-        });
+    $('body > .dropdown-menu[style*="position: fixed"]').each(function () {
+        // Reposition logic yahan tabhi chalao agar aapko scroll ke dauran
+        // bhi menu open rakhna ho — warna Bootstrap default per close ho jayega
     });
 });
 
