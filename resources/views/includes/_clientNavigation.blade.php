@@ -34,7 +34,7 @@ $icons = [
     "Brand" => "glyphicon glyphicon-cog",
     "Color" => "glyphicon glyphicon-cog",
     "Invertory Master" => "glyphicon glyphicon-cog",
-    "Ledger" => "fa fa-usd",
+    "Ledger" => "fa fa-book",
     "Gate Pass" => "fa fa-usd",
 ];
     CommonHelper::reconnectMasterDatabase();
@@ -113,7 +113,7 @@ $icons = [
                 <button class="btn settingListSb theme-bg" data-toggle="collapse" data-target="#masterSetting<?= $counter ?>" >
                     <span><i class="<?= $icons[
                         $row->main_menu_id
-                    ] ?>" aria-hidden="true"></i></span>
+                    ] ?? 'glyphicon glyphicon-list' ?>" aria-hidden="true"></i></span>
                     <p><?php echo $row->main_menu_id; ?></p>
                 </button>
                 <div id="masterSetting<?= $counter ?>" class="collapse pmastermnu">
@@ -426,7 +426,7 @@ $icons = [
                <li class="dropdown mega-dropdown">
                   <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="<?= $icons[
                       $row->main_menu_id
-                  ] ?>" aria-hidden="true"></i> <?php echo $row->main_menu_id; ?></a>
+                  ] ?? 'glyphicon glyphicon-list' ?>" aria-hidden="true"></i> <?php echo $row->main_menu_id; ?></a>
                   <ul class="dropdown-menu mega-dropdown-menu row">
                      <?php
                      $m = 1;

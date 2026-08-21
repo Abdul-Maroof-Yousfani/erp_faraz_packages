@@ -5296,6 +5296,34 @@ class CommonHelper
         return (Auth::user()->official == '2') ? 2 : 1;
     }
 
+    /**
+     * Check if the logged-in user is a cumulative user (Official Scope: 1,2).
+     */
+    public static function isCumulativeUser()
+    {
+        if (!Auth::check()) {
+            return false;
+        }
+        $official = Auth::user()->official ?? '';
+        return in_array($official, ['1,2', '2,1']) || (str_contains($official, '1') && str_contains($official, '2'));
+    }
+
+    /**
+     * Check if user is read-only (Cumulative users are View Only).
+     */
+    public static function isReadOnlyUser()
+    {
+        return static::isCumulativeUser();
+    }
+
+    /**
+     * Check if user can create or edit records.
+     */
+    public static function canCreateOrEdit()
+    {
+        return !static::isCumulativeUser();
+    }
+
 }
 
 ?>

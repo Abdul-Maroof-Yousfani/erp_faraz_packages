@@ -23,8 +23,8 @@ $icons = array(
     'Production Master' => 'glyphicon glyphicon-wrench',
     "Assets" => "glyphicon glyphicon-list",
     "Machine Production" => "glyphicon glyphicon-cog",
-        "Gate Pass" => "fa fa-usd",
-
+    "Gate Pass" => "fa fa-usd",
+    "Ledger" => "fa fa-book",
 );
 $accType = Auth::user()->acc_type;
 if($accType == 'client'){$m = $_GET['m'];}else{$m = Auth::user()->company_id;}
@@ -83,7 +83,7 @@ endif;
          <li>
                <div class="sm-bx">
                   <button class="btn settingListSb theme-bg" data-toggle="collapse" data-target="#masterSetting<?=$counter?>" >
-                     <span><i class="<?=$icons[$main_menu_id]?>" aria-hidden="true"></i></span>
+                     <span><i class="<?=$icons[$main_menu_id] ?? 'glyphicon glyphicon-list'?>" aria-hidden="true"></i></span>
                      <p><?php echo $main_menu_id;?></p>
                   </button>
                   <div id="masterSetting<?=$counter?>" class="collapse pmastermnu">
@@ -325,7 +325,7 @@ endif;
                   <li class="dropdown mega-dropdown">
                      <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="<?= $icons[
                         $row->main_menu_id
-                     ] ?>" aria-hidden="true"></i> <?php echo $row->main_menu_id; ?></a>
+                     ] ?? 'glyphicon glyphicon-list' ?>" aria-hidden="true"></i> <?php echo $row->main_menu_id; ?></a>
                      <ul class="dropdown-menu mega-dropdown-menu row">
                         <?php
                         $m = 1;
