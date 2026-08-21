@@ -1707,6 +1707,7 @@ class ProductionController extends Controller
             $transaction->date = date('Y-m-d');
             $transaction->status = 1;
             $transaction->voucher_type = 16;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             // $transaction->save();
 
 
@@ -1727,6 +1728,7 @@ class ProductionController extends Controller
             $transaction->date = date('Y-m-d');
             $transaction->status = 1;
             $transaction->voucher_type = 16;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             // $transaction->save();
 
             DB::Connection('mysql2')->commit();
@@ -1834,6 +1836,7 @@ class ProductionController extends Controller
             $transaction->date = date('Y-m-d');
             $transaction->status = 1;
             $transaction->voucher_type = 17;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
 
@@ -1860,6 +1863,7 @@ class ProductionController extends Controller
             $transaction->date = date('Y-m-d');
             $transaction->status = 1;
             $transaction->voucher_type = 17;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
             DB::Connection('mysql2')->commit();
@@ -2152,6 +2156,7 @@ class ProductionController extends Controller
             $transaction->date = date('Y-m-d');
             $transaction->status = 1;
             $transaction->voucher_type = 18;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
 
@@ -2175,6 +2180,7 @@ class ProductionController extends Controller
             $transaction->date = date('Y-m-d');
             $transaction->status = 1;
             $transaction->voucher_type = 18;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
             $transaction = new Transactions();
@@ -2192,6 +2198,7 @@ class ProductionController extends Controller
             $transaction->date = date('Y-m-d');
             $transaction->status = 1;
             $transaction->voucher_type = 18;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
 
@@ -2216,6 +2223,7 @@ class ProductionController extends Controller
             $transaction->date = date('Y-m-d');
             $transaction->status = 1;
             $transaction->voucher_type = 18;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
             // machine
@@ -2234,6 +2242,7 @@ class ProductionController extends Controller
             $transaction->date = date('Y-m-d');
             $transaction->status = 1;
             $transaction->voucher_type = 18;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
 
@@ -2253,6 +2262,7 @@ class ProductionController extends Controller
             $transaction->date = date('Y-m-d');
             $transaction->status = 1;
             $transaction->voucher_type = 18;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
 
@@ -2430,12 +2440,14 @@ class ProductionController extends Controller
                     'username' => Auth::user()->username,
                     'created_date' => date('Y-m-d'),
                     'opening' => 0,
-                    'so_data_id' => 0
+                    'so_data_id' => 0,
+                    'is_official' => CommonHelper::getOfficialValue(),
                 );
                 DB::Connection('mysql2')->table('stock')->insert($stock_data);
             endforeach;
 
             $factory_overhead =  DB::Connection('mysql2')->table('transactions')
+                ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                 ->where('status', 1)
                 ->where('voucher_no', $voucher_no)
                 ->where('voucher_type', 18)
@@ -2444,6 +2456,7 @@ class ProductionController extends Controller
 
 
             $labour =  DB::Connection('mysql2')->table('transactions')
+                ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                 ->where('status', 1)
                 ->where('voucher_no', $voucher_no)
                 ->where('voucher_type', 18)
@@ -2453,6 +2466,7 @@ class ProductionController extends Controller
 
 
             $issuence =  DB::Connection('mysql2')->table('transactions')
+                ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                 ->where('status', 1)
                 ->where('voucher_no', $voucher_no)
                 ->where('voucher_type', 16)
@@ -2461,6 +2475,7 @@ class ProductionController extends Controller
 
 
             $return =  DB::Connection('mysql2')->table('transactions')
+                ->whereIn('is_official', CommonHelper::getOfficialScopeArray())
                 ->where('status', 1)
                 ->where('voucher_no', $voucher_no)
                 ->where('voucher_type', 17)
@@ -2486,6 +2501,7 @@ class ProductionController extends Controller
             $transaction->date = date('Y-m-d');
             $transaction->status = 1;
             $transaction->voucher_type = 19;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
             $transaction = new Transactions();
@@ -2503,6 +2519,7 @@ class ProductionController extends Controller
             $transaction->date = date('Y-m-d');
             $transaction->status = 1;
             $transaction->voucher_type = 19;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
 
@@ -2521,6 +2538,7 @@ class ProductionController extends Controller
             $transaction->date = date('Y-m-d');
             $transaction->status = 1;
             $transaction->voucher_type = 19;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
 
@@ -2539,6 +2557,7 @@ class ProductionController extends Controller
             $transaction->date = date('Y-m-d');
             $transaction->status = 1;
             $transaction->voucher_type = 19;
+            $transaction->is_official = CommonHelper::getOfficialValue();
             $transaction->save();
 
 

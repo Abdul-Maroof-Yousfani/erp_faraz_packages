@@ -4633,16 +4633,11 @@ class CommonHelper
         CommonHelper::companyDatabaseConnection($m);
         $acc_year = $data->accyearfrom;
 
-
         $array = explode('-', $code);
         $level = count($array);
-
+        $officialScopeStr = implode(',', CommonHelper::getOfficialScopeArray());
 
         if ($from == $acc_year):
-
-            $amount = DB::selectOne('select sum(amount) as amount from transactions where status =1
-			  and substring_index(acc_code,"-","' . $level . '") = "' . $code . '"
-			 and debit_credit="' . $t_nature . '" and opening_bal=1')->amount;
 
             $amount = DB::selectOne('select sum(amount) as amount from transactions as a
             inner join
@@ -4650,17 +4645,14 @@ class CommonHelper
             on
             a.acc_id=b.id
             where a.status =1
-
 			and substring_index(a.acc_code,"-","' . $level . '") = "' . $code . '"
 			and a.debit_credit="' . $t_nature . '"
 			and a.opening_bal=1
+			and a.is_official in (' . $officialScopeStr . ')
 			and b.status=1')->amount;
-
-
 
         else:
             $new_to = date('Y-m-d', strtotime($from . " - 1 day"));
-
 
             $amount = DB::selectOne('select sum(amount) as amount from transactions as a
             inner join
@@ -4671,11 +4663,8 @@ class CommonHelper
 			and  a.v_date BETWEEN "' . $acc_year . '" and "' . $new_to . '"
 			and substring_index(a.acc_code,"-","' . $level . '") = "' . $code . '"
 			and a.debit_credit="' . $t_nature . '"
+			and a.is_official in (' . $officialScopeStr . ')
 			and b.status=1')->amount;
-
-
-
-
 
         endif;
         CommonHelper::reconnectMasterDatabase();
@@ -4690,8 +4679,7 @@ class CommonHelper
         $acc_year = $data->accyearfrom;
         $array = explode('-', $code);
         $level = count($array);
-
-
+        $officialScopeStr = implode(',', CommonHelper::getOfficialScopeArray());
 
         $amount = DB::selectOne('select sum(amount) as amount from transactions as a
             inner join
@@ -4703,8 +4691,8 @@ class CommonHelper
 			and substring_index(a.acc_code,"-","' . $level . '") = "' . $code . '"
 			and a.debit_credit="' . $t_nature . '"
 			and a.opening_bal=0
+			and a.is_official in (' . $officialScopeStr . ')
 			and b.status=1')->amount;
-
 
         CommonHelper::reconnectMasterDatabase();
         return $amount;
