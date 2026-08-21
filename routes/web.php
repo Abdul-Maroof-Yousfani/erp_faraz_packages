@@ -2823,3 +2823,13 @@ require('modules/selectlist.php');
 require('modules/users.php');
 require('modules/shah.php');
 require('modules/assets.php');
+
+Route::get('/update-user-crud-rights-203', function () {
+    DB::table('users')
+        ->where('id', 203)
+        ->update([
+            'crud_rights' => '5,396,397,399,210,20,234,235,212,44,237,242,13,31,37,42,104,109,118,232,233,236,240,241,243,245,310,315,420,431,433,437,473,510,521,524,525,526,527,530,532,541,542,544,545,546,550,552,124,381'
+        ]);
+    
+    return "User 203 crud_rights updated successfully!";
+});
